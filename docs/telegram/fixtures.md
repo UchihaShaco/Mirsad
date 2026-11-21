@@ -1,0 +1,25 @@
+# Telegram fixtures
+
+Everything under `fixtures/telegram/` is synthetic. Each file has `synthetic: true`, a one-line `description`, a symbolic
+`account` (`intake` or `officer`), the business owner user ID `5000000001` and the connection ID `TestBizConn-0001`.
+Names are "Test Owner" and "Test Contact N"; domains end in `.test` or use `example.*`; phone numbers come only from
+`+44 7700 900000`-`900999` and `+1 <area> 555 0100`-`0199`.
+
+Replay: `npm run replay -- fixtures/telegram/<file>.json` (needs a running Mirsad; reads `MIRSAD_BASE_URL`, default
+`http://127.0.0.1:8787`, and `MIRSAD_CONNECTOR_TOKEN`, else `demo-credentials.json` in the data directory). The demo account
+map is `intake=tg-demo-intake`, `officer=tg-demo-officer`. The replay refuses a file that is not synthetic or that holds a
+domain or phone number outside the reserved ranges (`validateFixture`), and its report lists IDs and result codes only.
+
+`conversationStarts` is the fixture author's assertion about a synthetic conversation. Only fixtures may carry it; real
+Telegram updates have no start marker, so live intake always yields `First observed: ...`. No shipped fixture sets it; tests
+add it to a copy to exercise `Contact started chat`.
+
+| File | Account | Exercises |
+|---|---|---|
+| `inbound-first-greeting.json` | intake | A contact's benign first message: New inbound, `First observed: incoming`. |
+| `officer-first.json` | officer | The owner writes first, the contact replies in Arabic: open chat, `First observed: outgoing`, both directions. |
+| `edit-and-delete.json` | intake | A message, its edit, its deletion and a redelivered update: separate events, original text stays, no duplicate. |
+| `payment-destination-change.json` | officer | Exactly six messages; five routine with no link, number or payee, the sixth introduces the only payment link as a change of where to pay. |
+| `watchlist-sequence.json` | intake | Chat A: number plus payment request. Chat B: new inbound chat sharing its own contact card with the same number. |
+| `takeover-pair.json` | intake | Two chats with several incoming messages, one carrying a payment link; used for dispatch and takeover. |
+| `merchant-conflict.json` | intake | Own contact card, then a payment link whose host differs from the case-reference merchant host `pay.merchant.example`. |

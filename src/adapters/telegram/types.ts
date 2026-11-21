@@ -1,0 +1,87 @@
+/** The slice of the Telegram Bot API business types that Mirsad reads (design section 19.8). No SDK. */
+
+export interface TelegramUser {
+  id: number;
+  is_bot?: boolean;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+}
+
+export interface TelegramChat {
+  id: number;
+  type: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+export interface TelegramContact {
+  phone_number: string;
+  first_name: string;
+  last_name?: string;
+  user_id?: number;
+}
+
+/** Media kinds Mirsad lists as unsupported content, in the order they are reported. */
+export const MEDIA_KINDS = [
+  'photo',
+  'document',
+  'video',
+  'audio',
+  'voice',
+  'video_note',
+  'sticker',
+  'animation',
+  'location',
+  'venue',
+  'poll',
+  'contact',
+] as const;
+export type MediaKind = (typeof MEDIA_KINDS)[number];
+
+export type TelegramMessage = {
+  message_id: number;
+  date: number;
+  chat: TelegramChat;
+  from?: TelegramUser;
+  business_connection_id?: string;
+  sender_business_bot?: TelegramUser;
+  text?: string;
+  caption?: string;
+  edit_date?: number;
+  contact?: TelegramContact;
+} & { [K in Exclude<MediaKind, 'contact'>]?: unknown };
+
+export interface TelegramBusinessConnection {
+  id: string;
+  user: TelegramUser;
+  user_chat_id: number;
+  date: number;
+  rights?: Record<string, boolean>;
+  is_enabled: boolean;
+}
+
+export interface TelegramDeletedMessages {
+  business_connection_id: string;
+  chat: TelegramChat;
+  message_ids: number[];
+}
+
+export interface TelegramUpdate {
+  update_id: number;
+  business_connection?: TelegramBusinessConnection;
+  business_message?: TelegramMessage;
+  edited_business_message?: TelegramMessage;
+  deleted_business_messages?: TelegramDeletedMessages;
+}
+
+/** A synthetic Telegram-shaped fixture file (design section 13). */
+export interface TelegramFixture {
+  description: string;
+  synthetic: true;
+  account: 'intake' | 'officer';
+  businessUserId: number;
+  businessConnectionId: string;
+  updates: TelegramUpdate[];
+  conversationStarts?: { chatId: number; messageId: number }[];
+}

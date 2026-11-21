@@ -1,0 +1,56 @@
+{
+  "description": "The contact shares their own card, then sends a payment link on a host other than pay.merchant.example.",
+  "synthetic": true,
+  "account": "intake",
+  "businessUserId": 5000000001,
+  "businessConnectionId": "TestBizConn-0001",
+  "updates": [
+    {
+      "update_id": 900000001,
+      "business_message": {
+        "message_id": 4101,
+        "date": 1790000060,
+        "chat": {
+          "id": 6000000009,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 9"
+        },
+        "from": {
+          "id": 6000000009,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 9"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "contact": {
+          "phone_number": "+447700900456",
+          "first_name": "Test",
+          "last_name": "Contact 9",
+          "user_id": 6000000009
+        }
+      }
+    },
+    {
+      "update_id": 900000002,
+      "business_message": {
+        "message_id": 4102,
+        "date": 1790000120,
+        "chat": {
+          "id": 6000000009,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 9"
+        },
+        "from": {
+          "id": 6000000009,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 9"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Please settle the invoice here: https://pay.other-host.test/invoice/9"
+      }
+    }
+  ]
+}

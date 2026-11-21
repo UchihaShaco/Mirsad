@@ -1,0 +1,135 @@
+{
+  "description": "Five routine messages, then a first payment link worded as a change of where to pay.",
+  "synthetic": true,
+  "account": "officer",
+  "businessUserId": 5000000001,
+  "businessConnectionId": "TestBizConn-0001",
+  "updates": [
+    {
+      "update_id": 900000001,
+      "business_message": {
+        "message_id": 4101,
+        "date": 1790000060,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 6000000004,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Hello, are you free on Thursday?"
+      }
+    },
+    {
+      "update_id": 900000002,
+      "business_message": {
+        "message_id": 4102,
+        "date": 1790000120,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 5000000001,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Owner"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Hi, yes. Thursday afternoon works well."
+      }
+    },
+    {
+      "update_id": 900000003,
+      "business_message": {
+        "message_id": 4103,
+        "date": 1790000180,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 6000000004,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Great, three o'clock then."
+      }
+    },
+    {
+      "update_id": 900000004,
+      "business_message": {
+        "message_id": 4104,
+        "date": 1790000240,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 5000000001,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Owner"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Confirmed, see you at three."
+      }
+    },
+    {
+      "update_id": 900000005,
+      "business_message": {
+        "message_id": 4105,
+        "date": 1790000300,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 6000000004,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "شكرا لك، أراك قريبا."
+      }
+    },
+    {
+      "update_id": 900000006,
+      "business_message": {
+        "message_id": 4106,
+        "date": 1790000360,
+        "chat": {
+          "id": 6000000004,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "from": {
+          "id": 6000000004,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 4"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Small change: please pay the fee at https://pay.alt-shop.test/invoice/77 instead of the usual place."
+      }
+    }
+  ]
+}

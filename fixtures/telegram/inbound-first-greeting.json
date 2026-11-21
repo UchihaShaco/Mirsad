@@ -1,0 +1,30 @@
+{
+  "description": "A contact opens a new chat with a benign greeting on the intake account.",
+  "synthetic": true,
+  "account": "intake",
+  "businessUserId": 5000000001,
+  "businessConnectionId": "TestBizConn-0001",
+  "updates": [
+    {
+      "update_id": 900000001,
+      "business_message": {
+        "message_id": 4101,
+        "date": 1790000060,
+        "chat": {
+          "id": 6000000001,
+          "type": "private",
+          "first_name": "Test",
+          "last_name": "Contact 1"
+        },
+        "from": {
+          "id": 6000000001,
+          "is_bot": false,
+          "first_name": "Test",
+          "last_name": "Contact 1"
+        },
+        "business_connection_id": "TestBizConn-0001",
+        "text": "Hello, I would like to ask about my booking next week."
+      }
+    }
+  ]
+}
