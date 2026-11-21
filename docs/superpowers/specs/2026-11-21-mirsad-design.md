@@ -473,6 +473,7 @@ interface TestHarness {
   http(token: string | null): { get(path, headers?): Promise<ApiResponse>; post(path, body?, headers?): Promise<ApiResponse> };
   renderer: ControllableRenderer;   // wraps the real renderer: hold(), release(), failNext(count = 1), inputs: CaptureRenderInput[]
   reviewer: ScriptedReviewer;       // hold(), release(), respond(fn), failNext(code), calls: ReviewRequest[]; default: deterministic rules
+  logs: string[];                   // every log line written by the app, captured in memory
   drain(): Promise<void>;           // waits until both workers are idle
   restart(): Promise<void>;         // close the app and reopen it on the same data directory
   close(): Promise<void>;           // closes the app and removes the temp directory
