@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import http from 'node:http';
 import path from 'node:path';
+import { Hono } from 'hono';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
+import type { AppDeps } from '../../src/app.ts';
+import { notImplemented, type AppEnv } from '../../src/http/context.ts';
+import { errorHandler } from '../../src/http/middleware/error-handler.ts';
+import { createJsonLogger } from '../../src/logging/json-logger.ts';
 import { ROUTES } from '../../src/http/routes/index.ts';
 import { hashToken } from '../../src/identity/tokens.ts';
 import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
@@ -112,8 +117,9 @@ describe('foundation', () => {
   it('an intake body of 300 KiB passes the size limit and one above 1 MiB is 413', async () => {
     const connector = h.http(h.tokens.connector);
     const medium = { padding: 'x'.repeat(300 * 1024) };
-    expect((await connector.post('/v1/ingest', medium)).status).toBe(501);
-    expect((await connector.post('/v1/chats/chat_1/events', medium)).status).toBe(501);
+    // Past the size limit, the padded body reaches validation (400) instead of being refused as too large (413).
+    expect((await connector.post('/v1/ingest', medium)).status).toBe(400);
+    expect((await connector.post('/v1/chats/chat_1/events', medium)).status).toBe(400);
     const huge = { padding: 'x'.repeat(1024 * 1024 + 1) };
     for (const intakePath of ['/v1/ingest', '/v1/chats/chat_1/events']) {
       const res = await connector.post(intakePath, huge);
@@ -148,9 +154,13 @@ describe('foundation', () => {
   });
 
   it('an unimplemented route answers 501 not_implemented in the envelope', async () => {
-    const res = await h.http(h.tokens.officerA).get('/v1/chats');
+    // Exercises the shared stub handler directly, so the test does not depend on which routes are still stubs.
+    const app = new Hono<AppEnv>();
+    app.onError(errorHandler(createJsonLogger({ write: () => {} })));
+    app.get('/stub', (c) => notImplemented(c, {} as AppDeps));
+    const res = await app.request('/stub');
     expect(res.status).toBe(501);
-    expectErrorEnvelope(res.body, 'not_implemented');
+    expectErrorEnvelope(await res.json(), 'not_implemented');
     const unknown = await h.http(h.tokens.officerA).get('/v1/nothing-here');
     expect(unknown.status).toBe(404);
     expectErrorEnvelope(unknown.body, 'not_found');

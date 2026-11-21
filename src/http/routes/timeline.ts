@@ -1,6 +1,11 @@
-// Stub until Task 2 replaces the handler bodies; keys and signatures are final.
-import { notImplemented, type RouteModule } from '../context.ts';
+import { ok } from '../../contract/errors.ts';
+import { readTimeline } from '../../services/timeline.ts';
+import { principalOf, type RouteModule } from '../context.ts';
 
 export const routes: RouteModule = {
-  'GET /v1/chats/{chatId}/timeline': notImplemented,
+  'GET /v1/chats/{chatId}/timeline': (c, deps) => {
+    const officer = principalOf(c);
+    const chatId = c.req.param('chatId') ?? '';
+    return c.json(ok(deps.db.transaction((tx) => readTimeline(tx, officer, chatId))));
+  },
 };

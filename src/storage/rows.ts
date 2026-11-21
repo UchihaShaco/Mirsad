@@ -160,6 +160,32 @@ export interface FindingRow {
   position: number;
 }
 
+export interface CaseActionRow {
+  id: string;
+  chat_id: string;
+  workspace_id: string;
+  type: string;
+  actor_id: string | null;
+  message_id: string | null;
+  from_mode: AiMode | null;
+  to_mode: AiMode | null;
+  revision: number | null;
+  detail: string | null;
+  occurred_at: string;
+  position: number;
+}
+
+export interface CaseReferenceRow {
+  id: string;
+  chat_id: string;
+  kind: 'merchant_payment_confirmation';
+  payment_hosts: string;
+  source_note: string;
+  recorded_by: string;
+  recorded_at: string;
+  position: number;
+}
+
 export interface StreamEventRow {
   workspace_id: string;
   seq: number;
