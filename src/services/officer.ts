@@ -3,20 +3,20 @@
  * delivers nothing to any channel, and the "Leave unanswered" decision.
  */
 import { createHash } from 'node:crypto';
-import type { CaptureMethod, CaseActionType, Source } from '../contract/enums.ts';
+import type { Source } from '../contract/enums.ts';
 import { AppError } from '../contract/errors.ts';
-import { LABELS } from '../contract/labels.ts';
-import type { CaseAction, Message, OfficerDecisionRequest, OfficerMessageRequest, PrincipalRef } from '../contract/schemas.ts';
+import type { CaseAction, Message, OfficerDecisionRequest, OfficerMessageRequest } from '../contract/schemas.ts';
 import type { Principal } from '../ports/identity.ts';
 import type { Tx } from '../storage/db.ts';
 import { newId } from '../storage/ids.ts';
 import * as caseActions from '../storage/repos/case-actions.ts';
 import { updateChatBookkeeping } from '../storage/repos/chats.ts';
 import * as messages from '../storage/repos/messages.ts';
-import { findChannelAccountById, findPrincipalById } from '../storage/repos/principals.ts';
+import { findChannelAccountById } from '../storage/repos/principals.ts';
 import type { CaseActionRow, ChatRow, MessageRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
 import { assertRevision } from './control.ts';
+import { principalLookup, toCaseAction, toMessage } from './mappers.ts';
 import { appendStreamEvent } from './stream.ts';
 
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
@@ -28,31 +28,6 @@ function requireControlledChat(tx: Tx, officer: Principal, chatId: string, expec
   if (chat.controller_id !== officer.id) throw AppError.of('not_controller', 'Only the officer who controls this chat can do this.');
   assertRevision(chat, expectedRevision);
   return chat;
-}
-
-/** The composer message as the timeline shows it: Mirsad's own record, so no capture and no review. */
-function toComposerMessage(row: MessageRow, channel: Source, author: PrincipalRef): Message {
-  return {
-    id: row.id,
-    chatId: row.chat_id,
-    direction: row.direction,
-    origin: row.origin,
-    text: row.text,
-    originalCaptured: row.original_captured === 1,
-    unsupportedContent: JSON.parse(row.unsupported_content) as string[],
-    sentAt: row.sent_at,
-    receivedAt: row.received_at,
-    source: { channel, captureMethod: row.capture_method as CaptureMethod, sourceEventId: null, sourceMessageId: null },
-    sender: null,
-    author,
-    sendStatus: row.send_status,
-    sendStatusLabel: row.send_status === 'simulated' ? LABELS.simulatedSend : null,
-    capture: null,
-    review: null,
-    editedAtSource: row.edited_at_source === 1,
-    deletedAtSource: row.deleted_at_source === 1,
-    position: row.position,
-  };
 }
 
 function channelOf(tx: Tx, chat: ChatRow): Source {
@@ -75,7 +50,7 @@ export function submitOfficerMessage(tx: Tx, officer: Principal, chatId: string,
   // The message and its recorded event share the text, the receipt time and the position.
   const shared = { chatId: chat.id, text: request.text, textSha256: sha256(request.text), receivedAt: tx.now(), position };
   const row = messages.insertComposerMessage(tx, { ...shared, id: messageId, workspaceId: chat.workspace_id, authorOfficerId: officer.id });
-  messages.insertMessageEvent(tx, {
+  const recordedEvent = messages.insertMessageEvent(tx, {
     ...shared, id: newId('mev'), messageId, type: 'recorded', sourceEventId: null, sourceOccurredAt: null,
     captureMethod: row.capture_method, connectorId: null,
   });
@@ -83,24 +58,8 @@ export function submitOfficerMessage(tx: Tx, officer: Principal, chatId: string,
     chatId: chat.id, workspaceId: chat.workspace_id, type: 'officer_message_sent', actorId: officer.id, messageId, revision: chat.revision,
   });
   updateChatBookkeeping(tx, chat.id, {}); // moves the chat's last activity forward
-  return toComposerMessage(row, channelOf(tx, chat), { id: officer.id, displayName: officer.displayName });
-}
-
-function toCaseAction(tx: Tx, row: CaseActionRow): CaseAction {
-  const actor = row.actor_id === null ? undefined : findPrincipalById(tx, row.actor_id);
-  return {
-    id: row.id,
-    chatId: row.chat_id,
-    type: row.type as CaseActionType,
-    actor: actor ? { id: actor.id, displayName: actor.display_name } : null,
-    messageId: row.message_id,
-    fromMode: row.from_mode,
-    toMode: row.to_mode,
-    revision: row.revision,
-    detail: row.detail === null ? null : (JSON.parse(row.detail) as CaseAction['detail']),
-    occurredAt: row.occurred_at,
-    position: row.position,
-  };
+  // The timeline's own mapping, so the response is exactly the entry the timeline shows.
+  return toMessage(row, channelOf(tx, chat), { recordedEvent }, principalLookup(tx));
 }
 
 function requireIncomingMessage(tx: Tx, chat: ChatRow, messageId: string): MessageRow {
@@ -132,10 +91,10 @@ export function recordDecision(tx: Tx, officer: Principal, chatId: string, reque
   const chat = requireControlledChat(tx, officer, chatId, request.expectedRevision);
   const message = requireIncomingMessage(tx, chat, request.messageId);
   const existing = findLeaveUnanswered(tx, chat.id, message.id);
-  if (existing) return { caseAction: toCaseAction(tx, existing), created: false };
+  if (existing) return { caseAction: toCaseAction(existing, principalLookup(tx)), created: false };
   const row = caseActions.record(tx, {
     chatId: chat.id, workspaceId: chat.workspace_id, type: 'leave_unanswered', actorId: officer.id,
     messageId: message.id, revision: chat.revision,
   });
-  return { caseAction: toCaseAction(tx, row), created: true };
+  return { caseAction: toCaseAction(row, principalLookup(tx)), created: true };
 }
