@@ -4,7 +4,9 @@
  */
 import fs from 'node:fs';
 import { DatabaseSync, type StatementSync } from 'node:sqlite';
+import { createJsonLogger } from '../logging/json-logger.ts';
 import { systemClock, type Clock } from '../ports/clock.ts';
+import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
 const SCHEMA_VERSION = 1;
@@ -48,6 +50,8 @@ export interface OpenDatabaseOptions {
   clock?: Clock;
   streamRetention?: number;
   streamBus?: StreamNotifier;
+  /** Receives after-commit callback failures; defaults to a JSON logger on stdout. */
+  logger?: Logger;
 }
 
 const SCHEMA_SQL = fs.readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
@@ -149,14 +153,41 @@ function createTx(db: DatabaseSync, options: OpenDatabaseOptions, queue: CommitQ
   };
 }
 
-function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue): Db['transaction'] {
+function isThenable(value: unknown): boolean {
+  return (
+    (typeof value === 'object' || typeof value === 'function') &&
+    value !== null &&
+    typeof (value as { then?: unknown }).then === 'function'
+  );
+}
+
+/** Runs fn and refuses a thenable result: transaction bodies must be synchronous (design section 19.2). */
+function runSync<T>(fn: (t: Tx) => T, tx: Tx): T {
+  const out = fn(tx);
+  if (isThenable(out)) throw new Error('transaction_function_must_be_synchronous');
+  return out;
+}
+
+function runAfterCommit(callbacks: PendingCallback[], logger: Logger): void {
+  for (const pending of callbacks) {
+    try {
+      pending.callback();
+    } catch (error) {
+      const errorClass = error instanceof Error ? error.name : typeof error;
+      logger.error('after_commit_failed', { errorClass, key: pending.key ?? null });
+    }
+  }
+}
+
+function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue, logger: Logger): Db['transaction'] {
+  let depth = 0;
   let savepointSeq = 0;
   const nested = <T>(fn: (t: Tx) => T): T => {
     const name = `sp_${++savepointSeq}`;
     const mark = queue.mark();
     db.exec(`SAVEPOINT ${name}`);
     try {
-      const out = fn(tx);
+      const out = runSync(fn, tx);
       db.exec(`RELEASE ${name}`);
       return out;
     } catch (error) {
@@ -169,17 +200,25 @@ function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue): 
     db.exec('BEGIN IMMEDIATE');
     let out: T;
     try {
-      out = fn(tx);
+      out = runSync(fn, tx);
       db.exec('COMMIT');
     } catch (error) {
       if (db.isTransaction) db.exec('ROLLBACK');
       queue.take();
       throw error;
     }
-    for (const pending of queue.take()) pending.callback();
+    runAfterCommit(queue.take(), logger);
     return out;
   };
-  return (fn) => (db.isTransaction ? nested(fn) : outermost(fn));
+  return (fn) => {
+    const isNested = depth > 0;
+    depth += 1;
+    try {
+      return isNested ? nested(fn) : outermost(fn);
+    } finally {
+      depth -= 1;
+    }
+  };
 }
 
 export function openDatabase(file: string, options: OpenDatabaseOptions = {}): Db {
@@ -189,7 +228,7 @@ export function openDatabase(file: string, options: OpenDatabaseOptions = {}): D
   const queue = new CommitQueue();
   const tx = createTx(db, options, queue);
   return {
-    transaction: createTransactionRunner(db, tx, queue),
+    transaction: createTransactionRunner(db, tx, queue, options.logger ?? createJsonLogger({ clock: options.clock })),
     close: () => {
       if (db.isOpen) db.close();
     },

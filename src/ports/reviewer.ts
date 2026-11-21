@@ -1,8 +1,15 @@
-import type { Concern, ExtractedKind } from '../contract/enums.ts';
+import type { Concern, ExtractedKind, Source } from '../contract/enums.ts';
 
-/** One message handed to a reviewer: its ID and text, nothing else (design section 10). */
+/**
+ * One reviewed message event (design section 10). `messageId` is the internal `msg_…` ID the reviewer must
+ * echo as `sourceMessageId`; `text` is the reviewed event's own text (original, edited or conflicting copy).
+ */
 export interface ReviewRequest {
+  reviewId: string;
+  chatId: string;
   messageId: string;
+  messageEventId: string;
+  source: Source;
   text: string;
 }
 
@@ -15,6 +22,15 @@ export interface ExtractedItem {
   concern: Concern | null;
   /** ISO 3166 alpha-2 country hint, or null when unknown. */
   countryHint: string | null;
+}
+
+/** A validated phone item with a concern, handed to the watchlist (repeats included; design section 10). */
+export interface PhoneMention {
+  e164: string | null;
+  digits: string;
+  sourceRepresentation: string;
+  concern: Concern;
+  findingId: string | null;
 }
 
 export interface ReviewerHealth {

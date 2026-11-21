@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createDefaultRenderer } from './capture/index.ts';
 import type { Config } from './config.ts';
-import type { RouteDeps } from './http/context.ts';
 import { createHttpApp, startServer, type RunningServer } from './http/server.ts';
 import { createDemoIdentity } from './identity/demo-identity.ts';
 import { seedDemo } from './identity/seed.ts';
@@ -15,10 +14,11 @@ import type { IdentityProvider } from './ports/identity.ts';
 import type { Logger } from './ports/logger.ts';
 import type { Reviewer } from './ports/reviewer.ts';
 import { createReviewer } from './review/reviewer-factory.ts';
-import { createStreamBus } from './services/stream.ts';
-import { DATABASE_FILE, openDatabase } from './storage/db.ts';
+import { createStreamBus, type StreamBus } from './services/stream.ts';
+import { DATABASE_FILE, openDatabase, type Db } from './storage/db.ts';
 import { createLocalEvidenceStore } from './storage/local-evidence-store.ts';
 import { createCaptureWorker } from './workers/capture-worker.ts';
+import type { JobLoop } from './workers/job-loop.ts';
 import { createReviewWorker } from './workers/review-worker.ts';
 
 export const EVIDENCE_DIRECTORY = 'evidence';
@@ -35,6 +35,25 @@ export interface AppOptions {
   streamKeepAliveMs?: number;
 }
 
+/**
+ * The one dependency object handed to registerRoutes and to both worker factories (design section 17).
+ * `streamKeepAliveMs` carries AppOptions.streamKeepAliveMs to the event stream; `startedAt` feeds GET /v1/status.
+ */
+export interface AppDeps {
+  config: Config;
+  db: Db;
+  clock: Clock;
+  logger: Logger;
+  bus: StreamBus;
+  identity: IdentityProvider;
+  evidenceStore: EvidenceStore;
+  renderer: CaptureRenderer;
+  reviewer: Reviewer;
+  workers: { capture: { wake(): void }; review: { wake(): void } };
+  streamKeepAliveMs: number;
+  startedAt: string;
+}
+
 export interface App {
   readonly config: Config;
   fetch(request: Request): Promise<Response>;
@@ -44,7 +63,12 @@ export interface App {
   close(): Promise<void>;
 }
 
-function buildDeps(options: AppOptions): RouteDeps & { shutdown(): void } {
+interface Runtime {
+  deps: AppDeps;
+  workers: { capture: JobLoop; review: JobLoop };
+}
+
+function buildRuntime(options: AppOptions): Runtime {
   const { config } = options;
   fs.mkdirSync(config.dataDir, { recursive: true });
   const clock = options.clock ?? systemClock;
@@ -52,6 +76,7 @@ function buildDeps(options: AppOptions): RouteDeps & { shutdown(): void } {
   const bus = createStreamBus();
   const db = openDatabase(path.join(config.dataDir, DATABASE_FILE), {
     clock,
+    logger,
     streamRetention: config.streamRetention,
     streamBus: bus,
   });
@@ -59,29 +84,28 @@ function buildDeps(options: AppOptions): RouteDeps & { shutdown(): void } {
     const seeded = seedDemo(db, { dataDir: config.dataDir });
     if (seeded.created) logger.info('demo_seed_created', { workspaceId: seeded.credentials.workspaceId });
   }
-  const evidenceStore = options.evidenceStore ?? createLocalEvidenceStore(path.join(config.dataDir, EVIDENCE_DIRECTORY));
-  const renderer = options.renderer ?? createDefaultRenderer();
-  const reviewer = options.reviewer ?? createReviewer(config, logger);
-  const workers = {
-    capture: createCaptureWorker({ db, renderer, evidenceStore, logger, clock }),
-    review: createReviewWorker({ db, reviewer, config, logger, clock }),
-  };
-  let shuttingDown = false;
-  return {
-    config, db, clock, logger, bus, evidenceStore, renderer, reviewer, workers,
+  // Workers are created from deps, and deps.workers wakes them: bind late so both see the same object.
+  let loops: Runtime['workers'] | null = null;
+  const deps: AppDeps = {
+    config, db, clock, logger, bus,
     identity: options.identity ?? createDemoIdentity(db),
+    evidenceStore: options.evidenceStore ?? createLocalEvidenceStore(path.join(config.dataDir, EVIDENCE_DIRECTORY)),
+    renderer: options.renderer ?? createDefaultRenderer(),
+    reviewer: options.reviewer ?? createReviewer(config, logger),
+    workers: {
+      capture: { wake: () => loops?.capture.wake() },
+      review: { wake: () => loops?.review.wake() },
+    },
     streamKeepAliveMs: options.streamKeepAliveMs ?? DEFAULT_STREAM_KEEP_ALIVE_MS,
     startedAt: clock.now().toISOString(),
-    isShuttingDown: () => shuttingDown,
-    shutdown: () => {
-      shuttingDown = true;
-    },
   };
+  loops = { capture: createCaptureWorker(deps), review: createReviewWorker(deps) };
+  return { deps, workers: loops };
 }
 
 export async function createApp(options: AppOptions): Promise<App> {
-  const deps = buildDeps(options);
-  const { config, workers, logger } = deps;
+  const { deps, workers } = buildRuntime(options);
+  const { config, logger } = deps;
   let server: RunningServer | null = null;
   const http = createHttpApp(deps, () => server?.port ?? config.port);
   // Work left over from a previous run (pending captures and reviews) starts at once.
@@ -103,7 +127,6 @@ export async function createApp(options: AppOptions): Promise<App> {
       }
     },
     async close() {
-      deps.shutdown();
       if (server) await server.close();
       server = null;
       await Promise.all([workers.capture.stop(), workers.review.stop()]);

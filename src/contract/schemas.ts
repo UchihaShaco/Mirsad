@@ -113,7 +113,7 @@ export const ChatWatchlistMatch = z.object({
   numberDisplay: z.string(),
   matchedAt: timestamp,
   evidence: z.array(EvidenceRef),
-  restrictedEvidenceCount: z.number().int().min(0),
+  restrictedEvidence: z.boolean(),
 });
 export type ChatWatchlistMatch = z.infer<typeof ChatWatchlistMatch>;
 
@@ -253,7 +253,7 @@ export const MessageEvent = z.object({
   id: z.string(),
   chatId: z.string(),
   messageId: z.string(),
-  type: z.enum(['edited', 'deleted']),
+  type: z.enum(['edited', 'deleted', 'conflicting_copy']),
   text: z.string().nullable(),
   sourceEventId: z.string(),
   sourceOccurredAt: timestamp.nullable(),
@@ -344,10 +344,10 @@ export const WatchlistEntry = z.object({
   firstSeenAt: timestamp,
   lastSeenAt: timestamp,
   evidence: z.array(EvidenceRef),
-  restrictedEvidenceCount: z.number().int().min(0),
+  restrictedEvidence: z.boolean(),
   matches: z.array(z.object({ chatId: z.string(), matchedAt: timestamp })),
   lastDecision: z
-    .object({ decision: z.enum(E.WATCHLIST_DECISIONS), reason: z.string(), officer: PrincipalRef, decidedAt: timestamp })
+    .object({ decision: z.enum(E.WATCHLIST_DECISIONS), reason: z.string().nullable(), officer: PrincipalRef, decidedAt: timestamp })
     .nullable(),
   canReview: z.boolean(),
 });

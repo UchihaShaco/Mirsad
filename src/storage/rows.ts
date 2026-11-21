@@ -9,6 +9,7 @@ import type {
   InboxStatus,
   InitiatedBy,
   InitiationBasis,
+  MessageEventType,
   PrincipalKind,
   ReviewOutcome,
   ReviewStatus,
@@ -98,7 +99,7 @@ export interface MessageEventRow {
   id: string;
   chat_id: string;
   message_id: string;
-  type: 'recorded' | 'edited' | 'deleted';
+  type: MessageEventType;
   source_event_id: string | null;
   text: string | null;
   text_sha256: string | null;

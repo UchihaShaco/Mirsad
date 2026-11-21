@@ -83,4 +83,26 @@ describe('job loop', () => {
     await loop.idle();
     expect(claims).toBe(1);
   });
+
+  it('a job whose work throws synchronously does not hang idle()', async () => {
+    const errors: string[] = [];
+    const queue = ['sync-throw', 'ok'];
+    const done: string[] = [];
+    const loop = createJobLoop<string>({
+      name: 'test',
+      concurrency: 1,
+      claim: () => queue.shift() ?? null,
+      work: (job) => {
+        if (job === 'sync-throw') throw new Error('thrown_synchronously');
+        done.push(job);
+        return Promise.resolve();
+      },
+      onError: (error, phase) => errors.push(`${phase}:${error instanceof Error ? error.message : 'unknown'}`),
+    });
+    loop.wake();
+    await loop.idle();
+    expect(errors).toEqual(['work:thrown_synchronously']);
+    expect(done).toEqual(['ok']);
+    expect(loop.isIdle()).toBe(true);
+  });
 });

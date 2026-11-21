@@ -1,20 +1,19 @@
 /**
- * Shape of docs/telegram/controlled-test-record.json (design sections 13 and 14). The record is written by a
- * person after an approved live test; no code path in Mirsad creates it.
+ * Shape of the Telegram controlled-test record named by MIRSAD_CONTROLLED_TEST_RECORD (design sections 13 and 14).
+ * The record is written by a person after an approved live test; no code path in Mirsad creates it.
  */
 import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
-export const CONTROLLED_TEST_RECORD_PATH = fileURLToPath(
-  new URL('../../docs/telegram/controlled-test-record.json', import.meta.url),
-);
+/** Default location of the record (`MIRSAD_CONTROLLED_TEST_RECORD`), relative to the project root. */
+export const DEFAULT_CONTROLLED_TEST_RECORD = 'docs/telegram/controlled-test-record.json';
 
 const result = z.enum(['passed', 'failed', 'not_observed']);
 
 export const ControlledTestRecord = z.object({
   approvalReference: z.string().trim().min(3).max(200),
   testDate: z.iso.date(),
+  tester: z.string().trim().min(1).max(200),
   scope: z.object({
     businessConnectionId: z.string().min(1),
     chatIds: z.array(z.string().min(1)).min(1),
@@ -46,26 +45,30 @@ export function isControlledTestVerified(record: ControlledTestRecord): boolean 
   );
 }
 
-/**
- * True only when the file exists, parses as JSON, matches the record schema and documents a verified test.
- * When `expectedApprovalReference` is given, the record's approval reference must match it.
- */
-export function hasValidControlledTestRecord(
-  file: string = CONTROLLED_TEST_RECORD_PATH,
-  expectedApprovalReference?: string,
-): boolean {
+/** The record at `file`, or null when the file is missing, is not JSON or does not match the schema. */
+export function readControlledTestRecord(file: string): ControlledTestRecord | null {
   let raw: string;
   try {
     raw = fs.readFileSync(file, 'utf8');
   } catch {
-    return false;
+    return null;
   }
-  let parsed: ReturnType<typeof ControlledTestRecord.safeParse>;
+  let json: unknown;
   try {
-    parsed = ControlledTestRecord.safeParse(JSON.parse(raw));
+    json = JSON.parse(raw);
   } catch {
-    return false;
+    return null;
   }
-  if (!parsed.success || !isControlledTestVerified(parsed.data)) return false;
-  return expectedApprovalReference === undefined || parsed.data.approvalReference === expectedApprovalReference;
+  const parsed = ControlledTestRecord.safeParse(json);
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * True only when the file holds a valid record that documents a verified test. When `expectedApprovalReference`
+ * is given, the record's approval reference must match it.
+ */
+export function hasValidControlledTestRecord(file: string, expectedApprovalReference?: string): boolean {
+  const record = readControlledTestRecord(file);
+  if (record === null || !isControlledTestVerified(record)) return false;
+  return expectedApprovalReference === undefined || record.approvalReference === expectedApprovalReference;
 }

@@ -1,16 +1,19 @@
 /** Configuration from environment variables (design section 15). Rejects anything that is not loopback. */
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   CONNECTOR_CAPTURE_METHODS,
   REVIEWER_KINDS,
   type ConnectorCaptureMethod,
   type ReviewerKind,
 } from './contract/enums.ts';
-import { CONTROLLED_TEST_RECORD_PATH, hasValidControlledTestRecord } from './contract/controlled-test-record.ts';
+import { DEFAULT_CONTROLLED_TEST_RECORD, hasValidControlledTestRecord } from './contract/controlled-test-record.ts';
 
 export const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '::1'] as const;
 const LOOPBACK_URL_HOSTNAMES = ['127.0.0.1', 'localhost', '[::1]'];
 const MAX_PORT = 65_535;
+/** Relative MIRSAD_CONTROLLED_TEST_RECORD paths resolve against the project root, not the working directory. */
+const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
 
 export interface Config {
   host: string;
@@ -24,6 +27,8 @@ export interface Config {
   streamRetention: number;
   rateLimitPerMinute: number;
   whatsappImportEnabled: boolean;
+  /** Absolute path of the Telegram controlled-test record that opens the WhatsApp gate. */
+  controlledTestRecordPath: string;
   telegram: {
     liveEnabled: boolean;
     botToken: string | null;
@@ -31,10 +36,6 @@ export interface Config {
     approvedChatIds: string[];
     approvalReference: string | null;
   };
-}
-
-export interface LoadConfigOptions {
-  controlledTestRecordPath?: string;
 }
 
 export class ConfigError extends Error {
@@ -109,13 +110,18 @@ function reviewMethods(env: Env): ConnectorCaptureMethod[] {
   return raw as ConnectorCaptureMethod[];
 }
 
-export function loadConfig(env: Env, options: LoadConfigOptions = {}): Config {
+function controlledTestRecordPath(env: Env): string {
+  const raw = value(env, 'MIRSAD_CONTROLLED_TEST_RECORD') ?? DEFAULT_CONTROLLED_TEST_RECORD;
+  return path.resolve(PROJECT_ROOT, raw);
+}
+
+export function loadConfig(env: Env): Config {
   const host = value(env, 'MIRSAD_HOST') ?? '127.0.0.1';
   if (!(LOOPBACK_HOSTS as readonly string[]).includes(host)) {
     throw new ConfigError('MIRSAD_HOST', `must be one of ${LOOPBACK_HOSTS.join(', ')}`);
   }
   const whatsappImportEnabled = bool(env, 'MIRSAD_WHATSAPP_IMPORT_ENABLED', false);
-  const recordPath = options.controlledTestRecordPath ?? CONTROLLED_TEST_RECORD_PATH;
+  const recordPath = controlledTestRecordPath(env);
   const approvalReference = value(env, 'TELEGRAM_APPROVAL_REFERENCE');
   if (whatsappImportEnabled && !hasValidControlledTestRecord(recordPath, approvalReference)) {
     throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a verified Telegram controlled-test record');
@@ -137,6 +143,7 @@ export function loadConfig(env: Env, options: LoadConfigOptions = {}): Config {
     streamRetention: int(env, 'MIRSAD_STREAM_RETENTION', 5000, 1),
     rateLimitPerMinute: int(env, 'MIRSAD_RATE_LIMIT_PER_MINUTE', 600, 1),
     whatsappImportEnabled,
+    controlledTestRecordPath: recordPath,
     telegram: {
       liveEnabled: bool(env, 'TELEGRAM_LIVE_ENABLED', false),
       botToken: value(env, 'TELEGRAM_BOT_TOKEN') ?? null,

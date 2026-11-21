@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import http from 'node:http';
+import path from 'node:path';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 import { ROUTES } from '../../src/http/routes/index.ts';
+import { hashToken } from '../../src/identity/tokens.ts';
+import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
 
 let h: TestHarness;
 
@@ -101,9 +104,47 @@ describe('foundation', () => {
 
   it('a body over 256 KiB is 413 payload_too_large', async () => {
     const big = { padding: 'x'.repeat(256 * 1024 + 1) };
-    const res = await h.http(h.tokens.connector).post('/v1/ingest', big);
+    const res = await h.http(h.tokens.officerA).post('/v1/chats', big);
     expect(res.status).toBe(413);
     expectErrorEnvelope(res.body, 'payload_too_large');
+  });
+
+  it('an intake body of 300 KiB passes the size limit and one above 1 MiB is 413', async () => {
+    const connector = h.http(h.tokens.connector);
+    const medium = { padding: 'x'.repeat(300 * 1024) };
+    expect((await connector.post('/v1/ingest', medium)).status).toBe(501);
+    expect((await connector.post('/v1/chats/chat_1/events', medium)).status).toBe(501);
+    const huge = { padding: 'x'.repeat(1024 * 1024 + 1) };
+    for (const intakePath of ['/v1/ingest', '/v1/chats/chat_1/events']) {
+      const res = await connector.post(intakePath, huge);
+      expect(res.status, intakePath).toBe(413);
+      expectErrorEnvelope(res.body, 'payload_too_large');
+    }
+  });
+
+  it('a token in the query string does not authenticate', async () => {
+    const token = encodeURIComponent(h.tokens.officerA);
+    for (const query of [`token=${token}`, `access_token=${token}`, `authorization=Bearer%20${token}`]) {
+      const res = await h.http(null).get(`/v1/me?${query}`);
+      expect(res.status, query).toBe(401);
+      expectErrorEnvelope(res.body, 'unauthenticated');
+    }
+  });
+
+  it('a disabled principal is 401', async () => {
+    const client = h.http(h.tokens.officerC);
+    expect((await client.get('/v1/me')).status).toBe(200);
+    const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
+    try {
+      db.transaction((tx) =>
+        tx.run('UPDATE principals SET disabled = 1 WHERE token_sha256 = :hash', { hash: hashToken(h.tokens.officerC) }),
+      );
+    } finally {
+      db.close();
+    }
+    const res = await client.get('/v1/me');
+    expect(res.status).toBe(401);
+    expectErrorEnvelope(res.body, 'unauthenticated');
   });
 
   it('an unimplemented route answers 501 not_implemented in the envelope', async () => {

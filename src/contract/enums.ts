@@ -36,7 +36,7 @@ export type InitiationBasis = (typeof INITIATION_BASES)[number];
 export const MESSAGE_ORIGINS = ['source', 'officer_composer'] as const;
 export type MessageOrigin = (typeof MESSAGE_ORIGINS)[number];
 
-export const MESSAGE_EVENT_TYPES = ['recorded', 'edited', 'deleted'] as const;
+export const MESSAGE_EVENT_TYPES = ['recorded', 'edited', 'deleted', 'conflicting_copy'] as const;
 export type MessageEventType = (typeof MESSAGE_EVENT_TYPES)[number];
 
 export const CAPTURE_STATUSES = ['pending', 'rendering', 'ready', 'failed'] as const;
@@ -79,6 +79,7 @@ export const CASE_ACTION_TYPES = [
   'case_reference_recorded',
   'capture_retry_requested',
   'watchlist_match',
+  'text_conflict_recorded',
 ] as const;
 export type CaseActionType = (typeof CASE_ACTION_TYPES)[number];
 
@@ -100,7 +101,7 @@ export type WatchlistDecision = (typeof WATCHLIST_DECISIONS)[number];
 export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention'] as const;
 export type ObservationOrigin = (typeof OBSERVATION_ORIGINS)[number];
 
-export const INGEST_RESULTS = ['recorded', 'duplicate_event', 'duplicate_message'] as const;
+export const INGEST_RESULTS = ['recorded', 'duplicate_event', 'duplicate_message', 'conflicting_copy'] as const;
 export type IngestResultKind = (typeof INGEST_RESULTS)[number];
 
 export const START_MARKER_RESULTS = ['accepted', 'ignored_untrusted', 'ignored_conflict', 'none'] as const;

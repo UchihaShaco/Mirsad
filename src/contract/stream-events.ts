@@ -18,6 +18,7 @@ export interface StreamEventDataMap {
   'message.recorded': { messageId: string; direction: Direction | null; origin: MessageOrigin };
   'message.edited': { messageId: string; messageEventId: string };
   'message.deleted': { messageId: string; messageEventId: string };
+  'message.conflicting_copy': { messageId: string; messageEventId: string };
   'capture.updated': {
     messageId: string;
     messageEventId: string;
@@ -35,7 +36,7 @@ export interface StreamEventDataMap {
     reason: 'created' | 'observation_added' | 'reviewed';
   };
   'watchlist.match': { watchlistEntryId: string };
-  'stream.reset': { reason: 'cursor_out_of_retention'; resumeFrom: string; reload: ('inbox' | 'timeline')[] };
+  'stream.reset': { reason: 'cursor_out_of_range'; resumeFrom: string; reload: ('inbox' | 'timeline')[] };
 }
 
 export type StreamEventType = keyof StreamEventDataMap;
@@ -46,6 +47,7 @@ export const STREAM_EVENT_TYPES = [
   'message.recorded',
   'message.edited',
   'message.deleted',
+  'message.conflicting_copy',
   'capture.updated',
   'review.updated',
   'finding.created',

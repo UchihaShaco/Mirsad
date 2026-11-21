@@ -47,8 +47,9 @@ export function createJobLoop<Job>(options: JobLoopOptions<Job>): JobLoop {
 
   const run = (job: Job) => {
     active += 1;
-    options
-      .work(job)
+    // Promise.resolve().then turns a synchronous throw in work() into a rejection, so `active` always settles.
+    Promise.resolve()
+      .then(() => options.work(job))
       .catch((error: unknown) => report(error, 'work'))
       .finally(() => {
         active -= 1;

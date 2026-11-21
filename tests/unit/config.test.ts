@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ConfigError, loadConfig } from '../../src/config.ts';
 
 describe('loadConfig', () => {
@@ -38,6 +41,9 @@ describe('loadConfig', () => {
       streamRetention: 5000,
       rateLimitPerMinute: 600,
       whatsappImportEnabled: false,
+      controlledTestRecordPath: fileURLToPath(
+        new URL('../../docs/telegram/controlled-test-record.json', import.meta.url),
+      ),
       telegram: {
         liveEnabled: false,
         botToken: null,
@@ -70,10 +76,33 @@ describe('loadConfig', () => {
   });
 
   it('loadConfig rejects MIRSAD_WHATSAPP_IMPORT_ENABLED without a controlled-test record', () => {
-    const missing = path.resolve('does-not-exist', 'controlled-test-record.json');
-    expect(() =>
-      loadConfig({ MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true' }, { controlledTestRecordPath: missing }),
-    ).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    expect(() => loadConfig({ MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true' })).toThrow(ConfigError);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mirsad-config-'));
+    try {
+      const missing = path.join(dir, 'controlled-test-record.json');
+      const env = { MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: missing };
+      expect(() => loadConfig(env)).toThrow(ConfigError);
+      expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('loadConfig defaults the reviewer to lmstudio and the model to qwen3.5-9b', () => {
+    const config = loadConfig({});
+    expect(config.reviewer).toBe('lmstudio');
+    expect(config.lmStudio.model).toBe('qwen3.5-9b');
+  });
+
+  it('loadConfig rejects an LM Studio URL whose hostname only starts with a loopback name', () => {
+    for (const url of [
+      'http://127.0.0.1.example.test/v1',
+      'http://localhost.example.test:1234/v1',
+      'http://127.0.0.1@lmstudio.example.test/v1',
+    ]) {
+      expect(() => loadConfig({ MIRSAD_LMSTUDIO_BASE_URL: url }), url).toThrow(/MIRSAD_LMSTUDIO_BASE_URL/);
+    }
+    expect(loadConfig({ MIRSAD_LMSTUDIO_BASE_URL: 'http://[::1]:1234/v1' }).lmStudio.baseUrl).toBe(
+      'http://[::1]:1234/v1',
+    );
   });
 });

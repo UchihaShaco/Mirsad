@@ -3,7 +3,8 @@
  * OpenAPI coverage test; each route group file supplies the handlers for its keys.
  */
 import type { Hono, MiddlewareHandler } from 'hono';
-import type { AppEnv, HttpMethod, RouteDeps, RouteHandler, RouteKey, RouteModule } from '../context.ts';
+import type { AppDeps } from '../../app.ts';
+import type { AppEnv, HttpMethod, RouteHandler, RouteKey, RouteModule } from '../context.ts';
 import { requireAnyPrincipal, requireConnector, requireOfficer } from '../middleware/auth.ts';
 import { routes as artifacts } from './artifacts.ts';
 import { routes as captures } from './captures.ts';
@@ -92,7 +93,7 @@ function collectHandlers(): Map<RouteKey, RouteHandler> {
   return handlers;
 }
 
-export function registerRoutes(app: Hono<AppEnv>, deps: RouteDeps): void {
+export function registerRoutes(app: Hono<AppEnv>, deps: AppDeps): void {
   const handlers = collectHandlers();
   for (const spec of ROUTES) {
     const key = routeKey(spec);

@@ -61,7 +61,7 @@ CREATE UNIQUE INDEX messages_source_message ON messages(chat_id, source_message_
 CREATE TABLE message_events (
   id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id),
   message_id TEXT NOT NULL REFERENCES messages(id),
-  type TEXT NOT NULL CHECK (type IN ('recorded','edited','deleted')),
+  type TEXT NOT NULL CHECK (type IN ('recorded','edited','deleted','conflicting_copy')),
   source_event_id TEXT,                                                 -- NULL for composer messages
   text TEXT, text_sha256 TEXT,                                          -- text carried by a recorded or edited event
   source_occurred_at TEXT, received_at TEXT NOT NULL,
@@ -104,7 +104,9 @@ CREATE TABLE case_references (
 CREATE TABLE case_details (                                             -- what each chat has already surfaced
   id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id),
   category TEXT NOT NULL CHECK (category IN ('payment_link','payment_recipient','phone_number')),
-  normalized_value TEXT NOT NULL, first_message_id TEXT NOT NULL, created_at TEXT NOT NULL,
+  normalized_value TEXT NOT NULL, display_value TEXT NOT NULL,          -- display_value: the value as first written
+  first_message_id TEXT NOT NULL, last_seen_position INTEGER NOT NULL,  -- position of the latest message event that carried it
+  created_at TEXT NOT NULL,
   UNIQUE (chat_id, category, normalized_value)
 );
 CREATE TABLE findings (
@@ -138,7 +140,7 @@ CREATE TABLE idempotency_keys (
 );
 CREATE TABLE watchlist_entries (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id),
-  match_key TEXT NOT NULL,                                              -- E.164, or 'unnormalized:<digits>'
+  match_key TEXT NOT NULL,                                              -- E.164, or 'unnormalized:<chatId>:<digits>'
   e164 TEXT, display TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('needs_review','approved','cleared')),
   revision INTEGER NOT NULL DEFAULT 1, new_evidence_since_review INTEGER NOT NULL DEFAULT 0,
