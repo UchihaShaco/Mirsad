@@ -228,14 +228,17 @@ describe('step 2: captures and artifacts', () => {
     h.renderer.hold();
     const first = await ingest(envelope(h.accounts.officer, chat, recorded({ messageId: 20, text: 'Meet at the north gate' })));
     await until(() => h.renderer.waiting === 1, 'the first render to start');
+    // Both later messages are saved while the first image is held, so the capture of message 21 is claimed when
+    // message 22 already exists: an image built from the chat's newest message instead of its own fails below.
     const second = await ingest(envelope(h.accounts.officer, chat, recorded({ messageId: 21, text: 'Change of plan: the south gate' })));
+    const third = await ingest(envelope(h.accounts.officer, chat, recorded({ messageId: 22, text: 'Bring the blue folder' })));
     h.renderer.release();
     await h.drain();
 
     const chatId: string = first.body.data.chatId;
-    const eventIds = new Map([first, second].map((r) => [r.body.data.messageId as string, r.body.data.messageEventId as string]));
+    const eventIds = new Map([first, second, third].map((r) => [r.body.data.messageId as string, r.body.data.messageEventId as string]));
     const { messages } = await timeline(chatId);
-    expect(messages.map((m: any) => m.text)).toEqual(['Meet at the north gate', 'Change of plan: the south gate']);
+    expect(messages.map((m: any) => m.text)).toEqual(['Meet at the north gate', 'Change of plan: the south gate', 'Bring the blue folder']);
     for (const message of messages) {
       expect(message.capture).toMatchObject({ status: 'ready', artifactId: expect.stringMatching(/^art_[0-9a-f]{32}$/) });
       const image = await fetchArtifact(message.capture.artifactId);
