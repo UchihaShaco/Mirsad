@@ -4,6 +4,7 @@ import path from 'node:path';
 import { Transcript } from '../../src/review/eval/transcript-schema.ts';
 
 const HELDOUT_DIR = path.resolve(import.meta.dirname, '../../fixtures/eval/heldout');
+const README_PATH = path.resolve(import.meta.dirname, '../../fixtures/eval/README.md');
 const MIN_PER_LANGUAGE = 6;
 const MIN_TRANSCRIPTS = 18;
 const MIN_MESSAGES = 3;
@@ -140,5 +141,13 @@ describe('held-out evaluation transcripts', () => {
       }
     }
     expect(phonesSeen).toBeGreaterThan(0);
+  });
+
+  it('the README quotes no held-out transcript id or expected value', () => {
+    const readme = fs.readFileSync(README_PATH, 'utf8');
+    const transcripts = loadTranscripts();
+    expect(transcripts.length).toBeGreaterThanOrEqual(MIN_TRANSCRIPTS);
+    const heldOutStrings = transcripts.flatMap((t) => [t.id, ...t.messages.flatMap((m) => m.expected.map((item) => item.value))]);
+    expect(heldOutStrings.filter((value) => readme.includes(value))).toEqual([]);
   });
 });

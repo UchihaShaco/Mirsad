@@ -9,17 +9,17 @@ Synthetic conversations used to score the AI reviewer's extraction (`npm run eva
 
 ## Format
 
-One JSON file per transcript, named `<language>-<nn>-<slug>.json`, validated by `src/review/eval/transcript-schema.ts`:
+One JSON file per transcript, named `<language>-<nn>-<slug>.json`, validated by `src/review/eval/transcript-schema.ts`. The example below is invented to show the format; it is not one of the held-out transcripts, and this README must never quote one (the fixture test checks for held-out ids and expected values).
 
 ```json
 {
-  "id": "en-02-catering-invoice",
+  "id": "en-00-format-example",
   "language": "en",
-  "tags": ["benign_first_message", "payment_link"],
+  "tags": ["payment_link"],
   "description": "What the transcript tests.",
   "messages": [
-    { "id": "m1", "direction": "incoming", "text": "…", "expected": [
-      { "kind": "payment_link", "value": "https://pay.example.com/inv/CT-7731", "concern": null }
+    { "id": "m1", "direction": "incoming", "text": "Please pay the deposit here: https://pay.example.com/inv/EXAMPLE-0000", "expected": [
+      { "kind": "payment_link", "value": "https://pay.example.com/inv/EXAMPLE-0000", "concern": null }
     ] }
   ]
 }
