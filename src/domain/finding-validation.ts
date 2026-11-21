@@ -32,24 +32,53 @@ function linkValue(value: string, quote: string): string | null {
   return wholeToken ? normalizeLink(value) : null;
 }
 
-/** True when consecutive whole digit groups of a span join to exactly these digits. */
-function joinsTo(groups: readonly string[], digits: string): boolean {
+const isNumberLength = (length: number): boolean => length >= PHONE_MIN_DIGITS && length <= PHONE_MAX_DIGITS;
+
+/**
+ * For each cut between digit groups (0 to lengths.length), whether the groups before it divide into consecutive runs
+ * that are each a whole number of 7 to 15 digits. A run is at most 15 digits, so each cut looks back a few groups only.
+ */
+function cutsAfterWholeNumbers(lengths: readonly number[]): boolean[] {
+  const cuts = [true];
+  for (let end = 1; end <= lengths.length; end += 1) {
+    let digits = 0;
+    let reachable = false;
+    for (let start = end - 1; start >= 0 && !reachable && digits <= PHONE_MAX_DIGITS; start -= 1) {
+      digits += lengths[start] ?? 0;
+      reachable = isNumberLength(digits) && cuts[start] === true;
+    }
+    cuts.push(reachable);
+  }
+  return cuts;
+}
+
+/**
+ * Whether the digits are a number of the span: the whole span, or one of several complete numbers written one after
+ * the other in it, which holds only when the groups on both sides of it divide into whole numbers as well.
+ */
+function isNumberOfSpan(groups: readonly string[], digits: string): boolean {
+  const lengths = groups.map((group) => group.length);
+  const before = cutsAfterWholeNumbers(lengths);
+  const after = cutsAfterWholeNumbers([...lengths].reverse());
   return groups.some((_, first) => {
+    if (before[first] !== true) return false;
     let joined = '';
-    for (const group of groups.slice(first)) {
+    for (const [offset, group] of groups.slice(first).entries()) {
       joined += group;
-      if (joined === digits) return true;
-      if (joined.length >= digits.length) return false;
+      if (joined.length >= digits.length) return joined === digits && after[groups.length - first - offset - 1] === true;
     }
     return false;
   });
 }
 
-/** The value's digits must equal a phone-like span of the quote; Arabic-Indic digits count as their ASCII digits. */
+/**
+ * The value's digits must be a number of a phone-like span of the quote (a date never is one); Arabic-Indic digits
+ * count as their ASCII digits.
+ */
 function phoneValue(value: string, quote: string, countryHint: string | null): string | null {
   const digits = toAsciiDigits(value).replace(NON_DIGIT, '');
-  if (digits.length < PHONE_MIN_DIGITS || digits.length > PHONE_MAX_DIGITS) return null;
-  if (!findPhoneSpans(quote).some((span) => joinsTo(span.digitGroups, digits))) return null;
+  if (!isNumberLength(digits.length)) return null;
+  if (!findPhoneSpans(quote).some((span) => isNumberOfSpan(span.digitGroups, digits))) return null;
   const phone = normalizePhone(value, phoneHintFor(countryHint));
   return phone.e164 ?? `unnormalized:${phone.digits}`;
 }

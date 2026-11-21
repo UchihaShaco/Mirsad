@@ -71,4 +71,11 @@ describe('phone-like spans', () => {
       ['21.11', ['21', '11']],
     ]);
   });
+
+  it('never reads a calendar date as phone-like, with the year first or last, so a number next to one stands alone', () => {
+    const text = 'Due 2026-11-05, 05.11.2026 or ١١-٠٥-٢٠٢٦; from 2026-11-05 07700 900123';
+    expect(findPhoneSpans(text).map((span) => [text.slice(span.start, span.end), span.digitGroups])).toEqual([
+      ['07700 900123', ['07700', '900123']],
+    ]);
+  });
 });

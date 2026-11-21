@@ -15,6 +15,19 @@ const INTERNATIONAL_PREFIX = '00';
  * UK range synthetic data may use, so it is accepted as a complete number. No real subscriber can hold one.
  */
 const RESERVED_FICTIONAL_E164 = /^\+447700900\d{3}$/;
+const DATE_YEAR = '(?:19|20)\\d{2}';
+const DATE_MONTH = '(?:0?[1-9]|1[0-2])';
+const DATE_DAY = '(?:0?[1-9]|[12]\\d|3[01])';
+/**
+ * A calendar date with the same - or . between its parts: year, month, day (2026-11-05), or day and month in either
+ * order before the year (05.11.2026, 11-05-2026). A date is never phone-like: it is blanked out, with a character that
+ * is neither digit nor separator, before spans are looked for, so a number written next to a date stands alone.
+ */
+const CALENDAR_DATE = new RegExp(
+  `(?<!\\d)(?:${DATE_YEAR}([-.])${DATE_MONTH}\\1${DATE_DAY}|${DATE_DAY}([-.])${DATE_DAY}\\2${DATE_YEAR})(?!\\d)`,
+  'g',
+);
+const DATE_BLANK = '_';
 /**
  * A run of digits joined by at most two separators in a row: spaces (also no-break, thin and direction marks), dots,
  * hyphens and brackets, with an optional leading + or opening bracket.
@@ -49,7 +62,8 @@ export function toAsciiDigits(text: string): string {
 }
 
 export function findPhoneSpans(text: string): PhoneSpan[] {
-  return [...toAsciiDigits(text).matchAll(PHONE_SPAN)].map((match) => ({
+  const withoutDates = toAsciiDigits(text).replace(CALENDAR_DATE, (date) => DATE_BLANK.repeat(date.length));
+  return [...withoutDates.matchAll(PHONE_SPAN)].map((match) => ({
     start: match.index,
     end: match.index + match[0].length,
     digitGroups: match[0].match(DIGIT_GROUP) ?? [],

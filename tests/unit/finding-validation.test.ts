@@ -86,10 +86,27 @@ describe('validateItem: phone numbers', () => {
     expect(validateItem(phone, record(text))).toEqual({ ok: true, normalizedValue: 'unnormalized:07700900123' });
   });
 
-  it('rejects a phone whose digits are not a whole phone-like span of the quote', () => {
+  it('rejects a phone whose digits are neither a whole phone-like span of the quote nor one of several complete numbers it divides into', () => {
     const text = 'Call +44 7700 900123 now';
-    for (const extractedValue of ['+44 7700 900124', '7700 9001', '0123', 'no digits']) {
+    // 7700 900123 is whole digit groups of the span, but the 44 left over is no number of its own.
+    for (const extractedValue of ['+44 7700 900124', '7700 900123', '7700 9001', '0123', 'no digits']) {
       const phone = item({ kind: 'phone_number', quote: text, extractedValue, concern: 'callback_request' });
+      expect(validateItem(phone, record(text)), extractedValue).toEqual({ ok: false, reason: 'value_not_in_quote' });
+    }
+  });
+
+  it('accepts one of several complete numbers written one after the other in a single phone-like span', () => {
+    const text = 'Call 07700 900123 07700 900456 now';
+    for (const [extractedValue, normalizedValue] of [['07700 900123', '+447700900123'], ['07700 900456', '+447700900456']] as const) {
+      const phone = item({ kind: 'phone_number', quote: text, extractedValue, concern: 'callback_request', countryHint: 'GB' });
+      expect(validateItem(phone, record(text)), extractedValue).toEqual({ ok: true, normalizedValue });
+    }
+  });
+
+  it('never reads a date as a phone number', () => {
+    const text = 'Please pay by 2026-11-05 or 05.11.2026 at the latest';
+    for (const extractedValue of ['2026-11-05', '05.11.2026', '20261105']) {
+      const phone = item({ kind: 'phone_number', quote: text, extractedValue, concern: 'payment_request' });
       expect(validateItem(phone, record(text)), extractedValue).toEqual({ ok: false, reason: 'value_not_in_quote' });
     }
   });
