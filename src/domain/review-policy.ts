@@ -6,6 +6,6 @@ import type { CaptureMethod, Source } from '../contract/enums.ts';
 
 export function isReviewPermitted(source: Source, captureMethod: CaptureMethod, allowed: readonly CaptureMethod[]): boolean {
   if (captureMethod === 'telegram_business_live') return false;
-  if (source === 'telegram') return captureMethod === 'fixture_replay';
-  return allowed.includes(captureMethod);
+  if (!allowed.includes(captureMethod)) return false;
+  return source !== 'telegram' || captureMethod === 'fixture_replay';
 }
