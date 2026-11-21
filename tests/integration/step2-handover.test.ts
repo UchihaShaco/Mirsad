@@ -5,7 +5,7 @@ import { countRows, streamEvents } from '../helpers/db-read.ts';
 import { edited, envelope, recorded, uniqueId } from '../helpers/events.ts';
 import { openStream } from '../helpers/sse-client.ts';
 
-// Count wake-ups of the review worker (a stub until Task 6) while still calling the real loop.
+// Count wake-ups of the review worker while still calling the real loop.
 const reviewWorker = vi.hoisted(() => ({ wakes: 0 }));
 vi.mock('../../src/workers/review-worker.ts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/workers/review-worker.ts')>();
@@ -293,7 +293,9 @@ describe('step 2: handover, composer and decisions', () => {
     expect((await control(chatId, 'resume', 4)).status).toBe(200);
     expect(reviewWorker.wakes).toBeGreaterThan(wakesBefore);
     tl = await timeline(chatId);
-    expect(tl.messages.slice(1).map((m) => m.review?.status)).toEqual(['pending', 'pending']);
+    // The woken worker may already have claimed or completed them, so any status from pending on proves the requeue.
+    const requeued = expect.stringMatching(/^(pending|running|completed)$/);
+    expect(tl.messages.slice(1).map((m) => m.review?.status)).toEqual([requeued, requeued]);
   });
 
   it('control of a chat the caller cannot access answers 404 chat_not_found like a missing chat, before the body is looked at', async () => {
