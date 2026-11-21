@@ -1,0 +1,197 @@
+/**
+ * SQLite through the built-in node:sqlite (design sections 4 and 19.2). Every write runs inside
+ * Db.transaction: BEGIN IMMEDIATE outermost, SAVEPOINT when nested. Transaction bodies are synchronous.
+ */
+import fs from 'node:fs';
+import { DatabaseSync, type StatementSync } from 'node:sqlite';
+import { systemClock, type Clock } from '../ports/clock.ts';
+
+export const DATABASE_FILE = 'mirsad.sqlite';
+const SCHEMA_VERSION = 1;
+const BUSY_TIMEOUT_MS = 5000;
+const DEFAULT_STREAM_RETENTION = 5000;
+
+export type SqlValue = string | number | bigint | null | Uint8Array | boolean | undefined;
+export type SqlParams = Record<string, SqlValue> | readonly SqlValue[];
+
+export interface RunResult {
+  changes: number;
+  lastInsertRowid: number;
+}
+
+/** Wakes stream readers after a commit that appended stream events. */
+export interface StreamNotifier {
+  notify(workspaceId: string): void;
+}
+
+export interface Tx {
+  run(sql: string, params?: SqlParams): RunResult;
+  get<T>(sql: string, params?: SqlParams): T | undefined;
+  all<T>(sql: string, params?: SqlParams): T[];
+  /** The injected clock's current time as an ISO-8601 UTC string with milliseconds. */
+  now(): string;
+  /**
+   * Runs after the outermost transaction commits; dropped when the work it belongs to rolls back.
+   * Callbacks registered with the same key run once per commit.
+   */
+  afterCommit(callback: () => void, key?: string): void;
+  readonly streamRetention: number;
+  readonly streamNotifier: StreamNotifier | null;
+}
+
+export interface Db {
+  transaction<T>(fn: (tx: Tx) => T): T;
+  close(): void;
+}
+
+export interface OpenDatabaseOptions {
+  clock?: Clock;
+  streamRetention?: number;
+  streamBus?: StreamNotifier;
+}
+
+const SCHEMA_SQL = fs.readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
+
+type Bindable = string | number | bigint | null | Uint8Array;
+
+function bindValue(value: SqlValue): Bindable {
+  if (value === undefined) return null;
+  if (typeof value === 'boolean') return value ? 1 : 0;
+  return value;
+}
+
+function bind(params: SqlParams | undefined): { named?: Record<string, Bindable>; positional: Bindable[] } {
+  if (params === undefined) return { positional: [] };
+  if (Array.isArray(params)) return { positional: (params as readonly SqlValue[]).map(bindValue) };
+  const named: Record<string, Bindable> = {};
+  for (const [key, val] of Object.entries(params)) named[key] = bindValue(val);
+  return { named, positional: [] };
+}
+
+function plain<T>(row: unknown): T {
+  return { ...(row as object) } as T;
+}
+
+function migrate(db: DatabaseSync): void {
+  const current = (db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version;
+  if (current >= SCHEMA_VERSION) return;
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.exec(SCHEMA_SQL);
+    db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+    db.exec('COMMIT');
+  } catch (error) {
+    if (db.isTransaction) db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+interface PendingCallback {
+  callback: () => void;
+  key: string | undefined;
+}
+
+/** Callbacks queued during a transaction; `mark`/`rollbackTo` scope them to savepoints. */
+class CommitQueue {
+  private pending: PendingCallback[] = [];
+
+  add(callback: () => void, key: string | undefined): void {
+    if (key !== undefined && this.pending.some((p) => p.key === key)) return;
+    this.pending.push({ callback, key });
+  }
+
+  mark(): number {
+    return this.pending.length;
+  }
+
+  rollbackTo(mark: number): void {
+    this.pending = this.pending.slice(0, mark);
+  }
+
+  take(): PendingCallback[] {
+    const taken = this.pending;
+    this.pending = [];
+    return taken;
+  }
+}
+
+function createTx(db: DatabaseSync, options: OpenDatabaseOptions, queue: CommitQueue): Tx {
+  const clock = options.clock ?? systemClock;
+  const statements = new Map<string, StatementSync>();
+  const prepare = (sql: string): StatementSync => {
+    let stmt = statements.get(sql);
+    if (!stmt) {
+      stmt = db.prepare(sql);
+      statements.set(sql, stmt);
+    }
+    return stmt;
+  };
+  return {
+    run(sql, params) {
+      const { named, positional } = bind(params);
+      const out = named ? prepare(sql).run(named, ...positional) : prepare(sql).run(...positional);
+      return { changes: Number(out.changes), lastInsertRowid: Number(out.lastInsertRowid) };
+    },
+    get<T>(sql: string, params?: SqlParams) {
+      const { named, positional } = bind(params);
+      const row = named ? prepare(sql).get(named, ...positional) : prepare(sql).get(...positional);
+      return row === undefined ? undefined : plain<T>(row);
+    },
+    all<T>(sql: string, params?: SqlParams) {
+      const { named, positional } = bind(params);
+      const rows = named ? prepare(sql).all(named, ...positional) : prepare(sql).all(...positional);
+      return rows.map((row) => plain<T>(row));
+    },
+    now: () => clock.now().toISOString(),
+    afterCommit: (callback, key) => queue.add(callback, key),
+    streamRetention: options.streamRetention ?? DEFAULT_STREAM_RETENTION,
+    streamNotifier: options.streamBus ?? null,
+  };
+}
+
+function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue): Db['transaction'] {
+  let savepointSeq = 0;
+  const nested = <T>(fn: (t: Tx) => T): T => {
+    const name = `sp_${++savepointSeq}`;
+    const mark = queue.mark();
+    db.exec(`SAVEPOINT ${name}`);
+    try {
+      const out = fn(tx);
+      db.exec(`RELEASE ${name}`);
+      return out;
+    } catch (error) {
+      db.exec(`ROLLBACK TO ${name}; RELEASE ${name}`);
+      queue.rollbackTo(mark);
+      throw error;
+    }
+  };
+  const outermost = <T>(fn: (t: Tx) => T): T => {
+    db.exec('BEGIN IMMEDIATE');
+    let out: T;
+    try {
+      out = fn(tx);
+      db.exec('COMMIT');
+    } catch (error) {
+      if (db.isTransaction) db.exec('ROLLBACK');
+      queue.take();
+      throw error;
+    }
+    for (const pending of queue.take()) pending.callback();
+    return out;
+  };
+  return (fn) => (db.isTransaction ? nested(fn) : outermost(fn));
+}
+
+export function openDatabase(file: string, options: OpenDatabaseOptions = {}): Db {
+  const db = new DatabaseSync(file, { timeout: BUSY_TIMEOUT_MS, enableForeignKeyConstraints: true });
+  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON;');
+  migrate(db);
+  const queue = new CommitQueue();
+  const tx = createTx(db, options, queue);
+  return {
+    transaction: createTransactionRunner(db, tx, queue),
+    close: () => {
+      if (db.isOpen) db.close();
+    },
+  };
+}

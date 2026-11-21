@@ -1,0 +1,46 @@
+{
+  "name": "mirsad",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mirsad: chat intake, evidence capture, AI review with officer handover and a phone watchlist.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.18"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/main.ts",
+    "demo": "tsx src/main.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "typecheck": "tsc --noEmit",
+    "replay": "tsx scripts/replay.ts",
+    "openapi:generate": "tsx scripts/generate-openapi.ts",
+    "eval:model": "tsx scripts/eval-model.ts",
+    "telegram:verify": "tsx scripts/telegram-verify.ts",
+    "telegram:readiness": "tsx scripts/telegram-readiness.ts",
+    "telegram:provision": "tsx scripts/telegram-provision.ts",
+    "demo:walkthrough": "tsx scripts/demo-walkthrough.ts",
+    "demo:credentials": "tsx scripts/demo-credentials.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.11",
+    "@napi-rs/canvas": "1.2.0",
+    "hono": "4.13.19",
+    "libphonenumber-js": "1.13.17",
+    "tsx": "4.23.15",
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@apidevtools/json-schema-ref-parser": "16.0.8",
+    "@types/node": "24.19.2",
+    "@vitest/coverage-v8": "5.1.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "playwright-core": "1.65.1",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
+  }
+}

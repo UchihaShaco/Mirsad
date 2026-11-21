@@ -1,0 +1,168 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import http from 'node:http';
+import { startHarness, type TestHarness } from '../helpers/harness.ts';
+import { ROUTES } from '../../src/http/routes/index.ts';
+
+let h: TestHarness;
+
+beforeAll(async () => {
+  h = await startHarness();
+});
+afterAll(async () => {
+  await h.close();
+});
+
+function expectErrorEnvelope(body: unknown, code: string) {
+  expect(body).toEqual({
+    success: false,
+    data: null,
+    error: expect.objectContaining({ code, message: expect.any(String) }),
+  });
+}
+
+function rawGet(port: number, hostHeader: string): Promise<{ status: number; body: unknown }> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { host: '127.0.0.1', port, path: '/healthz', method: 'GET', headers: { Host: hostHeader } },
+      (res) => {
+        let text = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk: string) => (text += chunk));
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, body: JSON.parse(text) }));
+      },
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+describe('foundation', () => {
+  it('healthz answers without a token', async () => {
+    const res = await h.http(null).get('/healthz');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, data: { status: 'ok' }, error: null });
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  it('a missing or unknown token is 401 unauthenticated in the standard envelope', async () => {
+    const missing = await h.http(null).get('/v1/me');
+    expect(missing.status).toBe(401);
+    expectErrorEnvelope(missing.body, 'unauthenticated');
+    const unknown = await h.http('not-a-real-token').post('/v1/ingest', {});
+    expect(unknown.status).toBe(401);
+    expectErrorEnvelope(unknown.body, 'unauthenticated');
+  });
+
+  it('a connector token on an officer route and an officer token on an intake route are 403 forbidden_for_principal', async () => {
+    const connectorOnOfficer = await h.http(h.tokens.connector).get('/v1/chats');
+    expect(connectorOnOfficer.status).toBe(403);
+    expectErrorEnvelope(connectorOnOfficer.body, 'forbidden_for_principal');
+    const officerOnIntake = await h.http(h.tokens.officerA).post('/v1/ingest', {});
+    expect(officerOnIntake.status).toBe(403);
+    expectErrorEnvelope(officerOnIntake.body, 'forbidden_for_principal');
+    const officerOnEvents = await h.http(h.tokens.officerA).post('/v1/chats/chat_x/events', {});
+    expect(officerOnEvents.status).toBe(403);
+  });
+
+  it('GET /v1/me returns the calling principal for officers and connectors', async () => {
+    const officer = await h.http(h.tokens.officerA).get('/v1/me');
+    expect(officer.status).toBe(200);
+    expect(officer.body).toEqual({
+      success: true,
+      data: {
+        principal: {
+          id: expect.stringMatching(/^prn_[0-9a-f]{32}$/),
+          kind: 'officer',
+          displayName: 'Officer A',
+          workspaceId: expect.stringMatching(/^ws_[0-9a-f]{32}$/),
+        },
+      },
+      error: null,
+    });
+    const connector = await h.http(h.tokens.connector).get('/v1/me');
+    expect(connector.body.data.principal).toMatchObject({ kind: 'connector', displayName: 'Fixture Connector' });
+    expect(connector.body.data.principal.workspaceId).toBe(officer.body.data.principal.workspaceId);
+    const outsider = await h.http(h.tokens.outsider).get('/v1/me');
+    expect(outsider.body.data.principal.workspaceId).not.toBe(officer.body.data.principal.workspaceId);
+  });
+
+  it('a non-loopback Host header is 403 host_not_allowed', async () => {
+    const port = Number(new URL(h.baseUrl).port);
+    const foreign = await rawGet(port, `mirsad.example.test:${port}`);
+    expect(foreign.status).toBe(403);
+    expectErrorEnvelope(foreign.body, 'host_not_allowed');
+    const wrongPort = await rawGet(port, `127.0.0.1:${port + 1}`);
+    expect(wrongPort.status).toBe(403);
+    for (const host of [`127.0.0.1:${port}`, `localhost:${port}`]) {
+      expect((await rawGet(port, host)).status).toBe(200);
+    }
+  });
+
+  it('a body over 256 KiB is 413 payload_too_large', async () => {
+    const big = { padding: 'x'.repeat(256 * 1024 + 1) };
+    const res = await h.http(h.tokens.connector).post('/v1/ingest', big);
+    expect(res.status).toBe(413);
+    expectErrorEnvelope(res.body, 'payload_too_large');
+  });
+
+  it('an unimplemented route answers 501 not_implemented in the envelope', async () => {
+    const res = await h.http(h.tokens.officerA).get('/v1/chats');
+    expect(res.status).toBe(501);
+    expectErrorEnvelope(res.body, 'not_implemented');
+    const unknown = await h.http(h.tokens.officerA).get('/v1/nothing-here');
+    expect(unknown.status).toBe(404);
+    expectErrorEnvelope(unknown.body, 'not_found');
+  });
+
+  it('every route of the contract is registered with its access rule', async () => {
+    expect(ROUTES).toHaveLength(20);
+    for (const route of ROUTES.filter((r) => r.auth !== 'none')) {
+      const path = route.path.replace(/\{[^}]+\}/g, 'x_1');
+      const res = route.method === 'GET' ? await h.http(null).get(path) : await h.http(null).post(path, {});
+      expect(res.status, `${route.method} ${route.path}`).toBe(401);
+    }
+  });
+});
+
+describe('harness', () => {
+  it('drains idle workers, captures logs in memory and restarts on the same data directory', async () => {
+    const local = await startHarness();
+    try {
+      await local.drain();
+      const before = await local.http(local.tokens.officerA).get('/v1/me');
+      const firstUrl = local.baseUrl;
+      await local.restart();
+      expect(local.baseUrl).toBe(firstUrl);
+      const after = await local.http(local.tokens.officerA).get('/v1/me');
+      expect(after.body.data.principal.id).toBe(before.body.data.principal.id);
+      expect(local.logs.some((line) => JSON.parse(line).event === 'server_listening')).toBe(true);
+      for (const token of Object.values(local.tokens)) {
+        expect(local.logs.join('\n')).not.toContain(token);
+      }
+    } finally {
+      await local.close();
+    }
+  });
+});
+
+describe('rate limit', () => {
+  let limited: TestHarness;
+  beforeAll(async () => {
+    limited = await startHarness({ config: { rateLimitPerMinute: 3 } });
+  });
+  afterAll(async () => {
+    await limited.close();
+  });
+
+  it('more requests than the per-minute limit are 429 rate_limited', async () => {
+    const client = limited.http(limited.tokens.officerA);
+    for (let i = 0; i < 3; i += 1) expect((await client.get('/v1/me')).status).toBe(200);
+    const blocked = await client.get('/v1/me');
+    expect(blocked.status).toBe(429);
+    expectErrorEnvelope(blocked.body, 'rate_limited');
+    expect((await limited.http(limited.tokens.officerB).get('/v1/me')).status).toBe(200);
+    limited.clock.advance(60_000);
+    expect((await client.get('/v1/me')).status).toBe(200);
+  });
+});
