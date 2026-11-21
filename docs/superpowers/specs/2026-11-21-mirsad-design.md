@@ -1,6 +1,6 @@
 # Mirsad design notes
 
-Technical decisions for the first working version. The brief (`2026-11-21-mirsad-brief.md`) is the binding scope; this file records the calls made on top of it so every implementer builds the same system. Section numbers are stable: task briefs refer to them.
+Technical decisions for the first working version. The brief (`2026-11-21-mirsad-brief.md`) is the binding scope; this file records the calls made on top of it so every implementer builds the same system. Section numbers are stable: task briefs refer to them. Where this file abbreviates a function name or signature, the plan's task sections are authoritative.
 
 Contents: 1 Stack · 2 Layout · 3 Identity and access · 4 Data model · 5 API conventions · 6 Routes and payloads · 7 Intake rules · 8 Control state machine · 9 Captures · 10 Review pipeline · 11 Watchlist · 12 Event stream · 13 Telegram · 14 WhatsApp gate · 15 Config · 16 Logging · 17 Test harness · 18 Assumptions for the README
 
@@ -49,6 +49,8 @@ Files stay focused (aim for under 300 lines; 800 is the ceiling). Functions stay
   - `canAccessChat(principal, chat)`: same workspace AND the principal has a grant on the chat's channel account.
   - Timeline, artifacts, control, composer, decisions, captures, case references, the chat list and chat-scoped stream events all use `canAccessChat`. A chat the caller cannot access is answered exactly like a chat that does not exist: `404 chat_not_found`.
   - A connector may ingest only for accounts it has a grant on; otherwise `403 account_not_authorized`.
+  - Registering a chat (`POST /v1/chats`) requires the officer's grant on the named account; otherwise `404 account_not_found`.
+  - A disabled principal is refused at authentication, and an open event stream ends at its next batch.
 - Watchlist access (section 11) derives from chat access.
 - Internal IDs (`chat_…`, `msg_…`) are used for authorization. The host's conversation ID is stored only as the `externalChatId` mapping.
 
@@ -122,7 +124,7 @@ CREATE UNIQUE INDEX messages_source_message ON messages(chat_id, source_message_
 CREATE TABLE message_events (
   id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id),
   message_id TEXT NOT NULL REFERENCES messages(id),
-  type TEXT NOT NULL CHECK (type IN ('recorded','edited','deleted')),
+  type TEXT NOT NULL CHECK (type IN ('recorded','edited','deleted','conflicting_copy')),
   source_event_id TEXT,                                                 -- NULL for composer messages
   text TEXT, text_sha256 TEXT,                                          -- text carried by a recorded or edited event
   source_occurred_at TEXT, received_at TEXT NOT NULL,
@@ -165,7 +167,9 @@ CREATE TABLE case_references (
 CREATE TABLE case_details (                                             -- what each chat has already surfaced
   id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id),
   category TEXT NOT NULL CHECK (category IN ('payment_link','payment_recipient','phone_number')),
-  normalized_value TEXT NOT NULL, first_message_id TEXT NOT NULL, created_at TEXT NOT NULL,
+  normalized_value TEXT NOT NULL, display_value TEXT NOT NULL,          -- display_value: the value as first written
+  first_message_id TEXT NOT NULL, last_seen_position INTEGER NOT NULL,  -- position of the latest message event that carried it
+  created_at TEXT NOT NULL,
   UNIQUE (chat_id, category, normalized_value)
 );
 CREATE TABLE findings (
@@ -199,7 +203,7 @@ CREATE TABLE idempotency_keys (
 );
 CREATE TABLE watchlist_entries (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id),
-  match_key TEXT NOT NULL,                                              -- E.164, or 'unnormalized:<digits>'
+  match_key TEXT NOT NULL,                                              -- E.164, or 'unnormalized:<chatId>:<digits>'
   e164 TEXT, display TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('needs_review','approved','cleared')),
   revision INTEGER NOT NULL DEFAULT 1, new_evidence_since_review INTEGER NOT NULL DEFAULT 0,
@@ -232,7 +236,7 @@ CREATE TABLE connector_state (
 );
 ```
 
-The database runs with `journal_mode = WAL`, `foreign_keys = ON`, `busy_timeout = 5000`. Every use case that writes runs in one `BEGIN IMMEDIATE` transaction. Message text is never updated or deleted by any code path.
+The database runs with `journal_mode = WAL`, `foreign_keys = ON`, `busy_timeout = 5000`. Every use case that writes runs in one `BEGIN IMMEDIATE` transaction. Message text, once set, is never changed or deleted by any code path; the only write to an existing message's text is filling a placeholder's empty text once, from the original `recorded` event.
 
 ## 5. API conventions
 
@@ -243,7 +247,7 @@ The database runs with `journal_mode = WAL`, `foreign_keys = ON`, `busy_timeout 
 - Auth: `Authorization: Bearer <token>`. Missing or unknown token: `401 unauthenticated`. Wrong kind of principal for a route: `403 forbidden_for_principal`.
 - Error codes and statuses: `400 validation_failed` (details list the fields), `400 idempotency_key_required`, `401 unauthenticated`, `403 forbidden_for_principal`, `403 account_not_authorized`, `403 not_controller`, `403 evidence_access_required`, `403 host_not_allowed`, `404 chat_not_found`, `404 account_not_found`, `404 message_not_found`, `404 artifact_not_found`, `404 capture_not_found`, `404 watchlist_entry_not_found`, `404 not_found`, `409 revision_conflict` (details: `currentRevision`, `aiMode`), `409 invalid_transition`, `409 not_in_takeover`, `409 capture_not_retryable`, `413 payload_too_large`, `422 idempotency_key_reused`, `422 channel_not_enabled`, `422 direction_required`, `429 rate_limited`, `500 internal_error`, `500 artifact_integrity_error`, `501 not_implemented` (only while a route is still a stub).
 - `Idempotency-Key` (required on `POST /v1/dispatches` and `POST /v1/chats/{chatId}/officer-messages`): scoped to principal + route (+ chat). Same key and same body replays the stored response with header `Idempotency-Replayed: true`. Same key with a different body: `422 idempotency_key_reused`. The key is stored in the same transaction as the effect.
-- Middleware order: host guard (the `Host` header must be `127.0.0.1`, `localhost` or `[::1]` with the bound port, else `403 host_not_allowed`) → security headers → rate limit (in-memory, per token, default 600 requests a minute) → body limit (256 KiB) → auth → route → error handler. No CORS headers are sent.
+- Middleware order: security headers (outermost, so rejections carry them too) → host guard (the `Host` header must be `127.0.0.1`, `localhost` or `[::1]` with the bound port, else `403 host_not_allowed`) → rate limit (in-memory, per token, default 600 requests a minute) → body limit (256 KiB; 1 MiB on the two intake routes) → auth → route → error handler. No CORS headers are sent. Tokens are read only from the `Authorization` header; a token in the query string is ignored.
 - Text limits: message text up to 65,536 characters; labels up to 200; reasons 3 to 500.
 
 ## 6. Routes and payloads
@@ -288,7 +292,7 @@ type IntakeEvent =
   | { type: 'message.edited'; sourceEventId: string; sourceMessageId: string; text: string; editedAt?: string; direction?: Direction }
   | { type: 'message.deleted'; sourceEventId: string; sourceMessageId: string; deletedAt?: string; direction?: Direction };
 
-type IngestResult = { chatId: string; chatCreated: boolean; result: 'recorded' | 'duplicate_event' | 'duplicate_message';
+type IngestResult = { chatId: string; chatCreated: boolean; result: 'recorded' | 'duplicate_event' | 'duplicate_message' | 'conflicting_copy';
   messageId: string; messageEventId: string | null; receivedAt: string | null; captureId: string | null;
   startMarker: 'accepted' | 'ignored_untrusted' | 'ignored_conflict' | 'none'; textConflict: boolean };
 
@@ -298,7 +302,7 @@ type ChatSummary = { id: string; source: Source; channelLabel: 'Telegram' | 'Wha
   initiatedBy: 'contact' | 'officer' | 'unknown'; initiationBasis: 'source_start_marker' | 'confirmed_complete_history' | null;
   firstObservedDirection: Direction | null; intakeAccount: boolean; acknowledgementTemplate: string | null;   // 'Message received.' on intake accounts
   review: { state: 'idle' | 'active' | 'unavailable'; pending: number; unavailable: number };
-  watchlistMatches: { entryId: string; numberDisplay: string; matchedAt: string; evidence: EvidenceRef[]; restrictedEvidenceCount: number }[];
+  watchlistMatches: { entryId: string; numberDisplay: string; matchedAt: string; evidence: EvidenceRef[]; restrictedEvidence: boolean }[];
   messageCount: number; lastActivityAt: string; createdAt: string };
 
 type Capture = { id: string; status: 'pending' | 'rendering' | 'ready' | 'failed'; kind: 'mirsad_rendered_capture';
@@ -314,11 +318,11 @@ type Message = { id: string; chatId: string; direction: Direction | null; origin
   capture: Capture | null;        // null: not applicable (composer message, or placeholder without text)
   review: ReviewState | null;     // null: not applicable (outgoing or composer message)
   editedAtSource: boolean; deletedAtSource: boolean; position: number };
-type MessageEvent = { id: string; chatId: string; messageId: string; type: 'edited' | 'deleted'; text: string | null;
+type MessageEvent = { id: string; chatId: string; messageId: string; type: 'edited' | 'deleted' | 'conflicting_copy'; text: string | null;
   sourceEventId: string; sourceOccurredAt: string | null; receivedAt: string; captureMethod: CaptureMethod;
   capture: Capture | null; review: ReviewState | null; position: number };
 type CaseAction = { id: string; chatId: string; type: 'chat_registered' | 'dispatch_started' | 'control_pause' | 'control_take_over' | 'control_resume'
-  | 'leave_unanswered' | 'officer_message_sent' | 'case_reference_recorded' | 'capture_retry_requested' | 'watchlist_match';
+  | 'leave_unanswered' | 'officer_message_sent' | 'case_reference_recorded' | 'capture_retry_requested' | 'watchlist_match' | 'text_conflict_recorded';
   actor: PrincipalRef | null; messageId: string | null; fromMode: AiMode | null; toMode: AiMode | null; revision: number | null;
   detail: Record<string, string | number | boolean | null> | null; occurredAt: string; position: number };
 type Finding = { id: string; chatId: string; messageId: string; messageEventId: string;
@@ -336,8 +340,8 @@ type EvidenceRef = { observationId: string; chatId: string; messageId: string; m
 type WatchlistEntry = { id: string; number: { e164: string | null; display: string; exactMatchEligible: boolean };
   status: 'needs_review' | 'approved' | 'cleared'; statusLabel: 'Needs review' | 'Approved' | 'Cleared'; revision: number;
   newEvidenceSinceReview: boolean; firstSeenAt: string; lastSeenAt: string;
-  evidence: EvidenceRef[]; restrictedEvidenceCount: number; matches: { chatId: string; matchedAt: string }[];
-  lastDecision: { decision: 'approve' | 'clear' | 'reopen'; reason: string; officer: PrincipalRef; decidedAt: string } | null; canReview: boolean };
+  evidence: EvidenceRef[]; restrictedEvidence: boolean; matches: { chatId: string; matchedAt: string }[];
+  lastDecision: { decision: 'approve' | 'clear' | 'reopen'; reason: string | null; officer: PrincipalRef; decidedAt: string } | null; canReview: boolean };
 ```
 
 Arrays in `Timeline` are ordered by `position`. `cursor` is the workspace's latest stream sequence, read in the same transaction as the snapshot; it is an opaque decimal string.
@@ -354,13 +358,15 @@ Artifact responses carry `Content-Type: image/png`, `Cache-Control: private, no-
 4. `message.recorded`:
    - no message with this `sourceMessageId`: insert the message and its `recorded` event, a `captures` row with status `pending` (same transaction: text and pending screenshot work are saved together), and for incoming messages a `reviews` row (section 10).
    - a placeholder exists (`original_captured = 0`): fill in the original text and direction, set `original_captured = 1`, then proceed as above.
-   - a captured message exists: return `duplicate_message` and change nothing; `textConflict` is true when the text hash differs.
+   - a captured message exists with the same text hash: return `duplicate_message` and change nothing.
+   - a captured message exists with a different text hash: the differing text is evidence too. Insert a `conflicting_copy` event carrying it (with its own `captures` row and, for incoming messages, `reviews` row), record a `text_conflict_recorded` case action, publish `message.conflicting_copy`, leave the original text untouched, and return `conflicting_copy` with `textConflict: true`.
 5. `message.edited`: find the message, or create a placeholder (`original_captured = 0`, `text = NULL`; `direction` from the event is required for a placeholder, else `422 direction_required`). Insert an `edited` event carrying the new text, set `edited_at_source = 1`, add a `captures` row for the edit and, for incoming messages, a `reviews` row. The original text is untouched.
 6. `message.deleted`: find the message or create a placeholder (direction may stay NULL). Insert a `deleted` event and set `deleted_at_source = 1`. Text, captures and findings already stored remain.
 7. `receivedAt` is always the server clock. `sentAt`, `editedAt` and `deletedAt` come from the source and are stored as given (normalized to UTC).
-8. Chat bookkeeping: `first_observed_direction` is set once, from the first event that carries a direction. Contact fields (`contact_external_id`, `contact_display_name`, `contact_phone_raw`) are filled from the first incoming message that carries them.
-9. Initiation: `conversationStart` is honoured only on `message.recorded` from a connector with `trustedStartMarker`, only while `initiated_by = 'unknown'`, and only when no stored message in the chat has an earlier `sentAt`. Then `initiated_by` becomes `contact` (incoming) or `officer` (outgoing) with the given basis. Otherwise the marker is ignored and the response says why. Nothing else ever sets `initiated_by`.
-10. After commit the capture and review workers are woken.
+8. Chat bookkeeping: `first_observed_direction` is set once, from the first event that carries a direction. Each contact field (`contact_external_id`, `contact_display_name`, `contact_phone_raw`) is filled independently, the first time an incoming message carries it while that field is still empty. When the phone is first stored, intake calls `watchlist.onContactPhoneKnown` (section 11), which normalizes it and stores `contact_phone_e164`.
+9. Initiation: `conversationStart` is honoured only on `message.recorded` from a connector with `trustedStartMarker`, only while `initiated_by = 'unknown'`, and only when the marked message is the first source message stored for the chat, or it has a `sentAt` and every other stored source message has a later one. Then `initiated_by` becomes `contact` (incoming) or `officer` (outgoing) with the given basis. Otherwise the marker is ignored and the response says why. Nothing else ever sets `initiated_by`.
+10. When an incoming message is stored in an `ai_active` chat, intake calls `requeueRetryableReviews` (section 10). After commit the capture and review workers are woken.
+11. Registering a new chat through `POST /v1/chats` publishes `chat.created` (inbox status `open`) and records a `chat_registered` case action. Registering an existing chat changes nothing and returns it.
 
 `originLabel`: `Contact started chat` / `Officer started chat` when `initiatedBy` is known; else `First observed: incoming` / `First observed: outgoing`; `No messages observed` for a registered chat with no events.
 
@@ -376,7 +382,7 @@ A pure function `transition(state, action, actorId)` in `src/domain/control-mach
 | `officer_control` by actor | `invalid_transition` | `invalid_transition` | → `ai_active` | no change (`requires_resume`) |
 | `officer_control` by another officer | `invalid_transition` | → `officer_control` (actor) | `403 not_controller` | no change (`requires_resume`) |
 
-Every change: `revision + 1`, `inbox_status = 'open'`, a `case_actions` row with operator and time, a `chat.control_changed` stream event. Entering `ai_active` queues reviews (section 10). `expectedRevision` must equal the current revision, else `409 revision_conflict`.
+Every change, including a dispatch that starts a chat: `revision + 1`, `inbox_status = 'open'`, a `case_actions` row with operator and time, a `chat.control_changed` stream event. Entering `ai_active` queues reviews (section 10). One helper, `applyModeChange` in `src/services/mode-change.ts`, performs these steps for dispatch and for control actions. `expectedRevision` must equal the current revision, else `409 revision_conflict`.
 
 Dispatch (`POST /v1/dispatches`): first resolve every `chatId` with `canAccessChat`; if any is missing or inaccessible return `404 chat_not_found` with `details.chatIds` and change nothing. Then apply the dispatch column to each chat in one transaction and record `dispatch_started` for the chats that started.
 
@@ -386,8 +392,8 @@ Decision (`POST …/officer-decisions`): same takeover checks; `messageId` must 
 
 ## 9. Captures
 
-- A capture is a PNG rendered by Mirsad from the saved record. Every source message event that carries text or unsupported content (`recorded`, `edited`; both directions) gets one. Composer messages do not: they are Mirsad's own record, not source evidence.
-- `CaptureRenderer.render(input) -> Promise<Uint8Array>` is a pure function of its input (no clock, no network). The image shows: the label "Mirsad-rendered capture", channel, capture method, chat label and chat ID, message ID, event type, direction, sender label, received time, sent time, the text, and the text's SHA-256. Text is drawn as plain text. Markup is shown literally. Bidi control characters (U+202A–U+202E, U+2066–U+2069) and other control characters except newline and tab are drawn as visible tokens such as `[U+202E]`. Only local font files are used.
+- A capture is a PNG rendered by Mirsad from the saved record. Every source message event that carries text or unsupported content (`recorded`, `edited`, `conflicting_copy`; both directions) gets one. Composer messages do not: they are Mirsad's own record, not source evidence.
+- `CaptureRenderer.render(input) -> Promise<Uint8Array>` is a pure function of its input (no clock, no network). The image shows: the label "Mirsad-rendered capture", channel, capture method, chat label and chat ID, message ID, event type, direction, sender label, received time, sent time, the text, and the text's SHA-256. Text is drawn as plain text. Markup is shown literally. Bidi control characters (U+202A–U+202E, U+2066–U+2069) and other control characters except newline and tab are drawn as visible tokens such as `[U+202E]`. Only local font files are used. Every string drawn on a capture (chat label, sender label and IDs as well as the text) passes through the same `toDisplayText` step.
 - PNG `tEXt` chunks carry provenance: `Mirsad-Capture-Kind`, `Mirsad-Chat-Id`, `Mirsad-Message-Id`, `Mirsad-Message-Event-Id`, `Mirsad-Received-At`, `Mirsad-Text-SHA256`.
 - Capture worker: claim the oldest `pending` capture (`status = 'rendering'`, `attempts + 1`), load its own message event from the database by capture ID, render, `EvidenceStore.put('captures/<workspaceId>/<chatId>/<captureId>.png', bytes)`, then in one transaction insert the artifact (kind `mirsad_rendered_capture`, SHA-256, size) and set the capture `ready`. On any error set `failed` with an error code (`render_failed`, `storage_failed`); the message is untouched. Publish `capture.updated` either way.
 - Retry: `POST /v1/captures/{captureId}/retry` moves `failed` → `pending` (else `409 capture_not_retryable`), records `capture_retry_requested`, wakes the worker. Rendering twice writes the same storage key, so a retry yields exactly one linked image.
@@ -398,52 +404,85 @@ Decision (`POST …/officer-decisions`): same takeover checks; `messageId` must 
 
 Evidence capture never waits for review. The reviewer extracts; code decides.
 
-- A `reviews` row is created at intake for every incoming source event with text. Initial status: `not_permitted` when policy forbids review of that capture method; else `pending` when the chat is `ai_active`; else `not_requested`.
-- Policy (`src/domain/review-policy.ts`): `telegram_business_live` is never reviewable, with no override. Other capture methods are reviewable only when listed in `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (default `fixture_replay`).
-- Entering `ai_active` (dispatch or resume) sets every `not_requested`, `stale_discarded` and `unavailable` review of that chat to `pending`.
-- `Reviewer.review(request, signal) -> Promise<{ items: ExtractedItem[] }>`; it throws `ReviewerUnavailableError(code)` on failure. The reviewer gets one message's text and its message ID. It has no tools and no access to the store. Implementations: `deterministic` (rules; used by tests and for an offline demo), `lmstudio` (default), `disabled` (always unavailable).
-- Review worker: per chat one review at a time, several chats in parallel (`MIRSAD_REVIEW_CONCURRENCY`, default 2). Before calling the reviewer it re-reads the chat: unless `ai_mode = 'ai_active'` the review goes back to `not_requested`. It stores `requested_revision`, sets `running`, then calls the reviewer outside any transaction.
-- Publish, in one transaction, re-reading the chat first:
-  1. If `ai_mode != 'ai_active'` or `revision != requested_revision`: set `stale_discarded`, publish nothing else. This is what keeps a result that finishes after a takeover from appearing as an active finding.
-  2. Validate each item (`src/domain/finding-validation.ts`): `sourceMessageId` equals the reviewed message ID; `quote` is a non-empty exact substring of the stored text; `extractedValue` is supported by the quote (a link must appear in the quote; a phone number's digits must match a phone-like span in the quote after mapping Arabic-Indic digits to ASCII; a recipient must appear in the quote ignoring case and repeated whitespace). Rejected items increase `unsupported_count` and are never shown. A phone item without a concern is dropped.
-  3. For each valid item compute `normalized_value` (link: lower-cased host without leading `www.` plus path and query; phone: section 11 match key; recipient: lower-cased, single-spaced). If `case_details` already holds it for this chat, increase `suppressed_count` and continue: repeated details raise no new alert.
-  4. Otherwise insert the detail and one finding. `label` and `note` come from fixed templates, never from model text. For `payment_link` and `payment_recipient`: when the chat already holds a different detail in either of those two categories the label is `Payment destination changed` and `changed_from` holds the most recent earlier value; else `New payment link` / `New payment recipient`. The note is one short sentence, for example `Payment destination changed in a message from the contact.`
-  5. Suspected fraud rule: when the chat has a `merchant_payment_confirmation` and a new `payment_link` host is not one of its `paymentHosts` (exact host match after dropping `www.`), also insert a `suspected_fraud` finding that cites the same quote and the case reference. Without a confirmation on file no fraud finding is ever created.
-  6. Watchlist hooks (section 11) run here.
-  7. Set `completed` with `outcome = 'findings'` when at least one finding was inserted, else `no_new_finding`. Publish `finding.created` per finding and `review.updated`.
-- Reviewer failure or timeout: `unavailable` with an error code; intake, captures and officer controls are unaffected. `unavailable` reviews with fewer than 3 attempts are retried when a new message arrives in the chat, on dispatch or resume, and at startup. Reviews left `running` at startup go back to `pending`.
-- Recording a case reference (`POST …/case-references`) applies rule 5 to the chat's existing `payment_link` findings and reports how many `suspected_fraud` findings it created. This is a rule over stored evidence and an officer-entered fact, so it runs in any AI mode.
-- Model request (LM Studio, OpenAI-compatible `POST /chat/completions` on a loopback URL): system prompt, then the message as JSON data; `response_format` JSON schema when supported. Output fields per item: `sourceMessageId`, `kind`, `quote`, `extractedValue`, `concern` (`payment_request` | `callback_request` | `credential_request` | `other_concern` | `none`), `countryHint` (ISO alpha-2 or `unknown`). Text longer than 1,500 characters is reviewed in chunks so the request fits a 4,096-token context.
+**Rows and policy**
+
+- A `reviews` row is created at intake for every incoming source event with text (`recorded`, `edited`, `conflicting_copy`). Initial status: `not_permitted` when policy forbids review; else `pending` when the chat is `ai_active`; else `not_requested`.
+- Policy (`src/domain/review-policy.ts`): `isReviewPermitted(source, captureMethod, allowed)`, always called with the reviewed event's own capture method. `telegram_business_live` is never reviewable. Content whose source is `telegram` is reviewable only when it arrived by `fixture_replay`. Any other combination is reviewable only when the capture method is listed in `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (default `fixture_replay`). The rule is applied when the row is created and again when the worker claims it; a row that fails then becomes `not_permitted`.
+
+**Queueing** (`src/services/review-queue.ts`)
+
+- `requeueReviewsForChat(tx, chatId)`: called on every entry into `ai_active` (dispatch or resume). Sets every `not_requested`, `stale_discarded` and `unavailable` review of the chat to `pending` and resets `attempts` to 0.
+- `requeueRetryableReviews(tx, chatId?)`: automatic retry. Sets `unavailable` reviews with fewer than 3 attempts to `pending`, for one `ai_active` chat (called by intake when a new incoming message is stored) or for all `ai_active` chats (startup). At startup reviews left `running` also go back to `pending`.
+
+**Reviewer port**
+
+- `ReviewRequest = { reviewId; chatId; messageId; messageEventId; source; text }`. `messageId` is the internal `msg_…` ID and is the value the reviewer must echo as `sourceMessageId`. `text` is the text of the reviewed event (`message_events.text`): the original for `recorded`, the new text for `edited` and `conflicting_copy`.
+- `ExtractedItem = { sourceMessageId: string; kind: 'payment_link' | 'payment_recipient' | 'phone_number'; quote: string; extractedValue: string; concern: 'payment_request' | 'callback_request' | 'credential_request' | 'other_concern' | null; countryHint: string | null }`.
+- `Reviewer.review(request, signal) -> Promise<{ items: ExtractedItem[] }>`; it throws `ReviewerUnavailableError(code)` on failure. The reviewer has no tools and no access to the store. Implementations: `deterministic` (rules; tests and offline demo), `lmstudio` (default), `disabled` (always unavailable).
+
+**Worker**
+
+- Per chat one review at a time, in `position` order; several chats in parallel (`MIRSAD_REVIEW_CONCURRENCY`, default 2).
+- Claim, in one transaction: re-check policy; unless the chat is `ai_active` put the review back to `not_requested`; else store `requested_revision`, `attempts + 1`, status `running`. The reviewer is then called outside any transaction.
+- Reviewer failure or timeout: status `unavailable` with an error code. Intake, captures and officer controls are unaffected.
+
+**Publish** (`publishReview`, one transaction, re-reading the chat first)
+
+1. Chat not `ai_active`: set `stale_discarded` and publish nothing else. Chat `ai_active` but `revision != requested_revision` (the officer paused or took over and resumed while the model was working): put the review back to `pending` and wake the worker. Either way a result that finished under an older control state never appears as a finding.
+2. Validate each item (`src/domain/finding-validation.ts`) against the reviewed event's text: `sourceMessageId` equals the request's `messageId`; `quote` is a non-empty exact substring of the text; `extractedValue` is supported by the quote:
+   - link: the value is a whole token of the quote (bounded by whitespace, brackets, quotes or the ends) and parses with the WHATWG `URL` parser (after prepending `https://` when it has no scheme) to a hostname that contains a dot;
+   - phone: its digits equal the digits of a phone-like span in the quote, after mapping Arabic-Indic digits to ASCII;
+   - recipient: it appears in the quote, ignoring case and repeated whitespace.
+   Rejected items increase `unsupported_count` and are never shown. A phone item without a concern is dropped.
+3. Normalize. Link: `normalizeHost(hostname)` + path + query, where `normalizeHost` lower-cases, converts to punycode, and drops a leading `www.`, the port and a trailing dot; path and query stay exactly as written. Phone: `normalizePhone(extractedValue, { country: countryHint })` giving the E.164 form, or `unnormalized:<digits>` (section 11). Recipient: lower-cased, single-spaced.
+4. Decide per item, comparing only inside its own category and only against details that earlier message events of the chat carried. "Current" means the detail of that category with the highest `last_seen_position` below this event's position.
+   - The value is the current detail: a repeat. Update `last_seen_position`, increase `suppressed_count`, raise nothing.
+   - Phone numbers: any value already stored for the chat is a repeat.
+   - Otherwise insert or update the detail and insert one finding. For `payment_link` and `payment_recipient` the label is `Payment destination changed` with `changed_from` = the current detail's `display_value` when a current detail exists (this covers a switch back to an older destination), else `New payment link` / `New payment recipient`. For phones the label is `Phone number tied to a concern`.
+5. Suspected fraud rule. It applies only when the chat has at least one `merchant_payment_confirmation`. The links considered are the valid `payment_link` items plus the links `detectPaymentLinks(text)` finds in code (http, https or `www.` URLs in a message that matches the deterministic payment cues), so the rule does not depend on what the model chose to report. For a considered link whose normalized host is not one of the confirmed hosts and that is not a repeat, the one finding raised for it has kind `suspected_fraud` (label `Suspected fraud`, citing the quote and the most recent case reference) instead of `payment_link`. Without a confirmation on file no fraud finding is ever created.
+6. `label` and `note` come from fixed templates, never from model text. The note is one short sentence, for example `Payment destination changed in a message from the contact.`
+7. Call `watchlist.onEvidencePublished(tx, { chat, message, messageEvent }, { phoneMentions, suspectedFraudFindingIds })` when either list is non-empty. `phoneMentions` holds every valid phone item with a concern, repeats included: `{ e164: string | null; digits: string; sourceRepresentation: string; concern; findingId: string | null }`.
+8. Set `completed` with `outcome = 'findings'` when at least one finding was inserted, else `no_new_finding`. Publish `finding.created` per finding and `review.updated`.
+
+**Case references**
+
+- `POST …/case-references` stores the confirmation with hosts normalized by `normalizeHost` (a URL or `host:port` is accepted as input; a value that does not parse is `400`). It then inserts a `suspected_fraud` finding (with `review_id` NULL) for every existing `payment_link` finding of the chat whose host is not among the chat's confirmed hosts, publishes `finding.created` for each, calls `watchlist.onEvidencePublished` once per affected message event, and reports how many it created. This is a rule over stored evidence and an officer-entered fact, so it runs in any AI mode.
+
+**Model request**
+
+- LM Studio, OpenAI-compatible `POST /chat/completions` on a loopback URL (validated by parsing: the hostname must be exactly `127.0.0.1`, `localhost` or `[::1]`; requests use `redirect: 'error'`): system prompt, then the message as JSON data with its ID; `response_format` JSON schema. Output fields per item: `sourceMessageId`, `kind`, `quote`, `extractedValue`, `concern` (the four values or `none`), `countryHint` (ISO alpha-2 or `unknown`); `none` and `unknown` map to null. Text longer than 1,500 characters is reviewed in chunks so each request fits a 4,096-token context.
 
 ## 11. Watchlist
 
-- One watchlist per workspace. An entry is keyed by `match_key`: the E.164 form when the number can be normalized, else `unnormalized:<digits>`.
-- `normalizePhone(raw, hint?: { country?: string; internationalFormat?: boolean })`: map Arabic-Indic and Extended Arabic-Indic digits to ASCII; parse as international when the text starts with `+` or `00`, or when the source marks the number as international; else parse with `country` when one is given; accept only a valid number. No default country is ever assumed. Unnormalized entries are kept as leads with `exactMatchEligible: false` and never match.
-- Observations record `origin`: `message_mention` (a number written in a message) or `sender_metadata` (a number the source supplied for the sender). They always carry the exact source reference (chat, message, message event), the source representation as written, and a reason.
-  - A valid `phone_number` finding (it has a concern) adds a `message_mention` observation. Reason text comes from the concern, for example `Mentioned with a payment request`.
-  - A `suspected_fraud` finding in a chat whose contact has `contact_phone_raw` adds a `sender_metadata` observation for that number with reason `Sender of a message with a Suspected fraud finding`.
-  - A mentioned number is never linked to the sender.
-- New key: create the entry as `needs_review`. Existing key: append the observation, set `last_seen_at` to the later time, and when the entry is `approved` or `cleared` set `new_evidence_since_review`. Status never changes automatically. `UNIQUE (entry_id, message_event_id, origin)` makes repeat delivery a no-op.
+- One watchlist per workspace. An entry is keyed by `match_key`: the E.164 form when the number can be normalized, else `unnormalized:<chatId>:<digits>`, so an unnormalized number is a lead tied to the chat that mentioned it and never merges with another chat's.
+- `normalizePhone(raw, hint?: { country?: string; internationalFormat?: boolean }) -> { e164: string | null; digits: string }` in `src/domain/phone.ts`: map Arabic-Indic and Extended Arabic-Indic digits to ASCII; rewrite a leading `00` to `+`; parse as international when the text starts with `+` or when the source marks the number as international; else parse with `country` when one is given; accept only a valid number. No default country is ever assumed. Unnormalized entries are kept with `exactMatchEligible: false` and never match.
+- Observations record `origin`: `message_mention` (a number written in a message) or `sender_metadata` (a number the source supplied for the sender). They always carry the exact source reference (chat, message, message event), the source representation as written, and a reason. A mentioned number is never linked to the sender.
+- `onEvidencePublished` (called by the review pipeline, section 10):
+  - each phone mention adds a `message_mention` observation; the reason comes from the concern, for example `Mentioned with a payment request`;
+  - each suspected-fraud finding, when the chat has a stored contact phone, adds a `sender_metadata` observation for that number, keyed by `contact_phone_e164` when set (else the unnormalized key of `contact_phone_raw`), with reason `Sender of a message with a Suspected fraud finding`.
+- `onContactPhoneKnown(tx, { chat, message, messageEvent }, phone)` (called by intake the first time an incoming message supplies the sender's phone): normalize with the hint and store `contact_phone_e164`. If the workspace already has an entry for that E.164 in any status, add a `sender_metadata` observation with reason `Sender of an inbound chat`. If that entry is `approved`, also insert `watchlist_matches`, a `watchlist_match` case action and a `watchlist.match` stream event.
+- New key: create the entry as `needs_review`. Existing key: append the observation, move `last_seen_at` to the later time, and when the entry is `approved` or `cleared` set `new_evidence_since_review`. Status never changes automatically. `UNIQUE (entry_id, message_event_id, origin)` makes repeat delivery a no-op.
 - Review (`POST /v1/watchlist/{entryId}/review`): `approve` from `needs_review`; `clear` from `needs_review` or `approved`; `reopen` from `approved` or `cleared` back to `needs_review`. Anything else is `409 invalid_transition`. Each decision needs a reason and the expected revision, increments the revision, clears `new_evidence_since_review`, and stores officer, time and decision. Observations are never removed.
-- Match: when a chat's `contact_phone_e164` first becomes known from an incoming message's sender metadata, look for an `approved` entry with that E.164 in the workspace. A hit inserts `watchlist_matches`, a `watchlist_match` case action and a `watchlist.match` stream event. The chat summary then lists the match with the evidence the caller may open. A Telegram user ID, a username or a partial number is never used for matching.
-- Access: `canAccessEntry` = same workspace AND (an observation or a match of the entry lies in a chat the caller can access). `evidence` lists only observations in accessible chats; the rest are counted in `restrictedEvidenceCount`. `canReview` (and the review route) additionally requires at least one accessible observation, else `403 evidence_access_required`. An entry the caller cannot access is `404 watchlist_entry_not_found`.
+- A chat summary lists a match only while its entry is `approved`. A match is a lead, not an identification: numbers are shared and reassigned. A Telegram user ID, a username or a partial number is never used for matching.
+- Access: `canAccessEntry` = same workspace AND (an observation or a current match of the entry lies in a chat the caller can access). `evidence` lists only observations in accessible chats; `restrictedEvidence` is true when others exist. `canReview` (and the review route) additionally requires at least one accessible observation, else `403 evidence_access_required`; `lastDecision.reason` is returned only to callers who can review, and is null otherwise. An entry the caller cannot access is `404 watchlist_entry_not_found`.
 
 ## 12. Event stream
 
-- `stream.append(tx, { workspaceId, type, chatId?, watchlistEntryId?, data })` runs inside the caller's transaction, takes the next `stream_seq` and returns it (callers store it as `position`). After commit an in-process bus wakes subscribers. The database is the source of truth; the bus only wakes readers.
+- `appendStreamEvent(tx, { workspaceId, type, chatId?, watchlistEntryId?, data })` runs inside the caller's transaction, takes the next `stream_seq` and returns it (callers store it as `position`). After commit an in-process bus wakes subscribers. The database is the source of truth; the bus only wakes readers.
 - Retention: the newest `MIRSAD_STREAM_RETENTION` events per workspace (default 5000). Pruning raises `stream_floor`.
-- `GET /v1/events`: the start position is the `Last-Event-ID` header when present, else `?cursor=`, else the current head. If the start is below `stream_floor`, the first message is `stream.reset` and reading continues from the head. Then loop: read events after the last sent sequence, send those the caller may see, advance past the rest, wait for a wake-up or send a `: keep-alive` comment every 15 seconds. Because reads start from the snapshot cursor, an event committed between a snapshot and the subscription is delivered.
-- Wire format: `id: <seq>`, `event: <type>`, `data: <json>` where the JSON is `{ "id": "<seq>", "type", "chatId", "occurredAt", … }`.
+- `GET /v1/events`: the start position is the `Last-Event-ID` header when present, else `?cursor=`, else the current head. Then loop. Before each read, if the position is below `stream_floor` or above the head (a cursor from an older data directory, or a client that fell behind pruning), send `stream.reset` and continue from the head. Read events after the position, send those the caller may see, advance past the rest. Then wait for a wake-up, sending a `: keep-alive` comment every 15 seconds. Each batch re-checks that the principal is not disabled and ends the stream if it is. Because reads start from the snapshot cursor, an event committed between a snapshot and the subscription is delivered.
+- Wire format: one SSE message per event with `id` = the sequence, `event` = the type and `data` = JSON `{ "id": "<seq>", "type", "chatId", "occurredAt", … }`.
+- The token travels only in the `Authorization` header. The browser's `EventSource` cannot send one, so the dashboard reads the stream with `fetch()` and a small parser and sends `Last-Event-ID` itself when it reconnects. A host can do the same or use any SSE client that supports headers.
 - Delivery rule: chat-scoped events need `canAccessChat`; watchlist entry events need `canAccessEntry`.
-- Types and extra fields (ids and statuses only, never message text): `chat.created` (inboxStatus) · `chat.control_changed` (aiMode, revision) · `message.recorded` (messageId, direction, origin) · `message.edited` / `message.deleted` (messageId, messageEventId) · `capture.updated` (messageId, messageEventId, captureId, status, artifactId) · `review.updated` (messageId, messageEventId, status, outcome) · `finding.created` (messageId, findingId, kind) · `case_action.recorded` (caseActionId, actionType) · `case_reference.recorded` (caseReferenceId) · `watchlist.entry_updated` (watchlistEntryId, status, reason: created | observation_added | reviewed; chatId null) · `watchlist.match` (watchlistEntryId) · `stream.reset` (reason: cursor_out_of_retention, resumeFrom, reload: ['inbox','timeline']).
+- Types and extra fields (ids and statuses only, never message text): `chat.created` (inboxStatus) · `chat.control_changed` (aiMode, revision) · `message.recorded` (messageId, direction, origin) · `message.edited` / `message.deleted` / `message.conflicting_copy` (messageId, messageEventId) · `capture.updated` (messageId, messageEventId, captureId, status, artifactId) · `review.updated` (messageId, messageEventId, status, outcome) · `finding.created` (messageId, findingId, kind) · `case_action.recorded` (caseActionId, actionType) · `case_reference.recorded` (caseReferenceId) · `watchlist.entry_updated` (watchlistEntryId, status, reason: created | observation_added | reviewed; chatId null) · `watchlist.match` (watchlistEntryId) · `stream.reset` (reason: cursor_out_of_range, resumeFrom, reload: ['inbox','timeline']).
 
 ## 13. Telegram
 
 - `ChannelAdapter<Raw>.normalize(raw) -> IntakeEnvelope[]` is the shared adapter interface. The Telegram adapter is a pure mapping from one Bot API `Update` to intake envelopes; exact field mapping is in section 19.
-- Fixtures in `fixtures/telegram/*.json` hold Telegram-shaped, fully synthetic updates: `{ description, synthetic: true, externalAccountId, businessUserId, updates: Update[], conversationStarts?: [{ chatId, messageId }] }`. `conversationStarts` is the fixture author's assertion about a synthetic conversation; real Telegram updates carry no start marker, so live intake always yields `First observed: …`.
-- `npm run replay -- <fixture>` normalizes a fixture and posts each envelope to `POST /v1/ingest` with the fixture connector's token. Replay is the only way Telegram-shaped data enters the prototype.
+- Fixtures in `fixtures/telegram/*.json` hold Telegram-shaped, fully synthetic updates: `{ description, synthetic: true, account: 'intake' | 'officer', businessUserId, businessConnectionId, updates: Update[], conversationStarts?: [{ chatId, messageId }] }`. `account` is symbolic: the replay caller maps it to a real `externalAccountId`, because the test harness and the demo seed use different account IDs. The adapter drops updates whose `business_connection_id` differs from `businessConnectionId`. `conversationStarts` is the fixture author's assertion about a synthetic conversation; real Telegram updates carry no start marker, so live intake always yields `First observed: …`.
+- `npm run replay -- <fixture>` normalizes a fixture and posts each envelope to `POST /v1/ingest` with the fixture connector's token. Replay is the only way Telegram-shaped data enters the prototype. It refuses a file that is not marked `synthetic: true` or that contains a domain or phone number outside the reserved ranges, because fixture-replay content is the only Telegram-shaped content the model may review.
 - Live connector (`src/adapters/telegram/live-connector.ts`): long polling for business updates only. It stays off unless `TELEGRAM_LIVE_ENABLED=true` and the bot token, approved connection ID, approved chat IDs and approval reference are all set. Updates for other connections or chats are dropped before storage and only counted. It ingests through the same intake function with a `telegram_business_live` connector, so its content is never reviewed by any model (section 10). It has no send capability.
-- Readiness: `docs/telegram/readiness.json` is written by `npm run telegram:readiness` after the local checks pass (`ready_for_controlled_test`). `controlled_test_verified` is reported only when `docs/telegram/controlled-test-record.json` exists and validates (approval reference, date, scope, per-event coverage, manual reply result). Nothing in the code can produce that record without an approved test.
+- Readiness: `npm run telegram:readiness` runs these local checks against a temporary instance and writes each result to `docs/telegram/readiness.json` and `docs/telegram/readiness.md`: an inbound-first chat is flagged New inbound; an officer-first chat shows both directions; every received message has its own capture; an edit and a deletion are separate events and the original stays; a redelivered update creates nothing new; outgoing (officer-sent) fixture messages arrive and are labelled outgoing; a takeover followed by a composer reply is recorded as Simulated send; the live connector refuses to start without its gates. The state is `ready_for_controlled_test` only when every check passes. `controlled_test_verified` is reported only when the file named by `MIRSAD_CONTROLLED_TEST_RECORD` exists and validates against the schema in `src/contract/controlled-test-record.ts` (approval reference, date, tester, approved scope, per-event coverage, manual reply result). Nothing in the code can produce that record without an approved test.
 - `GET /v1/status` returns `{ service: { version, startedAt }, storage: { database, evidenceDirectory }, workers: { capture: { pending, failed }, review: { pending, running, unavailable } }, reviewer: { kind, modelId, reachable }, channels: { telegram: { fixtureReplay: 'available', liveConnector: 'disabled' | 'enabled', readiness: 'not_assessed' | 'ready_for_controlled_test' | 'controlled_test_verified', readinessRecordedAt }, whatsapp: { status: 'not_started', gate: string } } }`.
 
 ## 14. WhatsApp gate
@@ -452,7 +491,7 @@ WhatsApp-specific implementation starts only after the Telegram controlled test 
 
 ## 15. Config
 
-Environment variables (all in `.env.example`; `.env` is git-ignored): `MIRSAD_HOST` (default `127.0.0.1`; only `127.0.0.1`, `localhost` or `::1` are accepted), `MIRSAD_PORT` (8787), `MIRSAD_DATA_DIR` (`./data`), `MIRSAD_DEMO_SEED` (`true`), `MIRSAD_REVIEWER` (`lmstudio` | `deterministic` | `disabled`), `MIRSAD_LMSTUDIO_BASE_URL` (`http://127.0.0.1:1234/v1`; must be a loopback URL), `MIRSAD_LMSTUDIO_MODEL`, `MIRSAD_LMSTUDIO_CONTEXT_TOKENS` (4096), `MIRSAD_LMSTUDIO_TIMEOUT_MS` (120000), `MIRSAD_REVIEW_CONCURRENCY` (2), `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (`fixture_replay`), `MIRSAD_STREAM_RETENTION` (5000), `MIRSAD_RATE_LIMIT_PER_MINUTE` (600), `MIRSAD_WHATSAPP_IMPORT_ENABLED` (`false`), `TELEGRAM_LIVE_ENABLED` (`false`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_APPROVED_CONNECTION_ID`, `TELEGRAM_APPROVED_CHAT_IDS`, `TELEGRAM_APPROVAL_REFERENCE`.
+Environment variables (all in `.env.example`; `.env` is git-ignored): `MIRSAD_HOST` (default `127.0.0.1`; only `127.0.0.1`, `localhost` or `::1` are accepted), `MIRSAD_PORT` (8787), `MIRSAD_DATA_DIR` (`./data`), `MIRSAD_DEMO_SEED` (`true`), `MIRSAD_REVIEWER` (`lmstudio`; or `deterministic`, `disabled`), `MIRSAD_LMSTUDIO_BASE_URL` (`http://127.0.0.1:1234/v1`; the parsed hostname must be exactly `127.0.0.1`, `localhost` or `[::1]`), `MIRSAD_LMSTUDIO_MODEL` (`qwen3.5-9b`), `MIRSAD_LMSTUDIO_CONTEXT_TOKENS` (4096), `MIRSAD_LMSTUDIO_TIMEOUT_MS` (120000), `MIRSAD_REVIEW_CONCURRENCY` (2), `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (`fixture_replay`), `MIRSAD_STREAM_RETENTION` (5000), `MIRSAD_RATE_LIMIT_PER_MINUTE` (600), `MIRSAD_WHATSAPP_IMPORT_ENABLED` (`false`), `MIRSAD_CONTROLLED_TEST_RECORD` (`docs/telegram/controlled-test-record.json`), `TELEGRAM_LIVE_ENABLED` (`false`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_APPROVED_CONNECTION_ID`, `TELEGRAM_APPROVED_CHAT_IDS`, `TELEGRAM_APPROVAL_REFERENCE`.
 
 Demo seed (first start with an empty database and `MIRSAD_DEMO_SEED=true`): one workspace, two demo officers, two Telegram fixture accounts (`tg-demo-intake`, marked as an intake account, and `tg-demo-officer`), one fixture connector (`fixture_replay`, trusted start marker) granted on both. Tokens are random, stored hashed, and written once to `<dataDir>/demo-credentials.json` (git-ignored) for the local scripts and the dashboard sign-in.
 
@@ -461,6 +500,8 @@ Demo seed (first start with an empty database and `MIRSAD_DEMO_SEED=true`): one 
 `Logger` writes JSON lines. Log fields are IDs, codes, counts, lengths and durations. Message text, quotes, extracted values, phone numbers, display names and tokens are never logged; errors are logged by code and class. A test ingests a canary string and asserts it never appears in captured log output.
 
 ## 17. Test harness
+
+`src/app.ts` builds one dependency object and passes it to `registerRoutes` and to both worker factories: `AppDeps { config; db; clock; logger; bus; identity; evidenceStore; renderer; reviewer; workers: { capture: { wake(): void }; review: { wake(): void } } }`. A worker factory has the shape `(deps: AppDeps) => { wake(): void; idle(): Promise<void>; stop(): Promise<void> }`.
 
 `tests/helpers/harness.ts` exports `startHarness(overrides?) -> Promise<TestHarness>`:
 
@@ -493,6 +534,10 @@ Seeded for tests: workspace A with officers A and B (grants on `tg-intake-1`, `t
 7. Watchlist entries are visible to officers who can open at least one supporting or matching chat; evidence links are filtered per caller.
 8. The service refuses to bind to anything other than loopback.
 9. Git history uses a placeholder author identity because the machine had none configured.
+10. Officer-supplied screenshots are not built in this version. The artifact kind is reserved, and every image Mirsad shows carries the label `Mirsad-rendered capture`.
+11. One finding is raised per new detail. A link that conflicts with a recorded merchant confirmation raises a single `Suspected fraud` finding instead of a link note plus a fraud note.
+12. A number that cannot be normalized is kept as a lead for the chat that mentioned it and is never merged across chats or matched.
+13. Event IDs, positions and cursors are workspace-wide sequence numbers, so gaps show that other chats in the workspace had activity (not what it was).
 
 ## 19. Research-settled choices
 
@@ -507,7 +552,7 @@ Runtime dependencies: `hono` 4.13.19, `@hono/node-server` 2.1.11, `zod` 4.6.7, `
 ### 19.2 SQLite: built-in `node:sqlite`
 
 - `new DatabaseSync(file, { timeout: 5000, enableForeignKeyConstraints: true })`, then `PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;`. No flag and no warning on this Node version.
-- There is no transaction helper. `Db.transaction(fn)` is: outermost call `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`; nested call `SAVEPOINT` / `RELEASE` / `ROLLBACK TO` (use `db.isTransaction`). `fn` is synchronous: never `await` inside a transaction. Rendering, file writes and model calls happen outside transactions.
+- There is no transaction helper. `Db.transaction(fn)` is: outermost call `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`; nested call `SAVEPOINT` / `RELEASE` / `ROLLBACK TO` (use `db.isTransaction`). `fn` is synchronous: never `await` inside a transaction. The helper enforces this: it tracks nesting with its own depth counter and throws, rolling back, when `fn` returns a thenable. Rendering, file writes and model calls happen outside transactions.
 - Binding `undefined` or a boolean throws: repositories map `undefined` to `null` and booleans to `0`/`1`. Rows are null-prototype objects: repositories return plain objects. Integers above 2^53 throw; nothing here needs them.
 - `INSERT … RETURNING`, upsert with a partial-index conflict target, partial unique indexes and JSON functions all work.
 
@@ -552,7 +597,7 @@ Source: the official Bot API reference and Telegram's terms, read on 2026-11-21.
 | `externalAccountId` | `String(BusinessConnection.user.id)`, the owner account. The connection ID can change, so it is stored as state and never used as identity. |
 | `externalChatId` | `String(message.chat.id)` |
 | `sourceMessageId` | `tg:<message_id>` (unique per chat). `message_id` 0 cannot be deduplicated: skip and count it. |
-| `sourceEventId` | `tg:u<update_id>` for `business_message` and `edited_business_message`; `tg:u<update_id>:<message_id>` for each ID in `deleted_business_messages` |
+| `sourceEventId` | `tg:u<update_id>:m<message_id>` for `business_message`; `tg:u<update_id>:m<message_id>:e<edit_date>` for `edited_business_message`; `tg:u<update_id>:m<message_id>:del` for each ID in `deleted_business_messages`. Telegram may restart `update_id` at a random value after a quiet week, so the update ID alone is not a safe key. |
 | `direction` | `outgoing` when `from.id` equals the owner's user ID or `sender_business_bot` is present; otherwise `incoming` |
 | `text` | `text`, else `caption`, else `''`; media kinds present (`photo`, `document`, `video`, `audio`, `voice`, `video_note`, `sticker`, `animation`, `location`, `venue`, `poll`, `contact`) go to `unsupportedContent` |
 | `sentAt` / `editedAt` | `date` / `edit_date` (Unix seconds). Deletions carry no time. |
