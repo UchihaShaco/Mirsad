@@ -1,6 +1,20 @@
-// Stub until Task 4 replaces the handler bodies; keys and signatures are final.
-import { notImplemented, type RouteModule } from '../context.ts';
+/** Pause, take over and resume (design section 8). Chat access (404) is checked before the body (400). */
+import { ok } from '../../contract/errors.ts';
+import { ControlRequest } from '../../contract/schemas.ts';
+import { requireChat } from '../../services/access.ts';
+import { applyControl } from '../../services/control.ts';
+import { principalOf, type RouteModule } from '../context.ts';
+import { parseJsonBody } from '../middleware/validate.ts';
 
 export const routes: RouteModule = {
-  'POST /v1/chats/{chatId}/control': notImplemented,
+  'POST /v1/chats/{chatId}/control': async (c, deps) => {
+    const officer = principalOf(c);
+    const chatId = c.req.param('chatId') ?? '';
+    deps.db.transaction((tx) => requireChat(tx, officer, chatId));
+    const body = await parseJsonBody(c, ControlRequest);
+    const result = deps.db.transaction((tx) => applyControl(tx, officer, chatId, body.action, body.expectedRevision));
+    // Resuming queued the chat's reviews again.
+    if (result.chat.aiMode === 'ai_active') deps.workers.review.wake();
+    return c.json(ok(result));
+  },
 };

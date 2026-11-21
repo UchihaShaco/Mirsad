@@ -1,4 +1,4 @@
-/** Minimal SSE client for tests: parses frames, ignores keep-alive comments. */
+/** Minimal SSE client for tests: parses frames into messages and counts keep-alive comments. */
 
 export interface StreamMessage {
   id: string | null;
@@ -15,6 +15,8 @@ export interface OpenStreamOptions {
 export interface StreamClient {
   status: number;
   received: StreamMessage[];
+  /** Comment lines received so far (the server's keep-alives). */
+  readonly comments: number;
   next(predicate?: (message: StreamMessage) => boolean, timeoutMs?: number): Promise<StreamMessage>;
   close(): void;
   /** Resolves when the server ends the stream or close() is called. */
@@ -62,6 +64,7 @@ export async function openStream(baseUrl: string, token: string, options: OpenSt
   const listeners = new Set<() => void>();
   let readIndex = 0;
   let finished = false;
+  let comments = 0;
 
   const pump = async () => {
     const decoder = new TextDecoder();
@@ -74,7 +77,9 @@ export async function openStream(baseUrl: string, token: string, options: OpenSt
         buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
         let boundary = buffer.indexOf('\n\n');
         while (boundary !== -1) {
-          const message = parseFrame(buffer.slice(0, boundary));
+          const frame = buffer.slice(0, boundary);
+          comments += frame.split('\n').filter((line) => line.startsWith(':')).length;
+          const message = parseFrame(frame);
           buffer = buffer.slice(boundary + 2);
           if (message) received.push(message);
           boundary = buffer.indexOf('\n\n');
@@ -119,5 +124,14 @@ export async function openStream(baseUrl: string, token: string, options: OpenSt
       check();
     });
 
-  return { status: res.status, received, next, close: () => controller.abort(), ended };
+  return {
+    status: res.status,
+    received,
+    get comments() {
+      return comments;
+    },
+    next,
+    close: () => controller.abort(),
+    ended,
+  };
 }

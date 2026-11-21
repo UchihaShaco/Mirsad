@@ -74,6 +74,35 @@ export function insertSourceMessage(tx: Tx, input: InsertSourceMessageInput): Me
   return row;
 }
 
+export interface InsertComposerMessageInput {
+  /** Pre-generated `msg_` ID (see InsertSourceMessageInput.id). */
+  id: string;
+  chatId: string;
+  workspaceId: string;
+  text: string;
+  textSha256: string;
+  receivedAt: string;
+  authorOfficerId: string;
+  position: number;
+}
+
+/**
+ * An outgoing message written in Mirsad's composer (design section 8): recorded locally as a simulated send,
+ * with no source IDs. Nothing is delivered to any channel.
+ */
+export function insertComposerMessage(tx: Tx, input: InsertComposerMessageInput): MessageRow {
+  const row = tx.get<MessageRow>(
+    `INSERT INTO messages (id, chat_id, workspace_id, direction, origin, source_message_id, original_captured, text, text_sha256,
+       unsupported_content, sent_at, received_at, capture_method, author_officer_id, send_status, position)
+     VALUES (:id, :chatId, :workspaceId, 'outgoing', 'officer_composer', NULL, 1, :text, :textSha256,
+       '[]', NULL, :receivedAt, 'officer_composer', :authorOfficerId, 'simulated', :position)
+     RETURNING *`,
+    { ...input },
+  );
+  if (!row) throw new Error('message_insert_failed');
+  return row;
+}
+
 /** Fills a placeholder with the original content; only rows with original_captured = 0 are touched. */
 export function fillPlaceholder(tx: Tx, messageId: string, content: SourceContent): MessageRow {
   const row = tx.get<MessageRow>(
