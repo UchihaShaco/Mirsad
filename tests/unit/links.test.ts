@@ -129,5 +129,17 @@ describe('detectPaymentLinks', () => {
   it('ignores other URLs when the message has no cue, and words that merely contain a cue', () => {
     expect(detectPaymentLinks('The menu is at https://shop.test/menu')).toEqual([]);
     expect(detectPaymentLinks('I feel the coffee at https://cafe.test/menu is great')).toEqual([]);
+    expect(detectPaymentLinks('Our news feed is at https://cafe.test/news')).toEqual([]);
+  });
+
+  it('reads the -ed and -ing forms of the English payment cues as cues', () => {
+    expect(detectPaymentLinks('Once paid, keep paying via https://secure.shop.test/p')).toEqual(['https://secure.shop.test/p']);
+    for (const word of ['paid', 'paying', 'transferred', 'transferring', 'invoiced', 'invoicing', 'deposited', 'depositing', 'settled', 'settling', 'remitted', 'remitting']) {
+      expect(detectPaymentLinks(`Amount ${word} at https://secure.shop.test/p`), word).toEqual(['https://secure.shop.test/p']);
+    }
+  });
+
+  it('does not read the Arabic word for "about" as a payment cue', () => {
+    expect(detectPaymentLinks('عندي سؤال حول الحجز https://maps.shop.test/place/1')).toEqual([]);
   });
 });

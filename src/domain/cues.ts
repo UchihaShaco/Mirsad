@@ -1,11 +1,20 @@
 /**
  * The deterministic cues of design section 10, shared by the deterministic reviewer and the code-side payment link
- * check. English cues match whole words (a plural s allowed), case-insensitively; Arabic cues match anywhere, because
- * Arabic words carry attached prefixes and suffixes.
+ * check. English cues match whole words (a plural s allowed), case-insensitively, and payment cues their -ed and -ing
+ * forms too; Arabic cues match anywhere, because Arabic words carry attached prefixes and suffixes.
  */
 
 const ENGLISH_PAYMENT_CUES = ['pay', 'payment', 'transfer', 'invoice', 'fee', 'deposit', 'checkout', 'settle', 'remit'];
-const ARABIC_PAYMENT_CUES = ['ادفع', 'الدفع', 'دفع', 'تحويل', 'حول', 'رسوم', 'فاتورة', 'سداد', 'المبلغ'];
+/**
+ * The -ed and -ing forms of the English payment cues, as English spells them. fee, payment and checkout are nouns and
+ * have none, so feed and feel never count.
+ */
+const ENGLISH_PAYMENT_INFLECTIONS = [
+  'paid', 'paying', 'transferred', 'transferring', 'invoiced', 'invoicing',
+  'deposited', 'depositing', 'settled', 'settling', 'remitted', 'remitting',
+];
+/** حول is not a cue: besides "transfer!" it is the everyday word for "about". */
+const ARABIC_PAYMENT_CUES = ['ادفع', 'الدفع', 'دفع', 'تحويل', 'رسوم', 'فاتورة', 'سداد', 'المبلغ'];
 const ENGLISH_CALLBACK_CUES = ['call', 'ring', 'whatsapp', 'contact me'];
 const ARABIC_CALLBACK_CUES = ['اتصل', 'كلمني', 'راسلني', 'تواصل'];
 const ENGLISH_RECIPIENT_MARKERS = ['recipient', 'beneficiary', 'account name'];
@@ -20,7 +29,7 @@ function wholeWords(words: readonly string[]): RegExp {
   return new RegExp(`(?<![\\p{L}\\p{N}_])(?:${alternatives})s?(?![\\p{L}\\p{N}_])`, 'iu');
 }
 
-const ENGLISH_PAYMENT = wholeWords(ENGLISH_PAYMENT_CUES);
+const ENGLISH_PAYMENT = wholeWords([...ENGLISH_PAYMENT_CUES, ...ENGLISH_PAYMENT_INFLECTIONS]);
 const ENGLISH_CALLBACK = wholeWords(ENGLISH_CALLBACK_CUES);
 const ENGLISH_RECIPIENT = wholeWords(ENGLISH_RECIPIENT_MARKERS);
 
