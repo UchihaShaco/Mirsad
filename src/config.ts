@@ -115,8 +115,10 @@ export function loadConfig(env: Env, options: LoadConfigOptions = {}): Config {
     throw new ConfigError('MIRSAD_HOST', `must be one of ${LOOPBACK_HOSTS.join(', ')}`);
   }
   const whatsappImportEnabled = bool(env, 'MIRSAD_WHATSAPP_IMPORT_ENABLED', false);
-  if (whatsappImportEnabled && !hasValidControlledTestRecord(options.controlledTestRecordPath ?? CONTROLLED_TEST_RECORD_PATH)) {
-    throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a valid Telegram controlled-test record');
+  const recordPath = options.controlledTestRecordPath ?? CONTROLLED_TEST_RECORD_PATH;
+  const approvalReference = value(env, 'TELEGRAM_APPROVAL_REFERENCE');
+  if (whatsappImportEnabled && !hasValidControlledTestRecord(recordPath, approvalReference)) {
+    throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a verified Telegram controlled-test record');
   }
   return {
     host,
