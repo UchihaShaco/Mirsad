@@ -9,7 +9,8 @@ export interface CaptureRenderInput {
   chatId: string;
   messageId: string;
   messageEventId: string;
-  eventType: 'recorded' | 'edited';
+  /** Every source message event with content has a capture, conflicting copies included (design section 9). */
+  eventType: 'recorded' | 'edited' | 'conflicting_copy';
   direction: Direction | null;
   senderLabel: string | null;
   receivedAt: string;

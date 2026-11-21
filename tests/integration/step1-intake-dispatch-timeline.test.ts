@@ -38,6 +38,12 @@ async function timeline(chatId: string, token = h.tokens.officerA) {
   return h.http(token).get(`/v1/chats/${chatId}/timeline`);
 }
 
+/** Row counts once the capture worker is idle, so its own writes cannot land between two snapshots. */
+async function settledSnapshot() {
+  await h.drain();
+  return storeSnapshot(h.dataDir);
+}
+
 describe('step 1: intake, registry, dispatch and timeline', () => {
   it('creates a New inbound chat from its first incoming Telegram fixture message, registers an officer-first chat, dispatches both, and reads both timelines', async () => {
     const inboundChat = uniqueId('in-');
@@ -84,7 +90,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(inMessage).toMatchObject({
       direction: 'incoming', origin: 'source', text: 'Good morning', sentAt: '2026-11-21T07:59:00.000Z', receivedAt: '2026-11-21T08:00:00.000Z',
       source: { channel: 'telegram', captureMethod: 'fixture_replay', sourceEventId: 'tg:u1001:m1', sourceMessageId: 'tg:1' },
-      capture: { status: 'pending', kind: 'mirsad_rendered_capture', artifactId: null },
+      capture: { id: first.body.data.captureId, kind: 'mirsad_rendered_capture' },
       review: { status: 'pending', outcome: null },
     });
     expect(inTimeline.body.data).toMatchObject({ findings: [], caseReferences: [], messageEvents: [] });
@@ -94,7 +100,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     const outTimeline = await timeline(officerChatId);
     expect(outTimeline.body.data.chat).toMatchObject({ originLabel: 'First observed: outgoing', intakeAccount: false, acknowledgementTemplate: null });
     const [outMessage] = outTimeline.body.data.messages;
-    expect(outMessage).toMatchObject({ direction: 'outgoing', text: 'Hello from the officer account', capture: { status: 'pending' }, review: null });
+    expect(outMessage).toMatchObject({ direction: 'outgoing', text: 'Hello from the officer account', capture: { id: outgoing.body.data.captureId }, review: null });
     expect(outTimeline.body.data.caseActions.map((a: { type: string }) => a.type)).toEqual(['chat_registered', 'dispatch_started']);
   });
 
@@ -134,7 +140,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(del.body.data).toMatchObject({ result: 'recorded', messageId: first.body.data.messageId, captureId: null });
     const tl = (await timeline(chatId)).body.data;
     expect(tl.messages).toHaveLength(1);
-    expect(tl.messages[0]).toMatchObject({ text: 'Original words', deletedAtSource: true, capture: { status: 'pending' } });
+    expect(tl.messages[0]).toMatchObject({ text: 'Original words', deletedAtSource: true, capture: { id: first.body.data.captureId } });
     expect(tl.messageEvents).toEqual([
       expect.objectContaining({ type: 'deleted', messageId: first.body.data.messageId, text: null, sourceEventId: 'tg:u900:m12:del', capture: null, review: null }),
     ]);
@@ -153,7 +159,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(tl.messageEvents).toEqual([
       expect.objectContaining({
         type: 'edited', text: 'Second version', sourceOccurredAt: '2026-11-21T07:58:00.000Z',
-        capture: expect.objectContaining({ status: 'pending' }), review: expect.objectContaining({ status: 'not_requested' }),
+        capture: expect.objectContaining({ id: edit.body.data.captureId }), review: expect.objectContaining({ status: 'not_requested' }),
       }),
     ]);
     expect(streamEvents(h.dataDir, chatId).map((e) => e.type)).toContain('message.edited');
@@ -179,7 +185,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(original.body.data).toMatchObject({ result: 'recorded', messageId: edit.body.data.messageId });
     tl = (await timeline(chatId)).body.data;
     expect(tl.messages).toHaveLength(1);
-    expect(tl.messages[0]).toMatchObject({ originalCaptured: true, text: 'Original text', editedAtSource: true, capture: { status: 'pending' } });
+    expect(tl.messages[0]).toMatchObject({ originalCaptured: true, text: 'Original text', editedAtSource: true, capture: { id: original.body.data.captureId } });
     expect(tl.messageEvents[0]).toMatchObject({ type: 'edited', text: 'Edited text' });
   });
 
@@ -243,7 +249,8 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     );
     expect(rows).toHaveLength(3);
     for (const row of rows) {
-      expect(row.status).toBe('pending');
+      // Created pending with the event; the capture worker may already have moved it on.
+      expect(row.status).toMatch(/^(pending|rendering|ready)$/);
       expect(row.created_at).toBe(row.received_at);
     }
   });
@@ -251,7 +258,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
   it('dispatch validates access to the whole selection before changing any chat', async () => {
     const intakeChat = (await ingest(envelope(h.accounts.intake, uniqueId('sel-'), recorded({ messageId: 60 })))).body.data.chatId;
     const officerChat = (await register(uniqueId('sel-out-'))).body.data.chat.id;
-    const before = storeSnapshot(h.dataDir);
+    const before = await settledSnapshot();
     const res = await dispatch([intakeChat, officerChat, 'chat_00000000000000000000000000000000'], uniqueId('k-'), h.tokens.officerC);
     expect(res.status).toBe(404);
     expect(res.body.error).toMatchObject({ code: 'chat_not_found', details: { chatIds: [officerChat, 'chat_00000000000000000000000000000000'] } });
@@ -298,7 +305,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
   });
 
   it('intake for an account outside the connector\'s grants is 403 and stores nothing', async () => {
-    const before = storeSnapshot(h.dataDir);
+    const before = await settledSnapshot();
     const live = await ingest(envelope(h.accounts.live, uniqueId('nogrant-'), recorded({ messageId: 70 })));
     expect(live.status).toBe(403);
     expect(live.body.error.code).toBe('account_not_authorized');
@@ -306,7 +313,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(unknown.status).toBe(403);
     expect(unknown.body.error.code).toBe('account_not_authorized');
     const liveChat = (await ingest(envelope(h.accounts.live, uniqueId('livechat-'), recorded({ messageId: 72 })), h.tokens.liveConnector)).body.data.chatId;
-    const snapshot = storeSnapshot(h.dataDir);
+    const snapshot = await settledSnapshot();
     const foreign = await connector().post(`/v1/chats/${liveChat}/events`, recorded({ messageId: 73 }));
     expect(foreign.status).toBe(404);
     expect(foreign.body.error.code).toBe('chat_not_found');
@@ -327,7 +334,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
   });
 
   it('registering a chat needs a grant on the account, publishes chat.created and records chat_registered', async () => {
-    const before = storeSnapshot(h.dataDir);
+    const before = await settledSnapshot();
     const denied = await register(uniqueId('reg-'), h.accounts.officer, h.tokens.officerC);
     expect(denied.status).toBe(404);
     expect(denied.body.error.code).toBe('account_not_found');
@@ -483,7 +490,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
   });
 
   it('whatsapp intake is refused while the gate is closed', async () => {
-    const before = storeSnapshot(h.dataDir);
+    const before = await settledSnapshot();
     const res = await ingest(envelope({ source: 'whatsapp', externalAccountId: 'wa-demo-1' }, uniqueId('wa-'), recorded({ messageId: 150 })));
     expect(res.status).toBe(422);
     expect(res.body.error.code).toBe('channel_not_enabled');
@@ -493,7 +500,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
   it('malformed intake payloads are rejected and store nothing', async () => {
     const chat = uniqueId('bad-');
     const chatId = (await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 160 })))).body.data.chatId;
-    const before = storeSnapshot(h.dataDir);
+    const before = await settledSnapshot();
     const good = recorded({ messageId: 161 });
     const bad: unknown[] = [
       {},
