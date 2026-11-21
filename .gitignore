@@ -1,0 +1,13 @@
+node_modules/
+data/
+coverage/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.superpowers/
+test-results/
+playwright-report/
+.DS_Store
+Thumbs.db
