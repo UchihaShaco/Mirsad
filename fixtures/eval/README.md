@@ -43,7 +43,13 @@ Only incoming messages (from the contact) are reviewed. `expected` lists exactly
 ## Synthetic data only
 
 - Domains end in `.test` or use `example.*` (for example `pay.example.com`).
-- Phone numbers come only from the reserved fictional ranges `+44 7700 900000`–`900999` (also written `07700 900xxx`) and `+1 <area> 555 0100`–`0199` (also written `(area) 555-01xx`), in any spacing and in Arabic-Indic digits.
+- Phone numbers come only from the reserved fictional ranges `+44 7700 900000`–`900999` (also written `07700 900xxx`) and `+1 <area> 555 0100`–`0199` (also written `(area) 555-01xx`), in Arabic-Indic digits too. Spacing is free, except that a US number written without `+1` or `001` keeps its usual layout (see below).
 - Names, companies and IBANs are invented and generic (IBANs carry `TEST` in place of a bank code). No real organisations, banks or people.
 
-The fixture test finds phone-like spans as runs of 7 to 15 digits that start with `+`, `(`, `00` or `0`, after mapping Arabic-Indic digits to ASCII. Account numbers and IBAN digit groups should therefore not start with `0`, and phone numbers should always carry one of those prefixes so the check sees them.
+The fixture test treats **every run of seven or more digits as a phone number** and fails unless it is a reserved number. A run may use ASCII or Arabic-Indic digits, may start with `+`, and may be broken by spaces (no-break spaces and invisible direction marks count as spaces), hyphens or dashes, dots or brackets. Only IBANs (two letters, two check digits, then groups of four) are skipped. A run is accepted when it reads as:
+
+- after `+` or `00`: `44 7700 900xxx`, or `1`, an area code and `555 01xx`, in any grouping;
+- starting with a single `0`: `07700 900xxx` only;
+- otherwise: `44 7700 900xxx` missing its `+`, or a US number laid out `(area) 555-01xx`, `area-555-01xx`, `area 555 01xx`, `area.555.01xx` or `1-area-555-01xx` (groups of 3, 3 and 4), `area55501xx` (no grouping), or locally `555-01xx`.
+
+Area codes start with 2 to 9. Write any other number (an account number, a reference, a date, an amount) so that no run reaches seven digits: break it with letters, commas or slashes. Card and tracking numbers are runs too. Keep other digits from following a phone number after only a space, hyphen, dot or bracket, because the run then reads as one longer number and fails.
