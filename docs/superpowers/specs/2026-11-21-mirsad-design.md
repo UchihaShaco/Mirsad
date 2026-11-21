@@ -407,7 +407,7 @@ Evidence capture never waits for review. The reviewer extracts; code decides.
 **Rows and policy**
 
 - A `reviews` row is created at intake for every incoming source event with text (`recorded`, `edited`, `conflicting_copy`). Initial status: `not_permitted` when policy forbids review; else `pending` when the chat is `ai_active`; else `not_requested`.
-- Policy (`src/domain/review-policy.ts`): `isReviewPermitted(source, captureMethod, allowed)`, always called with the reviewed event's own capture method. `telegram_business_live` is never reviewable. Content whose source is `telegram` is reviewable only when it arrived by `fixture_replay`. Any other combination is reviewable only when the capture method is listed in `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (default `fixture_replay`). The rule is applied when the row is created and again when the worker claims it; a row that fails then becomes `not_permitted`.
+- Policy (`src/domain/review-policy.ts`): `isReviewPermitted(source, captureMethod, allowed)`, always called with the reviewed event's own capture method. `telegram_business_live` is never reviewable. A capture method is reviewable only when it is listed in `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (default `fixture_replay`). On top of that, content whose source is `telegram` is reviewable only when it arrived by `fixture_replay`, whatever the list says. The rule is applied when the row is created and again when the worker claims it; a row that fails then becomes `not_permitted`.
 
 **Queueing** (`src/services/review-queue.ts`)
 
@@ -501,7 +501,7 @@ Demo seed (first start with an empty database and `MIRSAD_DEMO_SEED=true`): one 
 
 ## 17. Test harness
 
-`src/app.ts` builds one dependency object and passes it to `registerRoutes` and to both worker factories: `AppDeps { config; db; clock; logger; bus; identity; evidenceStore; renderer; reviewer; workers: { capture: { wake(): void }; review: { wake(): void } } }`. A worker factory has the shape `(deps: AppDeps) => { wake(): void; idle(): Promise<void>; stop(): Promise<void> }`.
+`src/app.ts` builds one dependency object and passes it to `registerRoutes` and to both worker factories: `AppDeps { config; db; clock; logger; bus; identity; evidenceStore; renderer; reviewer; streamKeepAliveMs; startedAt; workers: { capture: { wake(): void }; review: { wake(): void } } }`. A worker factory has the shape `(deps: AppDeps) => { wake(): void; idle(): Promise<void>; stop(): Promise<void> }`.
 
 `tests/helpers/harness.ts` exports `startHarness(overrides?) -> Promise<TestHarness>`:
 
