@@ -1,0 +1,22 @@
+{
+  "id": "mixed-06-pickup-map-and-charge",
+  "language": "mixed",
+  "tags": ["payment_link"],
+  "description": "A map link (not expected), a scheme-less payment link, then a callback number offered as another way to pay.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hey, about the furniture pickup — العنوان هنا https://maps.example.com/?q=warehouse-7", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Thanks. Is anything still outstanding?", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "ايوه, the remaining delivery charge. ادفعها من www.quickpay-sample.test/c/JX88 and the receipt comes by email",
+      "expected": [{ "kind": "payment_link", "value": "www.quickpay-sample.test/c/JX88", "concern": null }]
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "if the link doesn't open كلمني على +44 7700 900276 وبعطيك طريقة ثانية للدفع",
+      "expected": [{ "kind": "phone_number", "value": "+44 7700 900276", "concern": "callback_request" }]
+    }
+  ]
+}

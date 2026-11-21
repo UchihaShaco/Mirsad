@@ -1,0 +1,20 @@
+{
+  "id": "en-02-catering-invoice",
+  "language": "en",
+  "tags": ["benign_first_message", "payment_link"],
+  "description": "Benign introduction, then an invoice link with a named payee, then a menu link that is not about paying.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hello, this is Test Contact from the catering order on Thursday.", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Hello, thanks for the message. How can I help?", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "The final invoice is ready. You can settle the balance of 1,850 here: https://pay.example.com/inv/CT-7731 - payments go to Harbourview Test Catering.",
+      "expected": [
+        { "kind": "payment_link", "value": "https://pay.example.com/inv/CT-7731", "concern": null },
+        { "kind": "payment_recipient", "value": "Harbourview Test Catering", "concern": null }
+      ]
+    },
+    { "id": "m4", "direction": "incoming", "text": "Our menu for next month is on https://menu.example.org/winter if you want to have a look :)", "expected": [] }
+  ]
+}

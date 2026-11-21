@@ -1,0 +1,12 @@
+{
+  "id": "mixed-03-supplier-no-recipient",
+  "language": "mixed",
+  "tags": ["missing_payment_recipient"],
+  "description": "Code-switched pressure to transfer an exact amount today with no recipient named and a request for secrecy.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hello أخوي, the supplier is waiting and لازم ندفع اليوم before the office closes", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Which account should it go to?", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "خلاص I'll tell you who to send it to لما يرد علي المدير, just make the transfer ready, 2,400 بالضبط", "expected": [] },
+    { "id": "m4", "direction": "incoming", "text": "and don't tell anyone in accounts عشان ما يتأخر الموضوع", "expected": [] }
+  ]
+}

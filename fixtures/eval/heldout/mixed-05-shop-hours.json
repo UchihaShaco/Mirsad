@@ -1,0 +1,12 @@
+{
+  "id": "mixed-05-shop-hours",
+  "language": "mixed",
+  "tags": ["routine_only", "benign_first_message"],
+  "description": "Code-switched questions about opening hours and parking. Routine only; nothing to extract.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "مساء الخير, just checking إذا المحل مفتوح يوم الجمعة", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "مساء النور، yes we open from 4pm.", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "perfect، وعندكم parking قريب؟", "expected": [] },
+    { "id": "m4", "direction": "incoming", "text": "ok thanks, أشوفكم بكرة إن شاء الله", "expected": [] }
+  ]
+}

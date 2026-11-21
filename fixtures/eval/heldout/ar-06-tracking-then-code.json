@@ -1,0 +1,17 @@
+{
+  "id": "ar-06-tracking-then-code",
+  "language": "ar",
+  "tags": ["benign_first_message"],
+  "description": "Gulf Arabic: a thank-you, a tracking link that is not about paying, then a request to send a verification code to a number.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "صباح الخير، حبيت أشكركم على سرعة التوصيل المرة الماضية", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "صباح النور، العفو وأهلاً فيك.", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "تقدر تتابع شحنتك الجديدة من هنا https://track.example.com/s/88213 وهذي صفحة تتبع بس", "expected": [] },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "عشان نأكد العنوان، وصلك كود من ٦ أرقام، أرسله واتساب على الرقم +44 7700 900318 لو سمحت",
+      "expected": [{ "kind": "phone_number", "value": "+44 7700 900318", "concern": "credential_request" }]
+    }
+  ]
+}

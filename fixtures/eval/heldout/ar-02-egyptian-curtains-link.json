@@ -1,0 +1,20 @@
+{
+  "id": "ar-02-egyptian-curtains-link",
+  "language": "ar",
+  "tags": ["payment_link"],
+  "description": "Egyptian Arabic: a payment link with a named payee company, then a catalogue link that is not about paying.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "مساء الخير يا فندم، بخصوص طلب الستاير اللي اتفقنا عليه", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "مساء النور، اتفضل", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "الفاتورة جاهزة، ممكن حضرتك تدفع الباقي من اللينك ده https://pay.example.com/r/ST-9042 والمبلغ هيروح لشركة النموذج للمفروشات",
+      "expected": [
+        { "kind": "payment_link", "value": "https://pay.example.com/r/ST-9042", "concern": null },
+        { "kind": "payment_recipient", "value": "شركة النموذج للمفروشات", "concern": null }
+      ]
+    },
+    { "id": "m4", "direction": "incoming", "text": "ولو عايز تشوف الألوان التانية فيه صور هنا https://catalog.example.net/curtains", "expected": [] }
+  ]
+}

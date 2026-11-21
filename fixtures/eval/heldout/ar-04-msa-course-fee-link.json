@@ -1,0 +1,22 @@
+{
+  "id": "ar-04-msa-course-fee-link",
+  "language": "ar",
+  "tags": ["changed_payment_destination", "payment_link"],
+  "description": "Formal Arabic: a fee link is replaced by a different link on another host, then a map link that is not about paying.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "تحية طيبة، نرجو سداد رسوم التسجيل للدورة عبر الرابط التالي: https://fees.academy-sample.test/pay/2041",
+      "expected": [{ "kind": "payment_link", "value": "https://fees.academy-sample.test/pay/2041", "concern": null }]
+    },
+    { "id": "m2", "direction": "outgoing", "text": "شكراً، سيتم السداد خلال اليوم.", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "نعتذر، الرابط السابق متوقف بسبب تحديث النظام. يرجى استخدام الرابط الجديد بدلاً منه: http://academy-sample-fees.test/checkout?id=2041",
+      "expected": [{ "kind": "payment_link", "value": "http://academy-sample-fees.test/checkout?id=2041", "concern": null }]
+    },
+    { "id": "m4", "direction": "incoming", "text": "وللاستفسار يمكنكم زيارة مقرنا، الموقع على الخريطة: https://maps.example.com/place/academy", "expected": [] }
+  ]
+}

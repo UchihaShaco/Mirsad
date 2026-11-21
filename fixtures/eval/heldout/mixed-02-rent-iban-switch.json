@@ -1,0 +1,28 @@
+{
+  "id": "mixed-02-rent-iban-switch",
+  "language": "mixed",
+  "tags": ["changed_payment_destination"],
+  "description": "Rent account holder and IBAN change mid-conversation, announced in a code-switched message.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Good evening, بخصوص the rent for December, please transfer to the account of Sample Property Management, IBAN GB33 TEST 4512 9876 5432 10",
+      "expected": [
+        { "kind": "payment_recipient", "value": "Sample Property Management", "concern": null },
+        { "kind": "payment_recipient", "value": "GB33 TEST 4512 9876 5432 10", "concern": null }
+      ]
+    },
+    { "id": "m2", "direction": "outgoing", "text": "Noted, thank you.", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "معليش sorry, change of plan — المالك فتح حساب جديد. From this month حولوا على IBAN GB71 TEST 6023 1144 8890 57 باسم Demo Estates Holding بدل الحساب القديم",
+      "expected": [
+        { "kind": "payment_recipient", "value": "GB71 TEST 6023 1144 8890 57", "concern": null },
+        { "kind": "payment_recipient", "value": "Demo Estates Holding", "concern": null }
+      ]
+    },
+    { "id": "m4", "direction": "incoming", "text": "please confirm when done، شكراً", "expected": [] }
+  ]
+}

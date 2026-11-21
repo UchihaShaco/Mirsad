@@ -1,0 +1,12 @@
+{
+  "id": "ar-01-gulf-maintenance",
+  "language": "ar",
+  "tags": ["routine_only", "benign_first_message"],
+  "description": "Gulf Arabic: a customer asks about a maintenance appointment. Routine only; nothing to extract.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "السلام عليكم، شلونكم؟ بغيت أسأل عن موعد الصيانة اللي حجزته الأسبوع اللي طاف", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "وعليكم السلام، أهلاً فيك. ممكن رقم الحجز؟", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "إي أكيد، الحجز باسم عميل تجريبي يوم الأحد الساعة ١٠ الصبح", "expected": [] },
+    { "id": "m4", "direction": "incoming", "text": "مشكورين، وإذا تأخر الفني بشوي عادي ما عندي مشكلة", "expected": [] }
+  ]
+}

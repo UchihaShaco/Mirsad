@@ -1,0 +1,12 @@
+{
+  "id": "en-01-delivery-followup",
+  "language": "en",
+  "tags": ["routine_only", "benign_first_message"],
+  "description": "Customer asks about an order that has not shipped. Greetings and routine questions only; nothing to extract.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hi, good morning. I ordered the two office chairs last week and wanted to check if they've shipped yet?", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Good morning. Thanks for getting in touch, could you share your order reference?", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "Sure its ORD-48213. no rush, just planning to be home when it arrives", "expected": [] },
+    { "id": "m4", "direction": "incoming", "text": "Also is the grey colour still available or only black now", "expected": [] }
+  ]
+}

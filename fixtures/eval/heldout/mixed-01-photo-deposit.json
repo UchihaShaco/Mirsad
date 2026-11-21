@@ -1,0 +1,20 @@
+{
+  "id": "mixed-01-photo-deposit",
+  "language": "mixed",
+  "tags": ["benign_first_message", "payment_link"],
+  "description": "Arabic and English switching mid-sentence: a deposit link and a named payee inside one code-switched sentence.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hi! مرحبا، I'm the one who booked the photography session for Friday", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Hello, أهلاً وسهلاً. How can I help?", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "تمام، so the photographer said I need to pay the 50% advance قبل يوم الخميس عن طريق هذا الرابط https://book.studio-sample.test/deposit/F12 , the payee name shows as Lumen Test Studio",
+      "expected": [
+        { "kind": "payment_link", "value": "https://book.studio-sample.test/deposit/F12", "concern": null },
+        { "kind": "payment_recipient", "value": "Lumen Test Studio", "concern": null }
+      ]
+    },
+    { "id": "m4", "direction": "incoming", "text": "شكراً كثير, see you Friday", "expected": [] }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "en-04-new-collection-account",
+  "language": "en",
+  "tags": ["changed_payment_destination"],
+  "description": "A named payee is replaced by a different one. The second message names the old payee only to say not to use it, so only the new payee is expected there.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Good afternoon. As agreed, please pay the deposit of 3,200 by bank transfer to Westbrook Sample Supplies Ltd.",
+      "expected": [{ "kind": "payment_recipient", "value": "Westbrook Sample Supplies Ltd", "concern": null }]
+    },
+    { "id": "m2", "direction": "outgoing", "text": "Thank you, noted.", "expected": [] },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "Apologies for the confusion, our finance team has moved banks. Please do not use Westbrook Sample Supplies Ltd for this payment. Send the deposit to Ashford Demo Holdings instead, it's our new collection account.",
+      "expected": [{ "kind": "payment_recipient", "value": "Ashford Demo Holdings", "concern": null }]
+    },
+    { "id": "m4", "direction": "incoming", "text": "Can you confirm once sent? The amount stays the same.", "expected": [] }
+  ]
+}

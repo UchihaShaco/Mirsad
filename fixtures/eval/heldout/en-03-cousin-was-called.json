@@ -1,0 +1,17 @@
+{
+  "id": "en-03-cousin-was-called",
+  "language": "en",
+  "tags": ["quoted_third_party_number"],
+  "description": "Contact quotes two numbers that contacted a relative (not expected, even though one asked for card details), then gives their own callback number tied to a transfer.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "hey sorry to bother u, someone called my cousin from +44 7700 900412 claiming to be from your delivery team, asked her for her card number. is that you guys??", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Thanks for flagging this. We never ask for card numbers by phone.", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "ok good. she said they also texted from 07700 900587 but she blocked it", "expected": [] },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "anyway for my own refund pls call me back on 07700 900233, I need to confirm the transfer details before tomorrow",
+      "expected": [{ "kind": "phone_number", "value": "07700 900233", "concern": "callback_request" }]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "ar-03-levantine-sister-call",
+  "language": "ar",
+  "tags": ["quoted_third_party_number", "arabic_indic_digits"],
+  "description": "Levantine Arabic with Arabic-Indic digits: a quoted caller's number and a lost old number (neither expected), then the contact's callback number for completing a transfer.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "مرحبا، في واحد اتصل على أختي من الرقم +٤٤ ٧٧٠٠ ٩٠٠٤٦٨ وقال إنه من عندكم وطلب منها كود التحقق. هاد إلكن؟", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "أهلاً، لا نحن ما منطلب أكواد التحقق أبداً.", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "طيب منيح. أنا رقمي القديم ٠٧٧٠٠ ٩٠٠١٢٠ ضاع مع التلفون، لا تتصلوا عليه", "expected": [] },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "بس بخصوص المبلغ اللي لازم أحوله إلكن، اتصلوا فيي على ٠٧٧٠٠ ٩٠٠٥٨١ لأكمل التحويل",
+      "expected": [{ "kind": "phone_number", "value": "٠٧٧٠٠ ٩٠٠٥٨١", "concern": "callback_request" }]
+    }
+  ]
+}

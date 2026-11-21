@@ -1,0 +1,12 @@
+{
+  "id": "en-06-holding-deposit-no-details",
+  "language": "en",
+  "tags": ["missing_payment_recipient"],
+  "description": "Urgent payment pressure with no recipient named, then a signature with an office line that is not tied to a concern.",
+  "messages": [
+    { "id": "m1", "direction": "incoming", "text": "Hi, this is about the flat viewing on Saturday. The landlord wants the holding deposit of 600 paid today or the flat goes to the next person.", "expected": [] },
+    { "id": "m2", "direction": "outgoing", "text": "Who should the deposit be paid to?", "expected": [] },
+    { "id": "m3", "direction": "incoming", "text": "I'll send the details later, just get the money ready and transfer as soon as I message. it has to be within the hour", "expected": [] },
+    { "id": "m4", "direction": "incoming", "text": "Kind regards,\nTest Contact\nLettings desk | Office: +44 7700 900150 | Mon-Fri 9-5", "expected": [] }
+  ]
+}
