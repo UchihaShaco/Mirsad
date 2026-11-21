@@ -196,28 +196,37 @@ function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue, l
       throw error;
     }
   };
-  const outermost = <T>(fn: (t: Tx) => T): T => {
+  /** Commits and hands back the queued callbacks; the caller runs them once depth is back to 0. */
+  const outermost = <T>(fn: (t: Tx) => T): { out: T; callbacks: PendingCallback[] } => {
     db.exec('BEGIN IMMEDIATE');
-    let out: T;
     try {
-      out = runSync(fn, tx);
+      const out = runSync(fn, tx);
       db.exec('COMMIT');
+      return { out, callbacks: queue.take() };
     } catch (error) {
       if (db.isTransaction) db.exec('ROLLBACK');
       queue.take();
       throw error;
     }
-    runAfterCommit(queue.take(), logger);
-    return out;
   };
   return (fn) => {
-    const isNested = depth > 0;
+    if (depth > 0) {
+      depth += 1;
+      try {
+        return nested(fn);
+      } finally {
+        depth -= 1;
+      }
+    }
     depth += 1;
+    let committed: { out: ReturnType<typeof fn>; callbacks: PendingCallback[] };
     try {
-      return isNested ? nested(fn) : outermost(fn);
+      committed = outermost(fn);
     } finally {
       depth -= 1;
     }
+    runAfterCommit(committed.callbacks, logger);
+    return committed.out;
   };
 }
 

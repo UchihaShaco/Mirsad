@@ -138,6 +138,26 @@ describe('storage/db', () => {
     ]);
   });
 
+  it('a transaction opened inside an after-commit callback commits on its own and runs its own callbacks', () => {
+    db = openDatabase(file());
+    const ran: string[] = [];
+    db.transaction((tx) => {
+      tx.run("INSERT INTO workspaces (id, name, created_at) VALUES ('ws_first', 'A', :at)", { at: tx.now() });
+      tx.afterCommit(() => {
+        db!.transaction((inner) => {
+          inner.run("INSERT INTO workspaces (id, name, created_at) VALUES ('ws_second', 'B', :at)", {
+            at: inner.now(),
+          });
+          inner.afterCommit(() => ran.push('inner'));
+        });
+        ran.push('outer');
+      });
+    });
+    expect(ran).toEqual(['inner', 'outer']);
+    const ids = db.transaction((tx) => tx.all<{ id: string }>('SELECT id FROM workspaces ORDER BY id'));
+    expect(ids.map((r) => r.id)).toEqual(['ws_first', 'ws_second']);
+  });
+
   it('the schema accepts a conflicting_copy event and requires display_value and last_seen_position on case details', () => {
     db = openDatabase(file());
     db.transaction((tx) => {
