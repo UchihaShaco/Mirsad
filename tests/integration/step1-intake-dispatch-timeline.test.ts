@@ -80,6 +80,8 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
       { chatId: officerChatId, status: 'started', aiMode: 'ai_active', revision: 2 },
     ]);
 
+    // Dispatch queues the incoming message's review and the review worker runs it straight away; let it settle.
+    await h.drain();
     const inTimeline = await timeline(inboundId);
     expect(inTimeline.status).toBe(200);
     expect(inTimeline.body.data.chat).toMatchObject({
@@ -91,7 +93,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
       direction: 'incoming', origin: 'source', text: 'Good morning', sentAt: '2026-11-21T07:59:00.000Z', receivedAt: '2026-11-21T08:00:00.000Z',
       source: { channel: 'telegram', captureMethod: 'fixture_replay', sourceEventId: 'tg:u1001:m1', sourceMessageId: 'tg:1' },
       capture: { id: first.body.data.captureId, kind: 'mirsad_rendered_capture' },
-      review: { status: 'pending', outcome: null },
+      review: { status: 'completed', outcome: 'no_new_finding' },
     });
     expect(inTimeline.body.data).toMatchObject({ findings: [], caseReferences: [], messageEvents: [] });
     expect(inTimeline.body.data.caseActions.map((a: { type: string }) => a.type)).toEqual(['dispatch_started']);
@@ -440,6 +442,8 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     const chatId = (await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 130 })))).body.data.chatId;
     await connector().post(`/v1/chats/${chatId}/events`, recorded({ messageId: 131 }));
     await dispatch([chatId]);
+    // Let the review worker finish both reviews before they are forced to unavailable.
+    await h.drain();
     const reviews = queryRows<{ id: string }>(h.dataDir, 'SELECT id FROM reviews WHERE chat_id = :chatId ORDER BY created_at, id', { chatId });
     expect(reviews).toHaveLength(2);
     execSql(h.dataDir, "UPDATE reviews SET status = 'unavailable', attempts = 2 WHERE id = :id", { id: reviews[0]?.id ?? '' });
@@ -447,11 +451,13 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect((await timeline(chatId)).body.data.chat.review).toEqual({ state: 'unavailable', pending: 0, unavailable: 2 });
 
     await connector().post(`/v1/chats/${chatId}/events`, recorded({ messageId: 132 }));
+    await h.drain();
     const statuses = queryRows<{ id: string; status: string }>(h.dataDir, 'SELECT id, status FROM reviews WHERE chat_id = :chatId', { chatId });
     const byId = new Map(statuses.map((r) => [r.id, r.status]));
-    expect(byId.get(reviews[0]?.id ?? '')).toBe('pending');
+    // Requeued and run again by the worker; the review with three attempts is left alone.
+    expect(byId.get(reviews[0]?.id ?? '')).toBe('completed');
     expect(byId.get(reviews[1]?.id ?? '')).toBe('unavailable');
-    expect(statuses.filter((r) => r.status === 'pending')).toHaveLength(2);
+    expect(statuses.filter((r) => r.status === 'completed')).toHaveLength(2);
   });
 
   it('the chat list shows only accessible chats with channel, origin label, inbox status and AI mode', async () => {
