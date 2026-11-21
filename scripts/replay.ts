@@ -2,11 +2,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { replayFixture, validateFixture, type ReplayReport } from '../src/adapters/replay.ts';
-import type { TelegramFixture } from '../src/adapters/telegram/types.ts';
+import { z } from 'zod';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8787';
 const DEFAULT_DATA_DIR = './data';
 const CREDENTIALS_FILE = 'demo-credentials.json';
+const credentialsSchema = z.object({ connector: z.object({ token: z.string().min(1) }) });
 const DEMO_ACCOUNTS = { intake: 'tg-demo-intake', officer: 'tg-demo-officer' } as const;
 
 function connectorToken(): string {
@@ -16,10 +17,9 @@ function connectorToken(): string {
   if (!fs.existsSync(file)) {
     throw new Error(`no connector token: set MIRSAD_CONNECTOR_TOKEN or start Mirsad once so ${file} exists`);
   }
-  const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as { connector?: { token?: string } };
-  const token = parsed.connector?.token;
-  if (!token) throw new Error(`${file} has no connector token`);
-  return token;
+  const parsed = credentialsSchema.safeParse(JSON.parse(fs.readFileSync(file, 'utf8')));
+  if (!parsed.success) throw new Error(`${file} has no connector token`);
+  return parsed.data.connector.token;
 }
 
 function formatReport(report: ReplayReport): string {
@@ -42,7 +42,7 @@ async function main(): Promise<number> {
     process.stderr.write(`replay refused:\n${problems.map((p) => `  - ${p}`).join('\n')}\n`);
     return 1;
   }
-  const report = await replayFixture(fixture as TelegramFixture, {
+  const report = await replayFixture(fixture, {
     baseUrl: process.env.MIRSAD_BASE_URL ?? DEFAULT_BASE_URL,
     connectorToken: connectorToken(),
     accounts: DEMO_ACCOUNTS,

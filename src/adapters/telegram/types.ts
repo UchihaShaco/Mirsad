@@ -75,13 +75,5 @@ export interface TelegramUpdate {
   deleted_business_messages?: TelegramDeletedMessages;
 }
 
-/** A synthetic Telegram-shaped fixture file (design section 13). */
-export interface TelegramFixture {
-  description: string;
-  synthetic: true;
-  account: 'intake' | 'officer';
-  businessUserId: number;
-  businessConnectionId: string;
-  updates: TelegramUpdate[];
-  conversationStarts?: { chatId: number; messageId: number }[];
-}
+/** A synthetic Telegram-shaped fixture file (design section 13); the shape is defined by its zod schema. */
+export type { TelegramFixture } from './fixture-schema.ts';

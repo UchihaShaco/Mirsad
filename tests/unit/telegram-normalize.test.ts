@@ -192,4 +192,36 @@ describe('telegram normalizer', () => {
     expect(problems.some((p) => p.includes('phone'))).toBe(true);
     expect(validateFixture({ ...base, synthetic: false })).toContain('fixture is not marked synthetic: true');
   });
+  it('validateFixture refuses non-reserved numbers written in Arabic-Indic digits and bare Arabic-script hosts', () => {
+    const base = {
+      description: 'x',
+      synthetic: true,
+      account: 'intake',
+      businessUserId: OWNER,
+      businessConnectionId: CONNECTION,
+      updates: [incoming(900_000_001)],
+    };
+    const withText = (text: string) => ({ ...base, updates: [incoming(900_000_001, { text })] });
+    expect(validateFixture(withText('اتصل بي على +٩٧١٥٠١٢٣٤٥٦٧')).some((p) => p.includes('phone'))).toBe(true);
+    expect(validateFixture(withText('اتصل بي على +۹۷۱۵۰۱۲۳۴۵۶۷')).some((p) => p.includes('phone'))).toBe(true);
+    expect(validateFixture(withText('زر موقع.مثال الان')).some((p) => p.includes('domain'))).toBe(true);
+    expect(validateFixture(withText('اتصل بي على +٤٤ ٧٧٠٠ ٩٠٠١٢٣'))).toEqual([]);
+  });
+
+  it('validateFixture reports structurally invalid fixtures instead of trusting them', () => {
+    const base = {
+      description: 'x',
+      synthetic: true,
+      account: 'intake',
+      businessUserId: OWNER,
+      businessConnectionId: CONNECTION,
+      updates: [incoming(900_000_001)],
+    };
+    const { message_id: _omit, ...noId } = message();
+    const { date: _omitDate, ...noDate } = message();
+    expect(validateFixture({ ...base, updates: [{ update_id: 1, business_message: noId }] }).join(' | ')).toContain('message_id');
+    expect(validateFixture({ ...base, updates: [{ update_id: 1, business_message: noDate }] }).join(' | ')).toContain('date');
+    expect(validateFixture({ ...base, conversationStarts: 'nope' }).join(' | ')).toContain('conversationStarts');
+    expect(validateFixture({ ...base, conversationStarts: [{ chatId: 1 }] }).join(' | ')).toContain('conversationStarts');
+  });
 });

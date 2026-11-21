@@ -68,7 +68,7 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
         ...(isStart ? { conversationStart: { basis: 'source_start_marker' as const } } : {}),
         ...(unsupported.length > 0 ? { unsupportedContent: unsupported } : {}),
       },
-      direction === 'incoming',
+      true,
     );
   };
 

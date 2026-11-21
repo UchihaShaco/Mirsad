@@ -47,7 +47,7 @@ describe('step 5: telegram replay', () => {
   it('replaying officer-first creates an open chat labelled First observed: outgoing with both directions', async () => {
     await replayFixture(loadFixture('officer-first'), options());
     const [chat] = await chatsFor('6000000002', 'tg-officer-1');
-    expect(chat).toMatchObject({ inboxStatus: 'open', originLabel: 'First observed: outgoing' });
+    expect(chat).toMatchObject({ inboxStatus: 'open', originLabel: 'First observed: outgoing', displayLabel: 'Test Contact 2' });
     const timeline = await timelineOf(chat.id);
     expect(timeline.messages.map((m: any) => m.direction)).toEqual(['outgoing', 'incoming']);
   });
@@ -142,5 +142,20 @@ describe('step 5: telegram replay', () => {
     expect(bodies.length).toBeGreaterThan(0);
     expect(bodies.every((b) => b.externalAccountId === 'tg-intake-1' && b.source === 'telegram')).toBe(true);
     expect(await chatsFor('6000000009', 'tg-intake-1')).toHaveLength(1);
+  });
+  it('replay refuses a structurally invalid fixture before any request is made', async () => {
+    const calls: string[] = [];
+    const spy: typeof fetch = async (input, init) => {
+      calls.push(String(input));
+      return fetch(input, init);
+    };
+    const base = loadFixture('inbound-first-greeting');
+    const [first] = base.updates;
+    const { message_id: _omit, ...noId } = first?.business_message ?? ({} as never);
+    const missingId = { ...base, updates: [{ ...first, business_message: noId }] };
+    const badStarts = { ...base, conversationStarts: 'nope' };
+    await expect(replayFixture(missingId as never, options({ fetch: spy }))).rejects.toThrow(/message_id/);
+    await expect(replayFixture(badStarts as never, options({ fetch: spy }))).rejects.toThrow(/conversationStarts/);
+    expect(calls).toEqual([]);
   });
 });

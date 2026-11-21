@@ -1,6 +1,7 @@
 /** Fixture validation and HTTP replay of synthetic Telegram fixtures (design section 13). */
 import { createTelegramAdapter } from './telegram/normalize.ts';
-import type { TelegramFixture } from './telegram/types.ts';
+import { SYNTHETIC_MARK_PROBLEM, telegramFixtureSchema } from './telegram/fixture-schema.ts';
+import type { TelegramUpdate } from './telegram/types.ts';
 
 export type FixtureAccount = 'intake' | 'officer';
 
@@ -31,9 +32,12 @@ const EXAMPLE_LABEL = 'example';
 const MIN_PHONE_DIGITS = 9;
 const UK_FICTIONAL = /^(?:44|0)7700900\d{3}$/;
 const US_FICTIONAL = /^1\d{3}55501\d{2}$/;
+const ARABIC_INDIC_ZERO = 0x0660;
+const EXT_ARABIC_INDIC_ZERO = 0x06f0;
+const ARABIC_INDIC_DIGIT = /[٠-٩۰-۹]/g;
 const URL_HOST = /https?:\/\/([^\s/:?#]+)/gi;
 const EMAIL_HOST = /[\w.+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)/gi;
-const BARE_HOST = /\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\b/gi;
+const BARE_HOST = /(?<![\p{L}\p{N}_-])[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.\p{L}{2,}(?![\p{L}\p{N}_-])/giu;
 const PHONE_LIKE = /\+?\d[\d\s().-]{7,}\d/g;
 
 function isReservedHost(host: string): boolean {
@@ -57,7 +61,16 @@ function domainProblems(text: string): string[] {
   return [...hosts].filter((host) => !isReservedHost(host)).map((host) => `non-reserved domain: ${host}`);
 }
 
-function phoneProblems(text: string): string[] {
+/** Maps Arabic-Indic and Extended Arabic-Indic digits to ASCII, as design section 11 does for phone numbers. */
+function asciiDigits(text: string): string {
+  return text.replace(ARABIC_INDIC_DIGIT, (digit) => {
+    const code = digit.charCodeAt(0);
+    return String(code >= EXT_ARABIC_INDIC_ZERO ? code - EXT_ARABIC_INDIC_ZERO : code - ARABIC_INDIC_ZERO);
+  });
+}
+
+function phoneProblems(rawText: string): string[] {
+  const text = asciiDigits(rawText);
   const problems: string[] = [];
   for (const match of text.matchAll(PHONE_LIKE)) {
     const digits = match[0].replace(/\D/g, '');
@@ -67,21 +80,19 @@ function phoneProblems(text: string): string[] {
   return problems;
 }
 
-function structureProblems(fixture: Record<string, unknown>): string[] {
-  const problems: string[] = [];
-  if (fixture.synthetic !== true) problems.push('fixture is not marked synthetic: true');
-  if (typeof fixture.description !== 'string' || fixture.description === '') problems.push('fixture has no description');
-  if (fixture.account !== 'intake' && fixture.account !== 'officer') problems.push("account must be 'intake' or 'officer'");
-  if (typeof fixture.businessUserId !== 'number') problems.push('businessUserId must be a number');
-  if (typeof fixture.businessConnectionId !== 'string') problems.push('businessConnectionId must be a string');
-  if (!Array.isArray(fixture.updates)) problems.push('updates must be an array');
-  return problems;
+function structureProblems(fixture: unknown): string[] {
+  const parsed = telegramFixtureSchema.safeParse(fixture);
+  if (parsed.success) return [];
+  return parsed.error.issues.map((issue) => {
+    const where = issue.path.join('.');
+    return where === '' || issue.message === SYNTHETIC_MARK_PROBLEM ? issue.message : `${where}: ${issue.message}`;
+  });
 }
 
-/** Returns problems; empty when the file is synthetic and uses only reserved domains and phone ranges. */
+/** Returns problems; empty when the file is well-formed, synthetic and uses only reserved domains and phone ranges. */
 export function validateFixture(fixture: unknown): string[] {
   if (fixture === null || typeof fixture !== 'object' || Array.isArray(fixture)) return ['fixture must be a JSON object'];
-  const problems = structureProblems(fixture as Record<string, unknown>);
+  const problems = structureProblems(fixture);
   const strings: string[] = [];
   collectStrings(fixture, strings);
   const content = [...new Set(strings.flatMap((s) => [...domainProblems(s), ...phoneProblems(s)]))];
@@ -120,9 +131,10 @@ async function postEnvelope(
 }
 
 /** Posts a validated fixture to POST /v1/ingest one envelope at a time. Reports ids and result codes only. */
-export async function replayFixture(fixture: TelegramFixture, options: ReplayOptions): Promise<ReplayReport> {
-  const problems = validateFixture(fixture);
+export async function replayFixture(input: unknown, options: ReplayOptions): Promise<ReplayReport> {
+  const problems = validateFixture(input);
   if (problems.length > 0) throw new Error(`replay refused: ${problems.join('; ')}`);
+  const fixture = telegramFixtureSchema.parse(input);
   const accountId = options.accounts[fixture.account];
   if (!accountId) throw new Error(`replay refused: no account mapped for '${fixture.account}'`);
   const adapter = createTelegramAdapter({
@@ -135,7 +147,7 @@ export async function replayFixture(fixture: TelegramFixture, options: ReplayOpt
   const events: ReplayEventReport[] = [];
   let skippedUpdates = 0;
   for (const update of fixture.updates) {
-    const envelopes = adapter.normalize(update);
+    const envelopes = adapter.normalize(update as TelegramUpdate);
     if (envelopes.length === 0) skippedUpdates += 1;
     for (const envelope of envelopes) events.push(await postEnvelope(doFetch, options, envelope));
   }
