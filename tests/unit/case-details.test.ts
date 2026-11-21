@@ -27,6 +27,21 @@ describe('decideDetail', () => {
     expect(decideDetail('payment_link', 'pay.a.test/1', earlier)).toEqual({ kind: 'changed', changedFrom: 'shown pay.b.test/2' });
   });
 
+  it('details one message carried together are all current, so repeating any of them is a repeat, in any order', () => {
+    // A holder name and an IBAN given in one message share the last-seen position.
+    const earlier = [known('old holder', 5), known('test trading llc', 10), known('gb82 test 1234 5698 7654 32', 10)];
+    for (const value of ['test trading llc', 'gb82 test 1234 5698 7654 32']) {
+      expect(decideDetail('payment_recipient', value, earlier), value).toEqual({ kind: 'repeat' });
+      expect(decideDetail('payment_recipient', value, [...earlier].reverse()), value).toEqual({ kind: 'repeat' });
+    }
+  });
+
+  it('a value that is none of several current details is a change from the first of them in the order given', () => {
+    const earlier = [known('old holder', 5), known('test trading llc', 10), known('gb82 test 1234 5698 7654 32', 10)];
+    expect(decideDetail('payment_recipient', 'other holdings', earlier)).toEqual({ kind: 'changed', changedFrom: 'shown test trading llc' });
+    expect(decideDetail('payment_recipient', 'old holder', earlier)).toEqual({ kind: 'changed', changedFrom: 'shown test trading llc' });
+  });
+
   it('any phone number the chat already surfaced is a repeat, current or not', () => {
     const earlier = [known('+447700900123', 10), known('+447700900456', 20)];
     expect(decideDetail('phone_number', '+447700900123', earlier)).toEqual({ kind: 'repeat' });

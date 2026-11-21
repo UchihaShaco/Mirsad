@@ -14,8 +14,12 @@ export interface CaseDetailRow {
   created_at: string;
 }
 
+/**
+ * The chat's details by last sighting; details seen last together stay in the order they were first recorded. That is
+ * rowid order, because details are never deleted and an upsert keeps the row (the random id would order them by chance).
+ */
 export function listCaseDetails(tx: Tx, chatId: string): CaseDetailRow[] {
-  return tx.all<CaseDetailRow>('SELECT * FROM case_details WHERE chat_id = :chatId ORDER BY last_seen_position, id', { chatId });
+  return tx.all<CaseDetailRow>('SELECT * FROM case_details WHERE chat_id = :chatId ORDER BY last_seen_position, rowid', { chatId });
 }
 
 export interface RecordCaseDetailInput {

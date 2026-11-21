@@ -238,6 +238,41 @@ describe('review pipeline: findings', () => {
     ]);
   });
 
+  it('a message naming the same holder and IBAN as an earlier one raises nothing new', async () => {
+    const text = 'Beneficiary: Test Trading LLC\nIBAN GB82 TEST 1234 5698 7654 32';
+    const chat = await reviewedChat(text);
+    const repeat = await addMessage(chat.chatId, 2, text);
+    await h.drain();
+    const findings = async () => (await timeline(chat.chatId)).findings.map((f) => [f.label, f.extractedValue, f.changedFrom]);
+    expect(await findings()).toEqual([
+      ['New payment recipient', 'Test Trading LLC', null],
+      ['New payment recipient', 'GB82 TEST 1234 5698 7654 32', null],
+    ]);
+    expect(reviewRows(chat.chatId).find((r) => r.message_event_id === repeat.messageEventId)).toMatchObject({
+      status: 'completed', outcome: 'no_new_finding', suppressed_count: 2,
+    });
+
+    // A new holder is a change from the detail recorded first, whatever the details' IDs.
+    await addMessage(chat.chatId, 3, 'Beneficiary: Other Holdings');
+    await h.drain();
+    expect((await findings()).at(-1)).toEqual(['Payment destination changed', 'Other Holdings', 'Test Trading LLC']);
+  });
+
+  it('a message repeating either of two links an earlier message carried raises nothing new', async () => {
+    const links = ['https://pay.one.test/inv/1', 'https://pay.two.test/inv/2'];
+    for (const link of links) {
+      const chat = await reviewedChat(`Please pay at ${links.join(' or ')}`);
+      const repeat = await addMessage(chat.chatId, 2, `Reminder: please pay at ${link}`);
+      await h.drain();
+      expect((await timeline(chat.chatId)).findings.map((f) => [f.label, f.extractedValue]), link).toEqual(
+        links.map((each) => ['New payment link', each]),
+      );
+      expect(reviewRows(chat.chatId).find((r) => r.message_event_id === repeat.messageEventId), link).toMatchObject({
+        status: 'completed', outcome: 'no_new_finding', suppressed_count: 1,
+      });
+    }
+  });
+
   it('a phone number tied to a concern raises one note and reaches the watchlist every time it is mentioned', async () => {
     const chat = await reviewedChat('Please transfer the deposit to +44 7700 900222 today.');
     const again = await addMessage(chat.chatId, 2, 'Again: transfer it to +44 7700 900222.');
