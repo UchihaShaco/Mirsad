@@ -22,6 +22,7 @@ import { LIVE_CREDENTIALS_FILE, provisionLiveConnector, runProvision } from '../
 import { runVerify } from '../../scripts/telegram-verify.ts';
 import { queryRows, storeSnapshot } from '../helpers/db-read.ts';
 import { envelope, recorded, uniqueId } from '../helpers/events.ts';
+import { FakeClock } from '../helpers/fake-clock.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 import { seedTestData } from '../helpers/test-seed.ts';
 
@@ -31,6 +32,7 @@ const CONNECTION_ID = 'TestBizConn-0101';
 const APPROVED_CHATS = [6000000101, 6000000102];
 const APPROVAL_REFERENCE = 'TEST-APPROVAL-0001';
 const WAIT = { timeout: 5_000, interval: 5 };
+const HOUR_MS = 60 * 60 * 1000;
 
 const LIVE_ENV: Record<string, string> = {
   TELEGRAM_LIVE_ENABLED: 'true',
@@ -118,6 +120,13 @@ class FakeBotApi {
   /** getUpdates calls currently held open (a connector that is still polling). */
   heldPolls(): number {
     return this.held.length;
+  }
+
+  /** Answers every held getUpdates call with no updates, as Telegram does when its long-poll timeout runs out. */
+  expireHeldPolls(): void {
+    const held = this.held;
+    this.held = [];
+    for (const poll of held) reply(poll.res, 200, { ok: true, result: [] });
   }
 
   reset(): void {
@@ -303,6 +312,22 @@ async function startWiredApp(env: Record<string, string>) {
       fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
     },
   };
+}
+
+/** Overwrites the live connector's stored update offset and the time it was committed. */
+function storeOffset(offset: number, committedAt: Date): void {
+  db.transaction((tx) => {
+    const [binding] = findLiveBindings(tx);
+    tx.run(
+      `INSERT INTO connector_state (connector_id, key, value, updated_at) VALUES (:id, 'telegram_update_offset', :value, :at)
+       ON CONFLICT (connector_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      { id: binding?.principal.id ?? '', value: String(offset), at: committedAt.toISOString() },
+    );
+  });
+}
+
+function lastPollOffset(): unknown {
+  return fake.calls.filter((c) => c.method === 'getUpdates').at(-1)?.body.offset;
 }
 
 function startError(connector: LiveConnector): LiveConnectorGateError {
@@ -750,5 +775,64 @@ describe('step 5: telegram live connector', () => {
     // A short poll with no offset confirms nothing, so the live connector still receives every update later.
     expect(fake.calls).toEqual([{ method: 'getUpdates', body: { timeout: 0, allowed_updates: ['business_connection'] } }]);
     expect(JSON.stringify(discovery)).not.toContain('canary');
+  });
+
+  it('a stored offset committed longer ago than Telegram keeps updates is not used, so updates after an update_id restart are stored', async () => {
+    const [chatA] = APPROVED_CHATS as [number];
+    const highOffset = nextUpdateId + 1_000_000;
+    // Committed within Telegram's 24-hour retention: the first poll starts from it.
+    storeOffset(highOffset, new Date(Date.now() - 23 * HOUR_MS));
+    const fresh = connectorFor(liveConfig());
+    const freshPoll = fake.nextPoll();
+    fresh.start();
+    await freshPoll;
+    expect(lastPollOffset()).toBe(highOffset);
+    await fresh.stop();
+
+    // Committed earlier than that: after a week without updates Telegram numbers new updates from a random value, here
+    // below the stored offset. The connector polls without an offset, so the new update is delivered and stored.
+    storeOffset(highOffset, new Date(Date.now() - 25 * HOUR_MS));
+    const restarted = {
+      update_id: 100_000_001,
+      business_message: messageBody({ chatId: chatA, messageId: 1401, fromId: chatA, text: 'Sent after a long quiet spell.' }),
+    };
+    fake.queue(restarted);
+    const stale = connectorFor(liveConfig());
+    const firstPoll = fake.nextPoll();
+    stale.start();
+    await firstPoll;
+    expect(lastPollOffset()).toBeUndefined();
+    await vi.waitFor(() => expect(stale.stats()).toMatchObject({ stored: 1, offset: 100_000_002 }), WAIT);
+    expect(logs.some((line) => line.includes('telegram_live_offset_stale'))).toBe(true);
+  });
+
+  it('while running, an offset whose last commit is older than Telegram keeps updates is dropped before the next poll', async () => {
+    const [chatA] = APPROVED_CHATS as [number];
+    const clock = new FakeClock();
+    const clocked = openDatabase(path.join(h.dataDir, DATABASE_FILE), { clock });
+    let connector: LiveConnector | undefined;
+    try {
+      const first = message({ chatId: chatA, messageId: 1501, fromId: chatA, text: 'The last message before a quiet spell.' });
+      storeOffset(updateIdOf(first), clock.now());
+      connector = connectorFor(liveConfig(), clocked);
+      const processed = fake.nextPoll((offset) => offset === updateIdOf(first) + 1);
+      fake.queue(first);
+      connector.start();
+      await processed;
+
+      // More than a day passes without updates; then Telegram numbers the next update below the committed offset.
+      clock.advance(25 * HOUR_MS);
+      const restarted = {
+        update_id: 100_000_101,
+        business_message: messageBody({ chatId: chatA, messageId: 1502, fromId: chatA, text: 'The first message after the quiet spell.' }),
+      };
+      fake.queue(restarted);
+      fake.expireHeldPolls();
+      const running = connector;
+      await vi.waitFor(() => expect(running.stats()).toMatchObject({ stored: 2, offset: 100_000_102 }), WAIT);
+    } finally {
+      await connector?.stop();
+      clocked.close();
+    }
   });
 });

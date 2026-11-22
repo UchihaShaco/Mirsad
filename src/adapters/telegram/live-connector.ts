@@ -32,6 +32,13 @@ export const LIVE_GATES = {
 const POLL_TIMEOUT_SECONDS = 30;
 /** connector_state key holding the next update_id to ask for. */
 const OFFSET_STATE_KEY = 'telegram_update_offset';
+/**
+ * Telegram keeps an unconfirmed update for at most 24 hours. An offset committed longer ago than that can only confirm
+ * updates Telegram no longer holds, and after a week without updates Telegram numbers new updates from a random value,
+ * possibly below the offset, so polling with it would confirm, and so lose, every new update. Such an offset is stale:
+ * the connector polls without one, and intake's deduplication absorbs anything delivered again.
+ */
+const UPDATE_RETENTION_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_RETRY_DELAY_MS = 1_000;
 const MAX_RETRY_DELAY_MS = 60_000;
 /** Telegram's answers to a wrong or revoked token; retrying cannot help. */
@@ -106,21 +113,30 @@ interface ApprovedScope {
   chatIds: ReadonlySet<string>;
 }
 
+/** The offset to poll from: null when none is stored or the stored one is stale (`stale` says which). */
+interface UsableOffset {
+  offset: number | null;
+  stale: boolean;
+}
+
 interface Session {
   api: BotApi;
   binding: LiveBinding;
   scope: ApprovedScope;
   adapter: ReturnType<typeof createTelegramAdapter>;
-  storedOffset: number | null;
+  stored: UsableOffset;
 }
 
-function readOffset(tx: Tx, connectorId: string): number | null {
-  const row = tx.get<{ value: string }>(
-    'SELECT value FROM connector_state WHERE connector_id = :connectorId AND key = :key',
+/** The stored offset, judged by the time of its last commit (`updated_at`) against the database clock. */
+function readOffset(tx: Tx, connectorId: string): UsableOffset {
+  const row = tx.get<{ value: string; updated_at: string }>(
+    'SELECT value, updated_at FROM connector_state WHERE connector_id = :connectorId AND key = :key',
     { connectorId, key: OFFSET_STATE_KEY },
   );
   const offset = row === undefined ? Number.NaN : Number(row.value);
-  return Number.isSafeInteger(offset) ? offset : null;
+  if (row === undefined || !Number.isSafeInteger(offset)) return { offset: null, stale: false };
+  const stale = Date.parse(tx.now()) - Date.parse(row.updated_at) > UPDATE_RETENTION_MS;
+  return stale ? { offset: null, stale } : { offset, stale };
 }
 
 function writeOffset(tx: Tx, connectorId: string, offset: number): void {
@@ -175,8 +191,8 @@ function openSession(deps: LiveConnectorDeps): Session {
     businessConnectionId: scope.connectionId,
     externalAccountId: binding.account.external_account_id,
   });
-  const storedOffset = deps.db.transaction((tx) => readOffset(tx, binding.principal.id));
-  return { api: deps.botApi ?? createBotApi({ token: scope.token }), binding, scope, adapter, storedOffset };
+  const stored = deps.db.transaction((tx) => readOffset(tx, binding.principal.id));
+  return { api: deps.botApi ?? createBotApi({ token: scope.token }), binding, scope, adapter, stored };
 }
 
 type Decision =
@@ -253,8 +269,9 @@ class TelegramLiveConnector implements LiveConnector {
     if (this.state.running) return;
     const session = openSession(this.deps);
     this.controller = new AbortController();
-    this.state = { ...this.state, running: true, stoppedReason: null, offset: session.storedOffset };
+    this.state = { ...this.state, running: true, stoppedReason: null, offset: session.stored.offset };
     this.deps.logger.info('telegram_live_connector_started', { principalId: session.binding.principal.id });
+    if (session.stored.stale) this.logStaleOffset(session);
     this.loop = this.poll(session, this.controller.signal);
   }
 
@@ -273,6 +290,23 @@ class TelegramLiveConnector implements LiveConnector {
     this.controller?.abort();
     if (reason === 'stopped') this.deps.logger.info('telegram_live_connector_stopped', { reason });
     else this.deps.logger.warn('telegram_live_connector_stopped', { reason });
+  }
+
+  private logStaleOffset(session: Session): void {
+    this.deps.logger.info('telegram_live_offset_stale', { principalId: session.binding.principal.id });
+  }
+
+  /**
+   * The offset for the next getUpdates call. Once its last commit is older than Telegram keeps updates, it is dropped
+   * and the connector polls without one (see UPDATE_RETENTION_MS).
+   */
+  private pollOffset(session: Session): number | undefined {
+    if (this.state.offset === null) return undefined;
+    const { stale } = this.deps.db.transaction((tx) => readOffset(tx, session.binding.principal.id));
+    if (!stale) return this.state.offset;
+    this.state = { ...this.state, offset: null };
+    this.logStaleOffset(session);
+    return undefined;
   }
 
   /** Stores the offset past this update in the caller's transaction; never moves it backwards. */
@@ -365,7 +399,7 @@ class TelegramLiveConnector implements LiveConnector {
     let failures = 0;
     while (this.state.running) {
       try {
-        const offset = this.state.offset ?? undefined;
+        const offset = this.pollOffset(session);
         const updates = await session.api.getUpdates(
           { ...(offset === undefined ? {} : { offset }), timeoutSeconds: POLL_TIMEOUT_SECONDS, allowedUpdates: BUSINESS_UPDATE_TYPES },
           signal,

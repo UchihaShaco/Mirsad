@@ -154,8 +154,14 @@ Set `TELEGRAM_LIVE_ENABLED=true` and restart Mirsad (`npm start`).
     re-run discovery and update `TELEGRAM_APPROVED_CONNECTION_ID` only if the new scope is still the approved one),
     `connection_owner_mismatch`, `token_rejected`, or `stopped` (normal shutdown).
   - `telegram_live_update_rejected`: an update in scope that intake refused, by error code.
+  - `telegram_live_offset_stale`: the stored position was committed more than 24 hours ago, so polling went on without
+    it (see the next point).
 - Mirsad keeps its position in the update stream (`connector_state`) and commits it with each stored update, so a
-  restart neither loses nor duplicates updates. Downtime longer than 24 hours loses updates; there is no backfill.
+  restart within 24 hours neither loses nor duplicates updates. Telegram keeps undelivered updates for at most 24 hours:
+  updates sent while the connector was stopped for longer are gone, and there is no backfill. A position committed more
+  than 24 hours ago, found at start or while the connector waits without updates, is treated as stale and the connector
+  polls without it, because after a week without updates Telegram numbers new updates from a random value that can be
+  lower than the stored position (polling with it would confirm, and lose, those updates).
 - Fill in [event-coverage-worksheet.md](event-coverage-worksheet.md) as events are observed, including which
   officer-sent messages actually arrive.
 
