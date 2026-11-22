@@ -31,6 +31,7 @@ let h: TestHarness;
 let db: Db;
 let tmp: string;
 let recordFile: string;
+let workspaceId: string;
 
 const exampleRecord = (): Record<string, unknown> => JSON.parse(fs.readFileSync(EXAMPLE_RECORD, 'utf8')) as Record<string, unknown>;
 /** The example's shape with the reference a real approval would carry: the example's own reference never verifies. */
@@ -38,7 +39,7 @@ const approvedRecord = (): Record<string, unknown> => ({ ...exampleRecord(), app
 const writeJson = (file: string, value: unknown): void => fs.writeFileSync(file, JSON.stringify(value, null, 2));
 
 function deps(over: Partial<StatusDeps> = {}): StatusDeps {
-  return { config: h.app.config, db, reviewer: h.reviewer, startedAt: '2026-11-21T08:00:00.000Z', liveConnectorRunning: false, ...over };
+  return { config: h.app.config, db, reviewer: h.reviewer, startedAt: '2026-11-21T08:00:00.000Z', workspaceId, liveConnectorRunning: false, ...over };
 }
 
 function readinessFile(checks: { id: string; passed: boolean }[], state = 'ready_for_controlled_test'): string {
@@ -62,6 +63,7 @@ beforeAll(async () => {
   recordFile = path.join(tmp, 'controlled-test-record.json');
   h = await startHarness({ config: { controlledTestRecordPath: recordFile } });
   db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
+  workspaceId = (await h.http(h.tokens.officerA).get('/v1/me')).body.data.principal.workspaceId as string;
 });
 
 afterAll(async () => {
@@ -175,6 +177,19 @@ describe('status', () => {
       readiness: 'ready_for_controlled_test',
       readinessRecordedAt: '2026-11-22T10:00:00.000Z',
     });
+  });
+
+  it('worker counts cover the caller\'s own workspace only', async () => {
+    h.renderer.failNext();
+    const failed = await h.http(h.tokens.connector).post('/v1/ingest', envelope(h.accounts.intake, uniqueId('status-ws-'), recorded({ messageId: 1 })));
+    expect(failed.status).toBe(201);
+    await h.drain();
+    expect((await httpStatus()).workers.capture.failed).toBe(1);
+
+    // An officer of another workspace learns nothing about this workspace's queues.
+    const other = await h.http(h.tokens.outsider).get('/v1/status');
+    expect(other.status, other.text).toBe(200);
+    expect(Status.parse(other.body.data).workers).toEqual({ capture: { pending: 0, failed: 0 }, review: { pending: 0, running: 0, unavailable: 0 } });
   });
 
   it('the readiness run records not_ready when a local check fails', async () => {

@@ -57,6 +57,8 @@ export interface StatusDeps {
   db: Db;
   reviewer: Reviewer;
   startedAt: string;
+  /** The caller's workspace: worker counts cover it alone, so no count reveals another workspace's activity. */
+  workspaceId: string;
   /** True only while the Telegram live connector is polling. */
   liveConnectorRunning: boolean;
   /** Defaults to DEFAULT_READINESS_FILE. */
@@ -101,14 +103,19 @@ function whatsappGate(config: Config): string {
   return hasVerifiedRecord(config) ? WHATSAPP_GATES.importDisabled : WHATSAPP_GATES.closed;
 }
 
-function workerCounts(tx: Tx): Status['workers'] {
+const CAPTURES_OF_WORKSPACE = 'SELECT COUNT(*) FROM captures c JOIN chats ch ON ch.id = c.chat_id WHERE ch.workspace_id = :workspaceId AND';
+const REVIEWS_OF_WORKSPACE = 'SELECT COUNT(*) FROM reviews r JOIN chats ch ON ch.id = r.chat_id WHERE ch.workspace_id = :workspaceId AND';
+
+/** Queue counts of one workspace's chats. */
+function workerCounts(tx: Tx, workspaceId: string): Status['workers'] {
   const row = tx.get<Record<'capturePending' | 'captureFailed' | 'reviewPending' | 'reviewRunning' | 'reviewUnavailable', number>>(
     `SELECT
-       (SELECT COUNT(*) FROM captures WHERE status IN ('pending', 'rendering')) AS capturePending,
-       (SELECT COUNT(*) FROM captures WHERE status = 'failed') AS captureFailed,
-       (SELECT COUNT(*) FROM reviews WHERE status = 'pending') AS reviewPending,
-       (SELECT COUNT(*) FROM reviews WHERE status = 'running') AS reviewRunning,
-       (SELECT COUNT(*) FROM reviews WHERE status = 'unavailable') AS reviewUnavailable`,
+       (${CAPTURES_OF_WORKSPACE} c.status IN ('pending', 'rendering')) AS capturePending,
+       (${CAPTURES_OF_WORKSPACE} c.status = 'failed') AS captureFailed,
+       (${REVIEWS_OF_WORKSPACE} r.status = 'pending') AS reviewPending,
+       (${REVIEWS_OF_WORKSPACE} r.status = 'running') AS reviewRunning,
+       (${REVIEWS_OF_WORKSPACE} r.status = 'unavailable') AS reviewUnavailable`,
+    { workspaceId },
   );
   return {
     capture: { pending: row?.capturePending ?? 0, failed: row?.captureFailed ?? 0 },
@@ -144,7 +151,7 @@ async function reviewerHealth(reviewer: Reviewer): Promise<ReviewerHealth> {
 
 export async function readStatus(deps: StatusDeps): Promise<Status> {
   const { config } = deps;
-  const workers = deps.db.transaction((tx) => workerCounts(tx));
+  const workers = deps.db.transaction((tx) => workerCounts(tx, deps.workspaceId));
   const health = await reviewerHealth(deps.reviewer);
   return {
     service: { version: SERVICE_VERSION, startedAt: deps.startedAt },
