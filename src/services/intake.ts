@@ -63,8 +63,9 @@ function eventDirection(event: IntakeEvent): Direction | undefined {
   return event.direction;
 }
 
+/** The host's label, else the sender's name when the event is incoming (an outgoing sender is the officer), else a fallback. */
 function newChatLabel(target: Extract<IntakeTarget, { externalChatId: string }>, event: IntakeEvent): string {
-  const senderName = event.type === 'message.recorded' ? event.sender?.displayName : undefined;
+  const senderName = event.type === 'message.recorded' && event.direction === 'incoming' ? event.sender?.displayName : undefined;
   return target.chat?.displayLabel ?? senderName ?? `${CHANNEL_LABELS[target.source]} chat ${target.externalChatId}`;
 }
 

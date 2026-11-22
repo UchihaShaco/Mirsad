@@ -202,6 +202,19 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(outSummary).toMatchObject({ originLabel: 'First observed: outgoing', initiatedBy: 'unknown', inboxStatus: 'open' });
   });
 
+  it('a chat created by an outgoing first event is never labelled with that sender\'s name; an incoming one is', async () => {
+    const outChat = uniqueId('label-out-');
+    const out = await ingest(envelope(h.accounts.officer, outChat, recorded({
+      messageId: 230, direction: 'outgoing', sender: { externalId: '5000', displayName: 'Demo Officer Account Owner' },
+    })));
+    expect(out.status).toBe(201);
+    expect((await timeline(out.body.data.chatId)).body.data.chat.displayLabel).toBe(`Telegram chat ${outChat}`);
+
+    const inChat = uniqueId('label-in-');
+    const incoming = await ingest(envelope(h.accounts.intake, inChat, recorded({ messageId: 231, sender: { externalId: '5001', displayName: 'Test Contact' } })));
+    expect((await timeline(incoming.body.data.chatId)).body.data.chat.displayLabel).toBe('Test Contact');
+  });
+
   it('a trusted start marker yields Contact started chat, an outgoing one Officer started chat, and an untrusted or conflicting marker is ignored', async () => {
     const marker = { basis: 'source_start_marker' as const };
     const contact = await ingest(envelope(h.accounts.intake, uniqueId('m-in-'), recorded({ messageId: 30, conversationStart: marker })));
