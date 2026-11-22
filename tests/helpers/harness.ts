@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { createApp, type App } from '../../src/app.ts';
 import { loadConfig, type Config } from '../../src/config.ts';
 import { createDefaultRenderer } from '../../src/capture/index.ts';
@@ -13,6 +14,9 @@ import { ScriptedReviewer } from './scripted-reviewer.ts';
 import { seedTestData, TEST_ACCOUNTS, type TestTokens } from './test-seed.ts';
 
 const TEST_KEEP_ALIVE_MS = 25;
+/** How long a restarted server may take to answer, and how often it is asked. */
+const RESTART_READY_TIMEOUT_MS = 10_000;
+const RESTART_READY_POLL_MS = 20;
 
 export interface ApiResponse {
   status: number;
@@ -61,6 +65,28 @@ async function send(baseUrl: string, token: string | null, method: string, urlPa
   const text = await res.text();
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
   return { status: res.status, headers: res.headers, body: isJson && text ? JSON.parse(text) : null, text };
+}
+
+/**
+ * Asks the restarted server for GET /healthz until it answers 200. The HTTP client may still hold a keep-alive socket
+ * the old server closed, and a request sent on it fails once with ECONNRESET: this probe meets it instead of a test.
+ */
+async function waitUntilAnswering(baseUrl: string): Promise<void> {
+  const deadline = Date.now() + RESTART_READY_TIMEOUT_MS;
+  for (;;) {
+    let problem: unknown;
+    try {
+      const res = await send(baseUrl, null, 'GET', '/healthz', undefined);
+      if (res.status === 200) return;
+      problem = `status ${res.status}`;
+    } catch (error) {
+      problem = error;
+    }
+    if (Date.now() >= deadline) {
+      throw new Error(`the restarted server did not answer /healthz within ${RESTART_READY_TIMEOUT_MS} ms`, { cause: problem });
+    }
+    await sleep(RESTART_READY_POLL_MS);
+  }
 }
 
 /** Starts a real Mirsad instance in-process on 127.0.0.1 with its own temporary data directory. */
@@ -121,6 +147,7 @@ export async function startHarness(overrides: HarnessOverrides = {}): Promise<Te
     restart: async () => {
       await current.app.close();
       current = await boot();
+      await waitUntilAnswering(current.url);
     },
     close: async () => {
       await current.app.close();

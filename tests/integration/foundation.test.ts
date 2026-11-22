@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import http from 'node:http';
 import path from 'node:path';
 import { Hono } from 'hono';
@@ -192,6 +192,28 @@ describe('harness', () => {
         expect(local.logs.join('\n')).not.toContain(token);
       }
     } finally {
+      await local.close();
+    }
+  });
+
+  it('restart() returns only once the new server answers, so a socket the old server closed never fails a test request', async () => {
+    const local = await startHarness();
+    const realFetch = globalThis.fetch;
+    let staleSockets = 0;
+    // A request sent on a keep-alive socket the old server closed fails once with ECONNRESET (seen once after a restart).
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      if (staleSockets === 0) return realFetch(input, init);
+      staleSockets -= 1;
+      throw new TypeError('fetch failed', { cause: Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' }) });
+    });
+    try {
+      staleSockets = 1;
+      await local.restart();
+      const after = await local.http(local.tokens.officerA).get('/v1/me');
+      expect(after.status).toBe(200);
+      expect(staleSockets).toBe(0);
+    } finally {
+      fetchSpy.mockRestore();
       await local.close();
     }
   });

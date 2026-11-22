@@ -531,8 +531,6 @@ describe('step 2: handover, composer and decisions', () => {
     await h.restart();
     // Closing the app ends the streams it had open.
     await openBeforeRestart.ended;
-    // The client may still hold keep-alive sockets the old server closed; wait until the new one answers.
-    await vi.waitFor(async () => expect((await h.http(null).get('/healthz')).status).toBe(200), { timeout: 5_000, interval: 20 });
 
     expect(stableTimeline(await timeline(chatId))).toEqual(stableTimeline(before));
     const replay = await openStream(h.baseUrl, h.tokens.officerA, { cursor: 0 });

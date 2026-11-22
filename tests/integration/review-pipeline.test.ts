@@ -703,7 +703,6 @@ describe('review pipeline: the worker', () => {
     expect(reviewRows(chat.chatId)[0]).toMatchObject({ status: 'running', attempts: 1 });
 
     await h.restart();
-    await vi.waitFor(async () => expect((await h.http(null).get('/healthz')).status).toBe(200), WAIT);
     // The new process takes the review up again; the stopped one's answer is never published.
     await reviewRequested(chat.chatId, 2);
     h.reviewer.release();
