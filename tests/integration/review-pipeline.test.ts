@@ -540,6 +540,27 @@ describe('review pipeline: Suspected fraud and case references', () => {
     expect(await findings(confirmed.chatId)).toEqual([[earliest.messageEventId, 'suspected_fraud']]);
   });
 
+  it('a link flagged when the confirmation is recorded names the destination it replaced, as review publishing does', async () => {
+    const chat = await reviewedChat('Please pay at https://pay.good-shop.test/inv/1');
+    // Paused, so the new link is not reviewed before the confirmation: only the check of the stored text finds it.
+    await control(chat.chatId, 'pause', 2);
+    const changed = await addMessage(chat.chatId, 2, 'Change of plan: pay at https://pay.other-shop.test/inv/2');
+    expect((await recordConfirmation(chat.chatId, ['pay.good-shop.test'])).body.data.findingsCreated).toBe(1);
+    expect((await timeline(chat.chatId)).findings.map((f) => [f.messageEventId, f.kind, f.extractedValue, f.changedFrom])).toEqual([
+      [chat.messageEventId, 'payment_link', 'https://pay.good-shop.test/inv/1', null],
+      [changed.messageEventId, 'suspected_fraud', 'https://pay.other-shop.test/inv/2', 'https://pay.good-shop.test/inv/1'],
+    ]);
+
+    // The paused review publishes after the resume, meets that finding and raises nothing more.
+    await control(chat.chatId, 'resume', 3);
+    await h.drain();
+    expect(reviewRows(chat.chatId).map((r) => r.status)).toEqual(['completed', 'completed']);
+    expect((await timeline(chat.chatId)).findings.map((f) => [f.kind, f.changedFrom])).toEqual([
+      ['payment_link', null],
+      ['suspected_fraud', 'https://pay.good-shop.test/inv/1'],
+    ]);
+  });
+
   it('recording a confirmation checks the stored text of every incoming message event, in any mode and for any capture method, once per conflicting host', async () => {
     // Never dispatched: nothing in this chat has been reviewed.
     const chat = await newChat('Please pay at https://pay.other-shop.test/a or https://pay.other-shop.test/b, not https://pay.good-shop.test/c');

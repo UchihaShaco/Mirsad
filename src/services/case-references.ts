@@ -11,12 +11,13 @@ import type { Concern, Direction, ReviewStatus } from '../contract/enums.ts';
 import { AppError } from '../contract/errors.ts';
 import { LABELS } from '../contract/labels.ts';
 import type { CaseReference, CaseReferenceRequest } from '../contract/schemas.ts';
+import { decideDetail, type KnownDetail } from '../domain/case-details.ts';
 import { findPaymentLinks, hostOfNormalizedLink, normalizeHost, type FoundPaymentLink } from '../domain/links.ts';
 import type { Principal } from '../ports/identity.ts';
 import { findingNote } from '../review/notes.ts';
 import type { Tx } from '../storage/db.ts';
 import * as caseActions from '../storage/repos/case-actions.ts';
-import { recordCaseDetail, type RecordCaseDetailInput } from '../storage/repos/case-details.ts';
+import { listCaseDetails, recordCaseDetail, type CaseDetailRow, type RecordCaseDetailInput } from '../storage/repos/case-details.ts';
 import { insertCaseReference, listCaseReferences, paymentHostsOf } from '../storage/repos/case-references.ts';
 import { findCitedEvidence, firstLinkFindingPositions, insertFinding, listFindingsOfKind } from '../storage/repos/findings.ts';
 import { listIncomingTextEvents, type IncomingTextEventRow } from '../storage/repos/messages.ts';
@@ -140,12 +141,31 @@ function recordRepeat(tx: Tx, chatId: string, event: IncomingTextEventRow, link:
   if (!reviewToCome) recordCaseDetail(tx, foundLinkDetail(chatId, event, link));
 }
 
+const toKnownDetail = (row: CaseDetailRow): KnownDetail => ({
+  normalizedValue: row.normalized_value,
+  displayValue: row.display_value,
+  lastSeenPosition: row.last_seen_position,
+});
+
 /**
- * Suspected fraud for a link on the earliest event that carries it. The link is recorded as a detail the chat has
- * surfaced, as review publishing records a conflicting link it finds in code, so a later repeat of it is suppressed
- * whatever the model reported.
+ * The destination a link replaced, decided as review publishing decides it: against the payment link details that the
+ * chat's message events before this one carried. Null when the link is new to the chat.
+ */
+function replacedDestination(tx: Tx, chatId: string, position: number, normalizedValue: string): string | null {
+  const earlier = listCaseDetails(tx, chatId)
+    .filter((row) => row.category === 'payment_link' && row.last_seen_position < position)
+    .map(toKnownDetail);
+  const decision = decideDetail('payment_link', normalizedValue, earlier);
+  return decision.kind === 'changed' ? decision.changedFrom : null;
+}
+
+/**
+ * Suspected fraud for a link on the earliest event that carries it, naming the destination it replaced. The link is
+ * recorded as a detail the chat has surfaced, as review publishing records a conflicting link it finds in code, so a
+ * later repeat of it is suppressed whatever the model reported.
  */
 function flagFoundLink(tx: Tx, check: FraudCheck, event: IncomingTextEventRow, link: FoundPaymentLink): FindingRow[] {
+  const changedFrom = replacedDestination(tx, check.chat.id, event.position, link.normalizedValue);
   recordCaseDetail(tx, foundLinkDetail(check.chat.id, event, link));
   return flag(tx, check, {
     messageId: event.message_id,
@@ -155,7 +175,7 @@ function flagFoundLink(tx: Tx, check: FraudCheck, event: IncomingTextEventRow, l
     extractedValue: link.url,
     normalizedValue: link.normalizedValue,
     concern: null,
-    changedFrom: null,
+    changedFrom,
   });
 }
 
