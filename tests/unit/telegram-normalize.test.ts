@@ -95,6 +95,23 @@ describe('telegram normalizer', () => {
     expect(envelopes.every((e) => e.externalChatId === String(CONTACT))).toBe(true);
   });
 
+  it('edits and deletions carry the chat label too, so a chat first seen through one is named after the contact', () => {
+    const [edit] = adapter().normalize({
+      update_id: 900_000_015,
+      edited_business_message: message({ text: 'Changed text', edit_date: DATE + 60 }),
+    });
+    const [deletion] = adapter().normalize({
+      update_id: 900_000_016,
+      deleted_business_messages: {
+        business_connection_id: CONNECTION,
+        chat: { id: CONTACT, type: 'private', first_name: 'Test', last_name: 'Contact 1' },
+        message_ids: [4101],
+      },
+    });
+    expect(edit?.chat).toEqual({ displayLabel: 'Test Contact 1' });
+    expect(deletion?.chat).toEqual({ displayLabel: 'Test Contact 1' });
+  });
+
   it('a caption is used as text and media kinds are listed as unsupported content', () => {
     const [env] = adapter().normalize(
       incoming(900_000_004, { text: undefined, caption: 'Look at this', photo: [{ file_id: 'x' }], document: { file_id: 'y' } }),

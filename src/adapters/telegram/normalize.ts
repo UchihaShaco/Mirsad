@@ -1,6 +1,6 @@
 import type { ChannelAdapter } from '../../ports/channel-adapter.ts';
 import type { IntakeEnvelope, IntakeEvent } from '../../contract/schemas.ts';
-import { MEDIA_KINDS, type TelegramMessage, type TelegramUpdate, type TelegramUser } from './types.ts';
+import { MEDIA_KINDS, type TelegramChat, type TelegramMessage, type TelegramUpdate, type TelegramUser } from './types.ts';
 
 export interface TelegramAdapterOptions {
   businessUserId: number;
@@ -39,12 +39,13 @@ function senderOf(msg: TelegramMessage, direction: 'incoming' | 'outgoing') {
 export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelAdapter<TelegramUpdate> {
   const starts = options.conversationStarts ?? [];
 
-  const envelope = (msg: TelegramMessage, event: IntakeEvent, label: boolean): IntakeEnvelope => {
-    const chatLabel = label ? fullName(msg.chat) : undefined;
+  /** Every event carries the chat's own name, so a chat first seen through an edit or a deletion is named after the contact. */
+  const envelope = (chat: TelegramChat, event: IntakeEvent): IntakeEnvelope => {
+    const chatLabel = fullName(chat);
     return {
       source: 'telegram',
       externalAccountId: options.externalAccountId,
-      externalChatId: String(msg.chat.id),
+      externalChatId: String(chat.id),
       ...(chatLabel ? { chat: { displayLabel: chatLabel } } : {}),
       event,
     };
@@ -55,37 +56,29 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
     const unsupported = mediaKindsOf(msg);
     const sender = senderOf(msg, direction);
     const isStart = starts.some((s) => s.chatId === msg.chat.id && s.messageId === msg.message_id);
-    return envelope(
-      msg,
-      {
-        type: 'message.recorded',
-        sourceEventId: `tg:u${updateId}:m${msg.message_id}`,
-        sourceMessageId: `tg:${msg.message_id}`,
-        direction,
-        text: msg.text ?? msg.caption ?? '',
-        sentAt: toIso(msg.date),
-        ...(sender ? { sender } : {}),
-        ...(isStart ? { conversationStart: { basis: 'source_start_marker' as const } } : {}),
-        ...(unsupported.length > 0 ? { unsupportedContent: unsupported } : {}),
-      },
-      true,
-    );
+    return envelope(msg.chat, {
+      type: 'message.recorded',
+      sourceEventId: `tg:u${updateId}:m${msg.message_id}`,
+      sourceMessageId: `tg:${msg.message_id}`,
+      direction,
+      text: msg.text ?? msg.caption ?? '',
+      sentAt: toIso(msg.date),
+      ...(sender ? { sender } : {}),
+      ...(isStart ? { conversationStart: { basis: 'source_start_marker' as const } } : {}),
+      ...(unsupported.length > 0 ? { unsupportedContent: unsupported } : {}),
+    });
   };
 
   const edited = (updateId: number, msg: TelegramMessage): IntakeEnvelope => {
     const editStamp = msg.edit_date ?? msg.date;
-    return envelope(
-      msg,
-      {
-        type: 'message.edited',
-        sourceEventId: `tg:u${updateId}:m${msg.message_id}:e${editStamp}`,
-        sourceMessageId: `tg:${msg.message_id}`,
-        text: msg.text ?? msg.caption ?? '',
-        editedAt: toIso(editStamp),
-        direction: directionOf(msg, options.businessUserId),
-      },
-      false,
-    );
+    return envelope(msg.chat, {
+      type: 'message.edited',
+      sourceEventId: `tg:u${updateId}:m${msg.message_id}:e${editStamp}`,
+      sourceMessageId: `tg:${msg.message_id}`,
+      text: msg.text ?? msg.caption ?? '',
+      editedAt: toIso(editStamp),
+      direction: directionOf(msg, options.businessUserId),
+    });
   };
 
   const accepts = (connectionId: string | undefined, messageId?: number): boolean =>
@@ -106,16 +99,13 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
       if (removed && accepts(removed.business_connection_id)) {
         return removed.message_ids
           .filter((messageId) => messageId !== 0)
-          .map((messageId) => ({
-            source: 'telegram' as const,
-            externalAccountId: options.externalAccountId,
-            externalChatId: String(removed.chat.id),
-            event: {
-              type: 'message.deleted' as const,
+          .map((messageId) =>
+            envelope(removed.chat, {
+              type: 'message.deleted',
               sourceEventId: `tg:u${update.update_id}:m${messageId}:del`,
               sourceMessageId: `tg:${messageId}`,
-            },
-          }));
+            }),
+          );
       }
       return [];
     },

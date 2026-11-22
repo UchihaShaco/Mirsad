@@ -98,6 +98,37 @@ describe('step 5: telegram replay', () => {
     ]);
   });
 
+  it('a chat first seen through a deletion or an edit is labelled with the contact name', async () => {
+    const base = loadFixture('edit-and-delete');
+    const contact = (id: number) => ({ id, type: 'private', first_name: 'Test', last_name: `Contact ${id % 100}` });
+    const midChat: TelegramFixture = {
+      ...base,
+      updates: [
+        {
+          update_id: 920_000_001,
+          deleted_business_messages: { business_connection_id: base.businessConnectionId, chat: contact(6000000031), message_ids: [5101] },
+        },
+        {
+          update_id: 920_000_002,
+          edited_business_message: {
+            message_id: 5201,
+            date: 1790000300,
+            edit_date: 1790000360,
+            chat: contact(6000000032),
+            from: { ...contact(6000000032), is_bot: false },
+            business_connection_id: base.businessConnectionId,
+            text: 'Edited before Mirsad saw the original.',
+          },
+        },
+      ],
+    };
+    const report = await replayFixture(midChat, options());
+    expect(report.events.map((e) => e.status)).toEqual([201, 201]);
+    const [deletedFirst] = await chatsFor('6000000031', 'tg-intake-1');
+    const [editedFirst] = await chatsFor('6000000032', 'tg-intake-1');
+    expect([deletedFirst?.displayLabel, editedFirst?.displayLabel]).toEqual(['Test Contact 31', 'Test Contact 32']);
+  });
+
   it('the replay report contains ids and result codes but no message text', async () => {
     const fixture = loadFixture('payment-destination-change');
     const report = await replayFixture(fixture, options());
