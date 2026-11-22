@@ -41,9 +41,14 @@ export function createCaptureCache(api) {
   };
 }
 
+/**
+ * A retry button that keeps working: a click can do nothing (another action is running) or fail (429, a network
+ * error), and the timeline is not redrawn then. Retry loading removes its own button; Retry capture goes through the
+ * actions, which ignore a click while another action runs.
+ */
 function retryButton(label, onClick) {
   const button = h('button', { type: 'button', text: label });
-  button.addEventListener('click', onClick, { once: true });
+  button.addEventListener('click', onClick);
   return button;
 }
 

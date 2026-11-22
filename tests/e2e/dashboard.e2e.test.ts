@@ -14,6 +14,7 @@ const BROWSER_CHANNELS = ['msedge', 'chrome'] as const;
 const UI_TIMEOUT_MS = 15_000;
 const OK = 200;
 const CREATED = 201;
+const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited', message: 'Too many requests.' } };
 
 type Account = { source: 'telegram'; externalAccountId: string };
 type InboxRegion = 'New inbound' | 'Open chats';
@@ -232,5 +233,30 @@ describe('reference dashboard', () => {
     expect(await replyBox(controller.page).inputValue()).toBe('');
     expect(second.problems).toEqual([]);
     expect(controller.problems).toEqual([]);
+  });
+
+  it('Retry capture still works after a retry request that the service refused', async () => {
+    await h.drain();
+    h.renderer.failNext(1);
+    const chat = await seedChat(h.accounts.intake, 'Test Contact 6', 'Hello, I sent the photo of the receipt earlier.');
+    await h.drain();
+    expect((await timelineOf(chat.chatId)).messages[0]?.capture?.status).toBe('failed');
+
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, 'Test Contact 6');
+    const retry = button(page, 'Retry capture');
+    await retry.waitFor();
+    // The first request is answered 429, as a busy service would; it never reaches the service.
+    await page.route('**/v1/captures/*/retry', (route) => route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify(RATE_LIMITED) }), { times: 1 });
+    await retry.click();
+    await page.locator('#notice').filter({ hasText: 'Too many requests' }).waitFor();
+
+    await retry.click();
+    await page.locator('#timeline article[data-kind="message"] figure.capture[data-state="loaded"]').waitFor();
+    const stored = await timelineOf(chat.chatId);
+    expect(stored.messages[0]?.capture?.status).toBe('ready');
+    expect(stored.caseActions.filter((a) => a.type === 'capture_retry_requested')).toHaveLength(1);
+    // The browser reports the refused request itself as a failed resource load; nothing else may appear.
+    expect(problems.filter((text) => !text.includes('status of 429'))).toEqual([]);
   });
 });
