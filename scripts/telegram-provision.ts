@@ -7,7 +7,6 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { findLiveBindings } from '../src/adapters/telegram/live-connector.ts';
 import { loadConfig } from '../src/config.ts';
@@ -15,13 +14,13 @@ import { provisionPrincipal } from '../src/identity/provision.ts';
 import { DATABASE_FILE, openDatabase, type Db, type Tx } from '../src/storage/db.ts';
 import { findChannelAccount, grantAccount, insertChannelAccount } from '../src/storage/repos/principals.ts';
 import type { PrincipalRow, WorkspaceRow } from '../src/storage/rows.ts';
+import { isEntryPoint, loadDotEnvIfPresent } from './entry-point.ts';
 
 export const LIVE_CREDENTIALS_FILE = 'telegram-live-credentials.json';
 const CREDENTIALS_FILE_MODE = 0o600;
 const TELEGRAM_USER_ID = /^[1-9]\d{0,15}$/;
 const DEFAULT_ACCOUNT_LABEL = 'Telegram live test account';
 const CONNECTOR_DISPLAY_NAME = 'Telegram live connector';
-const ENV_FILE = '.env';
 const USAGE = 'usage: npm run telegram:provision -- --owner-user-id <id> [--officer <id or display name>]... [--workspace <id>] [--label <text>]\n';
 
 export interface ProvisionInput {
@@ -180,17 +179,7 @@ export function runProvision(options: ProvisionRunOptions): number {
   }
 }
 
-function isEntryPoint(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return fs.realpathSync.native(entry) === fs.realpathSync.native(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
-}
-
-if (isEntryPoint()) {
-  if (fs.existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+if (isEntryPoint(import.meta.url)) {
+  loadDotEnvIfPresent();
   process.exitCode = runProvision({ argv: process.argv.slice(2), env: process.env, write: (text) => process.stdout.write(text) });
 }

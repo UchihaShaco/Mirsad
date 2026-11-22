@@ -21,6 +21,7 @@ import { DEMO_ACCOUNTS, DEMO_CREDENTIALS_FILE } from '../src/identity/seed.ts';
 import { createJsonLogger } from '../src/logging/json-logger.ts';
 import { READINESS_CHECK_IDS, type ReadinessCheckId, type ReadinessRecord } from '../src/services/status.ts';
 import { DATABASE_FILE, openDatabase } from '../src/storage/db.ts';
+import { isEntryPoint } from './entry-point.ts';
 
 const DEFAULT_OUTPUT_DIR = fileURLToPath(new URL('../docs/telegram/', import.meta.url));
 const DEFAULT_FIXTURES_DIR = fileURLToPath(new URL('../fixtures/telegram/', import.meta.url));
@@ -306,17 +307,7 @@ export async function runReadiness(options: ReadinessOptions = {}): Promise<Read
   }
 }
 
-function isEntryPoint(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return fs.realpathSync.native(entry) === fs.realpathSync.native(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
-}
-
-if (isEntryPoint()) {
+if (isEntryPoint(import.meta.url)) {
   runReadiness().then(
     (record) => {
       const lines = record.checks.map((c) => `${c.passed ? 'PASS' : 'FAIL'}  ${c.id}  ${c.detail}`);

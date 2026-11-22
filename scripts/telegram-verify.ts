@@ -8,14 +8,13 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { BotApiError, createBotApi, type BotApi } from '../src/adapters/telegram/bot-api.ts';
 import { findLiveBindings } from '../src/adapters/telegram/live-connector.ts';
 import { discoverConnections, verifyConnection, type ConnectionDiscovery, type VerificationReport } from '../src/adapters/telegram/verify.ts';
 import { ConfigError, loadConfig, type Config } from '../src/config.ts';
 import { DATABASE_FILE, openDatabase } from '../src/storage/db.ts';
+import { isEntryPoint, loadDotEnvIfPresent } from './entry-point.ts';
 
-const ENV_FILE = '.env';
 const DISCOVER_FLAG = '--discover-connections';
 
 export interface VerifyRunOptions {
@@ -96,18 +95,8 @@ export async function runVerify(options: VerifyRunOptions): Promise<number> {
   }
 }
 
-function isEntryPoint(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return fs.realpathSync.native(entry) === fs.realpathSync.native(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
-}
-
-if (isEntryPoint()) {
-  if (fs.existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+if (isEntryPoint(import.meta.url)) {
+  loadDotEnvIfPresent();
   runVerify({ argv: process.argv.slice(2), env: process.env, write: (text) => process.stdout.write(text) }).then(
     (code) => {
       process.exitCode = code;
