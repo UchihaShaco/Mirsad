@@ -29,10 +29,14 @@ const CALENDAR_DATE = new RegExp(
 );
 const DATE_BLANK = '_';
 /**
- * A run of digits joined by at most two separators in a row: spaces (also no-break, thin and direction marks), dots,
- * hyphens and brackets, with an optional leading + or opening bracket.
+ * What may separate the digits of a phone number: spaces (also no-break, thin and narrow no-break), direction marks,
+ * dots, brackets and hyphens.
  */
-const PHONE_SPAN = /\+?\(?\d(?:[    ‎‏.()-]{0,2}\d)*/g;
+const SEPARATORS = ' \u00a0\u2009\u202f\u200e\u200f.()\\-';
+/** A run of digits joined by at most two separators in a row, with an optional leading + or opening bracket. */
+const PHONE_SPAN = new RegExp(`\\+?\\(?\\d(?:[${SEPARATORS}]{0,2}\\d)*`, 'g');
+/** Text made only of what a phone number is written with: digits, separators and plus signs. */
+const PHONE_TEXT = new RegExp(`^[+\\d${SEPARATORS}]+$`);
 
 export interface PhoneHint {
   country?: string;
@@ -46,11 +50,16 @@ export interface NormalizedPhone {
   digits: string;
 }
 
-/** A phone-like run of a text; offsets refer to the text as given (digit mapping keeps lengths). */
-export interface PhoneSpan {
+/** Where a piece of a text lies: offsets refer to the text as given (digit mapping keeps lengths). */
+export interface TextRange {
   start: number;
   end: number;
+}
+
+/** A phone-like run of a text, with the ASCII digits of each digit group and where each group lies. */
+export interface PhoneSpan extends TextRange {
   digitGroups: string[];
+  groupRanges: TextRange[];
 }
 
 /** Maps Arabic-Indic and Extended Arabic-Indic digits to ASCII, one character for one. */
@@ -63,11 +72,20 @@ export function toAsciiDigits(text: string): string {
 
 export function findPhoneSpans(text: string): PhoneSpan[] {
   const withoutDates = toAsciiDigits(text).replace(CALENDAR_DATE, (date) => DATE_BLANK.repeat(date.length));
-  return [...withoutDates.matchAll(PHONE_SPAN)].map((match) => ({
-    start: match.index,
-    end: match.index + match[0].length,
-    digitGroups: match[0].match(DIGIT_GROUP) ?? [],
-  }));
+  return [...withoutDates.matchAll(PHONE_SPAN)].map((match) => {
+    const groups = [...match[0].matchAll(DIGIT_GROUP)];
+    return {
+      start: match.index,
+      end: match.index + match[0].length,
+      digitGroups: groups.map((group) => group[0]),
+      groupRanges: groups.map((group) => ({ start: match.index + group.index, end: match.index + group.index + group[0].length })),
+    };
+  });
+}
+
+/** Whether the text holds nothing but what a phone number is written with (Arabic-Indic digits count as digits). */
+export function isPhoneText(text: string): boolean {
+  return PHONE_TEXT.test(toAsciiDigits(text));
 }
 
 /** The E.164 form of a complete number; partial and invalid numbers give null. */

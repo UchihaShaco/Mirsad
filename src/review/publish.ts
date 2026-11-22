@@ -74,12 +74,15 @@ function settleStaleResult(tx: Tx, ctx: ReviewContext): PublishOutcome | null {
   return null;
 }
 
-/** Rule 2 is acceptValidatedItems: each item it accepts becomes a candidate the reviewer reported. */
-function toCandidate({ item, normalizedValue }: AcceptedItem): Candidate {
+/**
+ * Rule 2 is acceptValidatedItems: each item it accepts becomes a candidate the reviewer reported. Its value is the one
+ * the message wrote, so the finding, the case detail and the watchlist never hold the reviewer's wording.
+ */
+function toCandidate({ item, normalizedValue, writtenValue }: AcceptedItem): Candidate {
   return {
     category: item.kind,
     quote: item.quote.trim(),
-    extractedValue: item.extractedValue.trim(),
+    extractedValue: writtenValue,
     normalizedValue,
     concern: item.concern,
     countryHint: item.countryHint,

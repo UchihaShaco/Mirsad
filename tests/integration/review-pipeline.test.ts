@@ -284,6 +284,33 @@ describe('review pipeline: findings', () => {
     expect(evidenceFor(again.messageEventId)).toEqual([{ phoneMentions: [{ ...mention, findingId: null }], suspectedFraudFindingIds: [] }]);
   });
 
+  it('a phone number or recipient is stored and shown as the message wrote it, never as the reviewer reworded it', async () => {
+    const recipientLine = 'Pay the deposit to Test   Trading LLC.';
+    const phoneLine = 'Call ٠٧٧٠٠ ٩٠٠١٤٢ to confirm.';
+    h.reviewer.respond((request) => ({
+      items: [
+        extracted(request, { kind: 'payment_recipient', quote: recipientLine, extractedValue: 'test trading llc' }),
+        extracted(request, { kind: 'phone_number', quote: phoneLine, extractedValue: '+07700 900142', concern: 'payment_request', countryHint: 'GB' }),
+        // Words around the digits are model text: the item is refused, so nothing of it is stored or shown.
+        extracted(request, { kind: 'phone_number', quote: phoneLine, extractedValue: 'Officer Smith 07700 900142 CALL NOW', concern: 'payment_request', countryHint: 'GB' }),
+      ],
+    }));
+    const chat = await reviewedChat(`${recipientLine}\n${phoneLine}`);
+    expect((await timeline(chat.chatId)).findings.map((f) => [f.kind, f.extractedValue])).toEqual([
+      ['payment_recipient', 'Test   Trading LLC'],
+      ['phone_number', '٠٧٧٠٠ ٩٠٠١٤٢'],
+    ]);
+    expect(reviewRows(chat.chatId)[0]).toMatchObject({ unsupported_count: 1 });
+    const entry = (await h.http(h.tokens.officerA).get('/v1/watchlist')).body.data.entries.find((e: { number: { e164: string } }) => e.number.e164 === '+447700900142');
+    expect(entry).toMatchObject({ number: { display: '٠٧٧٠٠ ٩٠٠١٤٢' }, evidence: [expect.objectContaining({ sourceRepresentation: '٠٧٧٠٠ ٩٠٠١٤٢' })] });
+
+    // The case detail keeps the recipient as written too: a change names it that way.
+    h.reviewer.respond(null);
+    await addMessage(chat.chatId, 2, 'Beneficiary: Other Holdings');
+    await h.drain();
+    expect((await timeline(chat.chatId)).findings.at(-1)).toMatchObject({ label: 'Payment destination changed', changedFrom: 'Test   Trading LLC' });
+  });
+
   it('the step-5 fixture chat ends with exactly one finding', async () => {
     const fixture: unknown = JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, 'payment-destination-change.json'), 'utf8'));
     const report = await replayFixture(fixture, {

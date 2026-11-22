@@ -1,14 +1,17 @@
 /**
  * Checks an item a reviewer extracted against the stored text of the reviewed event (design section 10, step 2) and
- * returns its normalized value (step 3). Nothing a reviewer reports is shown unless that text supports it.
+ * returns its normalized value and the value as the message wrote it (step 3). Nothing a reviewer reports is shown
+ * unless that text supports it, and what is stored and shown is always the message's own text, never the reviewer's.
  */
 import type { ExtractedKind } from '../contract/enums.ts';
 import type { ExtractedItem } from '../ports/reviewer.ts';
 import { normalizeLink, tokenize, trimEdgePunctuation } from './links.ts';
-import { findPhoneSpans, normalizePhone, phoneHintFor, toAsciiDigits } from './phone.ts';
+import { findPhoneSpans, isPhoneText, normalizePhone, phoneHintFor, toAsciiDigits, type PhoneSpan } from './phone.ts';
 
 export type RejectionReason = 'wrong_message' | 'quote_not_found' | 'value_not_in_quote' | 'empty';
-export type ValidationResult = { ok: true; normalizedValue: string } | { ok: false; reason: RejectionReason };
+export type ValidationResult =
+  | { ok: true; normalizedValue: string; writtenValue: string }
+  | { ok: false; reason: RejectionReason };
 
 /** The reviewed event: the internal message ID the reviewer must echo and the event's own text. */
 export interface ReviewedRecord {
@@ -16,10 +19,12 @@ export interface ReviewedRecord {
   text: string;
 }
 
-/** A supported item and its normalized value (design section 10, steps 2 and 3). */
+/** A supported item, its normalized value and its value as written (design section 10, steps 2 and 3). */
 export interface AcceptedItem {
   item: ExtractedItem;
   normalizedValue: string;
+  /** The value as the message wrote it: what findings, case details and the watchlist store and show. */
+  writtenValue: string;
 }
 
 export interface AcceptedItems {
@@ -27,10 +32,23 @@ export interface AcceptedItems {
   unsupported: number;
 }
 
+/** A value the quote supports: normalized for comparison, and as the quote writes it. */
+interface SupportedValue {
+  normalized: string;
+  written: string;
+}
+
+/** The digit groups first..last of a phone-like span. */
+interface GroupRange {
+  first: number;
+  last: number;
+}
+
 /** E.164 allows at most 15 digits; shorter than 7 is no phone number. */
 const PHONE_MIN_DIGITS = 7;
 const PHONE_MAX_DIGITS = 15;
 const NON_DIGIT = /\D/g;
+const WHITESPACE = /\s/;
 const WHITESPACE_RUN = /\s+/g;
 
 export function normalizeRecipient(value: string): string {
@@ -43,10 +61,11 @@ export function normalizePhoneValue(value: string, countryHint: string | null): 
   return phone.e164 ?? `unnormalized:${phone.digits}`;
 }
 
-/** The value must be a whole token of the quote (edge punctuation aside) and a web link with a dotted host. */
-function linkValue(value: string, quote: string): string | null {
+/** The value must be a whole token of the quote (edge punctuation aside), so it is already written as in the message. */
+function linkValue(value: string, quote: string): SupportedValue | null {
   const wholeToken = tokenize(quote).some((token) => token.text === value || trimEdgePunctuation(token.text) === value);
-  return wholeToken ? normalizeLink(value) : null;
+  const normalized = wholeToken ? normalizeLink(value) : null;
+  return normalized === null ? null : { normalized, written: value };
 }
 
 const isNumberLength = (length: number): boolean => length >= PHONE_MIN_DIGITS && length <= PHONE_MAX_DIGITS;
@@ -69,43 +88,96 @@ function cutsAfterWholeNumbers(lengths: readonly number[]): boolean[] {
   return cuts;
 }
 
+/** The last group when the groups from `first` on join to exactly the digits; -1 otherwise. */
+function lastGroupOfNumber(groups: readonly string[], first: number, digits: string): number {
+  let joined = '';
+  for (let last = first; last < groups.length; last += 1) {
+    joined += groups[last];
+    if (joined.length >= digits.length) return joined === digits ? last : -1;
+  }
+  return -1;
+}
+
 /**
- * Whether the digits are a number of the span: the whole span, or one of several complete numbers written one after
- * the other in it, which holds only when the groups on both sides of it divide into whole numbers as well.
+ * The groups whose digits are the number: the whole span, or one of several complete numbers written one after the
+ * other in it, which holds only when the groups on both sides of it divide into whole numbers as well.
  */
-function isNumberOfSpan(groups: readonly string[], digits: string): boolean {
+function numberInSpan(groups: readonly string[], digits: string): GroupRange | null {
   const lengths = groups.map((group) => group.length);
   const before = cutsAfterWholeNumbers(lengths);
   const after = cutsAfterWholeNumbers([...lengths].reverse());
-  return groups.some((_, first) => {
-    if (before[first] !== true) return false;
-    let joined = '';
-    for (const [offset, group] of groups.slice(first).entries()) {
-      joined += group;
-      if (joined.length >= digits.length) return joined === digits && after[groups.length - first - offset - 1] === true;
-    }
-    return false;
-  });
+  for (let first = 0; first < groups.length; first += 1) {
+    const last = before[first] === true ? lastGroupOfNumber(groups, first, digits) : -1;
+    if (last >= 0 && after[groups.length - last - 1] === true) return { first, last };
+  }
+  return null;
 }
 
 /**
- * The value's digits must be a number of a phone-like span of the quote (a date never is one); Arabic-Indic digits
- * count as their ASCII digits.
+ * The number as the quote writes it: from its first to its last digit, with the span's leading + or opening bracket when
+ * the number starts the span, and the closing bracket that follows when an opening one would otherwise stay unclosed.
  */
-function phoneValue(value: string, quote: string, countryHint: string | null): string | null {
+function writtenNumber(quote: string, span: PhoneSpan, range: GroupRange): string {
+  const start = range.first === 0 ? span.start : (span.groupRanges[range.first]?.start ?? span.start);
+  const end = span.groupRanges[range.last]?.end ?? span.end;
+  const written = quote.slice(start, end);
+  const unclosed = written.split('(').length > written.split(')').length;
+  return unclosed && quote[end] === ')' ? `${written})` : written;
+}
+
+/**
+ * The value may hold only what a phone number is written with, and its digits must be a number of a phone-like span of
+ * the quote (a date never is one); Arabic-Indic digits count as their ASCII digits. The number is kept, and normalized,
+ * as the quote writes it, whatever the reviewer added, dropped or reformatted.
+ */
+function phoneValue(value: string, quote: string, countryHint: string | null): SupportedValue | null {
+  if (!isPhoneText(value)) return null;
   const digits = toAsciiDigits(value).replace(NON_DIGIT, '');
   if (!isNumberLength(digits.length)) return null;
-  if (!findPhoneSpans(quote).some((span) => isNumberOfSpan(span.digitGroups, digits))) return null;
-  return normalizePhoneValue(value, countryHint);
+  for (const span of findPhoneSpans(quote)) {
+    const range = numberInSpan(span.digitGroups, digits);
+    if (range === null) continue;
+    const written = writtenNumber(quote, span, range);
+    return { normalized: normalizePhoneValue(written, countryHint), written };
+  }
+  return null;
 }
 
-/** The value must appear in the quote, ignoring case and repeated whitespace. */
-function recipientValue(value: string, quote: string): string | null {
+/**
+ * Where the normalized recipient lies in the quote as written. The quote is folded the way normalizeRecipient folds a
+ * value (whitespace runs to one space, letters to lower case), one character at a time, and each folded character keeps
+ * the range of the quote character it came from. Null when the folded quote does not contain the value.
+ */
+function writtenRecipient(quote: string, normalized: string): string | null {
+  let folded = '';
+  const starts: number[] = [];
+  const ends: number[] = [];
+  for (let index = 0; index < quote.length;) {
+    const char = String.fromCodePoint(quote.codePointAt(index) ?? 0);
+    const next = index + char.length;
+    const piece = WHITESPACE.test(char) ? (folded.endsWith(' ') ? '' : ' ') : char.toLowerCase();
+    for (let unit = 0; unit < piece.length; unit += 1) {
+      starts.push(index);
+      ends.push(next);
+    }
+    folded += piece;
+    index = next;
+  }
+  const at = folded.indexOf(normalized);
+  const start = starts[at];
+  const end = ends[at + normalized.length - 1];
+  return at < 0 || start === undefined || end === undefined ? null : quote.slice(start, end);
+}
+
+/** The value must appear in the quote, ignoring case and repeated whitespace; it is kept as the quote writes it. */
+function recipientValue(value: string, quote: string): SupportedValue | null {
   const normalized = normalizeRecipient(value);
-  return normalizeRecipient(quote).includes(normalized) ? normalized : null;
+  if (!normalizeRecipient(quote).includes(normalized)) return null;
+  const written = writtenRecipient(quote, normalized);
+  return written === null ? null : { normalized, written };
 }
 
-function normalizedValueOf(kind: ExtractedKind, value: string, quote: string, countryHint: string | null): string | null {
+function supportedValueOf(kind: ExtractedKind, value: string, quote: string, countryHint: string | null): SupportedValue | null {
   switch (kind) {
     case 'payment_link':
       return linkValue(value, quote);
@@ -122,8 +194,9 @@ export function validateItem(item: ExtractedItem, record: ReviewedRecord): Valid
   const value = item.extractedValue.trim();
   if (quote === '' || value === '') return { ok: false, reason: 'empty' };
   if (!record.text.includes(quote)) return { ok: false, reason: 'quote_not_found' };
-  const normalizedValue = normalizedValueOf(item.kind, value, quote, item.countryHint);
-  return normalizedValue === null ? { ok: false, reason: 'value_not_in_quote' } : { ok: true, normalizedValue };
+  const supported = supportedValueOf(item.kind, value, quote, item.countryHint);
+  if (supported === null) return { ok: false, reason: 'value_not_in_quote' };
+  return { ok: true, normalizedValue: supported.normalized, writtenValue: supported.written };
 }
 
 /**
@@ -142,7 +215,7 @@ export function acceptValidatedItems(items: readonly ExtractedItem[], record: Re
     }
     const key = `${item.kind}\u0000${result.normalizedValue}`;
     if ((item.kind === 'phone_number' && item.concern === null) || accepted.has(key)) continue;
-    accepted.set(key, { item, normalizedValue: result.normalizedValue });
+    accepted.set(key, { item, normalizedValue: result.normalizedValue, writtenValue: result.writtenValue });
   }
   return { accepted: [...accepted.values()], unsupported };
 }
