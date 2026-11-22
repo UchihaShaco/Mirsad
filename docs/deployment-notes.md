@@ -53,7 +53,7 @@ configuration rejects any other host, and redirects are refused. The reviewer ha
   (`MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS`; the default is `fixture_replay` only). Live Telegram content stays excluded
   from every model, local inference included; whether that may ever change is a legal-review item.
 - **Capacity** for the expected load. One chat is reviewed at a time; parallel chats are set by
-  `MIRSAD_REVIEW_CONCURRENCY`. The local model took 0.2 to 10 s per message in the held-out evaluation.
+  `MIRSAD_REVIEW_CONCURRENCY`. The local model took 0.2 to 6.2 s per message in the held-out evaluation.
 
 ## 4. Logs
 

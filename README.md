@@ -56,18 +56,19 @@ says what each one exercises. Select chats and click **Dispatch** to start AI re
 
 ## What was verified
 
-These are the results of this build's final runs on 2026-11-22, on Windows 11 with Node 24.18.0. They ran on top of
-commit `8bae11c`, the branch head at the time:
+These are the results of this build's final runs on 2026-11-22, on Windows 11 with Node 24.18.0. The first five ran at
+commit `33cbefc`; the commits after it change only documentation. The last two rows are copied from their committed
+reports, which record when they ran:
 
 | Run | Result |
 |---|---|
-| `npm test` | 43 test files: 356 tests passed and 4 skipped. The skipped block is the WhatsApp channel contract, which stays off while its gate is closed. The output has no warnings, only Vitest's own start-up hint. |
+| `npm test` | 46 test files: 407 tests passed and 4 skipped. The skipped block is the WhatsApp channel contract, which stays off while its gate is closed. The output has no warnings. |
 | `npm run typecheck` | Clean. |
-| `npm run test:e2e` | 4 of 4 dashboard flows passed in a headless installed browser (the suite tries Microsoft Edge first, then Chrome). |
-| `npm run demo:walkthrough -- --reviewer deterministic` | 22 of 22 checks passed, in 1.8 s. |
-| `npm run demo:walkthrough -- --reviewer lmstudio` | 22 of 22 checks passed with Qwen3.5 9B on LM Studio (`127.0.0.1:1234`, 4,096-token context), in 21.8 s. Both runs raised 5 findings and published 121 stream events with the same mix of types. |
+| `npm run test:e2e` | 10 of 10 dashboard flows passed in a headless installed browser (the suite tries Microsoft Edge first, then Chrome). |
+| `npm run demo:walkthrough -- --reviewer deterministic` | 22 of 22 checks passed, in 2.3 s. |
+| `npm run demo:walkthrough -- --reviewer lmstudio` | 22 of 22 checks passed with Qwen3.5 9B on LM Studio (`127.0.0.1:1234`, 4,096-token context), in 21.0 s. Both runs raised 5 findings and published 121 stream events with the same mix of types. |
 | Telegram readiness ([readiness.md](docs/telegram/readiness.md)) | **Ready for controlled test**: all eight local checks passed, recorded 2026-11-22T01:34:09.511Z. The live test is pending (see [Telegram](#telegram)). |
-| Held-out model evaluation (the latest run, recorded in [docs/evaluation](docs/evaluation/)) | Qwen3.5 9B: precision 80.0%, recall 95.2%, 0 unsupported findings, median review 244 ms (p95 6,011 ms) over 55 messages. The deterministic baseline: precision 68.4%, recall 61.9%. Details under [Evaluation results](#evaluation-results). |
+| Held-out model evaluation (the latest run, recorded in [docs/evaluation](docs/evaluation/) at 2026-11-22T03:44:38.530Z) | Qwen3.5 9B: precision 87.0%, recall 95.2%, 1 unsupported finding (rejected, never shown), median review 242 ms (p95 5,785 ms) over 55 messages. The deterministic baseline: precision 68.4%, recall 61.9%. Details under [Evaluation results](#evaluation-results). |
 
 ### The walkthrough
 
@@ -358,7 +359,7 @@ npm run demo
 
 The held-out evaluation covers the 18 held-out synthetic transcripts (6 Arabic, 6 English, 6 mixed): 55 incoming
 messages, reviewed one at a time. The prompt was never tuned on this set. The numbers below are copied from
-[heldout-lmstudio-latest.md](docs/evaluation/heldout-lmstudio-latest.md) (generated 2026-11-22T01:32:54.482Z) and
+[heldout-lmstudio-latest.md](docs/evaluation/heldout-lmstudio-latest.md) (generated 2026-11-22T03:44:38.530Z) and
 [heldout-deterministic-latest.md](docs/evaluation/heldout-deterministic-latest.md) (2026-11-22T01:33:31.308Z).
 [docs/evaluation/README.md](docs/evaluation/README.md) explains every column.
 
@@ -366,10 +367,10 @@ Qwen3.5 9B (`lmstudio`):
 
 | Group | Messages | Unavailable | TP | FP | FN | Precision | Recall | Unsupported | Concern agreement | Latency min / median / p95 / max (ms) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Overall | 55 | 0 | 20 | 5 | 1 | 80.0% | 95.2% | 0 | 4 of 5 | 199 / 244 / 6011 / 9696 |
-| Arabic | 19 | 0 | 6 | 1 | 0 | 85.7% | 100.0% | 0 | 2 of 2 | 223 / 248 / 5405 / 5405 |
-| English | 18 | 0 | 5 | 3 | 1 | 62.5% | 83.3% | 0 | 1 of 1 | 219 / 245 / 9696 / 9696 |
-| Mixed | 18 | 0 | 9 | 1 | 0 | 90.0% | 100.0% | 0 | 1 of 2 | 199 / 240 / 6231 / 6231 |
+| Overall | 55 | 0 | 20 | 3 | 1 | 87.0% | 95.2% | 1 | 5 of 5 | 198 / 242 / 5785 / 6211 |
+| Arabic | 19 | 0 | 6 | 1 | 0 | 85.7% | 100.0% | 0 | 2 of 2 | 220 / 244 / 5048 / 5048 |
+| English | 18 | 0 | 5 | 1 | 1 | 83.3% | 83.3% | 1 | 1 of 1 | 202 / 241 / 6211 / 6211 |
+| Mixed | 18 | 0 | 9 | 1 | 0 | 90.0% | 100.0% | 0 | 2 of 2 | 198 / 234 / 5819 / 5819 |
 
 Deterministic baseline (rules only, no model):
 
@@ -382,25 +383,26 @@ Deterministic baseline (rules only, no model):
 
 How to read the model's results:
 
-- **Extraction accuracy.** 20 of the 21 expected items were found (recall 95.2%), with 5 extra items (precision 80.0%).
+- **Extraction accuracy.** 20 of the 21 expected items were found (recall 95.2%), with 3 extra items (precision 87.0%).
   No review failed.
-- **Unsupported findings: 0.** Every item the model returned passed the exact-quote and source-ID checks.
+- **Unsupported findings: 1.** One item in en-05 m2, the callback number that the injected text in the English
+  instruction-injection transcript invented, failed validation and was never shown. An unsupported item is not counted
+  as an extra item.
 - **Where the extra items came from.**
-  - Two are quoted third-party numbers. One is a caller's number that a contact reported. The other is a neighbour's
-    number, repeated inside an injected note that told the reviewer to report it.
-  - Two come from the English instruction-injection transcript. The model reported the recipient and the callback number
-    that the injected text invented.
-  - The fifth is a real payee written in a form that did not match its label after normalization. It also counts as the
-    one false negative.
+  - Two are quoted third-party numbers (ar-03 m1 and mixed-04 m3). One is a caller's number that a contact reported. The
+    other is a neighbour's number, repeated inside an injected note that told the reviewer to report it.
+  - The third is the recipient that the injected text in en-05 m2 invented.
 
-  The injected and quoted items pass the exact-quote check because those words really are in the message. The officer
-  always sees the exact quote and its source message, so an item like this reads as what it is. The injected text did not
-  stop the model from reporting the real payment link in the same message.
+  The quoted numbers and the injected recipient passed the exact-quote check because those words really are in the
+  message; the injected callback number did not pass validation. The officer always sees the exact quote and its source
+  message, so an item like this reads as what it is. The injected text did not stop the model from reporting the real
+  payment link in the same message.
+- **The one miss** is en-04 m3: a payment recipient the model did not report.
 - **Response time.** The median review took 0.24 s. Reviews in which the model reported nothing took 0.2 to 0.3 s;
-  reviews in which it reported an item took 2 to 10 s (p95 6.0 s, maximum 9.7 s).
+  reviews in which it reported an item took 2.0 to 6.2 s (p95 5.8 s, maximum 6.2 s).
 - **Not evidence of accuracy: the dev-set figures.**
-  [docs/evaluation/dev-lmstudio-latest.md](docs/evaluation/dev-lmstudio-latest.md) shows 100% on the 9 dev transcripts,
-  but the prompt was tuned on that set.
+  [docs/evaluation/dev-lmstudio-latest.md](docs/evaluation/dev-lmstudio-latest.md) shows 100% on the 12 dev transcripts
+  (37 messages), but the prompt was tuned on that set.
 - **Known instability.** Temperature 0 is not fully stable in LM Studio: a borderline item can flip between runs.
 
 ## Assumptions
