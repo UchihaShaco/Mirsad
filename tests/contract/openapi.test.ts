@@ -106,6 +106,16 @@ describe('openapi.yaml', () => {
     });
   });
 
+  it('evidence_access_required is documented only on the route that raises it, the watchlist review', () => {
+    const doc = asJson(buildOpenApiDocument()) as { paths: Record<string, Record<string, any>> };
+    const documentedOn = Object.entries(doc.paths).flatMap(([path, item]) =>
+      Object.entries(item)
+        .filter(([, operation]) => Object.values(operation.responses ?? {}).some((r: any) => String(r.description).includes('`evidence_access_required`')))
+        .map(([method]) => `${method.toUpperCase()} ${path}`),
+    );
+    expect(documentedOn).toEqual(['POST /v1/watchlist/{entryId}/review']);
+  });
+
   it('no documented route lists not_implemented, because every route is implemented', () => {
     const doc = asJson(buildOpenApiDocument()) as { paths: Record<string, Record<string, any>> };
     for (const [path, item] of Object.entries(doc.paths)) {

@@ -116,7 +116,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     description: 'PNG bytes. The checksum is verified on every read; a mismatch answers `500 artifact_integrity_error`.',
     kind: 'png',
     success: [{ status: 200, description: 'The capture image.' }],
-    errors: ['artifact_not_found', 'artifact_integrity_error', 'evidence_access_required'],
+    errors: ['artifact_not_found', 'artifact_integrity_error'],
   },
   'GET /v1/events': {
     summary: 'Subscribe to workspace events',
@@ -135,7 +135,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     summary: 'Approve, clear or reopen a watchlist entry',
     request: 'WatchlistReviewRequest',
     success: [{ status: 200, description: 'The updated entry.', schema: 'WatchlistReviewResponse' }],
-    errors: ['validation_failed', 'watchlist_entry_not_found', 'revision_conflict', 'invalid_transition'],
+    errors: ['validation_failed', 'watchlist_entry_not_found', 'evidence_access_required', 'revision_conflict', 'invalid_transition'],
   },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',

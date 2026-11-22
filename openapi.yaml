@@ -863,7 +863,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "403":
-          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `evidence_access_required`, `host_not_allowed`."
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
           content:
             application/json:
               schema:
@@ -1047,7 +1047,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "403":
-          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `evidence_access_required`, `host_not_allowed`."
           content:
             application/json:
               schema:
