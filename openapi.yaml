@@ -3103,7 +3103,10 @@ x-workflow-example:
                 captureMethod: fixture_replay
                 sourceEventId: host-event-1
                 sourceMessageId: host-message-1
-              sender: null
+              sender:
+                externalId: null
+                displayName: null
+                phone: null
               author: null
               sendStatus: null
               sendStatusLabel: null
@@ -3123,7 +3126,7 @@ x-workflow-example:
                 updatedAt: 2026-11-21T08:00:02.000Z
               editedAtSource: false
               deletedAtSource: false
-              position: 1
+              position: 5
           messageEvents: []
           caseActions:
             - id: act_00000000000000000000000000000001
@@ -3138,7 +3141,7 @@ x-workflow-example:
               revision: null
               detail: null
               occurredAt: 2026-11-21T08:00:00.000Z
-              position: 1
+              position: 2
             - id: act_00000000000000000000000000000002
               chatId: chat_0123456789abcdef0123456789abcdef
               type: dispatch_started
@@ -3149,10 +3152,10 @@ x-workflow-example:
               revision: 2
               detail: null
               occurredAt: 2026-11-21T08:00:00.000Z
-              position: 2
+              position: 3
           findings: []
           caseReferences: []
-          cursor: "6"
+          cursor: "5"
         error: null
   - step: 5
     name: take_over

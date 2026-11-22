@@ -104,6 +104,14 @@ describe('openapi.yaml', () => {
         if (expectedValue === undefined) continue;
         expect(pick(live.data, field), `${step.name} ${field}`).toEqual(expectedValue);
       }
+      if (step.name !== 'fetch_timeline') return;
+      // Positions are one order across messages and case actions: the documented timeline shows the order the service
+      // produced, uses no position twice and has a cursor no lower than any position it shows.
+      const shown = timelineEntries(documented.data as TimelineData);
+      expect(shown.map(([name]) => name)).toEqual(timelineEntries(live.data as TimelineData).map(([name]) => name));
+      const positions = shown.map(([, position]) => position);
+      expect(new Set(positions).size).toBe(positions.length);
+      expect(Number(documented.data.cursor)).toBeGreaterThanOrEqual(Math.max(...positions));
     });
   });
 
@@ -145,7 +153,22 @@ const STABLE_RESPONSE_FIELDS = [
   'chat.revision',
   'result',
   'results.0.status',
+  'messages.0.sender',
 ] as const;
+
+interface TimelineData {
+  caseActions: { type: string; position: number }[];
+  messages: { position: number }[];
+  cursor: string;
+}
+
+/** A timeline's case actions (by type) and messages (as 'message') with their positions, in position order. */
+function timelineEntries(timeline: TimelineData): Array<[string, number]> {
+  return [
+    ...timeline.caseActions.map((action): [string, number] => [action.type, action.position]),
+    ...timeline.messages.map((message): [string, number] => ['message', message.position]),
+  ].sort(([, a], [, b]) => a - b);
+}
 
 function pick(value: unknown, dotted: string): unknown {
   return dotted.split('.').reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], value);

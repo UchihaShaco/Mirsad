@@ -1,7 +1,9 @@
 /**
  * `x-workflow-example`: the five calls the headless client (examples/headless-client/run.ts) makes, with the exact
  * request payloads it sends and representative responses. All values are synthetic. A test runs the client against
- * a live service and compares every request with this list.
+ * a live service and compares every request with this list. Positions are the ones the service gives this flow in a
+ * fresh workspace (chat.created 1, chat_registered 2, dispatch_started 3, chat.control_changed 4, the message 5); the
+ * timeline is shown as read right after the message was stored, before the workers have run, so its cursor is 5.
  */
 
 const CHAT_ID = 'chat_0123456789abcdef0123456789abcdef';
@@ -53,7 +55,8 @@ const message = {
   sentAt: null,
   receivedAt: MESSAGE_AT,
   source: { channel: 'telegram', captureMethod: 'fixture_replay', sourceEventId: 'host-event-1', sourceMessageId: 'host-message-1' },
-  sender: null,
+  // A source message always has a sender object; the event carried no sender fields, so each is null.
+  sender: { externalId: null, displayName: null, phone: null },
   author: null,
   sendStatus: null,
   sendStatusLabel: null,
@@ -71,7 +74,7 @@ const message = {
   review: { status: 'pending', outcome: null, updatedAt: MESSAGE_AT },
   editedAtSource: false,
   deletedAtSource: false,
-  position: 1,
+  position: 5,
 };
 
 const caseAction = (id: string, type: string, position: number, extra: Record<string, unknown>) => ({
@@ -176,12 +179,12 @@ export const WORKFLOW_EXAMPLE = [
         messages: [message],
         messageEvents: [],
         caseActions: [
-          caseAction('act_00000000000000000000000000000001', 'chat_registered', 1, {}),
-          caseAction('act_00000000000000000000000000000002', 'dispatch_started', 2, { fromMode: 'not_started', toMode: 'ai_active', revision: 2 }),
+          caseAction('act_00000000000000000000000000000001', 'chat_registered', 2, {}),
+          caseAction('act_00000000000000000000000000000002', 'dispatch_started', 3, { fromMode: 'not_started', toMode: 'ai_active', revision: 2 }),
         ],
         findings: [],
         caseReferences: [],
-        cursor: '6',
+        cursor: '5',
       }),
     },
   },
