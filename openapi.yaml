@@ -996,12 +996,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
-        "501":
-          description: "Error envelope. `error.code` is one of: `not_implemented`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
   /v1/watchlist/{entryId}/review:
     post:
       operationId: post_v1WatchlistEntryIdReview
@@ -1078,12 +1072,6 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "500":
           description: "Error envelope. `error.code` is one of: `internal_error`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
-        "501":
-          description: "Error envelope. `error.code` is one of: `not_implemented`."
           content:
             application/json:
               schema:
@@ -1332,12 +1320,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
-        "501":
-          description: "Error envelope. `error.code` is one of: `not_implemented`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
   /healthz:
     get:
       operationId: get_healthz
@@ -1415,12 +1397,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
-        "501":
-          description: "Error envelope. `error.code` is one of: `not_implemented`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
   /assets/{assetPath}:
     get:
       operationId: get_assetsAsset
@@ -1461,12 +1437,6 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "500":
           description: "Error envelope. `error.code` is one of: `internal_error`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
-        "501":
-          description: "Error envelope. `error.code` is one of: `not_implemented`."
           content:
             application/json:
               schema:
@@ -3093,7 +3063,7 @@ x-workflow-example:
             externalAccountId: tg-demo-officer
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
-            inboxStatus: new_inbound
+            inboxStatus: open
             aiMode: ai_active
             revision: 2
             controller: null
@@ -3200,7 +3170,7 @@ x-workflow-example:
             externalAccountId: tg-demo-officer
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
-            inboxStatus: new_inbound
+            inboxStatus: open
             aiMode: officer_control
             revision: 3
             controller: *a6

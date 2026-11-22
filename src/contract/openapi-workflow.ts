@@ -93,7 +93,7 @@ const dispatchedChat = chat({ aiMode: 'ai_active', revision: 2, lastActivityAt: 
 const timelineChat = chat({
   aiMode: 'ai_active',
   revision: 2,
-  inboxStatus: 'new_inbound',
+  inboxStatus: 'open',
   originLabel: 'First observed: incoming',
   firstObservedDirection: 'incoming',
   messageCount: 1,

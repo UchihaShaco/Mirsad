@@ -93,6 +93,37 @@ describe('openapi.yaml', () => {
       for (const header of Object.keys(step.headers)) {
         expect(sent?.requestHeaders, header).toHaveProperty([header.toLowerCase()]);
       }
+      // The path really sent is the documented template with the real chat id filled in.
+      expect(sent?.path).toBe(step.path.replace('{chatId}', realChatId));
+      // Stable response fields must match what the service really returned, so the example cannot drift.
+      const documented = withDocumentedId(step.response.body) as { data: Record<string, any> };
+      const live = withDocumentedId(sent?.response.body) as { data: Record<string, any> };
+      for (const field of STABLE_RESPONSE_FIELDS) {
+        const expectedValue = pick(documented.data, field);
+        if (expectedValue === undefined) continue;
+        expect(pick(live.data, field), `${step.name} ${field}`).toEqual(expectedValue);
+      }
     });
   });
+
+  it('no documented route lists not_implemented, because every route is implemented', () => {
+    const doc = asJson(buildOpenApiDocument()) as { paths: Record<string, Record<string, any>> };
+    for (const [path, item] of Object.entries(doc.paths)) {
+      for (const [method, operation] of Object.entries(item)) {
+        expect(Object.keys(operation.responses ?? {}), `${method} ${path}`).not.toContain('501');
+      }
+    }
+  });
 });
+
+const STABLE_RESPONSE_FIELDS = [
+  'chat.inboxStatus',
+  'chat.aiMode',
+  'chat.revision',
+  'result',
+  'results.0.status',
+] as const;
+
+function pick(value: unknown, dotted: string): unknown {
+  return dotted.split('.').reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], value);
+}

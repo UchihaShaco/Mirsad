@@ -129,13 +129,13 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   'GET /v1/watchlist': {
     summary: 'List phone watchlist entries',
     success: [{ status: 200, description: 'Entries the caller can access.', schema: 'ListWatchlistResponse' }],
-    errors: ['not_implemented'],
+    errors: [],
   },
   'POST /v1/watchlist/{entryId}/review': {
     summary: 'Approve, clear or reopen a watchlist entry',
     request: 'WatchlistReviewRequest',
     success: [{ status: 200, description: 'The updated entry.', schema: 'WatchlistReviewResponse' }],
-    errors: ['validation_failed', 'watchlist_entry_not_found', 'revision_conflict', 'invalid_transition', 'not_implemented'],
+    errors: ['validation_failed', 'watchlist_entry_not_found', 'revision_conflict', 'invalid_transition'],
   },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',
@@ -156,7 +156,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   'GET /v1/status': {
     summary: 'Service, worker, reviewer and channel status',
     success: [{ status: 200, description: 'Current status.', schema: 'Status' }],
-    errors: ['not_implemented'],
+    errors: [],
   },
   'GET /healthz': {
     summary: 'Liveness check',
@@ -168,12 +168,12 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     description: 'The dashboard page, served without authentication.',
     kind: 'static',
     success: [{ status: 200, description: 'HTML.' }],
-    errors: ['not_implemented'],
+    errors: [],
   },
   'GET /assets/*': {
     summary: 'Reference dashboard asset',
     kind: 'static',
     success: [{ status: 200, description: 'A static file.' }],
-    errors: ['not_found', 'not_implemented'],
+    errors: ['not_found'],
   },
 };
