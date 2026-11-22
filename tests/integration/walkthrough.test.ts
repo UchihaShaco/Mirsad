@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { formatChecklist, quietReviewOutcome, runWalkthrough, type WalkthroughReport } from '../../scripts/demo-walkthrough.ts';
+import { formatChecklist, quietReviewOutcome, runWalkthrough, streamDelivery, type WalkthroughReport } from '../../scripts/demo-walkthrough.ts';
 import { readDemoCredentials, signInLines } from '../../scripts/demo-credentials.ts';
 import { LABELS } from '../../src/contract/labels.ts';
 import type { Finding, Message, ReviewState } from '../../src/contract/schemas.ts';
@@ -129,6 +129,14 @@ describe('walkthrough check verdicts', () => {
     expect(quietReviewOutcome('chat_1', paymentTimeline([quiet(1), outgoing(2), quiet(3), outgoing(4), unreviewed(5)])).passed).toBe(false);
     // Four quiet reviews and one outgoing message is not the fixture's split.
     expect(quietReviewOutcome('chat_1', paymentTimeline([quiet(1), outgoing(2), quiet(3), quiet(4), quiet(5)])).passed).toBe(false);
+  });
+
+  it('stream_second_client judges delivery up to the head it read: events after the head do not count, a gap or repeat below it does', () => {
+    // Snapshot cursor 10 and head 14; 15 and 16 come from a review the local model finished after the head was read.
+    expect(streamDelivery([11, 12, 13, 14, 15, 16], 10, 14)).toEqual({ ids: [11, 12, 13, 14], gapless: true });
+    expect(streamDelivery([11, 12, 14, 15], 10, 14).gapless).toBe(false);
+    expect(streamDelivery([11, 12, 12, 13, 14], 10, 14).gapless).toBe(false);
+    expect(streamDelivery([11, 12, 13], 10, 14).gapless).toBe(false);
   });
 });
 

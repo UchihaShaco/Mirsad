@@ -571,13 +571,21 @@ function observeStream(baseUrl: string, token: string, cursor: string) {
   return { events, resets, waitFor, stop: (): void => stream.stop() };
 }
 
+/**
+ * The stream's event IDs up to the head, and whether they run from just after the snapshot cursor to the head, each once
+ * and in order. Events committed after the head was read, such as a review the local model finished late, are left out.
+ */
+export function streamDelivery(eventIds: readonly number[], snapshotCursor: number, head: number): { ids: number[]; gapless: boolean } {
+  const ids = eventIds.filter((id) => id <= head);
+  return { ids, gapless: ids.length === head - snapshotCursor && ids.every((id, i) => id === snapshotCursor + i + 1) };
+}
+
 async function streamSecondClient(run: Run): Promise<Outcome> {
   const { observer, snapshotCursor } = run;
   const head = Number((await chatsOf(run, run.tokens.officer)).cursor);
   const caughtUp = await observer.waitFor(head, STREAM_CATCH_UP_MS);
   observer.stop();
-  const ids = observer.events.map((e) => Number(e.id));
-  const gapless = ids.length === head - snapshotCursor && ids.every((id, i) => id === snapshotCursor + i + 1);
+  const { ids, gapless } = streamDelivery(observer.events.map((e) => Number(e.id)), snapshotCursor, head);
   const count = (type: string): string => `${observer.events.filter((e) => e.type === type).length} ${type}`;
   const created = observer.events.filter((e) => e.type === 'chat.created').length;
   const types = ['chat.created', 'message.recorded', 'capture.updated', 'review.updated', 'finding.created', 'chat.control_changed', 'watchlist.match'];
