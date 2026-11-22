@@ -6,7 +6,7 @@
 import { createActions } from './actions.js';
 import { describeError } from './format.js';
 import { applyChat, loadInbox, loadTimeline, loadWatchlist } from './loaders.js';
-import { createRefresher } from './refresher.js';
+import { createRefresher, REFRESH_DELAY_MS } from './refresher.js';
 import { createRenderer } from './render.js';
 import { initialComposer } from './state/composer.js';
 import { parseRoute } from './state/route.js';
@@ -15,8 +15,6 @@ import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
 import { createWatchlistView } from './views/watchlist.js';
 
-/** Stream events arrive in bursts (one commit can publish several); reloads requested within this window coalesce. */
-const REFRESH_DELAY_MS = 120;
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
 const INBOX_NEUTRAL_EVENTS = new Set(['capture.updated']);
 
