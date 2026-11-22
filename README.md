@@ -35,7 +35,10 @@ npm run replay -- fixtures/telegram/inbound-first-greeting.json
 Open the `Demo Officer 1` link that `demo:credentials` printed (`http://127.0.0.1:8787/#token=...`). The new chat appears
 in the **New inbound** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
 says what each one exercises. Select chats and click **Dispatch** to start AI review. Use **Pause AI**, **Take over** and
-**Resume AI** on a chat. Under takeover the composer opens blank; send a reply, or choose **Leave unanswered**.
+**Resume AI** on a chat. Under takeover the composer opens blank; send a reply, or choose **Leave unanswered**. To enter
+a merchant's payment confirmation, use **Record merchant confirmation** in the chat's case panel: a payment link whose
+host it does not list is then marked **Suspected fraud**. Try it with `merchant-conflict.json` and the host
+`pay.merchant.example`.
 
 ## Commands
 
@@ -116,8 +119,11 @@ Simulated or fixture-only in this version:
   attribution and time. Nothing is delivered to any channel, and no code path sends to Telegram or WhatsApp.
 - **Telegram intake.** All Telegram-shaped data enters through the replay of synthetic fixtures. The live Business
   connector is built and tested only against a fake Bot API server, and it stays disabled.
-- **Model review.** The model reviews only synthetic fixture content (`fixture_replay`). Live Telegram content is never
-  sent to any model, local inference included.
+- **Model review.** The model reviews only content that arrives through a connector whose capture method is
+  `fixture_replay`, such as the demo fixture connector. `npm run replay` checks that a fixture is marked synthetic and
+  holds only reserved domains and numbers; the API does not, so text posted straight to `POST /v1/ingest` with such a
+  connector's token also reaches the model once its chat is dispatched. Live Telegram content is never sent to any
+  model, local inference included.
 - **Identity.** The demo identity adapter maps bearer tokens from the demo seed to officers and to a fixture connector.
 - **Start of conversation.** `Contact started chat` and `Officer started chat` appear only when a fixture author asserts
   a start. Real Telegram updates carry no start marker, so live chats always show `First observed: …`.
@@ -142,11 +148,11 @@ an incoming event, read the timeline and take over. A test runs it against a liv
 against `openapi.yaml`.
 
 **Auth.** Every route except `/healthz` and the dashboard files needs `Authorization: Bearer <token>`. There are two
-kinds of principal. Officers use every route except intake. A connector is the separate ingestion credential: it may only
-call `POST /v1/ingest` and `POST /v1/chats/{chatId}/events`, and its capture method is fixed when it is provisioned. A
-missing or unknown token gets `401 unauthenticated`; the wrong kind of principal gets `403 forbidden_for_principal`. A
-chat the caller may not open is answered exactly like a missing one, `404 chat_not_found`. Tokens are read only from the
-header; a token in a URL is ignored.
+kinds of principal. Officers use every route except intake. A connector is the separate ingestion credential: it may call
+only `POST /v1/ingest`, `POST /v1/chats/{chatId}/events` and `GET /v1/me`, and its capture method is fixed when it is
+provisioned. A missing or unknown token gets `401 unauthenticated`; the wrong kind of principal gets
+`403 forbidden_for_principal`. A chat the caller may not open is answered exactly like a missing one,
+`404 chat_not_found`. Tokens are read only from the header; a token in a URL is ignored.
 
 **Envelope.** Every JSON response is `{ "success": true, "data": …, "error": null }` or
 `{ "success": false, "data": null, "error": { "code", "message", "details" } }`. The chat list adds
@@ -165,7 +171,7 @@ different body gets `422 idempotency_key_reused`.
 | `GET /v1/chats` | officer | List authorized chats with channel, origin label, inbox status, AI mode and watchlist matches, plus the snapshot `cursor`. Query: `inboxStatus`, `limit`, `offset`. |
 | `POST /v1/ingest` | connector | Submit an intake event. Creates or finds the chat and appends the event in one transaction. |
 | `POST /v1/chats/{chatId}/events` | connector | The same intake for a registered chat: `message.recorded`, `message.edited`, `message.deleted`. |
-| `POST /v1/dispatches` | officer | Start AI review on 1 to 100 chats; per-chat status. Access to the whole selection is checked first. |
+| `POST /v1/dispatches` | officer | Start AI review on 1 to 100 chats; per-chat status. Access to the whole selection is checked first. A chat that is already active keeps its mode, and its unavailable reviews are retried. |
 | `POST /v1/chats/{chatId}/control` | officer | `pause`, `take_over` or `resume`, with `expectedRevision`. |
 | `POST /v1/chats/{chatId}/officer-messages` | officer | Composer send by the controlling officer: one **Simulated send**. |
 | `POST /v1/chats/{chatId}/officer-decisions` | officer | `leave_unanswered` on an incoming message: an internal case action only. |
@@ -174,7 +180,7 @@ different body gets `422 idempotency_key_reused`.
 | `GET /v1/events` | officer | The event stream ([below](#event-stream)). |
 | `GET /v1/watchlist` | officer | Phone watchlist entries the caller can access. |
 | `POST /v1/watchlist/{entryId}/review` | officer | `approve`, `clear` or `reopen`, with a reason and `expectedRevision`. |
-| `POST /v1/chats/{chatId}/case-references` *(extension)* | officer | Records a merchant's payment confirmation. **Suspected fraud** needs independent merchant confirmation, and this is where the officer enters it. |
+| `POST /v1/chats/{chatId}/case-references` *(extension)* | officer | Records a merchant's payment confirmation. **Suspected fraud** needs independent merchant confirmation, and this is where the officer enters it. The dashboard's case panel calls it from **Record merchant confirmation** and lists the chat's confirmations. |
 | `POST /v1/captures/{captureId}/retry` *(extension)* | officer | Retries a failed capture: the brief's "retryable capture error". |
 | `GET /v1/me` *(extension)* | officer or connector | Who the token belongs to. The dashboard needs it to know the signed-in officer. |
 | `GET /v1/status` *(extension)* | officer | Service, workers, reviewer reachability, Telegram readiness and the WhatsApp gate: the brief's health and status checks. |
@@ -265,7 +271,8 @@ for (;;) {
   `telegram_business_live` is never reviewable, whatever that setting says.
 - **Failure.** When the model fails or times out, the review shows `unavailable`. Intake, captures and officer controls
   keep working. An unavailable review is retried automatically, up to three attempts, when new evidence arrives in the
-  chat or the service starts, and again whenever the chat is dispatched or resumed.
+  chat or the service starts. It is retried again, with its attempts reset, whenever an officer resumes or dispatches
+  the chat. Dispatching a chat that is already active does this too, so **Dispatch** is the retry after a model outage.
 - **Isolation.** The reviewer has no tools and no store access. LM Studio is reached only on a loopback URL, with
   redirects refused and a strict JSON schema for the answer. Text longer than 1,500 characters is reviewed in chunks, so
   each request fits the 4,096-token context. Each chat has one review at a time, and chats are reviewed in parallel
@@ -274,11 +281,16 @@ for (;;) {
 ## Phone watchlist
 
 - There is one private watchlist per workspace. A number is normalized to E.164 only when it is written in international
-  form, or the source gives its country. No default country is ever assumed. A number that cannot be normalized stays a
-  lead tied to the chat that mentioned it. It never merges with other chats and never matches.
+  form, when the source gives its country (sender metadata), or when the reviewer reports the country from the text that
+  mentions it. No default country is ever assumed. The reviewer's country is the model's judgement, and for a number in
+  national format, such as `07700 900123`, it alone decides whether the number becomes an exact-match entry. A number
+  that cannot be normalized stays a lead tied to the chat that mentioned it. It never merges with other chats and never
+  matches.
 - Each observation records whether the number came from **sender metadata** (a number the source gives for the sender,
   such as a Telegram contact card the sender shares about themselves) or was **mentioned** in a message. It also records
   the exact source reference, the number as written, and a reason. A mentioned number is never linked to the sender.
+  The sender's number is also returned with its message (`sender.phone`, exactly as the source gave it), drawn on the
+  message's capture as **Sender phone**, and shown on the message in the dashboard.
 - Mirsad creates **Needs review** entries and appends new observations. Repeat delivery adds nothing. First and last seen
   follow the evidence, and earlier observations stay visible after a decision.
 - Officers **approve**, **clear** or **reopen** an entry, giving a reason and the expected revision. The officer, the time
@@ -418,8 +430,8 @@ From design section 18:
    confirmation. The model never labels fraud.
 5. Review looks at one incoming message at a time. Novelty and "changed destination" are decided in code from details
    already stored for the chat.
-6. Phone numbers are normalized only with explicit international format or a country hint from the source. No default
-   country.
+6. Phone numbers are normalized only with explicit international format, a country the source gives with sender
+   metadata, or the country the reviewer reports from the text for a mentioned number. No default country.
 7. Watchlist entries are visible to officers who can open at least one supporting or matching chat; evidence links are
    filtered per caller.
 8. The service refuses to bind to anything other than loopback.
@@ -439,6 +451,15 @@ From design section 18:
   in about 0.1 s. A crafted 65,536-character host or import message can stall the local service for about 1 to 2 s.
   Before production, render in a worker thread or a separate process.
 - **The model is not fully stable.** Temperature 0 is not fully stable in LM Studio.
+- **The evaluation does not score country hints.** It normalizes each expected phone number with the country the model
+  gave for it, so a number in national format counts as found even when the model gave no country or a wrong one. In
+  the service such a number stays a lead that never matches, or, with a wrong country that still parses, becomes a
+  different number.
+- **Hidden Telegram links are not captured.** The text is stored exactly as shown. A formatted link, a button, a
+  forward and content of an unknown kind are listed as unsupported content (`text_link`, `inline_keyboard`,
+  `forwarded`, `other`), which the capture and the timeline show. The URL behind formatted text or a button is not
+  stored, so neither the model nor the **Suspected fraud** rule sees it. An edit carries no such list: an edit that
+  changes only a hidden URL looks unchanged, and an edit that removes all text gets no capture.
 - **A retried review can say "New" instead of "changed".** This happens when a later message repeated the old
   destination before the earlier review was retried.
 - **Fictional UK numbers count as valid.** `normalizePhone` treats the reserved fictional UK range `+44 7700 900000` to
@@ -477,6 +498,9 @@ From design section 18:
     tokens such as `[U+202E]`.
   - Artifact files are written atomically, and their SHA-256 is checked on every read. A mismatch answers
     `500 artifact_integrity_error` and never the bytes.
+  - SQLite runs in WAL mode with `synchronous = FULL`, so a commit is on disk before Mirsad answers. Each evidence file
+    is flushed to disk before it is renamed into place and counts as stored; its directory is flushed after the rename
+    where the platform allows it (Node cannot on Windows).
   - Original message text is never updated or deleted.
 - **No sending.** No code path sends a message to Telegram or WhatsApp. The Telegram Bot API client has four read-only
   calls.
