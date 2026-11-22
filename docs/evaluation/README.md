@@ -61,6 +61,6 @@ The first table has one row overall and one per transcript language (Arabic, Eng
 | Recall | TP / (TP + FN); `n/a` when nothing was expected. |
 | Unsupported | Items `validateItem` rejected. They are counted here and are not false positives. |
 | Concern agreement | `a of b`: of `b` matched phone numbers, `a` carried the expected concern. The concern is a judgement call, so it is not part of the match. |
-| Latency | Min / median / p95 / max in milliseconds of each review call, failed ones included. A long message reviewed in several chunks counts as one call. The median of an even count is the mean of the middle two; p95 is the nearest rank. |
+| Latency | Min / median / p95 / max in milliseconds of each review call, failed ones included. A long message reviewed in several chunks counts as one call. So does a message whose answer was cut off at the 512-token limit and was then reviewed again in halves, which is why a message with many details can take several times as long as the rest. The median of an even count is the mean of the middle two; p95 is the nearest rank. |
 
 The messages table has one row per reviewed message: the expected count, TP, FP, FN, unsupported items, the kinds missed and extra, the latency and the error code if the review failed. Use the transcript and message IDs to look up a message in `fixtures/eval/<set>/`. The text itself is never copied into a report.
