@@ -1,0 +1,30 @@
+{
+  "id": "dev-mixed-04",
+  "language": "mixed",
+  "tags": ["long_message", "payment_link", "payment_recipient", "phone_number", "callback_request"],
+  "description": "A school trips office sends every detail of a trip as one long line in English and Arabic, with the payment link, the account and a number to call in the middle.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Hi, مرحباً، this is the school trips office.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "Hi again, بخصوص رحلة المدرسة next month, here is everything in one message so that nothing is missed, the coach leaves from the main gate at 7 in the morning ويرجع around 6 in the evening, each student needs a packed lunch and a water bottle, الزي المدرسي إلزامي طوال الرحلة, phones are allowed but the teachers will collect them during the museum visit, the trip fee is 85 GBP per student and it covers the coach, the entry tickets and the guide, please pay it at https://trips.school-office.test/pay?student=2291 before Thursday, أو إذا كنت تفضل التحويل البنكي transfer it to the account of Sample School Trips Ltd and write the student number as the reference, if the payment page gives you an error call the trips office on +1 312 555 0177 and they will finish the payment with you over the phone, students with allergies must bring their medicine in a labelled bag, الرجاء إبلاغنا بأي حالة صحية قبل الرحلة بثلاثة أيام, the permission slip must be signed by a parent and returned to the class teacher by Wednesday, students who arrive late cannot join because the coach cannot wait for anyone, وشكراً لتعاونكم and see you on the day",
+      "expected": [
+        { "kind": "payment_link", "value": "https://trips.school-office.test/pay?student=2291", "concern": null },
+        { "kind": "payment_recipient", "value": "Sample School Trips Ltd", "concern": null },
+        { "kind": "phone_number", "value": "+1 312 555 0177", "concern": "callback_request" }
+      ]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "OK, شكراً, I will pay tonight.",
+      "expected": []
+    }
+  ]
+}

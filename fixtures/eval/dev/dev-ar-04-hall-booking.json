@@ -1,0 +1,41 @@
+{
+  "id": "dev-ar-04",
+  "language": "ar",
+  "tags": ["long_message", "many_details", "payment_recipient", "phone_number", "callback_request", "payment_link", "payment_request"],
+  "description": "A wedding hall sends its terms as one long line without full stops, with the deposit account and a number to call in the middle, then four ways to pay.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "مساء الخير، معك مكتب حجوزات القاعة بخصوص حفلكم يوم الخميس",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "مساء النور يا أستاذ، بخصوص حجز القاعة ليوم الخميس القادم أحب أوضح لك كل التفاصيل حتى لا يحصل أي سوء فهم بيننا، القاعة تتسع لثلاثمئة ضيف والسعر يشمل الكراسي والطاولات والإضاءة والصوت وتنسيق المدخل بالورد الطبيعي، أما الضيافة فهي منفصلة ونقدر نرتبها لك مع المطبخ حسب العدد النهائي، وموعد الدخول للتجهيز يبدأ من الساعة الرابعة عصراً ويجب إخلاء القاعة قبل منتصف الليل وإلا تحسب ساعة إضافية، ولتثبيت الحجز نحتاج عربوناً بقيمة ألفين، حوّل العربون إلى حساب شركة النموذج للمناسبات على الآيبان GB94 TEST 2020 1555 5555 55 وبعد التحويل اتصل بنا على الرقم +44 7700 900733 لتأكيد الحجز وإصدار العقد، وإذا تأخر التحويل عن يوم الأحد نعتذر لأن عندنا طلبات أخرى على نفس اليوم، وبالنسبة للتصوير فمسموح بإحضار المصور الخاص بكم بشرط أن يلتزم بتعليمات إدارة القاعة، والتدخين ممنوع داخل القاعة وفي الممرات ومسموح فقط في الحديقة الخارجية، والمواقف متاحة مجاناً لمئة سيارة وإذا احتجتم أكثر نقدر نوفر خدمة صف السيارات بتكلفة بسيطة، وأي تعديل على الموعد يجب أن يكون قبل أسبوعين على الأقل وإلا يخصم نصف العربون، ونحن بانتظار ردك وتحويلك حتى نكمل الإجراءات ونرسل لك جدول التجهيز النهائي مع أسماء المسؤولين عن الحفل من طرفنا",
+      "expected": [
+        { "kind": "payment_recipient", "value": "شركة النموذج للمناسبات", "concern": null },
+        { "kind": "payment_recipient", "value": "GB94 TEST 2020 1555 5555 55", "concern": null },
+        { "kind": "phone_number", "value": "+44 7700 900733", "concern": "callback_request" }
+      ]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "هل يمكن الدفع نقداً عند الحضور؟",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "للتسهيل عليك يمكنك دفع العربون بإحدى الطرق التالية: عبر الرابط https://pay.hall-booking.test/deposit/3307 أو بالتحويل إلى حساب شركة النموذج للمناسبات رقم الحساب 5566778899 أو عبر المحفظة على الرقم +44 7700 900744",
+      "expected": [
+        { "kind": "payment_link", "value": "https://pay.hall-booking.test/deposit/3307", "concern": null },
+        { "kind": "payment_recipient", "value": "شركة النموذج للمناسبات", "concern": null },
+        { "kind": "payment_recipient", "value": "5566778899", "concern": null },
+        { "kind": "phone_number", "value": "+44 7700 900744", "concern": "payment_request" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "dev-en-04",
+  "language": "en",
+  "tags": ["many_details", "payment_link", "payment_recipient", "phone_number", "payment_request", "callback_request"],
+  "description": "An events office asks for a stand balance with five payment details in one message, then lists four of them again.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Good morning, this is the events office about your stand at the spring trade fair.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "To confirm your stand, please pay the balance of 1,250 GBP today. You can pay by card at https://pay.fair-stands.test/booking/7741 or by bank transfer to the account holder Sample Events Ltd, IBAN GB29 TEST 6016 1331 9268 19, quoting booking 7741. If you prefer a mobile wallet, send the amount to +44 7700 900417 instead. Once you have paid, call our bookings desk on +44 7700 900582 so that we can release the stand.",
+      "expected": [
+        { "kind": "payment_link", "value": "https://pay.fair-stands.test/booking/7741", "concern": null },
+        { "kind": "payment_recipient", "value": "Sample Events Ltd", "concern": null },
+        { "kind": "payment_recipient", "value": "GB29 TEST 6016 1331 9268 19", "concern": null },
+        { "kind": "phone_number", "value": "+44 7700 900417", "concern": "payment_request" },
+        { "kind": "phone_number", "value": "+44 7700 900582", "concern": "callback_request" }
+      ]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "Thanks, I will pay this afternoon.",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "Here are the payment options again:\nCard: https://pay.fair-stands.test/booking/7741\nBank transfer: Sample Events Ltd, account number 41234567\nMobile wallet: +44 7700 900417\nThe stand is released as soon as one payment arrives.",
+      "expected": [
+        { "kind": "payment_link", "value": "https://pay.fair-stands.test/booking/7741", "concern": null },
+        { "kind": "payment_recipient", "value": "Sample Events Ltd", "concern": null },
+        { "kind": "payment_recipient", "value": "41234567", "concern": null },
+        { "kind": "phone_number", "value": "+44 7700 900417", "concern": "payment_request" }
+      ]
+    }
+  ]
+}
