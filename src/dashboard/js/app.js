@@ -23,7 +23,7 @@ function initialState(me) {
     me, view: 'inbox', connection: 'connecting', notice: null, pending: null,
     chats: [], chatsTotal: 0, inboxLoaded: false, selection: new Set(),
     selectedChatId: null, focusMessageId: null, timeline: null, timelineError: null,
-    replyTargetId: null, composer: initialComposer(),
+    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(),
     watchlist: { status: 'idle', entries: [], message: null },
   };
 }
@@ -36,7 +36,10 @@ function selectChat(ctx, chatId, messageId) {
   ctx.refreshers.timeline.cancel();
   ctx.captures.revokeAll();
   ctx.tickets.timeline += 1;
-  ctx.setState({ selectedChatId: chatId, focusMessageId: messageId, timeline: null, timelineError: null, replyTargetId: null, composer: initialComposer() });
+  ctx.setState({
+    selectedChatId: chatId, focusMessageId: messageId, timeline: null, timelineError: null,
+    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(),
+  });
   if (chatId !== null) ctx.load.timeline().catch(ctx.showError);
 }
 

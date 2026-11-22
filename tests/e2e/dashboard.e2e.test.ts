@@ -65,13 +65,24 @@ afterEach(async () => {
   await Promise.all(contexts.splice(0).map((context) => context.close()));
 });
 
-/** A chat created by its first message through the fixture connector; an incoming first message enters New inbound. */
-async function seedChat(account: Account, label: string, text: string, direction: 'incoming' | 'outgoing' = 'incoming') {
-  const sender = direction === 'incoming' ? { externalId: uniqueId('tg-user-'), displayName: label } : undefined;
-  const event = recorded({ messageId: 1, direction, text, sender });
-  const res = await h.http(h.tokens.connector).post('/v1/ingest', envelope(account, uniqueId('chat-'), event, label));
+interface IngestedMessage {
+  chatId: string;
+  messageId: string;
+}
+
+/** One message posted through the fixture connector; the conversation's first message creates the chat. */
+async function ingestMessage(account: Account, externalChatId: string, label: string, messageId: number, text: string, direction: 'incoming' | 'outgoing' = 'incoming'): Promise<IngestedMessage> {
+  const sender = direction === 'incoming' ? { externalId: `tg-user-${externalChatId}`, displayName: label } : undefined;
+  const event = recorded({ messageId, direction, text, sender });
+  const res = await h.http(h.tokens.connector).post('/v1/ingest', envelope(account, externalChatId, event, label));
   expect(res.status, res.text).toBe(CREATED);
   return { chatId: res.body.data.chatId as string, messageId: res.body.data.messageId as string };
+}
+
+/** A chat created by its first message through the fixture connector; an incoming first message enters New inbound. */
+async function seedChat(account: Account, label: string, text: string, direction: 'incoming' | 'outgoing' = 'incoming') {
+  const externalChatId = uniqueId('chat-');
+  return { ...(await ingestMessage(account, externalChatId, label, 1, text, direction)), externalChatId };
 }
 
 async function timelineOf(chatId: string): Promise<Timeline> {
@@ -204,6 +215,38 @@ describe('reference dashboard', () => {
     const stored = await timelineOf(chat.chatId);
     expect(stored.messages.map((m) => m.direction)).toEqual(['incoming']);
     expect(stored.caseActions.filter((a) => a.type === 'leave_unanswered').map((a) => a.messageId)).toEqual([chat.messageId]);
+    expect(problems).toEqual([]);
+  });
+
+  it('the Leave unanswered target follows each newer incoming message until the officer picks one', async () => {
+    const label = 'Test Contact 7';
+    const first = await seedChat(h.accounts.officer, label, 'Is the blue lamp still available?');
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, label);
+    await button(page, 'Take over').click();
+    await replyBox(page).waitFor();
+    const target = (messageId: string): Locator => page.locator(`#message-${messageId}`).getByRole('radio', { name: 'Select this message', exact: true });
+    const leaveLines = page.locator('#case-log li[data-action-type="leave_unanswered"]');
+    const leftUnanswered = async () => (await timelineOf(first.chatId)).caseActions.filter((a) => a.type === 'leave_unanswered').map((a) => a.messageId);
+
+    expect(await target(first.messageId).isChecked()).toBe(true);
+    await button(page, 'Leave unanswered').click();
+    await expect.poll(() => leaveLines.count(), { timeout: UI_TIMEOUT_MS }).toBe(1);
+
+    // A newer message arrives while the chat is open: the default target moves to it.
+    const second = await ingestMessage(h.accounts.officer, first.externalChatId, label, 2, 'Hello? Please answer when you can.');
+    await target(second.messageId).waitFor();
+    await expect.poll(() => target(second.messageId).isChecked(), { timeout: UI_TIMEOUT_MS }).toBe(true);
+    await button(page, 'Leave unanswered').click();
+    await expect.poll(() => leaveLines.count(), { timeout: UI_TIMEOUT_MS }).toBe(2);
+    expect(await leftUnanswered()).toEqual([first.messageId, second.messageId]);
+
+    // Once the officer picks a message, it stays the target when another one arrives.
+    await target(first.messageId).check();
+    const third = await ingestMessage(h.accounts.officer, first.externalChatId, label, 3, 'I will try again tomorrow.');
+    await target(third.messageId).waitFor();
+    expect(await target(first.messageId).isChecked()).toBe(true);
+    expect(await target(third.messageId).isChecked()).toBe(false);
     expect(problems).toEqual([]);
   });
 

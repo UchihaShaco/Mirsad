@@ -6,15 +6,9 @@ import { ApiError } from './api.js';
 import { describeError } from './format.js';
 import { canCompose, initialComposer } from './state/composer.js';
 import { pruneSelection } from './state/inbox.js';
-import { latestIncomingMessageId } from './state/timeline.js';
+import { replyTargetAfterReload } from './state/timeline.js';
 
 const NOT_IMPLEMENTED = 501;
-
-/** Keeps the officer's selected incoming message while it exists; otherwise the newest incoming message. */
-function chooseReplyTarget(current, timeline) {
-  const kept = timeline.messages.some((m) => m.id === current && m.direction === 'incoming' && m.origin === 'source');
-  return kept ? current : latestIncomingMessageId(timeline);
-}
 
 /** Puts a fresher chat summary into the inbox list; a summary with an older control revision is not applied. */
 function mergeChat(chats, chat) {
@@ -50,10 +44,12 @@ export async function loadTimeline(ctx) {
   const state = ctx.getState();
   if (timeline === null || ticket !== ctx.tickets.timeline || state.selectedChatId !== chatId) return;
   const keepComposer = canCompose(timeline.chat, state.me) || state.composer.sending;
+  const target = replyTargetAfterReload({ id: state.replyTargetId, pinned: state.replyTargetPinned }, timeline);
   ctx.setState({
     timeline,
     timelineError: null,
-    replyTargetId: chooseReplyTarget(state.replyTargetId, timeline),
+    replyTargetId: target.id,
+    replyTargetPinned: target.pinned,
     composer: keepComposer ? state.composer : initialComposer(),
     chats: mergeChat(state.chats, timeline.chat),
   });

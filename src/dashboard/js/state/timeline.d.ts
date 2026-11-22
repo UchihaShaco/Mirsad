@@ -11,3 +11,10 @@ export function timelineEntries(
   timeline: Pick<Timeline, 'messages' | 'messageEvents' | 'caseActions' | 'findings'>,
 ): TimelineEntry[];
 export function latestIncomingMessageId(timeline: Pick<Timeline, 'messages'>): string | null;
+
+/** The incoming message Leave unanswered applies to; `pinned` once the officer picked it. */
+export interface ReplyTarget {
+  id: string | null;
+  pinned: boolean;
+}
+export function replyTargetAfterReload(target: ReplyTarget, timeline: Pick<Timeline, 'messages'>): ReplyTarget;

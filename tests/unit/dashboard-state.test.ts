@@ -12,7 +12,7 @@ import {
 } from '../../src/dashboard/js/state/composer.js';
 import { groupInbox } from '../../src/dashboard/js/state/inbox.js';
 import { chatHref, parseRoute, tokenFromFragment } from '../../src/dashboard/js/state/route.js';
-import { latestIncomingMessageId, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
+import { latestIncomingMessageId, replyTargetAfterReload, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
 
 const AT = '2026-11-21T08:00:00.000Z';
 const OFFICER_A = { id: 'prn_officer_a', displayName: 'Demo Officer 1' };
@@ -244,6 +244,24 @@ describe('timeline merge', () => {
     const timeline = { messages: [message('msg_1', 10), message('msg_2', 20), composerReply, message('msg_0', 5, 'outgoing')] };
     expect(latestIncomingMessageId(timeline)).toBe('msg_2');
     expect(latestIncomingMessageId({ messages: [composerReply] })).toBeNull();
+  });
+
+  it('the Leave unanswered target follows the newest incoming message on every reload until the officer picks one', () => {
+    const first = { messages: [message('msg_1', 10)] };
+    const second = { messages: [message('msg_1', 10), message('msg_2', 20)] };
+    const third = { messages: [...second.messages, message('msg_3', 30)] };
+
+    const opened = replyTargetAfterReload({ id: null, pinned: false }, first);
+    expect(opened).toEqual({ id: 'msg_1', pinned: false });
+    // A default is not a choice: it moves to each newer incoming message.
+    expect(replyTargetAfterReload(opened, second)).toEqual({ id: 'msg_2', pinned: false });
+
+    // A message the officer picked stays the target while it exists.
+    const picked = { id: 'msg_1', pinned: true };
+    expect(replyTargetAfterReload(picked, third)).toBe(picked);
+    // A picked message that is no longer an incoming source message gives way to the newest one.
+    expect(replyTargetAfterReload({ id: 'msg_9', pinned: true }, third)).toEqual({ id: 'msg_3', pinned: false });
+    expect(replyTargetAfterReload(opened, { messages: [message('msg_0', 5, 'outgoing')] })).toEqual({ id: null, pinned: false });
   });
 });
 

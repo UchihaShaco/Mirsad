@@ -109,7 +109,8 @@ export function createActions(ctx) {
     onToggleSelect: (chatId, selected) => setState({ selection: toggleSelection(getState().selection, chatId, selected) }),
     onDispatch: () => run(ctx, 'dispatch', () => dispatchSelected(ctx)),
     onControl: (action) => run(ctx, `control:${action}`, () => control(ctx, action)),
-    onSelectReplyTarget: (messageId) => setState({ replyTargetId: messageId }),
+    // An explicit pick: reloads keep it while the message exists instead of moving to newer messages.
+    onSelectReplyTarget: (messageId) => setState({ replyTargetId: messageId, replyTargetPinned: true }),
     onComposerInput: (text) => setState({ composer: updateComposer(getState().composer, { type: 'edit', text }).state }),
     onInsertAcknowledgement: () => insertAcknowledgement(ctx),
     onSend: () => run(ctx, 'send', () => send(ctx)),

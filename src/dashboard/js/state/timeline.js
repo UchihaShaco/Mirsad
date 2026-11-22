@@ -25,12 +25,23 @@ export function timelineEntries(timeline) {
   ].sort(compareEntries);
 }
 
+const isIncomingSource = (message) => message.direction === 'incoming' && message.origin === 'source';
+
 /** The newest incoming message from the source: the default selection for Leave unanswered. */
 export function latestIncomingMessageId(timeline) {
   let latest = null;
   for (const message of timeline.messages) {
-    if (message.direction !== 'incoming' || message.origin !== 'source') continue;
+    if (!isIncomingSource(message)) continue;
     if (latest === null || message.position > latest.position) latest = message;
   }
   return latest === null ? null : latest.id;
+}
+
+/**
+ * The Leave unanswered target after a timeline reload. Until the officer picks a message (`pinned`), the target follows
+ * the newest incoming message on every reload; a picked message stays the target while it is in the timeline.
+ */
+export function replyTargetAfterReload(target, timeline) {
+  const kept = target.pinned && timeline.messages.some((message) => message.id === target.id && isIncomingSource(message));
+  return kept ? target : { id: latestIncomingMessageId(timeline), pinned: false };
 }
