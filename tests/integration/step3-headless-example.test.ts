@@ -27,6 +27,12 @@ interface ExampleStep {
 let h: TestHarness;
 let trace: ExampleTrace;
 
+/** The schema openapi.yaml documents for `what`. A missing one fails the test: ajv accepts anything for an empty schema. */
+function documented(schema: Schema | undefined, what: string): Schema {
+  expect(schema, `openapi.yaml documents ${what}`).toBeDefined();
+  return schema as Schema;
+}
+
 beforeAll(async () => {
   h = await startHarness();
   trace = await runExample({
@@ -73,13 +79,15 @@ describe('step 3: headless example client', () => {
       const operation = doc.paths[exchange.pathTemplate]?.[exchange.method.toLowerCase()];
       expect(operation, `${exchange.method} ${exchange.pathTemplate} is documented`).toBeDefined();
       if (exchange.requestBody !== undefined) {
-        const schema = operation?.requestBody?.content['application/json'].schema;
-        const validate = ajv.compile(schema ?? {});
+        const schema = documented(operation?.requestBody?.content['application/json'].schema, `the ${exchange.name} request`);
+        const validate = ajv.compile(schema);
         expect(validate(exchange.requestBody), `${exchange.name} request: ${ajv.errorsText(validate.errors)}`).toBe(true);
       }
-      const responseSchema = operation?.responses[String(exchange.response.status)]?.content?.['application/json']?.schema;
-      expect(responseSchema, `${exchange.name} documents status ${exchange.response.status}`).toBeDefined();
-      const validate = ajv.compile(responseSchema ?? {});
+      const responseSchema = documented(
+        operation?.responses[String(exchange.response.status)]?.content?.['application/json']?.schema,
+        `the ${exchange.name} response with status ${exchange.response.status}`,
+      );
+      const validate = ajv.compile(responseSchema);
       expect(validate(exchange.response.body), `${exchange.name} response: ${ajv.errorsText(validate.errors)}`).toBe(true);
     }
   });
@@ -93,8 +101,11 @@ describe('step 3: headless example client', () => {
     const ajv = new Ajv2020({ strict: true, allowUnionTypes: true, allErrors: true });
     addFormats(ajv);
     for (const step of doc['x-workflow-example']) {
-      const schema = doc.paths[step.path]?.[step.method.toLowerCase()]?.responses[String(step.response.status)]?.content?.['application/json']?.schema;
-      const validate = ajv.compile(schema ?? {});
+      const schema = documented(
+        doc.paths[step.path]?.[step.method.toLowerCase()]?.responses[String(step.response.status)]?.content?.['application/json']?.schema,
+        `the ${step.name} response with status ${step.response.status}`,
+      );
+      const validate = ajv.compile(schema);
       expect(validate(step.response.body), `${step.name}: ${ajv.errorsText(validate.errors)}`).toBe(true);
     }
   });
