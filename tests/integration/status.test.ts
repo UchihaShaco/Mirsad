@@ -33,6 +33,8 @@ let tmp: string;
 let recordFile: string;
 
 const exampleRecord = (): Record<string, unknown> => JSON.parse(fs.readFileSync(EXAMPLE_RECORD, 'utf8')) as Record<string, unknown>;
+/** The example's shape with the reference a real approval would carry: the example's own reference never verifies. */
+const approvedRecord = (): Record<string, unknown> => ({ ...exampleRecord(), approvalReference: 'TEST-APPROVAL-0001' });
 const writeJson = (file: string, value: unknown): void => fs.writeFileSync(file, JSON.stringify(value, null, 2));
 
 function deps(over: Partial<StatusDeps> = {}): StatusDeps {
@@ -112,10 +114,13 @@ describe('status', () => {
     expect(await verified()).toBe(false);
     writeJson(recordFile, { ...exampleRecord(), tester: '' });
     expect(await verified()).toBe(false);
-    writeJson(recordFile, { ...exampleRecord(), manualReply: { result: 'failed' } });
+    writeJson(recordFile, { ...approvedRecord(), manualReply: { result: 'failed' } });
+    expect(await verified()).toBe(false);
+    // The shipped example copied to the record path, with no approval reference configured, is still refused.
+    writeJson(recordFile, exampleRecord());
     expect(await verified()).toBe(false);
 
-    writeJson(recordFile, exampleRecord());
+    writeJson(recordFile, approvedRecord());
     const telegram = (await httpStatus()).channels.telegram;
     expect(telegram).toMatchObject({ readiness: 'controlled_test_verified', readinessRecordedAt: `${String(exampleRecord().testDate)}T00:00:00.000Z` });
 
@@ -130,7 +135,9 @@ describe('status', () => {
     const env = { MIRSAD_DATA_DIR: tmp, MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: recordFile };
     fs.rmSync(recordFile, { force: true });
     expect(() => loadConfig(env)).toThrow(ConfigError);
-    writeJson(recordFile, { ...exampleRecord(), eventCoverage: [{ event: 'business_message incoming', fixtureReplay: 'passed', liveCapture: 'failed' }] });
+    writeJson(recordFile, { ...approvedRecord(), eventCoverage: [{ event: 'business_message incoming', fixtureReplay: 'passed', liveCapture: 'failed' }] });
+    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
+    writeJson(recordFile, exampleRecord());
     expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
 
     // While the gate is closed, status says so and intake refuses WhatsApp events.
@@ -141,7 +148,7 @@ describe('status', () => {
     expect(refused.body.error.code).toBe('channel_not_enabled');
 
     // A verified record makes the gate available; it opens only when the import flag is also set.
-    writeJson(recordFile, exampleRecord());
+    writeJson(recordFile, approvedRecord());
     expect((await httpStatus()).channels.whatsapp.gate).toBe('closed_until_import_enabled');
     const opened = loadConfig(env);
     expect(opened.whatsappImportEnabled).toBe(true);

@@ -7,6 +7,11 @@ import { z } from 'zod';
 
 /** Default location of the record (`MIRSAD_CONTROLLED_TEST_RECORD`), relative to the project root. */
 export const DEFAULT_CONTROLLED_TEST_RECORD = 'docs/telegram/controlled-test-record.json';
+/**
+ * Approval references starting with this mark the shipped example (docs/telegram/controlled-test-record.example.json).
+ * Such a record documents no test, so it never counts as verified, even copied to the record path.
+ */
+export const EXAMPLE_APPROVAL_PREFIX = 'EXAMPLE-ONLY-';
 
 const result = z.enum(['passed', 'failed', 'not_observed']);
 
@@ -64,11 +69,12 @@ export function readControlledTestRecord(file: string): ControlledTestRecord | n
 }
 
 /**
- * True only when the file holds a valid record that documents a verified test. When `expectedApprovalReference`
- * is given, the record's approval reference must match it.
+ * True only when the file holds a valid record that documents a verified test and is not the shipped example. When
+ * `expectedApprovalReference` is given, the record's approval reference must match it.
  */
 export function hasValidControlledTestRecord(file: string, expectedApprovalReference?: string): boolean {
   const record = readControlledTestRecord(file);
   if (record === null || !isControlledTestVerified(record)) return false;
+  if (record.approvalReference.startsWith(EXAMPLE_APPROVAL_PREFIX)) return false;
   return expectedApprovalReference === undefined || record.approvalReference === expectedApprovalReference;
 }

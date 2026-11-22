@@ -170,6 +170,7 @@ Set `TELEGRAM_LIVE_ENABLED=true` and restart Mirsad (`npm start`).
   passed, at least one event was captured live, nothing failed, and the approval reference matches
   `TELEGRAM_APPROVAL_REFERENCE` when that is set. No code in Mirsad writes this file.
 - [controlled-test-record.example.json](controlled-test-record.example.json) shows the shape with fictional values.
-  Never copy it as the real record: it would report a test that did not happen (when `TELEGRAM_APPROVAL_REFERENCE` is
-  set, its reference does not match and it is refused).
+  Never copy it as the real record. Its approval reference starts with `EXAMPLE-ONLY-`, and a record whose reference
+  starts that way is never counted as verified, whatever its results and whether or not `TELEGRAM_APPROVAL_REFERENCE`
+  is set.
 - A verified record is also what allows `MIRSAD_WHATSAPP_IMPORT_ENABLED=true` (see `docs/whatsapp/import-plan.md`).
