@@ -55,15 +55,6 @@ textarea, input[type="password"] {
   background: var(--panel);
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .hint { color: var(--muted); font-size: 0.9rem; }
 .error { color: var(--error); }
 .placeholder { color: var(--muted); padding: 1rem 0; }

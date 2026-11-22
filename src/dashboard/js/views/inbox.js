@@ -7,11 +7,16 @@ import { matchBadge } from './matches.js';
 
 const REVIEW_NOTES = { active: 'Review in progress', unavailable: 'Review unavailable' };
 
+/** The checkbox names itself from the chat label, so every assistive tool announces which chat it selects. */
 function selector(chat, state, handlers) {
-  const checkbox = h('input', { type: 'checkbox', checked: state.selection.has(chat.id), dataset: { focusKey: `select:${chat.id}` } });
+  const checkbox = h('input', {
+    type: 'checkbox',
+    'aria-label': `Select ${chat.displayLabel}`,
+    checked: state.selection.has(chat.id),
+    dataset: { focusKey: `select:${chat.id}` },
+  });
   checkbox.addEventListener('change', () => handlers.onToggleSelect(chat.id, checkbox.checked));
-  const name = h('span', { className: 'visually-hidden' }, [h('span', { text: 'Select ' }), bdi(chat.displayLabel)]);
-  return h('label', { className: 'select-chat' }, [checkbox, name]);
+  return h('label', { className: 'select-chat' }, [checkbox]);
 }
 
 function chatItem(chat, state, handlers) {

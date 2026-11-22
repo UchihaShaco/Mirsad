@@ -127,7 +127,10 @@ describe('reference dashboard', () => {
     expect(await queued.textContent()).toContain('Telegram');
     expect(await queued.textContent()).toContain('First observed: incoming');
 
-    await page.getByRole('checkbox', { name: 'Select Test Contact 1', exact: true }).check();
+    // The checkbox carries its own name, so tools that do not read the wrapping label do not announce it as "on".
+    const selectFirst = page.getByRole('checkbox', { name: 'Select Test Contact 1', exact: true });
+    expect(await selectFirst.getAttribute('aria-label')).toBe('Select Test Contact 1');
+    await selectFirst.check();
     await page.getByRole('checkbox', { name: 'Select Test Contact 2', exact: true }).check();
     await button(page, 'Dispatch').click();
     await inboxItem(page, 'Open chats', 'Test Contact 1').filter({ hasText: 'AI active' }).waitFor();
