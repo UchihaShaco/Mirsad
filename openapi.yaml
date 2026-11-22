@@ -413,6 +413,8 @@ paths:
           schema:
             type: string
             minLength: 1
+            maxLength: 200
+            pattern: ^[\x21-\x7e]+$
       requestBody:
         required: true
         content:

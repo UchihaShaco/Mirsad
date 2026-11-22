@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { buildOpenApiDocument } from '../../src/contract/openapi.ts';
@@ -104,6 +105,18 @@ describe('openapi.yaml', () => {
         expect(pick(live.data, field), `${step.name} ${field}`).toEqual(expectedValue);
       }
     });
+  });
+
+  it('the documented Idempotency-Key schema accepts exactly the keys the server accepts', async () => {
+    const doc = asJson(buildOpenApiDocument()) as { paths: Record<string, Record<string, any>> };
+    const parameter = (doc.paths['/v1/dispatches']?.post?.parameters as { name: string; schema: object }[]).find((p) => p.name === 'Idempotency-Key');
+    const documentedAccepts = new Ajv2020({ strict: true }).compile(parameter?.schema ?? {});
+    for (const key of ['dispatch-key-1', 'x'.repeat(200), 'x'.repeat(201), 'with space', 'tab\there', '~!#$%&*+.^_|']) {
+      // A chat that does not exist: a key the server accepts gets past the header check to 404 chat_not_found.
+      const res = await h.http(h.tokens.officerA).post('/v1/dispatches', { chatIds: ['chat_00000000000000000000000000000000'] }, { 'Idempotency-Key': key });
+      const serverAccepts = res.body?.error?.code !== 'idempotency_key_required';
+      expect(documentedAccepts(key), JSON.stringify(key)).toBe(serverAccepts);
+    }
   });
 
   it('evidence_access_required is documented only on the route that raises it, the watchlist review', () => {

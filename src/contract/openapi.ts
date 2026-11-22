@@ -184,7 +184,8 @@ const IDEMPOTENCY_PARAMETER: Json = {
   required: true,
   description:
     'Scoped to principal and route (and chat). The same key with the same body replays the stored response; the same key with a different body answers `422 idempotency_key_reused`.',
-  schema: { type: 'string', minLength: 1 },
+  // The server's rule (src/http/middleware/idempotency.ts): 1 to 200 visible ASCII characters, no spaces.
+  schema: { type: 'string', minLength: 1, maxLength: 200, pattern: '^[\\x21-\\x7e]+$' },
 };
 
 function parameters(spec: RouteSpec, doc: RouteDoc): Json[] {
