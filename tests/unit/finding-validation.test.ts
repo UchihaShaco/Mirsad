@@ -82,6 +82,15 @@ describe('validateItem: phone numbers', () => {
     expect(validateItem(international, record(ascii))).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '+44 7700 900123' });
   });
 
+  it('normalizes a number the message writes with a direction mark or a thin space between its groups, from a clean reviewer value', () => {
+    const phone = (text: string) =>
+      validateItem(item({ kind: 'phone_number', quote: text, extractedValue: '07700 900123', concern: 'payment_request', countryHint: 'GB' }), record(text));
+    // A right-to-left mark after a number is common in Arabic text.
+    expect(phone('حول المبلغ إلى ٠٧٧٠٠‏ ٩٠٠١٢٣ اليوم')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '٠٧٧٠٠‏ ٩٠٠١٢٣' });
+    expect(phone('Call 07700‏ 900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700‏ 900123' });
+    expect(phone('Call 07700 900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700 900123' });
+  });
+
   it('keeps a number that cannot be normalized as unnormalized digits', () => {
     const text = 'Call 07700 900123 now';
     const phone = item({ kind: 'phone_number', quote: text, extractedValue: '07700 900123', concern: 'callback_request' });

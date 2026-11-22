@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { findPhoneSpans, normalizePhone, toAsciiDigits, watchlistMatchKey } from '../../src/domain/phone.ts';
 
+/** Every Unicode space separator (general category Zs) other than the ASCII space. */
+const UNICODE_SPACES = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '　'];
+/** Format characters that only set text direction: LRM, RLM, ALM and the four isolates. */
+const DIRECTION_MARKS = ['‎', '‏', '؜', '⁦', '⁧', '⁨', '⁩'];
+
+/** The text with every character outside printable ASCII shown as its code point, for test messages. */
+const visible = (text: string): string =>
+  text.replace(/[^\x20-\x7e]/g, (char) => `<U+${(char.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, '0')}>`);
+
 describe('normalizePhone', () => {
   it('normalizes an international number written with + to E.164 and keeps its digits', () => {
     expect(normalizePhone('+44 7700 900123')).toEqual({ e164: '+447700900123', digits: '447700900123' });
@@ -33,6 +42,19 @@ describe('normalizePhone', () => {
   it('maps Arabic-Indic and Extended Arabic-Indic digits to ASCII', () => {
     expect(normalizePhone('+٤٤ ٧٧٠٠ ٩٠٠١٢٣')).toEqual({ e164: '+447700900123', digits: '447700900123' });
     expect(normalizePhone('۰۷۷۰۰ ۹۰۰۱۲۳', { country: 'GB' })).toEqual({ e164: '+447700900123', digits: '07700900123' });
+  });
+
+  it('reads any Unicode space between digit groups as a space and ignores direction marks anywhere in the number', () => {
+    const written = [
+      ...UNICODE_SPACES.map((space) => `07700${space}900123`),
+      ...DIRECTION_MARKS.flatMap((mark) => [`07700${mark} 900123`, `07700${mark}900123`, `${mark}07700 900123${mark}`]),
+      '‏٠٧٧٠٠‏ ٩٠٠١٢٣‏',
+    ];
+    for (const number of written) {
+      expect(normalizePhone(number, { country: 'GB' }), visible(number)).toEqual({ e164: '+447700900123', digits: '07700900123' });
+    }
+    // A mark before the + still leaves the number in international form.
+    expect(normalizePhone('‏+44 7700 900123')).toEqual({ e164: '+447700900123', digits: '447700900123' });
   });
 
   it('keeps invalid, partial or unparsable input unnormalized', () => {

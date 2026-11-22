@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { replayFixture } from '../../src/adapters/replay.ts';
-import type { Timeline } from '../../src/contract/schemas.ts';
+import type { Timeline, WatchlistEntry } from '../../src/contract/schemas.ts';
 import { ReviewerUnavailableError, type ExtractedItem, type ReviewRequest } from '../../src/ports/reviewer.ts';
 import * as watchlist from '../../src/services/watchlist.ts';
 import type { ReviewRow } from '../../src/storage/rows.ts';
@@ -309,6 +309,22 @@ describe('review pipeline: findings', () => {
     await addMessage(chat.chatId, 2, 'Beneficiary: Other Holdings');
     await h.drain();
     expect((await timeline(chat.chatId)).findings.at(-1)).toMatchObject({ label: 'Payment destination changed', changedFrom: 'Test   Trading LLC' });
+  });
+
+  it('a number written with a direction mark or a thin space between its groups becomes an exact-match watchlist entry', async () => {
+    const markedLine = 'حول العربون إلى ٠٧٧٠٠‏ ٩٠٠١٤٣ اليوم';
+    const thinLine = 'Or transfer it to 07700 900144.';
+    h.reviewer.respond((request) => ({
+      items: [
+        extracted(request, { kind: 'phone_number', quote: markedLine, extractedValue: '07700 900143', concern: 'payment_request', countryHint: 'GB' }),
+        extracted(request, { kind: 'phone_number', quote: thinLine, extractedValue: '07700 900144', concern: 'payment_request', countryHint: 'GB' }),
+      ],
+    }));
+    await reviewedChat(`${markedLine}\n${thinLine}`);
+    const entries: WatchlistEntry[] = (await h.http(h.tokens.officerA).get('/v1/watchlist')).body.data.entries;
+    for (const [e164, display] of [['+447700900143', '٠٧٧٠٠‏ ٩٠٠١٤٣'], ['+447700900144', '07700 900144']]) {
+      expect(entries.find((entry) => entry.number.e164 === e164), e164).toMatchObject({ number: { e164, display, exactMatchEligible: true } });
+    }
   });
 
   it('the step-5 fixture chat ends with exactly one finding', async () => {

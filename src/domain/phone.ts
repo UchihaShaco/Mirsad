@@ -9,6 +9,13 @@ const EXTENDED_ARABIC_INDIC_ZERO = 0x06f0;
 const ARABIC_INDIC_DIGIT = /[٠-٩۰-۹]/g;
 const NON_DIGIT = /\D/g;
 const DIGIT_GROUP = /\d+/g;
+/**
+ * Format characters that only set text direction (LRM, RLM, ALM and the isolates), which bidirectional text puts
+ * around and inside numbers. They carry no digit, so they are deleted before a number is parsed.
+ */
+const DIRECTION_MARKS = /[؜‎‏⁦-⁩]/g;
+/** Every Unicode space separator, such as the no-break, thin and narrow no-break spaces: read as a plain space. */
+const SPACE_SEPARATOR = /\p{Zs}/gu;
 const INTERNATIONAL_PREFIX = '00';
 /**
  * Ofcom's drama range +44 7700 900000-900999. The phone metadata rejects it because it is fictional, yet it is the only
@@ -95,12 +102,17 @@ function completeNumber(text: string, country?: CountryCode): string | null {
   return parsed.isValid() || RESERVED_FICTIONAL_E164.test(parsed.number) ? parsed.number : null;
 }
 
+/** The number with ASCII digits, without direction marks and with plain spaces, as the phone metadata can parse it. */
+function parseableText(raw: string): string {
+  return toAsciiDigits(raw).replace(DIRECTION_MARKS, '').replace(SPACE_SEPARATOR, ' ').trim();
+}
+
 /**
  * International when written with + (or 00) or when the source marks it so; otherwise national with the given
  * country. No default country is ever assumed.
  */
 export function normalizePhone(raw: string, hint: PhoneHint = {}): NormalizedPhone {
-  const ascii = toAsciiDigits(raw).trim();
+  const ascii = parseableText(raw);
   const digits = ascii.replace(NON_DIGIT, '');
   const written = ascii.startsWith(INTERNATIONAL_PREFIX) ? `+${ascii.slice(INTERNATIONAL_PREFIX.length)}` : ascii;
   if (written.startsWith('+')) return { e164: completeNumber(written), digits };
