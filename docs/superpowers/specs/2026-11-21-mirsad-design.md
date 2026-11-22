@@ -313,7 +313,7 @@ type ReviewState = { status: 'not_requested' | 'pending' | 'running' | 'complete
 type Message = { id: string; chatId: string; direction: Direction | null; origin: 'source' | 'officer_composer';
   text: string | null; originalCaptured: boolean; unsupportedContent: string[]; sentAt: string | null; receivedAt: string;
   source: { channel: Source; captureMethod: CaptureMethod; sourceEventId: string | null; sourceMessageId: string | null };
-  sender: { externalId: string | null; displayName: string | null } | null;
+  sender: { externalId: string | null; displayName: string | null; phone: string | null } | null;   // phone: raw sender metadata from the source
   author: PrincipalRef | null; sendStatus: 'simulated' | null; sendStatusLabel: 'Simulated send' | null;
   capture: Capture | null;        // null: not applicable (composer message, or placeholder without text)
   review: ReviewState | null;     // null: not applicable (outgoing or composer message)
@@ -377,7 +377,7 @@ A pure function `transition(state, action, actorId)` in `src/domain/control-mach
 | From | `pause` | `take_over` | `resume` | dispatch |
 |---|---|---|---|---|
 | `not_started` | `invalid_transition` | → `officer_control` (actor) | `invalid_transition` | → `ai_active` (`started`) |
-| `ai_active` | → `paused` | → `officer_control` (actor) | `invalid_transition` | no change (`already_active`) |
+| `ai_active` | → `paused` | → `officer_control` (actor) | `invalid_transition` | no mode change (`already_active`); requeues the chat's `unavailable` and `not_requested` reviews with attempts reset and wakes the worker |
 | `paused` | `invalid_transition` | → `officer_control` (actor) | → `ai_active` | no change (`requires_resume`) |
 | `officer_control` by actor | `invalid_transition` | `invalid_transition` | → `ai_active` | no change (`requires_resume`) |
 | `officer_control` by another officer | `invalid_transition` | → `officer_control` (actor) | `403 not_controller` | no change (`requires_resume`) |
@@ -393,12 +393,12 @@ Decision (`POST …/officer-decisions`): same takeover checks; `messageId` must 
 ## 9. Captures
 
 - A capture is a PNG rendered by Mirsad from the saved record. Every source message event that carries text or unsupported content (`recorded`, `edited`, `conflicting_copy`; both directions) gets one. Composer messages do not: they are Mirsad's own record, not source evidence.
-- `CaptureRenderer.render(input) -> Promise<Uint8Array>` is a pure function of its input (no clock, no network). The image shows: the label "Mirsad-rendered capture", channel, capture method, chat label and chat ID, message ID, event type, direction, sender label, received time, sent time, the text, and the text's SHA-256. Text is drawn as plain text. Markup is shown literally. Bidi control characters (U+202A–U+202E, U+2066–U+2069) and other control characters except newline and tab are drawn as visible tokens such as `[U+202E]`. Only local font files are used. Every string drawn on a capture (chat label, sender label and IDs as well as the text) passes through the same `toDisplayText` step.
+- `CaptureRenderer.render(input) -> Promise<Uint8Array>` is a pure function of its input (no clock, no network). The image shows: the label "Mirsad-rendered capture", channel, capture method, chat label and chat ID, message ID, event type, direction, sender label, the sender phone when the source supplied one, received time, sent time (labelled as the edit time on an edit's capture), the text, and the text's SHA-256. Text is drawn as plain text. Markup is shown literally. Bidi control characters (U+202A–U+202E, U+2066–U+2069) and other control characters except newline and tab are drawn as visible tokens such as `[U+202E]`. Only local font files are used. Every string drawn on a capture (chat label, sender label and IDs as well as the text) passes through the same `toDisplayText` step.
 - PNG `tEXt` chunks carry provenance: `Mirsad-Capture-Kind`, `Mirsad-Chat-Id`, `Mirsad-Message-Id`, `Mirsad-Message-Event-Id`, `Mirsad-Received-At`, `Mirsad-Text-SHA256`.
 - Capture worker: claim the oldest `pending` capture (`status = 'rendering'`, `attempts + 1`), load its own message event from the database by capture ID, render, `EvidenceStore.put('captures/<workspaceId>/<chatId>/<captureId>.png', bytes)`, then in one transaction insert the artifact (kind `mirsad_rendered_capture`, SHA-256, size) and set the capture `ready`. On any error set `failed` with an error code (`render_failed`, `storage_failed`); the message is untouched. Publish `capture.updated` either way.
 - Retry: `POST /v1/captures/{captureId}/retry` moves `failed` → `pending` (else `409 capture_not_retryable`), records `capture_retry_requested`, wakes the worker. Rendering twice writes the same storage key, so a retry yields exactly one linked image.
 - On startup, captures left in `rendering` go back to `pending`.
-- `EvidenceStore` writes atomically (temp file then rename) under `<dataDir>/evidence/`. Keys are built only from server-generated IDs.
+- `EvidenceStore` writes atomically (temp file, flushed to disk, then rename; the directory is flushed too where the platform allows) under `<dataDir>/evidence/`. Keys are built only from server-generated IDs.
 
 ## 10. Review pipeline
 
@@ -434,7 +434,7 @@ Evidence capture never waits for review. The reviewer extracts; code decides.
    - phone: its digits equal the digits of a phone-like span in the quote, after mapping Arabic-Indic digits to ASCII;
    - recipient: it appears in the quote, ignoring case and repeated whitespace.
    Rejected items increase `unsupported_count` and are never shown. A phone item without a concern is dropped.
-3. Normalize. Link: `normalizeHost(hostname)` + path + query, where `normalizeHost` lower-cases, converts to punycode, and drops a leading `www.`, the port and a trailing dot; path and query stay exactly as written. Phone: `normalizePhone(extractedValue, { country: countryHint })` giving the E.164 form, or `unnormalized:<digits>` (section 11). Recipient: lower-cased, single-spaced.
+3. Normalize. What is stored and shown as the value (finding, case-detail display value, watchlist source representation) is always the matching span of the message as written, never the model's string; a phone value may contain only phone characters. Link: `normalizeHost(hostname)` + path + query, where `normalizeHost` lower-cases, converts to punycode, and drops a leading `www.`, the port and a trailing dot; path and query stay exactly as written. Phone: `normalizePhone(extractedValue, { country: countryHint })` giving the E.164 form, or `unnormalized:<digits>` (section 11). Recipient: lower-cased, single-spaced.
 4. Decide per item, comparing only inside its own category and only against details that earlier message events of the chat carried. "Current" means the detail of that category with the highest `last_seen_position` below this event's position.
    - The value is the current detail: a repeat. Update `last_seen_position`, increase `suppressed_count`, raise nothing.
    - Phone numbers: any value already stored for the chat is a repeat.
@@ -446,7 +446,7 @@ Evidence capture never waits for review. The reviewer extracts; code decides.
 
 **Case references**
 
-- `POST …/case-references` stores the confirmation with hosts normalized by `normalizeHost` (a URL or `host:port` is accepted as input; a value that does not parse is `400`). It then inserts a `suspected_fraud` finding (with `review_id` NULL) for every existing `payment_link` finding of the chat whose host is not among the chat's confirmed hosts, publishes `finding.created` for each, calls `watchlist.onEvidencePublished` once per affected message event, and reports how many it created. This is a rule over stored evidence and an officer-entered fact, so it runs in any AI mode.
+- `POST …/case-references` stores the confirmation with hosts normalized by `normalizeHost` (a URL or `host:port` is accepted as input; a value that does not parse is `400`). It then inserts a `suspected_fraud` finding (with `review_id` NULL) for every existing `payment_link` finding of the chat whose host is not among the chat's confirmed hosts, and for every link that the code-side `detectPaymentLinks` finds in the text of the chat's stored incoming message events (recorded, edited, conflicting copy) with a conflicting host not yet flagged on that event, so the rule never depends on what the model reported; publishes `finding.created` for each, calls `watchlist.onEvidencePublished` once per affected message event, and reports how many it created. This is a rule over stored evidence and an officer-entered fact, so it runs in any AI mode.
 
 **Model request**
 
@@ -551,7 +551,7 @@ Runtime dependencies: `hono` 4.13.19, `@hono/node-server` 2.1.11, `zod` 4.6.7, `
 
 ### 19.2 SQLite: built-in `node:sqlite`
 
-- `new DatabaseSync(file, { timeout: 5000, enableForeignKeyConstraints: true })`, then `PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;`. No flag and no warning on this Node version.
+- `new DatabaseSync(file, { timeout: 5000, enableForeignKeyConstraints: true })`, then `PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL;` (FULL so that evidence acknowledged with `201` survives a power cut; about 2 ms per commit on this machine). No flag and no warning on this Node version.
 - There is no transaction helper. `Db.transaction(fn)` is: outermost call `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`; nested call `SAVEPOINT` / `RELEASE` / `ROLLBACK TO` (use `db.isTransaction`). `fn` is synchronous: never `await` inside a transaction. The helper enforces this: it tracks nesting with its own depth counter and throws, rolling back, when `fn` returns a thenable. Rendering, file writes and model calls happen outside transactions.
 - Binding `undefined` or a boolean throws: repositories map `undefined` to `null` and booleans to `0`/`1`. Rows are null-prototype objects: repositories return plain objects. Integers above 2^53 throw; nothing here needs them.
 - `INSERT … RETURNING`, upsert with a partial-index conflict target, partial unique indexes and JSON functions all work.
@@ -599,7 +599,7 @@ Source: the official Bot API reference and Telegram's terms, read on 2026-11-21.
 | `sourceMessageId` | `tg:<message_id>` (unique per chat). `message_id` 0 cannot be deduplicated: skip and count it. |
 | `sourceEventId` | `tg:u<update_id>:m<message_id>` for `business_message`; `tg:u<update_id>:m<message_id>:e<edit_date>` for `edited_business_message`; `tg:u<update_id>:m<message_id>:del` for each ID in `deleted_business_messages`. Telegram may restart `update_id` at a random value after a quiet week, so the update ID alone is not a safe key. |
 | `direction` | `outgoing` when `from.id` equals the owner's user ID or `sender_business_bot` is present; otherwise `incoming` |
-| `text` | `text`, else `caption`, else `''`; media kinds present (`photo`, `document`, `video`, `audio`, `voice`, `video_note`, `sticker`, `animation`, `location`, `venue`, `poll`, `contact`) go to `unsupportedContent` |
+| `text` | `text`, else `caption`, else `''`; media kinds present (`photo`, `document`, `video`, `audio`, `voice`, `video_note`, `sticker`, `animation`, `location`, `venue`, `poll`, `contact`) go to `unsupportedContent`; so do `text_link` (a formatted link whose URL is not in the visible text; the URL is not stored in this version) and `forwarded` (the message has `forward_origin`) |
 | `sentAt` / `editedAt` | `date` / `edit_date` (Unix seconds). Deletions carry no time. |
 | `sender` | `externalId = String(from.id)`, `displayName` from first and last name |
 | `sender.phone` | only from `message.contact` when `contact.user_id === from.id` on an incoming message: `{ raw: contact.phone_number, internationalFormat: true }`. `User` and `Chat` never carry a phone number. |
