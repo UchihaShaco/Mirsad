@@ -1,6 +1,7 @@
 /**
  * Batch dispatch (design section 8): access to the whole selection is checked before any chat changes, then the
- * dispatch column of the control machine is applied to each chat in the caller's transaction.
+ * dispatch column of the control machine is applied to each chat in the caller's transaction. A chat that is already
+ * AI active keeps its mode and revision, but its reviews that were never run or failed are queued again, as on resume.
  */
 import { AppError } from '../contract/errors.ts';
 import type { DispatchResponse } from '../contract/schemas.ts';
@@ -12,6 +13,7 @@ import { findChatById } from '../storage/repos/chats.ts';
 import type { ChatRow } from '../storage/rows.ts';
 import { canAccessChat } from './access.ts';
 import { applyModeChange } from './mode-change.ts';
+import { requeueReviewsForChat } from './review-queue.ts';
 
 export type DispatchResult = DispatchResponse;
 
@@ -27,6 +29,7 @@ function resolveSelection(tx: Tx, officer: Principal, chatIds: readonly string[]
   return found as ChatRow[];
 }
 
+/** The route wakes the review worker after the transaction commits. */
 export function dispatchChats(tx: Tx, officer: Principal, chatIds: readonly string[]): DispatchResult {
   const chats = resolveSelection(tx, officer, chatIds);
   const results = chats.map((chat) => {
@@ -34,6 +37,7 @@ export function dispatchChats(tx: Tx, officer: Principal, chatIds: readonly stri
     const after = status === 'started'
       ? applyModeChange(tx, chat, { aiMode: 'ai_active', controllerId: null }, officer, 'dispatch_started')
       : chat;
+    if (status === 'already_active') requeueReviewsForChat(tx, chat.id);
     return { chatId: chat.id, status, aiMode: after.ai_mode, revision: after.revision };
   });
   return { dispatchId: newId('dsp'), results };

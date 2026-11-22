@@ -18,7 +18,10 @@ export function initialReviewStatus(
   return chat.ai_mode === 'ai_active' ? 'pending' : 'not_requested';
 }
 
-/** On every entry into ai_active: not_requested, stale_discarded and unavailable reviews go back to pending. */
+/**
+ * On every entry into ai_active, and when an officer dispatches a chat that is already ai_active: not_requested,
+ * stale_discarded and unavailable reviews go back to pending with their attempts reset.
+ */
 export function requeueReviewsForChat(tx: Tx, chatId: string): number {
   return tx.run(
     `UPDATE reviews SET status = 'pending', attempts = 0, last_error_code = NULL, updated_at = :at

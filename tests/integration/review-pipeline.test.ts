@@ -506,6 +506,42 @@ describe('review pipeline: the worker', () => {
     expect(reviewRows(chat.chatId)[0]).toMatchObject({ outcome: 'findings', attempts: 1 });
   });
 
+  it('dispatching a chat that is already active retries its unavailable reviews whatever their attempts, without changing mode or revision', async () => {
+    h.reviewer.respond(failingReviewer('model_offline'));
+    const chat = await newChat('Please pay at https://pay.shop.test/inv/211');
+    await dispatch([chat.chatId]);
+    await h.drain();
+    for (const messageId of [2, 3, 4]) {
+      await addMessage(chat.chatId, messageId, `Follow-up number ${messageId}.`);
+      await h.drain();
+    }
+    expect(reviewRows(chat.chatId)[0]).toMatchObject({ status: 'unavailable', attempts: 3 });
+
+    h.reviewer.respond(null);
+    const again = await dispatch([chat.chatId]);
+    expect(again.body.data.results).toEqual([{ chatId: chat.chatId, status: 'already_active', aiMode: 'ai_active', revision: 2 }]);
+    await h.drain();
+    expect(reviewRows(chat.chatId).map((r) => r.status)).toEqual(['completed', 'completed', 'completed', 'completed']);
+    expect(reviewRows(chat.chatId)[0]).toMatchObject({ outcome: 'findings', attempts: 1 });
+    const tl = await timeline(chat.chatId);
+    expect(tl.chat).toMatchObject({ aiMode: 'ai_active', revision: 2 });
+    expect(tl.caseActions.map((a) => a.type)).toEqual(['dispatch_started']);
+  });
+
+  it('dispatching a paused chat still requires a resume and retries nothing', async () => {
+    h.reviewer.failNext('model_busy');
+    const chat = await newChat('Please pay at https://pay.shop.test/inv/221');
+    await dispatch([chat.chatId]);
+    await h.drain();
+    expect(reviewRows(chat.chatId)[0]).toMatchObject({ status: 'unavailable', attempts: 1 });
+    await control(chat.chatId, 'pause', 2);
+    const paused = await dispatch([chat.chatId]);
+    expect(paused.body.data.results).toEqual([{ chatId: chat.chatId, status: 'requires_resume', aiMode: 'paused', revision: 3 }]);
+    await h.drain();
+    expect(reviewRows(chat.chatId)[0]).toMatchObject({ status: 'unavailable', attempts: 1 });
+    expect(callsFor(chat.chatId)).toHaveLength(1);
+  });
+
   it('content captured live from Telegram is never sent to the reviewer', async () => {
     const live = h.http(h.tokens.liveConnector);
     const first = await live.post('/v1/ingest', envelope(h.accounts.live, uniqueId('live-'), recorded({ messageId: 1, text: 'Please pay the fee at https://pay.shop.test/inv/81' })));
