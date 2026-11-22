@@ -108,78 +108,90 @@ async function exchange(options: ExampleOptions, call: Call): Promise<Exchange> 
   return call.body === undefined ? recorded : { ...recorded, requestBody: call.body };
 }
 
+type Credential = Pick<Call, 'token' | 'tokenLabel'>;
+
+const officerOf = (options: ExampleOptions): Credential => ({ token: options.officerToken, tokenLabel: OFFICER_TOKEN_LABEL });
+const connectorOf = (options: ExampleOptions): Credential => ({ token: options.connectorToken, tokenLabel: CONNECTOR_TOKEN_LABEL });
+
+/** Step 1: register the host conversation; the answer carries the chat ID every later step uses. */
+const registerChat = (options: ExampleOptions): Call => ({
+  ...officerOf(options),
+  name: 'register_chat',
+  method: 'POST',
+  pathTemplate: '/v1/chats',
+  path: '/v1/chats',
+  body: {
+    source: 'telegram',
+    externalAccountId: options.externalAccountId ?? DEMO_OFFICER_ACCOUNT,
+    externalChatId: options.externalChatId ?? DEFAULT_EXTERNAL_CHAT_ID,
+    displayLabel: 'Test Contact',
+  },
+  expectStatus: 201,
+});
+
+/** Step 2: start AI review; the Idempotency-Key makes a retry safe. */
+const dispatch = (options: ExampleOptions, chatId: string): Call => ({
+  ...officerOf(options),
+  name: 'dispatch',
+  method: 'POST',
+  pathTemplate: '/v1/dispatches',
+  path: '/v1/dispatches',
+  headers: { 'idempotency-key': randomUUID() },
+  body: { chatIds: [chatId] },
+  expectStatus: 200,
+});
+
+/** Step 3: report one incoming message, with the connector's credential. */
+const submitInboundEvent = (options: ExampleOptions, chatId: string): Call => ({
+  ...connectorOf(options),
+  name: 'submit_inbound_event',
+  method: 'POST',
+  pathTemplate: '/v1/chats/{chatId}/events',
+  path: `/v1/chats/${chatId}/events`,
+  body: {
+    type: 'message.recorded',
+    sourceEventId: 'host-event-1',
+    sourceMessageId: 'host-message-1',
+    direction: 'incoming',
+    text: 'Hello, is this the right number for my order?',
+  },
+  expectStatus: 201,
+});
+
+/** Step 4: read the timeline; its chat revision is what step 5 expects. */
+const fetchTimeline = (options: ExampleOptions, chatId: string): Call => ({
+  ...officerOf(options),
+  name: 'fetch_timeline',
+  method: 'GET',
+  pathTemplate: '/v1/chats/{chatId}/timeline',
+  path: `/v1/chats/${chatId}/timeline`,
+  expectStatus: 200,
+});
+
+/** Step 5: take over at the revision the timeline reported. */
+const takeOver = (options: ExampleOptions, chatId: string, expectedRevision: number): Call => ({
+  ...officerOf(options),
+  name: 'take_over',
+  method: 'POST',
+  pathTemplate: '/v1/chats/{chatId}/control',
+  path: `/v1/chats/${chatId}/control`,
+  body: { action: 'take_over', expectedRevision },
+  expectStatus: 200,
+});
+
 export async function runExample(options: ExampleOptions): Promise<ExampleTrace> {
-  const officer = { token: options.officerToken, tokenLabel: OFFICER_TOKEN_LABEL };
-  const connector = { token: options.connectorToken, tokenLabel: CONNECTOR_TOKEN_LABEL };
   const exchanges: Exchange[] = [];
   const run = async (call: Call): Promise<Exchange> => {
     const done = await exchange(options, call);
     exchanges.push(done);
     return done;
   };
-
-  const registered = await run({
-    ...officer,
-    name: 'register_chat',
-    method: 'POST',
-    pathTemplate: '/v1/chats',
-    path: '/v1/chats',
-    body: {
-      source: 'telegram',
-      externalAccountId: options.externalAccountId ?? DEMO_OFFICER_ACCOUNT,
-      externalChatId: options.externalChatId ?? DEFAULT_EXTERNAL_CHAT_ID,
-      displayLabel: 'Test Contact',
-    },
-    expectStatus: 201,
-  });
+  const registered = await run(registerChat(options));
   const chatId = text('register_chat', registered.response.body, 'chat', 'id');
-
-  await run({
-    ...officer,
-    name: 'dispatch',
-    method: 'POST',
-    pathTemplate: '/v1/dispatches',
-    path: '/v1/dispatches',
-    headers: { 'idempotency-key': randomUUID() },
-    body: { chatIds: [chatId] },
-    expectStatus: 200,
-  });
-
-  await run({
-    ...connector,
-    name: 'submit_inbound_event',
-    method: 'POST',
-    pathTemplate: '/v1/chats/{chatId}/events',
-    path: `/v1/chats/${chatId}/events`,
-    body: {
-      type: 'message.recorded',
-      sourceEventId: 'host-event-1',
-      sourceMessageId: 'host-message-1',
-      direction: 'incoming',
-      text: 'Hello, is this the right number for my order?',
-    },
-    expectStatus: 201,
-  });
-
-  const timeline = await run({
-    ...officer,
-    name: 'fetch_timeline',
-    method: 'GET',
-    pathTemplate: '/v1/chats/{chatId}/timeline',
-    path: `/v1/chats/${chatId}/timeline`,
-    expectStatus: 200,
-  });
-  const expectedRevision = count('fetch_timeline', timeline.response.body, 'chat', 'revision');
-
-  await run({
-    ...officer,
-    name: 'take_over',
-    method: 'POST',
-    pathTemplate: '/v1/chats/{chatId}/control',
-    path: `/v1/chats/${chatId}/control`,
-    body: { action: 'take_over', expectedRevision },
-    expectStatus: 200,
-  });
+  await run(dispatch(options, chatId));
+  await run(submitInboundEvent(options, chatId));
+  const timeline = await run(fetchTimeline(options, chatId));
+  await run(takeOver(options, chatId, count('fetch_timeline', timeline.response.body, 'chat', 'revision')));
   return { exchanges };
 }
 
