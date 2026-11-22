@@ -26,6 +26,11 @@ describe('normalizePhone', () => {
     expect(normalizePhone('001 202 555 0199').e164).toBe('+12025550199');
   });
 
+  it('reads a number whose international prefix is bracketed, as in (+44) 7700 900123, as international', () => {
+    expect(normalizePhone('(+44) 7700 900123')).toEqual({ e164: '+447700900123', digits: '447700900123' });
+    expect(normalizePhone('(0044) 7700 900123')).toEqual({ e164: '+447700900123', digits: '00447700900123' });
+  });
+
   it('parses a national number only with a country hint and never assumes a default country', () => {
     expect(normalizePhone('07700 900123')).toEqual({ e164: null, digits: '07700900123' });
     expect(normalizePhone('07700 900123', { country: 'GB' }).e164).toBe('+447700900123');

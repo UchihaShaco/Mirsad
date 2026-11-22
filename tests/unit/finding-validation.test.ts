@@ -117,6 +117,15 @@ describe('validateItem: phone numbers', () => {
     expect(phone('Call 07700 900123 07700 900456 now', '07700-900456', 'GB')).toEqual({ ok: true, normalizedValue: '+447700900456', writtenValue: '07700 900456' });
   });
 
+  it('keeps the opening bracket written just before a number whose closing bracket it holds, such as a bracketed country code', () => {
+    const phone = (text: string, extractedValue: string, countryHint: string | null) =>
+      validateItem(item({ kind: 'phone_number', quote: text, extractedValue, concern: 'payment_request', countryHint }), record(text));
+    // The (+971) 50 123 4567 form of UAE signatures, written with a reserved number.
+    expect(phone('For payment call (+44) 7700 900123', '+44 7700 900123', null)).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '(+44) 7700 900123' });
+    // A bracketed second number in the same phone-like span.
+    expect(phone('Call 07700 900123 (07700) 900456 now', '07700 900456', 'GB')).toEqual({ ok: true, normalizedValue: '+447700900456', writtenValue: '(07700) 900456' });
+  });
+
   it('rejects a phone whose digits are neither a whole phone-like span of the quote nor one of several complete numbers it divides into', () => {
     const text = 'Call +44 7700 900123 now';
     // 7700 900123 is whole digit groups of the span, but the 44 left over is no number of its own.

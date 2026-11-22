@@ -113,16 +113,20 @@ function numberInSpan(groups: readonly string[], digits: string): GroupRange | n
   return null;
 }
 
+/** Opening brackets minus closing brackets in a text. */
+const bracketBalance = (text: string): number => text.split('(').length - text.split(')').length;
+
 /**
  * The number as the quote writes it: from its first to its last digit, with the span's leading + or opening bracket when
- * the number starts the span, and the closing bracket that follows when an opening one would otherwise stay unclosed.
+ * the number starts the span. A closing bracket it holds keeps the opening bracket written just before it, as in
+ * (+44) 7700 900123, and an opening bracket it holds keeps the closing bracket that follows it.
  */
 function writtenNumber(quote: string, span: PhoneSpan, range: GroupRange): string {
-  const start = range.first === 0 ? span.start : (span.groupRanges[range.first]?.start ?? span.start);
+  const first = range.first === 0 ? span.start : (span.groupRanges[range.first]?.start ?? span.start);
   const end = span.groupRanges[range.last]?.end ?? span.end;
+  const start = bracketBalance(quote.slice(first, end)) < 0 && quote[first - 1] === '(' ? first - 1 : first;
   const written = quote.slice(start, end);
-  const unclosed = written.split('(').length > written.split(')').length;
-  return unclosed && quote[end] === ')' ? `${written})` : written;
+  return bracketBalance(written) > 0 && quote[end] === ')' ? `${written})` : written;
 }
 
 /**

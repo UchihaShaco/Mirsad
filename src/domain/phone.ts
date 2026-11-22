@@ -17,6 +17,8 @@ const DIRECTION_MARKS = /[؜‎‏⁦-⁩]/g;
 /** Every Unicode space separator, such as the no-break, thin and narrow no-break spaces: read as a plain space. */
 const SPACE_SEPARATOR = /\p{Zs}/gu;
 const INTERNATIONAL_PREFIX = '00';
+/** An opening bracket before an international prefix, as in (+44) 7700 900123: it does not make the number national. */
+const BRACKET_BEFORE_PREFIX = /^\((?=\+|00)/;
 /**
  * Ofcom's drama range +44 7700 900000-900999. The phone metadata rejects it because it is fictional, yet it is the only
  * UK range synthetic data may use, so it is accepted as a complete number. No real subscriber can hold one.
@@ -114,7 +116,8 @@ function parseableText(raw: string): string {
 export function normalizePhone(raw: string, hint: PhoneHint = {}): NormalizedPhone {
   const ascii = parseableText(raw);
   const digits = ascii.replace(NON_DIGIT, '');
-  const written = ascii.startsWith(INTERNATIONAL_PREFIX) ? `+${ascii.slice(INTERNATIONAL_PREFIX.length)}` : ascii;
+  const unbracketed = ascii.replace(BRACKET_BEFORE_PREFIX, '');
+  const written = unbracketed.startsWith(INTERNATIONAL_PREFIX) ? `+${unbracketed.slice(INTERNATIONAL_PREFIX.length)}` : unbracketed;
   if (written.startsWith('+')) return { e164: completeNumber(written), digits };
   if (hint.internationalFormat) return { e164: completeNumber(`+${digits}`), digits };
   if (hint.country !== undefined && isSupportedCountry(hint.country)) return { e164: completeNumber(written, hint.country), digits };
