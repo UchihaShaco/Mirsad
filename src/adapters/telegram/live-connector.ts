@@ -76,7 +76,7 @@ type DropReason = 'otherConnection' | 'otherChat' | 'other';
 export interface LiveConnectorStats {
   running: boolean;
   stoppedReason: LiveStopReason | null;
-  /** The next update_id to ask for; null before the first update. */
+  /** The next update_id to ask for; null before the first update and after a stale offset was dropped. */
   offset: number | null;
   /** Intake events newly recorded. */
   stored: number;
