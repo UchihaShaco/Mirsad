@@ -11,6 +11,7 @@ import {
   updateComposer,
 } from '../../src/dashboard/js/state/composer.js';
 import { groupInbox } from '../../src/dashboard/js/state/inbox.js';
+import { chatHref, parseRoute, tokenFromFragment } from '../../src/dashboard/js/state/route.js';
 import { latestIncomingMessageId, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
 
 const AT = '2026-11-21T08:00:00.000Z';
@@ -240,5 +241,39 @@ describe('timeline merge', () => {
     const timeline = { messages: [message('msg_1', 10), message('msg_2', 20), composerReply, message('msg_0', 5, 'outgoing')] };
     expect(latestIncomingMessageId(timeline)).toBe('msg_2');
     expect(latestIncomingMessageId({ messages: [composerReply] })).toBeNull();
+  });
+});
+
+describe('URL fragment', () => {
+  it('a #token= fragment yields its decoded, trimmed token; anything else yields none', () => {
+    expect(tokenFromFragment('#token=abc123')).toBe('abc123');
+    expect(tokenFromFragment('#token=%20abc%2B123%20')).toBe('abc+123');
+    expect(tokenFromFragment('#token=')).toBeNull();
+    expect(tokenFromFragment('#token=%20%20')).toBeNull();
+    expect(tokenFromFragment('#token=%E0%A4%A')).toBeNull();
+    expect(tokenFromFragment('#/chats/chat_1')).toBeNull();
+    expect(tokenFromFragment('#/token=abc')).toBeNull();
+    expect(tokenFromFragment('')).toBeNull();
+  });
+
+  it('routes parse to the inbox, a chat, a message in a chat or the watchlist, and a token fragment is never a route', () => {
+    const inbox = { view: 'inbox', chatId: null, messageId: null };
+    expect(parseRoute('')).toEqual(inbox);
+    expect(parseRoute('#/')).toEqual(inbox);
+    expect(parseRoute('#/unknown/place')).toEqual(inbox);
+    expect(parseRoute('#/chats')).toEqual(inbox);
+    expect(parseRoute('#/watchlist')).toEqual({ view: 'watchlist', chatId: null, messageId: null });
+    expect(parseRoute('#/chats/chat_1')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: null });
+    expect(parseRoute('#/chats/chat_1/messages/msg_1')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: 'msg_1' });
+    expect(parseRoute('#chats/chat_1/')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: null });
+    // A malformed escape anywhere sends the officer to the inbox rather than to a guessed chat.
+    expect(parseRoute('#/chats/%E0%A4%A')).toEqual(inbox);
+    expect(parseRoute('#token=abc123')).toEqual(inbox);
+  });
+
+  it('chat links round-trip through the route parser, with IDs escaped', () => {
+    expect(chatHref('chat_1')).toBe('#/chats/chat_1');
+    expect(chatHref('chat/1', 'msg 1')).toBe('#/chats/chat%2F1/messages/msg%201');
+    expect(parseRoute(chatHref('chat/1', 'msg 1'))).toEqual({ view: 'inbox', chatId: 'chat/1', messageId: 'msg 1' });
   });
 });

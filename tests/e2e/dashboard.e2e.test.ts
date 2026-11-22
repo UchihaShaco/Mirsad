@@ -109,6 +109,13 @@ async function openChat(page: Page, label: string): Promise<void> {
   await page.locator('#chat-header').getByRole('heading', { name: label, exact: true }).waitFor();
 }
 
+/** What pasting a sign-in link into the address bar of an open tab does: only the fragment changes. */
+async function pasteTokenLink(page: Page, token: string): Promise<void> {
+  await page.evaluate((fragment) => {
+    window.location.hash = fragment;
+  }, `#token=${encodeURIComponent(token)}`);
+}
+
 const replyBox = (page: Page): Locator => page.getByRole('textbox', { name: 'Reply', exact: true });
 const button = (page: Page, name: string): Locator => page.getByRole('button', { name, exact: true });
 const outgoingEntries = (page: Page): Locator => page.locator('#timeline article[data-direction="outgoing"]');
@@ -261,5 +268,24 @@ describe('reference dashboard', () => {
     expect(stored.caseActions.filter((a) => a.type === 'capture_retry_requested')).toHaveLength(1);
     // The browser reports the refused request itself as a failed resource load; nothing else may appear.
     expect(problems.filter((text) => !text.includes('status of 429'))).toEqual([]);
+  });
+
+  it('a #token= link pasted into an open tab signs in with that token and leaves the address bar, signed in or not', async () => {
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    const officerName = page.locator('#officer-name');
+    await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer A');
+
+    await pasteTokenLink(page, h.tokens.officerB);
+    await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer B');
+    expect(page.url()).toBe(`${h.baseUrl}/`);
+    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+
+    await button(page, 'Sign out').click();
+    await page.getByRole('heading', { name: 'Sign in', exact: true }).waitFor();
+    await pasteTokenLink(page, h.tokens.officerA);
+    await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer A');
+    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+    expect(page.url()).toBe(`${h.baseUrl}/`);
+    expect(problems).toEqual([]);
   });
 });

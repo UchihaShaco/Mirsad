@@ -86,6 +86,19 @@ refs.signinForm.addEventListener('submit', (event) => {
 });
 refs.signOut.addEventListener('click', () => showSignIn('You are signed out.', false));
 
+/**
+ * A #token= link pasted into this open tab: the token leaves the address bar and history at once, and the tab signs in
+ * with it in place of the current session. Registered before any dashboard starts, so it runs before the dashboard's
+ * own route listener, which stopping the dashboard removes.
+ */
+window.addEventListener('hashchange', () => {
+  const token = takeTokenFromFragment();
+  if (token === null) return;
+  if (dashboard !== null) dashboard.stop();
+  dashboard = null;
+  void signIn(token);
+});
+
 const initialToken = takeTokenFromFragment() ?? readStoredToken();
 if (initialToken === null) showSignIn('', false);
 else void signIn(initialToken);
