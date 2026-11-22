@@ -5,7 +5,7 @@
  */
 import type { CaptureMethod, Concern } from '../contract/enums.ts';
 import { LABELS, type FindingLabel } from '../contract/labels.ts';
-import type { CaseReference, Finding, Message, MessageEvent, Timeline } from '../contract/schemas.ts';
+import type { Finding, Message, MessageEvent, Timeline } from '../contract/schemas.ts';
 import type { Principal } from '../ports/identity.ts';
 import type { Tx } from '../storage/db.ts';
 import { listCaseActionsForChat } from '../storage/repos/case-actions.ts';
@@ -15,7 +15,16 @@ import { listReviewsForChat } from '../storage/repos/reviews.ts';
 import type { CaseReferenceRow, ChatRow, FindingRow, MessageEventRow, MessageRow, ReviewRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
 import { currentCursor, summaryOf } from './chats.ts';
-import { principalLookup, toCapture, toCaseAction, toMessage, toReview, type MessageEvidence, type PrincipalLookup } from './mappers.ts';
+import {
+  principalLookup,
+  toCapture,
+  toCaseAction,
+  toCaseReference,
+  toMessage,
+  toReview,
+  type MessageEvidence,
+  type PrincipalLookup,
+} from './mappers.ts';
 
 interface EventIndex {
   recordedByMessage: Map<string, MessageEventRow>;
@@ -76,19 +85,6 @@ function toFinding(row: FindingRow): Finding {
     note: row.note,
     createdAt: row.created_at,
     position: row.position,
-  };
-}
-
-function toCaseReference(row: CaseReferenceRow, lookup: PrincipalLookup): CaseReference {
-  const recordedBy = lookup(row.recorded_by) ?? { id: row.recorded_by, displayName: '' };
-  return {
-    id: row.id,
-    chatId: row.chat_id,
-    kind: row.kind,
-    paymentHosts: JSON.parse(row.payment_hosts) as string[],
-    sourceNote: row.source_note,
-    recordedBy,
-    recordedAt: row.recorded_at,
   };
 }
 

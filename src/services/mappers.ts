@@ -1,13 +1,15 @@
 /**
- * The one mapping from stored message and case-action rows to their API shapes (design section 6). The timeline and
- * the officer actions both use it, so a composer or decision response is exactly the entry the timeline shows.
+ * The one mapping from stored message, case-action and case-reference rows to their API shapes (design section 6). The
+ * timeline and the officer actions both use it, so a composer, decision or case-reference response is exactly the entry
+ * the timeline shows.
  */
 import type { CaptureMethod, CaseActionType, Source } from '../contract/enums.ts';
 import { LABELS } from '../contract/labels.ts';
-import type { Capture, CaseAction, Message, PrincipalRef, ReviewState } from '../contract/schemas.ts';
+import type { Capture, CaseAction, CaseReference, Message, PrincipalRef, ReviewState } from '../contract/schemas.ts';
 import type { Tx } from '../storage/db.ts';
 import type { CaptureWithArtifact } from '../storage/repos/captures.ts';
-import type { CaseActionRow, MessageEventRow, MessageRow, ReviewRow } from '../storage/rows.ts';
+import { paymentHostsOf } from '../storage/repos/case-references.ts';
+import type { CaseActionRow, CaseReferenceRow, MessageEventRow, MessageRow, ReviewRow } from '../storage/rows.ts';
 
 export type PrincipalLookup = (id: string | null) => PrincipalRef | null;
 
@@ -80,6 +82,21 @@ export function toMessage(row: MessageRow, channel: Source, evidence: MessageEvi
     editedAtSource: row.edited_at_source === 1,
     deletedAtSource: row.deleted_at_source === 1,
     position: row.position,
+  };
+}
+
+/** The officer who recorded it always exists (a foreign key), so a missing one is a broken store, not a blank name. */
+export function toCaseReference(row: CaseReferenceRow, lookup: PrincipalLookup): CaseReference {
+  const recordedBy = lookup(row.recorded_by);
+  if (!recordedBy) throw new Error('case_reference_officer_missing');
+  return {
+    id: row.id,
+    chatId: row.chat_id,
+    kind: row.kind,
+    paymentHosts: paymentHostsOf(row),
+    sourceNote: row.source_note,
+    recordedBy,
+    recordedAt: row.recorded_at,
   };
 }
 

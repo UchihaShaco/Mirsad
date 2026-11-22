@@ -19,8 +19,9 @@ import { recordCaseDetail } from '../storage/repos/case-details.ts';
 import { insertCaseReference, listCaseReferences, paymentHostsOf } from '../storage/repos/case-references.ts';
 import { findCitedEvidence, insertFinding, listFindingsOfKind } from '../storage/repos/findings.ts';
 import { listIncomingTextEvents } from '../storage/repos/messages.ts';
-import type { CaseReferenceRow, ChatRow, FindingRow } from '../storage/rows.ts';
+import type { ChatRow, FindingRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
+import { principalLookup, toCaseReference } from './mappers.ts';
 import * as watchlist from './watchlist.ts';
 
 export interface RecordCaseReferenceResult {
@@ -155,18 +156,6 @@ function notifyWatchlist(tx: Tx, chat: ChatRow, flagged: readonly FindingRow[]):
   }
 }
 
-function toCaseReference(row: CaseReferenceRow, officer: Principal): CaseReference {
-  return {
-    id: row.id,
-    chatId: row.chat_id,
-    kind: row.kind,
-    paymentHosts: paymentHostsOf(row),
-    sourceNote: row.source_note,
-    recordedBy: { id: officer.id, displayName: officer.displayName },
-    recordedAt: row.recorded_at,
-  };
-}
-
 export function recordCaseReference(tx: Tx, officer: Principal, chatId: string, input: CaseReferenceRequest): RecordCaseReferenceResult {
   const chat = requireChat(tx, officer, chatId);
   const paymentHosts = normalizePaymentHosts(input.paymentHosts);
@@ -188,5 +177,5 @@ export function recordCaseReference(tx: Tx, officer: Principal, chatId: string, 
   // Stored findings first, so the text check skips an event whose host they have just flagged.
   const flagged = [...flagStoredLinkFindings(tx, check), ...flagLinksInStoredText(tx, check)];
   notifyWatchlist(tx, chat, flagged);
-  return { caseReference: toCaseReference(reference, officer), findingsCreated: flagged.length };
+  return { caseReference: toCaseReference(reference, principalLookup(tx)), findingsCreated: flagged.length };
 }
