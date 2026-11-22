@@ -79,12 +79,17 @@ export function describeCaseReference(findingsCreated) {
   return `Merchant confirmation recorded. ${plural(findingsCreated, 'payment link', 'payment links')} marked Suspected fraud.`;
 }
 
-/** One sentence for a dispatch answer: how many chats started, were already active, or need Resume AI. */
+/**
+ * One sentence for a dispatch answer: how many chats started, were already active (Dispatch then queues their
+ * unavailable reviews again), or need Resume AI.
+ */
 export function describeDispatch(results) {
   const count = (status) => results.filter((result) => result.status === status).length;
   const parts = [];
   if (count('started') > 0) parts.push(`AI review started for ${plural(count('started'), 'chat', 'chats')}`);
-  if (count('already_active') > 0) parts.push(`${plural(count('already_active'), 'chat was', 'chats were')} already active`);
+  if (count('already_active') > 0) {
+    parts.push(`${plural(count('already_active'), 'chat was', 'chats were')} already active and any unavailable reviews were queued again`);
+  }
   if (count('requires_resume') > 0) parts.push(`${plural(count('requires_resume'), 'chat needs', 'chats need')} Resume AI first`);
   return `Dispatch: ${parts.join('; ')}.`;
 }
