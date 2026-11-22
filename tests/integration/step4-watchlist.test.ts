@@ -619,17 +619,26 @@ describe('step 4: Suspected fraud', () => {
 
   it('a Suspected fraud finding on the message that first supplied the sender\'s number is recorded, flags a decided entry and lets an officer who can open that chat review', async () => {
     // The message gets its finding either way: the confirmation is recorded after the link was found, or it is already on
-    // file when the review publishes.
+    // file when the message arrives (the host registered the chat first) and its review publishes.
     const cases = [
       { e164: '+447700900458', spaced: '+44 7700 900458', confirmationFirst: false },
       { e164: '+447700900459', spaced: '+44 7700 900459', confirmationFirst: true },
     ];
+    const recordConfirmation = (chatId: string): Promise<ApiResponse> => h.http(h.tokens.officerA).post(`/v1/chats/${chatId}/case-references`, {
+      kind: 'merchant_payment_confirmation', paymentHosts: ['pay.merchant.example'], sourceNote: 'The merchant confirmed its payment host by phone.',
+    });
     for (const { e164, spaced, confirmationFirst } of cases) {
       const label = confirmationFirst ? 'confirmation on file when the review publishes' : 'confirmation recorded after the link';
       // The entry is supported by a chat on the officer account, which officer C has no grant on.
       const { entry } = await approvedEntryFor(e164, spaced, h.accounts.officer);
+      const externalChatId = uniqueId('wl-fraud-sender-');
+      if (confirmationFirst) {
+        const registered = await h.http(h.tokens.officerA).post('/v1/chats', { ...h.accounts.intake, externalChatId, displayLabel: 'Test Contact' });
+        expect(registered.status, registered.text).toBe(201);
+        expect((await recordConfirmation(registered.body.data.chat.id)).body.data.findingsCreated, label).toBe(0);
+      }
       // A host connector supplies the sender's number on a first message that carries an unconfirmed payment link.
-      const first = await ingest(h.accounts.intake, uniqueId('wl-fraud-sender-'), recorded({
+      const first = await ingest(h.accounts.intake, externalChatId, recorded({
         messageId: 1, text: 'Please settle the invoice here: https://pay.other-host.test/invoice/12',
         sender: { externalId: uniqueId('u'), displayName: 'Test Contact', phone: { raw: e164, internationalFormat: true } },
       }));
@@ -649,13 +658,11 @@ describe('step 4: Suspected fraud', () => {
 
       const stream = await openStream(h.baseUrl, h.tokens.officerC, { cursor: before.cursor });
       try {
-        const confirmation = await h.http(h.tokens.officerA).post(`/v1/chats/${first.chatId}/case-references`, {
-          kind: 'merchant_payment_confirmation', paymentHosts: ['pay.merchant.example'], sourceNote: 'The merchant confirmed its payment host by phone.',
-        });
-        expect(confirmation.body.data.findingsCreated, label).toBe(confirmationFirst ? 0 : 1);
         if (confirmationFirst) {
           await dispatch(h, [first.chatId]);
           await h.drain();
+        } else {
+          expect((await recordConfirmation(first.chatId)).body.data.findingsCreated, label).toBe(1);
         }
         const fraud = (await timelineOf(h, first.chatId)).findings.find((f) => f.kind === 'suspected_fraud');
         expect(fraud?.messageEventId, label).toBe(first.messageEventId);

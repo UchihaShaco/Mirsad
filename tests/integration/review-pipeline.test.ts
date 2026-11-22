@@ -412,6 +412,74 @@ describe('review pipeline: Suspected fraud and case references', () => {
     expect((await timeline(chat.chatId)).findings).toHaveLength(2);
   });
 
+  it('a payment link the reviewer missed or misreported is flagged when the merchant confirmation is recorded after its review', async () => {
+    const text = 'Please pay the deposit here: https://pay.other-shop.test/inv/77';
+    const answers: Array<[string, (request: ReviewRequest) => { items: ExtractedItem[] }]> = [
+      ['no items', () => ({ items: [] })],
+      ['the link without its scheme', (request) => ({ items: [extracted(request, { quote: request.text, extractedValue: 'pay.other-shop.test/inv/77' })] })],
+    ];
+    for (const [answer, respond] of answers) {
+      h.reviewer.respond(respond);
+      const chat = await reviewedChat(text);
+      expect((await timeline(chat.chatId)).findings, answer).toEqual([]);
+      const res = await recordConfirmation(chat.chatId, ['good-shop.test']);
+      expect(res.body.data.findingsCreated, answer).toBe(1);
+      const tl = await timeline(chat.chatId);
+      expect(tl.findings, answer).toEqual([expect.objectContaining({
+        messageId: chat.messageId, messageEventId: chat.messageEventId, kind: 'suspected_fraud', label: 'Suspected fraud', quote: text,
+        extractedValue: 'https://pay.other-shop.test/inv/77', concern: null, caseReferenceId: res.body.data.caseReference.id,
+      })]);
+      expect(evidenceFor(chat.messageEventId).filter((e) => e.suspectedFraudFindingIds.length > 0), answer).toEqual([
+        { phoneMentions: [], suspectedFraudFindingIds: [tl.findings[0]?.id] },
+      ]);
+    }
+  });
+
+  it('a later repeat of a link flagged when the confirmation was recorded is suppressed, as if the reviewer had reported it', async () => {
+    h.reviewer.respond(() => ({ items: [] }));
+    const chat = await reviewedChat('Please pay the deposit here: https://pay.other-shop.test/inv/78');
+    expect((await recordConfirmation(chat.chatId, ['good-shop.test'])).body.data.findingsCreated).toBe(1);
+    const repeat = await addMessage(chat.chatId, 2, 'Reminder: pay at https://pay.other-shop.test/inv/78 today.');
+    await h.drain();
+    expect((await timeline(chat.chatId)).findings.map((f) => [f.messageEventId, f.kind])).toEqual([[chat.messageEventId, 'suspected_fraud']]);
+    expect(reviewRows(chat.chatId).find((r) => r.message_event_id === repeat.messageEventId)).toMatchObject({
+      status: 'completed', outcome: 'no_new_finding', suppressed_count: 1,
+    });
+  });
+
+  it('recording a confirmation checks the stored text of every incoming message event, in any mode and for any capture method, once per conflicting host', async () => {
+    // Never dispatched: nothing in this chat has been reviewed.
+    const chat = await newChat('Please pay at https://pay.other-shop.test/a or https://pay.other-shop.test/b, not https://pay.good-shop.test/c');
+    const first = await recordConfirmation(chat.chatId, ['pay.good-shop.test']);
+    expect(first.body.data.findingsCreated).toBe(1);
+    expect((await timeline(chat.chatId)).findings.map((f) => [f.messageEventId, f.kind, f.extractedValue])).toEqual([
+      [chat.messageEventId, 'suspected_fraud', 'https://pay.other-shop.test/a'],
+    ]);
+
+    // An edit and a conflicting copy are checked as well, an outgoing message is not, and an event is flagged once per host.
+    const events = h.http(h.tokens.connector);
+    const edit = await events.post(`/v1/chats/${chat.chatId}/events`, edited({ messageId: 1, updateId: 7001, text: 'Sorry, pay at https://pay.third-shop.test/d' }));
+    const copy = await events.post(`/v1/chats/${chat.chatId}/events`, recorded({ messageId: 1, updateId: 7002, text: 'Pay at https://pay.other-shop.test/a now' }));
+    expect(copy.body.data.result).toBe('conflicting_copy');
+    await events.post(`/v1/chats/${chat.chatId}/events`, recorded({ messageId: 2, direction: 'outgoing', text: 'Pay at https://pay.fourth-shop.test/e' }));
+    const second = await recordConfirmation(chat.chatId, ['pay.good-shop.test']);
+    expect(second.body.data.findingsCreated).toBe(2);
+    const tl = await timeline(chat.chatId);
+    expect(tl.findings.map((f) => [f.messageEventId, f.extractedValue, f.caseReferenceId])).toEqual([
+      [chat.messageEventId, 'https://pay.other-shop.test/a', first.body.data.caseReference.id],
+      [edit.body.data.messageEventId, 'https://pay.third-shop.test/d', second.body.data.caseReference.id],
+      [copy.body.data.messageEventId, 'https://pay.other-shop.test/a', second.body.data.caseReference.id],
+    ]);
+
+    // Content captured live from Telegram is never reviewed, but its stored text is checked by code all the same.
+    const live = await h.http(h.tokens.liveConnector).post('/v1/ingest', envelope(h.accounts.live, uniqueId('live-fraud-'), recorded({
+      messageId: 1, text: 'Please pay the fee at https://pay.other-shop.test/live',
+    })));
+    const liveChat: string = live.body.data.chatId;
+    expect((await recordConfirmation(liveChat, ['pay.good-shop.test'])).body.data.findingsCreated).toBe(1);
+    expect(reviewRows(liveChat).map((r) => r.status)).toEqual(['not_permitted']);
+  });
+
   it('case reference hosts given as a URL, with a port, with www. or in upper case are normalized before comparison', async () => {
     const chat = await reviewedChat('Hello, I want to book a table.');
     const res = await recordConfirmation(chat.chatId, ['https://Pay.Merchant.test/checkout?x=1', 'pay.merchant.test:8443', 'WWW.SHOP.MERCHANT.TEST', 'www.pay.merchant.test.']);

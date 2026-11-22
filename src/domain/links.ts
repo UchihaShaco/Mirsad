@@ -123,3 +123,23 @@ export function detectPaymentLinks(text: string): string[] {
   const cue = hasPaymentCue(maskUrls(text));
   return extractUrlTokens(text).filter((url) => cue || namesPayment(url));
 }
+
+/** A payment link the code-side check found in a text. */
+export interface FoundPaymentLink {
+  /** The URL token as written, without edge punctuation. */
+  url: string;
+  normalizedValue: string;
+  /** The trimmed line the URL is on: an exact substring of the text. */
+  quote: string;
+}
+
+/** The payment links of a text (detectPaymentLinks), each once by normalized value, in the order they appear. */
+export function findPaymentLinks(text: string): FoundPaymentLink[] {
+  const seen = new Set<string>();
+  return detectPaymentLinks(text).flatMap((url) => {
+    const normalizedValue = normalizeLink(url);
+    if (normalizedValue === null || seen.has(normalizedValue)) return [];
+    seen.add(normalizedValue);
+    return [{ url, normalizedValue, quote: lineAt(text, urlTokenOffset(text, url)) }];
+  });
+}

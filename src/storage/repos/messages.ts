@@ -209,6 +209,20 @@ export function listMessages(tx: Tx, chatId: string): MessageRow[] {
   return tx.all<MessageRow>('SELECT * FROM messages WHERE chat_id = :chatId ORDER BY position, id', { chatId });
 }
 
+/** A message event that carries text. */
+export type TextEventRow = MessageEventRow & { text: string };
+
+/** The chat's incoming source message events that carry text (recorded, edited, conflicting copy), in position order. */
+export function listIncomingTextEvents(tx: Tx, chatId: string): TextEventRow[] {
+  return tx.all<TextEventRow>(
+    `SELECT e.* FROM message_events e JOIN messages m ON m.id = e.message_id
+     WHERE e.chat_id = :chatId AND m.origin = 'source' AND m.direction = 'incoming'
+       AND e.type IN ('recorded', 'edited', 'conflicting_copy') AND e.text IS NOT NULL AND e.text <> ''
+     ORDER BY e.position, e.id`,
+    { chatId },
+  );
+}
+
 export function listMessageEvents(tx: Tx, chatId: string): MessageEventRow[] {
   return tx.all<MessageEventRow>('SELECT * FROM message_events WHERE chat_id = :chatId ORDER BY position, id', { chatId });
 }

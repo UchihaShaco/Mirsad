@@ -6,7 +6,7 @@
 import type { Concern, ExtractedKind, ReviewOutcome } from '../contract/enums.ts';
 import { decideDetail, type DetailDecision, type KnownDetail } from '../domain/case-details.ts';
 import { acceptValidatedItems, type AcceptedItem } from '../domain/finding-validation.ts';
-import { detectPaymentLinks, hostOfNormalizedLink, lineAt, normalizeLink, urlTokenOffset } from '../domain/links.ts';
+import { findPaymentLinks, hostOfNormalizedLink } from '../domain/links.ts';
 import { normalizePhone, phoneHintFor } from '../domain/phone.ts';
 import type { ExtractedItem, PhoneMention } from '../ports/reviewer.ts';
 import { findingLabel } from '../services/timeline.ts';
@@ -93,13 +93,17 @@ function toCandidate({ item, normalizedValue }: AcceptedItem): Candidate {
  */
 function withCodeFoundLinks(candidates: readonly Candidate[], text: string): Candidate[] {
   const known = new Set(candidates.filter((c) => c.category === 'payment_link').map((c) => c.normalizedValue));
-  const found = detectPaymentLinks(text).flatMap((url): Candidate[] => {
-    const normalizedValue = normalizeLink(url);
-    if (normalizedValue === null || known.has(normalizedValue)) return [];
-    known.add(normalizedValue);
-    const quote = lineAt(text, urlTokenOffset(text, url));
-    return [{ category: 'payment_link', quote, extractedValue: url, normalizedValue, concern: null, countryHint: null, reported: false }];
-  });
+  const found = findPaymentLinks(text)
+    .filter((link) => !known.has(link.normalizedValue))
+    .map((link): Candidate => ({
+      category: 'payment_link',
+      quote: link.quote,
+      extractedValue: link.url,
+      normalizedValue: link.normalizedValue,
+      concern: null,
+      countryHint: null,
+      reported: false,
+    }));
   return [...candidates, ...found];
 }
 
