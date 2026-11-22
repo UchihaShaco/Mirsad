@@ -323,8 +323,8 @@ describe('review pipeline: findings', () => {
   });
 
   it('a number written with a direction mark or a thin space between its groups becomes an exact-match watchlist entry', async () => {
-    const markedLine = 'حول العربون إلى ٠٧٧٠٠‏ ٩٠٠١٤٣ اليوم';
-    const thinLine = 'Or transfer it to 07700 900144.';
+    const markedLine = 'حول العربون إلى ٠٧٧٠٠\u200f ٩٠٠١٤٣ اليوم';
+    const thinLine = 'Or transfer it to 07700\u2009900144.';
     h.reviewer.respond((request) => ({
       items: [
         extracted(request, { kind: 'phone_number', quote: markedLine, extractedValue: '07700 900143', concern: 'payment_request', countryHint: 'GB' }),
@@ -333,7 +333,7 @@ describe('review pipeline: findings', () => {
     }));
     await reviewedChat(`${markedLine}\n${thinLine}`);
     const entries: WatchlistEntry[] = (await h.http(h.tokens.officerA).get('/v1/watchlist')).body.data.entries;
-    for (const [e164, display] of [['+447700900143', '٠٧٧٠٠‏ ٩٠٠١٤٣'], ['+447700900144', '07700 900144']]) {
+    for (const [e164, display] of [['+447700900143', '٠٧٧٠٠\u200f ٩٠٠١٤٣'], ['+447700900144', '07700\u2009900144']]) {
       expect(entries.find((entry) => entry.number.e164 === e164), e164).toMatchObject({ number: { e164, display, exactMatchEligible: true } });
     }
   });

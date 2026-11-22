@@ -86,9 +86,9 @@ describe('validateItem: phone numbers', () => {
     const phone = (text: string) =>
       validateItem(item({ kind: 'phone_number', quote: text, extractedValue: '07700 900123', concern: 'payment_request', countryHint: 'GB' }), record(text));
     // A right-to-left mark after a number is common in Arabic text.
-    expect(phone('حول المبلغ إلى ٠٧٧٠٠‏ ٩٠٠١٢٣ اليوم')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '٠٧٧٠٠‏ ٩٠٠١٢٣' });
-    expect(phone('Call 07700‏ 900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700‏ 900123' });
-    expect(phone('Call 07700 900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700 900123' });
+    expect(phone('حول المبلغ إلى ٠٧٧٠٠\u200f ٩٠٠١٢٣ اليوم')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '٠٧٧٠٠\u200f ٩٠٠١٢٣' });
+    expect(phone('Call 07700\u200f 900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700\u200f 900123' });
+    expect(phone('Call 07700\u2009900123 now')).toEqual({ ok: true, normalizedValue: '+447700900123', writtenValue: '07700\u2009900123' });
   });
 
   it('keeps a number that cannot be normalized as unnormalized digits', () => {

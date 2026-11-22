@@ -13,7 +13,7 @@ const DIGIT_GROUP = /\d+/g;
  * Format characters that only set text direction (LRM, RLM, ALM and the isolates), which bidirectional text puts
  * around and inside numbers. They carry no digit, so they are deleted before a number is parsed.
  */
-const DIRECTION_MARKS = /[؜‎‏⁦-⁩]/g;
+const DIRECTION_MARKS = /[\u061c\u200e\u200f\u2066-\u2069]/g;
 /** Every Unicode space separator, such as the no-break, thin and narrow no-break spaces: read as a plain space. */
 const SPACE_SEPARATOR = /\p{Zs}/gu;
 const INTERNATIONAL_PREFIX = '00';

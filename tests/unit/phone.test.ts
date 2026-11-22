@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { findPhoneSpans, normalizePhone, toAsciiDigits, watchlistMatchKey } from '../../src/domain/phone.ts';
 
 /** Every Unicode space separator (general category Zs) other than the ASCII space. */
-const UNICODE_SPACES = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '　'];
+const UNICODE_SPACES = ['\u00a0', '\u1680', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a', '\u202f', '\u205f', '\u3000'];
 /** Format characters that only set text direction: LRM, RLM, ALM and the four isolates. */
-const DIRECTION_MARKS = ['‎', '‏', '؜', '⁦', '⁧', '⁨', '⁩'];
+const DIRECTION_MARKS = ['\u200e', '\u200f', '\u061c', '\u2066', '\u2067', '\u2068', '\u2069'];
 
 /** The text with every character outside printable ASCII shown as its code point, for test messages. */
 const visible = (text: string): string =>
@@ -53,13 +53,13 @@ describe('normalizePhone', () => {
     const written = [
       ...UNICODE_SPACES.map((space) => `07700${space}900123`),
       ...DIRECTION_MARKS.flatMap((mark) => [`07700${mark} 900123`, `07700${mark}900123`, `${mark}07700 900123${mark}`]),
-      '‏٠٧٧٠٠‏ ٩٠٠١٢٣‏',
+      '\u200f٠٧٧٠٠\u200f ٩٠٠١٢٣\u200f',
     ];
     for (const number of written) {
       expect(normalizePhone(number, { country: 'GB' }), visible(number)).toEqual({ e164: '+447700900123', digits: '07700900123' });
     }
     // A mark before the + still leaves the number in international form.
-    expect(normalizePhone('‏+44 7700 900123')).toEqual({ e164: '+447700900123', digits: '447700900123' });
+    expect(normalizePhone('\u200f+44\u202f7700\u2009900123')).toEqual({ e164: '+447700900123', digits: '447700900123' });
   });
 
   it('keeps invalid, partial or unparsable input unnormalized', () => {
