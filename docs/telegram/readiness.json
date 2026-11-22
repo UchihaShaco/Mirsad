@@ -1,0 +1,54 @@
+{
+  "state": "ready_for_controlled_test",
+  "recordedAt": "2026-11-22T01:34:09.511Z",
+  "checks": [
+    {
+      "id": "inbound_first_new_inbound",
+      "title": "An inbound-first chat is flagged New inbound",
+      "passed": true,
+      "detail": "inbox status new_inbound; origin label First observed: incoming"
+    },
+    {
+      "id": "officer_first_both_directions",
+      "title": "An officer-first chat shows both directions",
+      "passed": true,
+      "detail": "2 messages, directions outgoing, incoming; origin label First observed: outgoing"
+    },
+    {
+      "id": "capture_per_message",
+      "title": "Every received message has its own capture",
+      "passed": true,
+      "detail": "21 received messages and 1 edit in 9 chats; 22 distinct ready captures"
+    },
+    {
+      "id": "edit_delete_separate_events",
+      "title": "An edit and a deletion are separate events and the original stays",
+      "passed": true,
+      "detail": "1 message; separate events edited, deleted; original text unchanged"
+    },
+    {
+      "id": "redelivery_creates_nothing",
+      "title": "A redelivered update creates nothing new",
+      "passed": true,
+      "detail": "6 of 6 redelivered updates answered duplicate_event; 2 chats unchanged"
+    },
+    {
+      "id": "outgoing_labelled_outgoing",
+      "title": "Officer-sent fixture messages arrive and are labelled outgoing",
+      "passed": true,
+      "detail": "2 of 2 owner-sent messages arrived labelled outgoing, each with a capture; 4 incoming"
+    },
+    {
+      "id": "takeover_simulated_send",
+      "title": "A takeover followed by a composer reply is recorded as Simulated send",
+      "passed": true,
+      "detail": "AI mode officer_control; 1 composer message recorded as Simulated send; nothing delivered to Telegram"
+    },
+    {
+      "id": "live_connector_gated",
+      "title": "The live connector refuses to start without its gates",
+      "passed": true,
+      "detail": "each of 5 settings and the provisioned connector principal named when missing; 0 Bot API calls made"
+    }
+  ]
+}
