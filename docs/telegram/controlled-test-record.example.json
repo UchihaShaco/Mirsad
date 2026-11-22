@@ -1,0 +1,51 @@
+{
+  "_note": "FICTIONAL EXAMPLE. It shows the shape of the record only. Never copy it to controlled-test-record.json: write that file from the approved test itself (see docs/telegram/setup.md).",
+  "approvalReference": "EXAMPLE-ONLY-NOT-AN-APPROVAL-0000",
+  "testDate": "2026-12-01",
+  "tester": "Demo Officer 1 (fictional example)",
+  "scope": {
+    "businessConnectionId": "ExampleBizConn-0000",
+    "chatIds": ["6000000901", "6000000902"]
+  },
+  "eventCoverage": [
+    {
+      "event": "Incoming text message (business_message from the contact)",
+      "fixtureReplay": "passed",
+      "liveCapture": "passed",
+      "notes": "Fictional: both incoming messages were stored with their own Mirsad-rendered capture."
+    },
+    {
+      "event": "Message the owner typed in their own Telegram app (business_message, outgoing)",
+      "fixtureReplay": "passed",
+      "liveCapture": "not_observed",
+      "notes": "Fictional: shows how an event kind that never arrived is recorded."
+    },
+    {
+      "event": "Edited message (edited_business_message)",
+      "fixtureReplay": "passed",
+      "liveCapture": "passed",
+      "notes": "Fictional: stored as a separate edited event; the original text stayed unchanged."
+    },
+    {
+      "event": "Deleted messages (deleted_business_messages)",
+      "fixtureReplay": "passed",
+      "liveCapture": "passed",
+      "notes": "Fictional: stored as a separate deleted event; the captured message stayed available."
+    },
+    {
+      "event": "Redelivered update after a restart",
+      "fixtureReplay": "passed",
+      "liveCapture": "not_observed"
+    },
+    {
+      "event": "Connection disabled by the owner (business_connection)",
+      "fixtureReplay": "not_observed",
+      "liveCapture": "passed",
+      "notes": "Fictional: intake stopped and status showed the live connector disabled."
+    }
+  ],
+  "manualReply": {
+    "result": "passed",
+    "notes": "Fictional: during takeover the officer's reply was recorded once as Simulated send; nothing was delivered to Telegram."
+  }
+}

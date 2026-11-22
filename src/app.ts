@@ -1,6 +1,8 @@
 /** Composition root: wires storage, ports, workers and HTTP into one App. */
 import fs from 'node:fs';
 import path from 'node:path';
+import type { BotApi } from './adapters/telegram/bot-api.ts';
+import { createLiveConnector, LiveConnectorGateError, type LiveConnector } from './adapters/telegram/live-connector.ts';
 import { createDefaultRenderer } from './capture/index.ts';
 import type { Config } from './config.ts';
 import { createHttpApp, startServer, type RunningServer } from './http/server.ts';
@@ -33,11 +35,14 @@ export interface AppOptions {
   logger?: Logger;
   identity?: IdentityProvider;
   streamKeepAliveMs?: number;
+  /** Bot API client for the Telegram live connector; defaults to the real Bot API. Tests pass a fake server's. */
+  telegramBotApi?: BotApi;
 }
 
 /**
  * The one dependency object handed to registerRoutes and to both worker factories (design section 17).
- * `streamKeepAliveMs` carries AppOptions.streamKeepAliveMs to the event stream; `startedAt` feeds GET /v1/status.
+ * `streamKeepAliveMs` carries AppOptions.streamKeepAliveMs to the event stream; `startedAt` feeds GET /v1/status,
+ * and so does `telegramLive`, whose connector exists only when TELEGRAM_LIVE_ENABLED=true (design section 13).
  */
 export interface AppDeps {
   config: Config;
@@ -52,6 +57,7 @@ export interface AppDeps {
   workers: { capture: { wake(): void }; review: { wake(): void } };
   streamKeepAliveMs: number;
   startedAt: string;
+  telegramLive: { running(): boolean };
 }
 
 export interface App {
@@ -66,6 +72,8 @@ export interface App {
 interface Runtime {
   deps: AppDeps;
   workers: { capture: JobLoop; review: JobLoop };
+  /** Created only when TELEGRAM_LIVE_ENABLED=true; it still refuses to start unless every other gate is set. */
+  liveConnector: LiveConnector | null;
 }
 
 function buildRuntime(options: AppOptions): Runtime {
@@ -86,6 +94,7 @@ function buildRuntime(options: AppOptions): Runtime {
   }
   // Workers are created from deps, and deps.workers wakes them: bind late so both see the same object.
   let loops: Runtime['workers'] | null = null;
+  let live: LiveConnector | null = null;
   const deps: AppDeps = {
     config, db, clock, logger, bus,
     identity: options.identity ?? createDemoIdentity(db),
@@ -98,19 +107,42 @@ function buildRuntime(options: AppOptions): Runtime {
     },
     streamKeepAliveMs: options.streamKeepAliveMs ?? DEFAULT_STREAM_KEEP_ALIVE_MS,
     startedAt: clock.now().toISOString(),
+    telegramLive: { running: () => live?.stats().running ?? false },
   };
   loops = { capture: createCaptureWorker(deps), review: createReviewWorker(deps) };
-  return { deps, workers: loops };
+  live = config.telegram.liveEnabled
+    ? createLiveConnector({
+        config, db, logger,
+        ...(options.telegramBotApi ? { botApi: options.telegramBotApi } : {}),
+        onEvidenceStored: () => {
+          deps.workers.capture.wake();
+          deps.workers.review.wake();
+        },
+      })
+    : null;
+  return { deps, workers: loops, liveConnector: live };
+}
+
+/** A refused connector leaves the service running with the connector off; the log names the gates, never values. */
+function startLiveConnector(connector: LiveConnector | null, logger: Logger): void {
+  if (!connector) return;
+  try {
+    connector.start();
+  } catch (error) {
+    if (!(error instanceof LiveConnectorGateError)) throw error;
+    logger.warn('telegram_live_connector_refused', { missing: error.missing.join(', ') });
+  }
 }
 
 export async function createApp(options: AppOptions): Promise<App> {
-  const { deps, workers } = buildRuntime(options);
+  const { deps, workers, liveConnector } = buildRuntime(options);
   const { config, logger } = deps;
   let server: RunningServer | null = null;
   const http = createHttpApp(deps, () => server?.port ?? config.port);
   // Work left over from a previous run (pending captures and reviews) starts at once.
   workers.capture.wake();
   workers.review.wake();
+  startLiveConnector(liveConnector, logger);
 
   return {
     config,
@@ -127,6 +159,7 @@ export async function createApp(options: AppOptions): Promise<App> {
       }
     },
     async close() {
+      await liveConnector?.stop();
       if (server) await server.close();
       server = null;
       await Promise.all([workers.capture.stop(), workers.review.stop()]);

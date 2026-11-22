@@ -12,3 +12,4 @@ playwright-report/
 .DS_Store
 Thumbs.db
 demo-credentials.json
+telegram-live-credentials.json
