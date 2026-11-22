@@ -103,15 +103,27 @@ export function insertComposerMessage(tx: Tx, input: InsertComposerMessageInput)
   return row;
 }
 
-/** Fills a placeholder with the original content; only rows with original_captured = 0 are touched. */
-export function fillPlaceholder(tx: Tx, messageId: string, content: SourceContent): MessageRow {
+/** When and how the original `recorded` event reached Mirsad. */
+export interface Receipt {
+  receivedAt: string;
+  captureMethod: string;
+}
+
+/**
+ * Fills a placeholder with the original content; only rows with original_captured = 0 are touched. The message takes the
+ * recorded event's receipt time and capture method, because Mirsad holds the original text only from that event on.
+ */
+export function fillPlaceholder(tx: Tx, messageId: string, content: SourceContent, receipt: Receipt): MessageRow {
   const row = tx.get<MessageRow>(
     `UPDATE messages SET direction = :direction, original_captured = 1, text = :text, text_sha256 = :sha,
        unsupported_content = :unsupported, sent_at = :sentAt, sender_external_id = :senderExternalId,
-       sender_display_name = :senderDisplayName, sender_phone_raw = :senderPhoneRaw
+       sender_display_name = :senderDisplayName, sender_phone_raw = :senderPhoneRaw,
+       received_at = :receivedAt, capture_method = :captureMethod
      WHERE id = :messageId AND original_captured = 0 AND text IS NULL RETURNING *`,
     {
       messageId,
+      receivedAt: receipt.receivedAt,
+      captureMethod: receipt.captureMethod,
       direction: content.direction,
       text: content.text,
       sha: content.textSha256,

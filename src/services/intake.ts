@@ -208,7 +208,7 @@ function storeRecorded(ctx: IntakeContext, chat: ChatRow, event: RecordedEvent):
     workspaceId: chat.workspace_id, type: 'message.recorded', chatId: chat.id, data: { messageId, direction: event.direction, origin: 'source' },
   });
   const message = existing
-    ? messages.fillPlaceholder(ctx.tx, existing.id, content)
+    ? messages.fillPlaceholder(ctx.tx, existing.id, content, { receivedAt: ctx.tx.now(), captureMethod: ctx.captureMethod })
     : messages.insertSourceMessage(ctx.tx, {
         id: messageId, chatId: chat.id, workspaceId: chat.workspace_id, sourceMessageId: event.sourceMessageId,
         captureMethod: ctx.captureMethod, receivedAt: ctx.tx.now(), position, content,

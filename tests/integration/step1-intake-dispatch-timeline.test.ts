@@ -1,5 +1,10 @@
+import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import type { ConnectorCaptureMethod } from '../../src/contract/enums.ts';
+import { provisionPrincipal } from '../../src/identity/provision.ts';
 import * as watchlist from '../../src/services/watchlist.ts';
+import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
+import { grantAccount } from '../../src/storage/repos/principals.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 import { countRows, execSql, queryRows, storeSnapshot, streamEvents } from '../helpers/db-read.ts';
 import { deleted, edited, envelope, recorded, uniqueId } from '../helpers/events.ts';
@@ -36,6 +41,25 @@ async function dispatch(chatIds: string[], key = uniqueId('key-'), token = h.tok
 
 async function timeline(chatId: string, token = h.tokens.officerA) {
   return h.http(token).get(`/v1/chats/${chatId}/timeline`);
+}
+
+/** A further connector on the intake account with its own capture method; returns its token. */
+function provisionConnector(captureMethod: ConnectorCaptureMethod): string {
+  const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
+  try {
+    return db.transaction((tx) => {
+      const account = tx.get<{ id: string; workspace_id: string }>(
+        'SELECT id, workspace_id FROM channel_accounts WHERE external_account_id = :id',
+        { id: h.accounts.intake.externalAccountId },
+      );
+      if (!account) throw new Error('intake_account_missing');
+      const made = provisionPrincipal(tx, { workspaceId: account.workspace_id, kind: 'connector', displayName: `Test ${captureMethod} connector`, captureMethod });
+      grantAccount(tx, made.principal.id, account.id);
+      return made.token;
+    });
+  } finally {
+    db.close();
+  }
 }
 
 /** Row counts once the capture worker is idle, so its own writes cannot land between two snapshots. */
@@ -571,6 +595,23 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(res.body.data.receivedAt).toBe('2026-11-21T09:15:30.250Z');
     const [message] = (await timeline(res.body.data.chatId)).body.data.messages;
     expect(message).toMatchObject({ receivedAt: '2026-11-21T09:15:30.250Z', sentAt: '2026-11-21T08:10:00.000Z' });
+  });
+
+  it('a placeholder filled by its original takes the receipt time and capture method of the recorded event', async () => {
+    const hostConnector = provisionConnector('host_intake');
+    const chat = uniqueId('ph-receipt-');
+    const deletion = await ingest(envelope(h.accounts.intake, chat, deleted({ messageId: 240, updateId: 2400, direction: 'incoming' })));
+    expect(deletion.status).toBe(201);
+    h.clock.advance(60 * 60 * 1000);
+    const original = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 240, updateId: 2401, text: 'Original words' })), hostConnector);
+    expect(original.status).toBe(201);
+    expect(original.body.data.receivedAt).not.toBe(deletion.body.data.receivedAt);
+
+    const [message] = (await timeline(original.body.data.chatId)).body.data.messages;
+    expect(message).toMatchObject({
+      id: deletion.body.data.messageId, text: 'Original words', originalCaptured: true, deletedAtSource: true,
+      receivedAt: original.body.data.receivedAt, source: { captureMethod: 'host_intake' },
+    });
   });
 
   it('message text never appears in application logs', async () => {
