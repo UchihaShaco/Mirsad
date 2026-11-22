@@ -232,7 +232,8 @@ function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue, l
 
 export function openDatabase(file: string, options: OpenDatabaseOptions = {}): Db {
   const db = new DatabaseSync(file, { timeout: BUSY_TIMEOUT_MS, enableForeignKeyConstraints: true });
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON;');
+  // FULL: a commit returns only once it is on disk, so evidence acknowledged with 201 survives a power cut (design 19.2).
+  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON;');
   migrate(db);
   const queue = new CommitQueue();
   const tx = createTx(db, options, queue);

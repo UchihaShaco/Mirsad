@@ -84,6 +84,16 @@ describe('storage/db', () => {
     expect(committed).toEqual(['outer']);
   });
 
+  it('runs in WAL mode with synchronous FULL, so a commit is on disk before it returns', () => {
+    db = openDatabase(file());
+    const settings = db.transaction((tx) => ({
+      journalMode: tx.get<{ journal_mode: string }>('PRAGMA journal_mode')?.journal_mode,
+      synchronous: tx.get<{ synchronous: number }>('PRAGMA synchronous')?.synchronous,
+    }));
+    // 2 is FULL: NORMAL (1) lets a commit return before the WAL is flushed, so a power cut could lose acknowledged rows.
+    expect(settings).toEqual({ journalMode: 'wal', synchronous: 2 });
+  });
+
   it('rows survive closing and reopening the file', () => {
     db = openDatabase(file());
     insertWorkspace(db, 'ws_persisted');
