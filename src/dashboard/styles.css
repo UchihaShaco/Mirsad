@@ -163,6 +163,12 @@ textarea, input[type="password"] {
 .case-log-entry { margin-bottom: 0.4rem; }
 .case-log-meta { display: block; color: var(--muted); font-size: 0.85rem; }
 .matches, .evidence { margin: 0.25rem 0; padding-left: 1.1rem; font-size: 0.9rem; }
+.case-references { margin: 0; padding-left: 1.2rem; font-size: 0.9rem; }
+.case-reference { margin-bottom: 0.4rem; overflow-wrap: anywhere; }
+.case-reference-note { white-space: pre-wrap; }
+.case-reference-form { display: grid; gap: 0.3rem; margin-top: 0.5rem; }
+.case-reference-form label { font-weight: 600; font-size: 0.9rem; }
+.case-reference-form button { justify-self: start; }
 .chat-match p { margin: 0.2rem 0; font-size: 0.85rem; }
 
 /* Watchlist */

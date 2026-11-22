@@ -73,6 +73,12 @@ export function describeError(error) {
 
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
 
+/** One sentence for a recorded merchant confirmation and the payment links it marked Suspected fraud. */
+export function describeCaseReference(findingsCreated) {
+  if (findingsCreated === 0) return 'Merchant confirmation recorded.';
+  return `Merchant confirmation recorded. ${plural(findingsCreated, 'payment link', 'payment links')} marked Suspected fraud.`;
+}
+
 /** One sentence for a dispatch answer: how many chats started, were already active, or need Resume AI. */
 export function describeDispatch(results) {
   const count = (status) => results.filter((result) => result.status === status).length;

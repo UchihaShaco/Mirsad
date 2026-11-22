@@ -73,6 +73,18 @@
           <h2 id="matches-heading">Watchlist matches</h2>
           <div id="matches"></div>
         </section>
+        <section aria-labelledby="case-references-heading">
+          <h2 id="case-references-heading">Merchant confirmations</h2>
+          <ul id="case-references" class="case-references"></ul>
+          <form id="case-reference-form" class="case-reference-form" aria-label="Record merchant confirmation" hidden>
+            <label for="case-reference-hosts">Payment hosts (comma or newline separated)</label>
+            <textarea id="case-reference-hosts" rows="2" dir="ltr" spellcheck="false" autocomplete="off"></textarea>
+            <label for="case-reference-note">Source note</label>
+            <textarea id="case-reference-note" rows="2" maxlength="500" dir="auto"></textarea>
+            <button type="submit" id="case-reference-submit">Record merchant confirmation</button>
+            <p class="hint">A payment link whose host no confirmation of this chat lists is marked Suspected fraud.</p>
+          </form>
+        </section>
         <section aria-labelledby="case-log-heading">
           <h2 id="case-log-heading">Case log</h2>
           <ol id="case-log" class="case-log"></ol>

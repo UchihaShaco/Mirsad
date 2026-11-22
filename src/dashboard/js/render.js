@@ -5,7 +5,7 @@
 import { renderChatHeader } from './views/chat-header.js';
 import { renderComposer } from './views/composer.js';
 import { renderInbox } from './views/inbox.js';
-import { renderSidePanel } from './views/side-panel.js';
+import { renderCaseReferenceForm, renderSidePanel } from './views/side-panel.js';
 import { renderTimeline } from './views/timeline.js';
 
 const CONNECTION_LABELS = {
@@ -46,6 +46,7 @@ export function createRenderer({ refs, handlers, captures, watchlistView }) {
     region((s) => renderTimeline(refs.timeline, s, handlers, captures), (s) => [s.timeline, s.replyTargetId, s.focusMessageId]),
     region((s) => renderComposer(refs, s), (s) => [s.timeline, s.composer, s.replyTargetId, s.pending]),
     region((s) => renderSidePanel(refs, s), (s) => [s.timeline]),
+    region((s) => renderCaseReferenceForm(refs, s), (s) => [s.timeline, s.caseReferenceDraft, s.pending]),
     region((s) => watchlistView.render(s, handlers), (s) => [s.watchlist, s.pending]),
     region((s) => renderShell(refs, s), (s) => [s.notice, s.view, s.connection]),
   ];

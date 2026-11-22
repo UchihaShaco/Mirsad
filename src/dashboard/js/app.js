@@ -8,11 +8,13 @@ import { describeError } from './format.js';
 import { applyChat, loadInbox, loadTimeline, loadWatchlist } from './loaders.js';
 import { createRefresher, REFRESH_DELAY_MS } from './refresher.js';
 import { createRenderer } from './render.js';
+import { initialCaseReferenceDraft } from './state/case-reference.js';
 import { initialComposer } from './state/composer.js';
 import { parseRoute } from './state/route.js';
 import { createEventStream } from './stream-client.js';
 import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
+import { bindCaseReferenceForm } from './views/side-panel.js';
 import { createWatchlistView } from './views/watchlist.js';
 
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
@@ -23,7 +25,7 @@ function initialState(me) {
     me, view: 'inbox', connection: 'connecting', notice: null, pending: null,
     chats: [], chatsTotal: 0, inboxLoaded: false, selection: new Set(),
     selectedChatId: null, focusMessageId: null, timeline: null, timelineError: null,
-    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(),
+    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(), caseReferenceDraft: initialCaseReferenceDraft(),
     watchlist: { status: 'idle', entries: [], message: null },
   };
 }
@@ -38,7 +40,7 @@ function selectChat(ctx, chatId, messageId) {
   ctx.tickets.timeline += 1;
   ctx.setState({
     selectedChatId: chatId, focusMessageId: messageId, timeline: null, timelineError: null,
-    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(),
+    replyTargetId: null, replyTargetPinned: false, composer: initialComposer(), caseReferenceDraft: initialCaseReferenceDraft(),
   });
   if (chatId !== null) ctx.load.timeline().catch(ctx.showError);
 }
@@ -75,6 +77,7 @@ function bindPage(ctx) {
   refs.dispatchButton.addEventListener('click', () => handlers.onDispatch(), { signal });
   refs.captureDialog.addEventListener('close', () => refs.captureDialogImage.removeAttribute('src'), { signal });
   bindComposer(refs, handlers, signal);
+  bindCaseReferenceForm(refs, handlers, signal);
   window.addEventListener('hashchange', () => applyRoute(ctx), { signal });
 }
 

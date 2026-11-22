@@ -15,6 +15,7 @@ const UI_TIMEOUT_MS = 15_000;
 const OK = 200;
 const CREATED = 201;
 const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited', message: 'Too many requests.' } };
+const CONFIRMATION_NOTE = 'The merchant confirmed its payment page by phone.';
 
 type Account = { source: 'telegram'; externalAccountId: string };
 type InboxRegion = 'New inbound' | 'Open chats';
@@ -265,6 +266,50 @@ describe('reference dashboard', () => {
     const facts = page.locator(`#message-${res.body.data.messageId} dl.facts`);
     await facts.waitFor();
     expect(await facts.locator('dt:text-is("Sender phone") + dd bdi').textContent()).toBe(phone);
+    expect(problems).toEqual([]);
+  });
+
+  it('an officer records a merchant confirmation in the case panel, sees it listed, and the conflicting link becomes Suspected fraud', async () => {
+    const label = 'Test Contact 9';
+    const chat = await seedChat(h.accounts.intake, label, 'Please settle the invoice here: https://pay.other-host.test/invoice/9');
+    const dispatched = await h.http(h.tokens.officerA).post('/v1/dispatches', { chatIds: [chat.chatId] }, { 'Idempotency-Key': uniqueId('dispatch-') });
+    expect(dispatched.status, dispatched.text).toBe(OK);
+    await h.drain();
+    expect((await timelineOf(chat.chatId)).findings.map((f) => f.kind)).toEqual(['payment_link']);
+
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, label);
+    await page.locator('#timeline aside.finding-payment_link').waitFor();
+    const posted: unknown[] = [];
+    page.on('request', (request) => {
+      if (request.url().endsWith('/case-references')) posted.push(request.postDataJSON());
+    });
+    const hosts = page.getByRole('textbox', { name: 'Payment hosts (comma or newline separated)', exact: true });
+    const note = page.getByRole('textbox', { name: 'Source note', exact: true });
+    const record = button(page, 'Record merchant confirmation');
+    expect(await record.isDisabled()).toBe(true);
+
+    await hosts.fill('pay.merchant.test,\nshop.merchant.test');
+    await note.fill(CONFIRMATION_NOTE);
+    await record.click();
+
+    const listed = page.locator('#case-references li[data-case-reference-id]');
+    await listed.waitFor();
+    const shown = (await listed.textContent()) ?? '';
+    expect(shown).toContain('pay.merchant.test, shop.merchant.test');
+    expect(shown).toContain(CONFIRMATION_NOTE);
+    expect(shown).toContain('Officer A');
+    expect(shown).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC/);
+    await page.locator('#notice').filter({ hasText: 'Merchant confirmation recorded. 1 payment link marked Suspected fraud.' }).waitFor();
+    await page.locator('#timeline aside.finding-suspected_fraud').waitFor();
+    await page.locator('#case-log li[data-action-type="case_reference_recorded"]').waitFor();
+    await expect.poll(() => hosts.inputValue(), { timeout: UI_TIMEOUT_MS }).toBe('');
+    expect(await note.inputValue()).toBe('');
+
+    expect(posted).toEqual([{ kind: 'merchant_payment_confirmation', paymentHosts: ['pay.merchant.test', 'shop.merchant.test'], sourceNote: CONFIRMATION_NOTE }]);
+    const stored = await timelineOf(chat.chatId);
+    expect(stored.caseReferences.map((reference) => reference.paymentHosts)).toEqual([['pay.merchant.test', 'shop.merchant.test']]);
+    expect(stored.findings.map((f) => f.kind).sort()).toEqual(['payment_link', 'suspected_fraud']);
     expect(problems).toEqual([]);
   });
 

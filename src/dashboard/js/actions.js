@@ -2,12 +2,15 @@
  * Officer actions. Each one calls a single route and then reloads what it changed; the service decides every rule and
  * answers a stale or refused request with an error, which becomes the notice. Only one action runs at a time.
  */
-import { describeDispatch, describeError } from './format.js';
+import { describeCaseReference, describeDispatch, describeError } from './format.js';
+import { caseReferenceRequest, initialCaseReferenceDraft } from './state/case-reference.js';
 import { updateComposer } from './state/composer.js';
 import { toggleSelection } from './state/inbox.js';
 
 /** Errors that mean the dashboard's copy of the chat is out of date: show the error, then reload. */
 const STALE_VIEW_ERRORS = new Set(['revision_conflict', 'not_controller', 'not_in_takeover', 'invalid_transition', 'capture_not_retryable']);
+/** The service refuses a confirmation with validation_failed, most often for a host it cannot parse. */
+const CONFIRMATION_REFUSED = 'The confirmation was not accepted. Enter each payment host as a host name, host:port or URL.';
 
 const info = (ctx, text) => ctx.setState({ notice: { tone: 'info', text } });
 const chatInView = (ctx) => (ctx.getState().timeline === null ? null : ctx.getState().timeline.chat);
@@ -79,6 +82,23 @@ async function leaveUnanswered(ctx) {
   await ctx.load.timeline();
 }
 
+/** Records a merchant payment confirmation for the open chat; the service marks conflicting payment links. */
+async function recordCaseReference(ctx) {
+  const chat = chatInView(ctx);
+  const request = caseReferenceRequest(ctx.getState().caseReferenceDraft);
+  if (chat === null || request === null) return;
+  let result;
+  try {
+    result = await ctx.api.recordCaseReference(chat.id, request);
+  } catch (error) {
+    throw error?.code === 'validation_failed' ? new Error(CONFIRMATION_REFUSED) : error;
+  }
+  // The draft belongs to the chat it was typed for; another chat opened meanwhile keeps its own.
+  if (ctx.getState().selectedChatId === chat.id) ctx.setState({ caseReferenceDraft: initialCaseReferenceDraft() });
+  info(ctx, describeCaseReference(result.findingsCreated));
+  await ctx.load.timeline();
+}
+
 async function retryCapture(ctx, captureId) {
   await ctx.api.retryCapture(captureId);
   info(ctx, 'Capture retry requested.');
@@ -116,6 +136,8 @@ export function createActions(ctx) {
     onSend: () => run(ctx, 'send', () => send(ctx)),
     onLeaveUnanswered: () => run(ctx, 'leave_unanswered', () => leaveUnanswered(ctx)),
     onRetryCapture: (captureId) => run(ctx, 'retry_capture', () => retryCapture(ctx, captureId)),
+    onCaseReferenceInput: (draft) => setState({ caseReferenceDraft: draft }),
+    onRecordCaseReference: () => run(ctx, 'case_reference', () => recordCaseReference(ctx)),
     onEnlargeCapture: (url, alt) => enlargeCapture(ctx, url, alt),
     onReviewEntry: (entry, decision, reason) => run(ctx, 'watchlist_review', () => reviewEntry(ctx, entry, decision, reason)),
     onReloadWatchlist: () => ctx.load.watchlist().catch(ctx.showError),

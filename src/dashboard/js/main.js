@@ -19,6 +19,8 @@ const ELEMENT_IDS = {
   chatHeader: 'chat-header', timeline: 'timeline', composer: 'composer', composerText: 'composer-text',
   insertAcknowledgement: 'insert-acknowledgement', sendButton: 'send-button', leaveUnansweredButton: 'leave-unanswered-button',
   replyTarget: 'reply-target', matches: 'matches', caseLog: 'case-log', watchlistView: 'watchlist-view',
+  caseReferences: 'case-references', caseReferenceForm: 'case-reference-form', caseReferenceHosts: 'case-reference-hosts',
+  caseReferenceNote: 'case-reference-note', caseReferenceSubmit: 'case-reference-submit',
   watchlist: 'watchlist', captureDialog: 'capture-dialog', captureDialogImage: 'capture-dialog-image',
 };
 

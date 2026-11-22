@@ -81,6 +81,8 @@ export function createApi(token, { onUnauthenticated }) {
     leaveUnanswered: (chatId, messageId, expectedRevision) =>
       post(chatPath(chatId, '/officer-decisions'), { decision: 'leave_unanswered', messageId, expectedRevision }),
     retryCapture: (captureId) => post(`/v1/captures/${segment(captureId)}/retry`),
+    /** `request`: { kind, paymentHosts, sourceNote } (state/case-reference.js builds it). */
+    recordCaseReference: (chatId, request) => post(chatPath(chatId, '/case-references'), request),
     watchlist: async () => (await call('GET', '/v1/watchlist')).data,
     reviewWatchlistEntry: (entryId, decision, reason, expectedRevision) =>
       post(`/v1/watchlist/${segment(entryId)}/review`, { decision, reason, expectedRevision }),
