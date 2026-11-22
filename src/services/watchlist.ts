@@ -88,7 +88,7 @@ function publishEntryUpdated(tx: Tx, entry: repo.WatchlistEntryRow, reason: Entr
   });
 }
 
-/** Inserts the observation at the evidence's exact source reference; false on repeat delivery. */
+/** Inserts the observation at the evidence's exact source reference, or gives a sighting its finding; false on repeat delivery. */
 function addObservation(tx: Tx, ctx: EvidenceContext, entry: repo.WatchlistEntryRow, observation: Observation): boolean {
   return repo.insertObservation(tx, {
     entryId: entry.id,
@@ -101,7 +101,10 @@ function addObservation(tx: Tx, ctx: EvidenceContext, entry: repo.WatchlistEntry
   });
 }
 
-/** Appends an observation to an existing entry and moves its seen times; repeat delivery changes nothing. */
+/**
+ * Appends an observation to an existing entry and moves its seen times (flagging a decided entry); a sighting that gains
+ * a Suspected fraud finding is new evidence in the same way. Repeat delivery changes nothing.
+ */
 function appendObservation(tx: Tx, ctx: EvidenceContext, entry: repo.WatchlistEntryRow, observation: Observation): void {
   if (!addObservation(tx, ctx, entry, observation)) return;
   publishEntryUpdated(tx, repo.markObserved(tx, entry.id, ctx.messageEvent.received_at), 'observation_added');
@@ -197,7 +200,8 @@ function chatAccessFor(tx: Tx, principal: Principal): ChatAccess {
 /**
  * A sighting records that a number already on the watchlist reappeared as a chat's sender (onContactPhoneKnown). It
  * shows where the number was seen but supports nothing about it, so it does not let a caller review the entry or read
- * the decision reason: a caller who can open only the matching chat sees the entry "only through a match".
+ * the decision reason: a caller who can open only the matching chat sees the entry "only through a match". A Suspected
+ * fraud finding on the same message gives the row its finding (repo.insertObservation), and the row then supports the entry.
  */
 const isSighting = (row: repo.WatchlistObservationRow): boolean => row.origin === 'sender_metadata' && row.finding_id === null;
 

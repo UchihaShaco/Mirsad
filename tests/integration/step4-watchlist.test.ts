@@ -616,6 +616,68 @@ describe('step 4: Suspected fraud', () => {
     expect(entry).toMatchObject({ number: { e164: null, display: '07700 900457', exactMatchEligible: false } });
     expect(entry?.evidence).toEqual([expect.objectContaining({ messageId: link.messageId, origin: 'sender_metadata', sourceRepresentation: '07700 900457' })]);
   });
+
+  it('a Suspected fraud finding on the message that first supplied the sender\'s number is recorded, flags a decided entry and lets an officer who can open that chat review', async () => {
+    // The message gets its finding either way: the confirmation is recorded after the link was found, or it is already on
+    // file when the review publishes.
+    const cases = [
+      { e164: '+447700900458', spaced: '+44 7700 900458', confirmationFirst: false },
+      { e164: '+447700900459', spaced: '+44 7700 900459', confirmationFirst: true },
+    ];
+    for (const { e164, spaced, confirmationFirst } of cases) {
+      const label = confirmationFirst ? 'confirmation on file when the review publishes' : 'confirmation recorded after the link';
+      // The entry is supported by a chat on the officer account, which officer C has no grant on.
+      const { entry } = await approvedEntryFor(e164, spaced, h.accounts.officer);
+      // A host connector supplies the sender's number on a first message that carries an unconfirmed payment link.
+      const first = await ingest(h.accounts.intake, uniqueId('wl-fraud-sender-'), recorded({
+        messageId: 1, text: 'Please settle the invoice here: https://pay.other-host.test/invoice/12',
+        sender: { externalId: uniqueId('u'), displayName: 'Test Contact', phone: { raw: e164, internationalFormat: true } },
+      }));
+      if (!confirmationFirst) {
+        await dispatch(h, [first.chatId]);
+        await h.drain();
+      }
+      const sighted = await entryFor(e164);
+      const sightings = sighted.evidence.filter((e) => e.messageEventId === first.messageEventId);
+      expect(sightings.map((e) => [e.origin, e.findingId, e.reason]), label).toEqual([['sender_metadata', null, 'Sender of an inbound chat']]);
+
+      // An officer decides on the entry before the finding exists; officer C sees the entry only through the sighting.
+      const cleared = await review(entry.id, 'clear', sighted.revision);
+      expect(cleared.status, cleared.text).toBe(200);
+      const before = await watchlistOf(h, h.tokens.officerC);
+      expect(before.entries.find((e) => e.id === entry.id), label).toMatchObject({ canReview: false, lastDecision: { reason: null } });
+
+      const stream = await openStream(h.baseUrl, h.tokens.officerC, { cursor: before.cursor });
+      try {
+        const confirmation = await h.http(h.tokens.officerA).post(`/v1/chats/${first.chatId}/case-references`, {
+          kind: 'merchant_payment_confirmation', paymentHosts: ['pay.merchant.example'], sourceNote: 'The merchant confirmed its payment host by phone.',
+        });
+        expect(confirmation.body.data.findingsCreated, label).toBe(confirmationFirst ? 0 : 1);
+        if (confirmationFirst) {
+          await dispatch(h, [first.chatId]);
+          await h.drain();
+        }
+        const fraud = (await timelineOf(h, first.chatId)).findings.find((f) => f.kind === 'suspected_fraud');
+        expect(fraud?.messageEventId, label).toBe(first.messageEventId);
+
+        // The sender observation of that message now carries the finding, and the decided entry is flagged.
+        const after = await entryFor(e164);
+        expect(after.evidence.filter((e) => e.messageEventId === first.messageEventId), label).toEqual([{
+          ...at(sightings, 0), findingId: fraud?.id, reason: 'Sender of a message with a Suspected fraud finding',
+        }]);
+        expect(after, label).toMatchObject({ status: 'cleared', revision: cleared.body.data.entry.revision, newEvidenceSinceReview: true });
+        expect((await stream.next(entryEvent(entry.id))).data, label).toMatchObject({ watchlistEntryId: entry.id, status: 'cleared', reason: 'observation_added' });
+
+        // That evidence lies in a chat officer C can open, so C may now read the decision reason and review the entry.
+        const asC = await entryFor(e164, h.tokens.officerC);
+        expect(asC, label).toMatchObject({ canReview: true, lastDecision: { decision: 'clear', reason: DECISION_REASON } });
+        const reopened = await review(entry.id, 'reopen', asC.revision, h.tokens.officerC);
+        expect(reopened.status, reopened.text).toBe(200);
+      } finally {
+        stream.close();
+      }
+    }
+  });
 });
 
 describe('step 4: scope', () => {

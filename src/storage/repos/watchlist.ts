@@ -122,14 +122,21 @@ export interface InsertObservationInput {
   observedAt: string;
 }
 
-/** Inserts the observation; false, writing nothing, when the entry already has one for this message event and origin. */
+/**
+ * Inserts the observation; false, writing nothing, when the entry already has one for this message event and origin
+ * (repeat delivery). One exception: a sighting (sender metadata without a finding) takes the finding and reason of a
+ * sender observation that has one, so a Suspected fraud finding on the message that first supplied the sender's number
+ * is recorded on that row instead of being dropped; that counts as written.
+ */
 export function insertObservation(tx: Tx, input: InsertObservationInput): boolean {
   const { changes } = tx.run(
     `INSERT INTO watchlist_observations (id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id, origin,
        source_representation, reason, observed_at)
      VALUES (:id, :entryId, :workspaceId, :chatId, :messageId, :messageEventId, :findingId, :origin,
        :sourceRepresentation, :reason, :observedAt)
-     ON CONFLICT (entry_id, message_event_id, origin) DO NOTHING`,
+     ON CONFLICT (entry_id, message_event_id, origin) DO UPDATE SET finding_id = excluded.finding_id, reason = excluded.reason
+       WHERE watchlist_observations.origin = 'sender_metadata' AND watchlist_observations.finding_id IS NULL
+         AND excluded.finding_id IS NOT NULL`,
     { id: newId('wob'), ...input },
   );
   return changes > 0;
