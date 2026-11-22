@@ -55,6 +55,9 @@ const intakeChatUnderA = (): ChatSummary =>
     acknowledgementTemplate: 'Message received.',
   });
 
+/** A named object, not an inline literal, so it fits Message['sender'] both with and without its newer phone field. */
+const CONTACT_SENDER = { externalId: 'tg-user-1', displayName: 'Test Contact', phone: null };
+
 function message(id: string, position: number, direction: 'incoming' | 'outgoing' = 'incoming'): Message {
   return {
     id,
@@ -67,7 +70,7 @@ function message(id: string, position: number, direction: 'incoming' | 'outgoing
     sentAt: null,
     receivedAt: AT,
     source: { channel: 'telegram', captureMethod: 'fixture_replay', sourceEventId: `tg:u${position}:m${position}`, sourceMessageId: `tg:${position}` },
-    sender: { externalId: 'tg-user-1', displayName: 'Test Contact' },
+    sender: CONTACT_SENDER,
     author: null,
     sendStatus: null,
     sendStatusLabel: null,

@@ -109,10 +109,13 @@ async function openChat(page: Page, label: string): Promise<void> {
   await page.locator('#chat-header').getByRole('heading', { name: label, exact: true }).waitFor();
 }
 
+/** The page's location as the callback below sees it; this test project has no DOM types. */
+type PageGlobal = { location: { hash: string } };
+
 /** What pasting a sign-in link into the address bar of an open tab does: only the fragment changes. */
 async function pasteTokenLink(page: Page, token: string): Promise<void> {
   await page.evaluate((fragment) => {
-    window.location.hash = fragment;
+    (globalThis as unknown as PageGlobal).location.hash = fragment;
   }, `#token=${encodeURIComponent(token)}`);
 }
 
