@@ -8,6 +8,7 @@ import { ReviewerUnavailableError, type ExtractedItem, type Reviewer, type Revie
 import {
   buildMessages,
   chunkCharsFor,
+  halveAtBoundary,
   ModelAnswer,
   RESPONSE_SCHEMA,
   splitForContext,
@@ -36,6 +37,15 @@ const HTTP_OK_MAX = 299;
 const HTTP_BAD_REQUEST = 400;
 const CONTEXT_OVERFLOW_ERROR = 'exceed_context_size_error';
 const REFUSED_REDIRECT_CAUSE = 'unexpected redirect';
+/** The finish_reason of an answer that max_tokens stopped before it was complete. */
+const CUT_OFF_REASON = 'length';
+/**
+ * A part whose answer was cut off is halved and its halves reviewed, at most MAX_SPLIT_DEPTH levels down (at most seven
+ * requests for a part). A part shorter than MIN_SPLIT_CHARS (about two details, such as phone numbers) holds too little
+ * to have filled the answer, so it is not halved.
+ */
+const MAX_SPLIT_DEPTH = 2;
+const MIN_SPLIT_CHARS = 40;
 /** LM Studio's own REST list, at the server origin, reports each model's load state (the /v1 list does not). */
 const MODELS_PATH = '/api/v0/models';
 const LOADED_STATE = 'loaded';
@@ -51,6 +61,10 @@ const Choice = z.object({
   message: z.object({ content: z.string().nullable().optional() }),
 });
 const Completion = z.object({ choices: z.tuple([Choice], Choice) });
+type CompletionChoice = z.infer<typeof Choice>;
+
+/** Reviews one part of the message: its items, or null when max_tokens cut the answer off. */
+type PartReview = (input: PromptInput) => Promise<ExtractedItem[] | null>;
 
 interface HttpReply {
   status: number;
@@ -137,11 +151,16 @@ function parseJson(text: string): unknown {
   }
 }
 
-/** The answer text, usable only when the model finished with stop and wrote something (design section 19.7). */
-function contentOf(reply: HttpReply): string {
+/** The first choice of a chat completion; a body that is not one is lmstudio_invalid_response. */
+function choiceOf(reply: HttpReply): CompletionChoice {
   const completion = Completion.safeParse(parseJson(reply.text));
   if (!completion.success) throw new ReviewerUnavailableError('lmstudio_invalid_response');
   const [choice] = completion.data.choices;
+  return choice;
+}
+
+/** The answer text, usable only when the model finished with stop and wrote something (design section 19.7). */
+function contentOf(choice: CompletionChoice): string {
   if (choice.finish_reason !== 'stop') throw new ReviewerUnavailableError('lmstudio_unfinished');
   const content = choice.message.content ?? '';
   if (content.trim() === '') throw new ReviewerUnavailableError('lmstudio_empty_content');
@@ -173,7 +192,7 @@ async function checkHealth(send: typeof fetch, modelsUrl: string, model: string,
   }
 }
 
-/** Items of all chunks in order, each exact duplicate (an item seen in an overlap or repeated text) once. */
+/** Items of all chunks or halves in order, each exact duplicate (an item seen in an overlap or repeated text) once. */
 function mergeItems(perChunk: readonly ExtractedItem[][]): ExtractedItem[] {
   const seen = new Set<string>();
   return perChunk.flat().filter((item) => {
@@ -184,6 +203,22 @@ function mergeItems(perChunk: readonly ExtractedItem[][]): ExtractedItem[] {
   });
 }
 
+/**
+ * A cut-off answer is never used: the part is halved at a boundary and the halves reviewed, depth first, so that every
+ * answer used still finished with stop (design section 19.7). A half still cut off at the lowest level makes the
+ * review unavailable.
+ */
+async function reviewInPieces(reviewPart: PartReview, input: PromptInput, depth: number): Promise<ExtractedItem[]> {
+  const items = await reviewPart(input);
+  if (items !== null) return items;
+  if (depth >= MAX_SPLIT_DEPTH || input.text.length < MIN_SPLIT_CHARS) throw new ReviewerUnavailableError('lmstudio_unfinished');
+  const perHalf: ExtractedItem[][] = [];
+  for (const text of halveAtBoundary(input.text)) {
+    perHalf.push(await reviewInPieces(reviewPart, { ...input, text }, depth + 1));
+  }
+  return mergeItems(perHalf);
+}
+
 export function createLmStudioReviewer(options: LmStudioReviewerOptions): Reviewer {
   const base = loopbackBaseUrl(options.baseUrl);
   const send = options.fetch ?? fetch;
@@ -191,23 +226,25 @@ export function createLmStudioReviewer(options: LmStudioReviewerOptions): Review
   const modelsUrl = `${base.origin}${MODELS_PATH}`;
   const chunkChars = chunkCharsFor(options.contextTokens);
 
-  async function reviewChunk(input: PromptInput, deadline: Deadline): Promise<ExtractedItem[]> {
+  async function reviewChunk(input: PromptInput, deadline: Deadline): Promise<ExtractedItem[] | null> {
     const body = completionBody(options.model, input);
     const first = await post(send, completionsUrl, body, deadline);
     const reply = isRetryable(first) ? await post(send, completionsUrl, body, deadline) : first;
     if (isContextOverflow(reply)) throw new ReviewerUnavailableError('lmstudio_context_overflow');
     if (reply.status < HTTP_OK_MIN || reply.status > HTTP_OK_MAX) throw new ReviewerUnavailableError('lmstudio_http_error');
-    return itemsOf(contentOf(reply));
+    const choice = choiceOf(reply);
+    return choice.finish_reason === CUT_OFF_REASON ? null : itemsOf(contentOf(choice));
   }
 
   return {
     name: 'lmstudio',
     async review(request, signal) {
       const deadline = startDeadline(signal, options.timeoutMs);
+      const reviewPart: PartReview = (input) => reviewChunk(input, deadline);
       const perChunk: ExtractedItem[][] = [];
       // In order, one at a time: a long message never takes more than one of LM Studio's parallel slots.
       for (const text of splitForContext(request.text, chunkChars)) {
-        perChunk.push(await reviewChunk({ messageId: request.messageId, text }, deadline));
+        perChunk.push(await reviewInPieces(reviewPart, { messageId: request.messageId, text }, 0));
       }
       return { items: mergeItems(perChunk) };
     },

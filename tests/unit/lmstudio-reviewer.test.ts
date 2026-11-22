@@ -9,7 +9,7 @@ import { loadConfig } from '../../src/config.ts';
 import { createJsonLogger } from '../../src/logging/json-logger.ts';
 import { ReviewerUnavailableError, type ExtractedItem, type ReviewRequest } from '../../src/ports/reviewer.ts';
 import { createLmStudioReviewer, type LmStudioReviewerOptions } from '../../src/review/lmstudio-reviewer.ts';
-import { RESPONSE_SCHEMA } from '../../src/review/prompt.ts';
+import { halveAtBoundary, RESPONSE_SCHEMA, SYSTEM_PROMPT } from '../../src/review/prompt.ts';
 import { createReviewer } from '../../src/review/reviewer-factory.ts';
 
 const MESSAGE_ID = 'msg_00000000000000000000000000000001';
@@ -236,6 +236,88 @@ describe('LM Studio reviewer', () => {
       { sourceMessageId: MESSAGE_ID, kind: 'payment_link', quote: link, extractedValue: link, concern: null, countryHint: null },
       { sourceMessageId: MESSAGE_ID, kind: 'phone_number', quote: phone, extractedValue: phone, concern: 'callback_request', countryHint: null },
     ]);
+  });
+
+  it('reviews a part again in two pieces, cut at its strongest boundary nearest the middle, when its answer was cut off at max_tokens', async () => {
+    const link = 'https://pay.shop.test/deposit/1';
+    const phone = '+44 7700 900123';
+    const holder = 'Test Trading LLC';
+    const filler = 'This clause covers a routine detail of the stay.';
+    const text = [`Please pay the deposit at ${link} today.`, `If the page fails, call ${phone} and we will help.`, filler, filler, `The account holder is ${holder}.`].join(' ');
+    const detailsIn = (part: string) => [
+      ...(part.includes(link) ? [modelItem({ kind: 'payment_link', quote: link, extractedValue: link })] : []),
+      ...(part.includes(phone) ? [modelItem({ kind: 'phone_number', quote: phone, extractedValue: phone, concern: 'callback_request' })] : []),
+      ...(part.includes(holder) ? [modelItem({ kind: 'payment_recipient', quote: holder, extractedValue: holder })] : []),
+    ];
+    // More than one detail does not fit the answer: LM Studio stops at max_tokens mid-item, with finish_reason length.
+    const server = await fakeLmStudio((recorded) => {
+      const details = detailsIn(userData(recorded).text);
+      return details.length > 1 ? completion('{"items": [{"sourceMessageId": "msg_', 'length') : answer(details);
+    });
+
+    const { items } = await reviewerFor(server).review(request(text), signal());
+
+    // Only answers that finished with stop are used: one item from each piece, in order.
+    expect(items).toEqual([
+      { sourceMessageId: MESSAGE_ID, kind: 'payment_link', quote: link, extractedValue: link, concern: null, countryHint: null },
+      { sourceMessageId: MESSAGE_ID, kind: 'phone_number', quote: phone, extractedValue: phone, concern: 'callback_request', countryHint: null },
+      { sourceMessageId: MESSAGE_ID, kind: 'payment_recipient', quote: holder, extractedValue: holder, concern: null, countryHint: null },
+    ]);
+    // Cut between sentences, so no detail is cut in two and the pieces do not overlap. The first piece still held two
+    // details and was halved again, depth first.
+    const [first = '', second = ''] = halveAtBoundary(text);
+    expect(first + second).toBe(text);
+    expect(first.endsWith('help. ')).toBe(true);
+    expect(server.requests.map((recorded) => userData(recorded).text)).toEqual([text, first, ...halveAtBoundary(first), second]);
+  });
+
+  it('halves a part at the paragraph, sentence or comma nearest its middle, and overlaps the pieces only after a cut at a space', () => {
+    const sentence = 'A routine sentence about the stay.';
+    const paragraphs = `${sentence} ${sentence}\n${sentence} ${sentence} ${sentence}`;
+    expect(halveAtBoundary(paragraphs)).toEqual([`${sentence} ${sentence}\n`, `${sentence} ${sentence} ${sentence}`]);
+    // Without full stops, as in much Arabic chat, the comma nearest the middle.
+    const clauses = Array.from({ length: 6 }, (_, i) => `البند ${i + 1} يخص تفاصيل الحجز`).join('، ');
+    const [before = '', after = ''] = halveAtBoundary(clauses);
+    expect(before + after).toBe(clauses);
+    expect(before.endsWith('، ')).toBe(true);
+    expect(Math.abs(before.length - clauses.length / 2)).toBeLessThanOrEqual(clauses.length / 4);
+    // Without punctuation, the space nearest the middle; the second piece starts a little earlier, at a word start, so a
+    // detail cut at that space is seen whole.
+    const words = Array.from({ length: 40 }, (_, i) => `word${i}`).join(' ');
+    const [head = '', tail = ''] = halveAtBoundary(words);
+    const tailStart = words.length - tail.length;
+    expect(words.startsWith(head) && words.endsWith(tail)).toBe(true);
+    expect(tailStart).toBeLessThan(head.length);
+    expect(words[tailStart - 1]).toBe(' ');
+    // Without any space, a cut in the middle that keeps a character written as two code units whole.
+    const glyphs = `x${'😀'.repeat(30)}`;
+    const [left = '', right = ''] = halveAtBoundary(glyphs);
+    expect(left + right).toBe(glyphs);
+    expect([left, right].some((piece) => /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(piece))).toBe(false);
+  });
+
+  it('gives up with lmstudio_unfinished when pieces two levels down are still cut off, and never splits a short part', async () => {
+    const text = 'One routine sentence about the booking and the stay. '.repeat(8).trim();
+    const server = await fakeLmStudio(() => completion('{"items": [', 'length'));
+
+    expect(await unavailableCode(reviewerFor(server).review(request(text), signal()))).toBe('lmstudio_unfinished');
+
+    // Depth first: the whole part, its first piece, that piece's first piece, and nothing below. A piece still cut off
+    // two levels down makes the whole review unavailable, so nothing more is sent.
+    const firstHalfOf = (part: string) => halveAtBoundary(part)[0];
+    expect(server.requests.map((recorded) => userData(recorded).text)).toEqual([text, firstHalfOf(text), firstHalfOf(firstHalfOf(text))]);
+
+    // A part too short to hold several details is not split: its cut-off answer is final.
+    const short = await fakeLmStudio(() => completion('{"items": [', 'length'));
+    expect(await unavailableCode(reviewerFor(short).review(request('Hello there.'), signal()))).toBe('lmstudio_unfinished');
+    expect(short.requests).toHaveLength(1);
+  });
+
+  it('asks for a quote of at most a hundred characters, never a whole long sentence or line', () => {
+    // Every item already costs about a hundred answer tokens without its quote; whole long lines as quotes pushed
+    // messages with several details past max_tokens.
+    expect(SYSTEM_PROMPT).toMatch(/- quote: [^\n]*at most 100 characters/);
+    expect(SYSTEM_PROMPT).toContain('Never quote a whole long sentence or line.');
   });
 
   it('cuts a message without any space by length and never splits a character written as two code units', async () => {

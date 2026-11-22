@@ -22,6 +22,12 @@ export interface PromptInput {
 const NO_CONCERN = 'none';
 const UNKNOWN_COUNTRY = 'unknown';
 const ISO_ALPHA_2 = /^[A-Za-z]{2}$/;
+/**
+ * The longest quote the prompt asks for. Each item costs about a hundred answer tokens besides its quote (the keys,
+ * the echoed ID, the value, the indentation), and the answer has 512 (design section 19.7): whole long lines as quotes
+ * cut off the answers to messages with several details.
+ */
+const MAX_QUOTE_CHARS = 100;
 
 /**
  * Design section 10: at the 4,096-token context a request carries at most 1,500 characters of message text, which
@@ -33,12 +39,18 @@ const DEFAULT_CONTEXT_TOKENS = 4_096;
 /** Neighbouring chunks share up to this much text (at most a quarter of a chunk), so an item cut at a boundary is seen whole. */
 const MAX_OVERLAP_CHARS = 200;
 const SENTENCE_END = /[.!?…؟。]/;
+/** Latin and Arabic commas, semicolons and colons end a clause; much Arabic chat has these and no full stops. */
+const CLAUSE_END = /[,،;؛:]/;
 const WHITESPACE = /\s/;
 /** The first half of a character written as two UTF-16 code units; a cut after it would split the character. */
 const HIGH_SURROGATE = /[\uD800-\uDBFF]/;
 
-/** Where a chunk may start: after a line break (paragraph), after sentence punctuation and a space (sentence), after a space (word). */
-const BOUNDARY = { none: 0, word: 1, sentence: 2, paragraph: 3 } as const;
+/**
+ * Where a chunk may start: after a line break (paragraph), after sentence punctuation and a space (sentence), after
+ * clause punctuation and a space (clause), after a space (word). Chunks are cut at paragraphs, sentences and words;
+ * clauses matter only when a part is halved (halveAtBoundary).
+ */
+const BOUNDARY = { none: 0, word: 1, clause: 2, sentence: 3, paragraph: 4 } as const;
 type Boundary = (typeof BOUNDARY)[keyof typeof BOUNDARY];
 
 export const SYSTEM_PROMPT = [
@@ -52,7 +64,7 @@ export const SYSTEM_PROMPT = [
   'For each item give:',
   '- sourceMessageId: exactly the sourceMessageId you were given.',
   '- kind: payment_link, payment_recipient or phone_number.',
-  '- quote: the whole sentence or line that contains the item, not the item alone, copied exactly from the text, character for character.',
+  `- quote: the item with the few words around it that say what the reader is asked to do, at most ${MAX_QUOTE_CHARS} characters, copied exactly from the text, character for character, as one unbroken part of it. Never quote a whole long sentence or line.`,
   '- extractedValue: the item alone, exactly as written in the text: the whole URL, the name, or the number.',
   `- concern: for a phone_number, credential_request if the reader is to send it a code, password, PIN or card details; payment_request if the reader is to pay or transfer money to it, such as a mobile wallet; callback_request if the reader is to call or message it to go ahead; other_concern for any other request to use it. For anything else, ${NO_CONCERN}.`,
   `- countryHint: the ISO 3166 alpha-2 country of a phone number when the text makes it clear, otherwise ${UNKNOWN_COUNTRY}.`,
@@ -112,7 +124,9 @@ function boundaryAt(text: string, position: number): Boundary {
   const before = text[position - 1] ?? '';
   if (before === '\n') return BOUNDARY.paragraph;
   if (!WHITESPACE.test(before)) return BOUNDARY.none;
-  return SENTENCE_END.test(text[position - 2] ?? '') ? BOUNDARY.sentence : BOUNDARY.word;
+  const mark = text[position - 2] ?? '';
+  if (SENTENCE_END.test(mark)) return BOUNDARY.sentence;
+  return CLAUSE_END.test(mark) ? BOUNDARY.clause : BOUNDARY.word;
 }
 
 /** The last position in (from, to] with at least this boundary, or null. */
@@ -161,6 +175,33 @@ export function splitForContext(text: string, maxChars: number): string[] {
     start = nextStart(text, start, end, overlap);
   }
   return [...chunks, text.slice(start)];
+}
+
+/** The position in the middle half of the text with at least this boundary that is nearest the middle, or null. */
+function nearestBoundary(text: string, kind: Boundary): number | null {
+  const middle = Math.floor(text.length / 2);
+  for (let offset = 0; offset <= Math.floor(text.length / 4); offset += 1) {
+    if (boundaryAt(text, middle + offset) >= kind) return middle + offset;
+    if (boundaryAt(text, middle - offset) >= kind) return middle - offset;
+  }
+  return null;
+}
+
+/**
+ * Splits a part whose answer was cut off in two: at the paragraph, else sentence, else clause boundary nearest its
+ * middle, searched in the middle half. Details seldom span one, so those pieces do not overlap. Else it cuts at the
+ * space nearest the middle, or in the middle keeping a surrogate pair whole, and the second piece starts a little
+ * earlier, as a chunk does, so that a detail cut there is seen whole. Both pieces are exact parts of the text.
+ */
+export function halveAtBoundary(text: string): [string, string] {
+  for (const kind of [BOUNDARY.paragraph, BOUNDARY.sentence, BOUNDARY.clause]) {
+    const cut = nearestBoundary(text, kind);
+    if (cut !== null) return [text.slice(0, cut), text.slice(cut)];
+  }
+  const middle = Math.floor(text.length / 2);
+  const cut = nearestBoundary(text, BOUNDARY.word) ?? (HIGH_SURROGATE.test(text[middle - 1] ?? '') ? middle - 1 : middle);
+  const overlap = Math.min(MAX_OVERLAP_CHARS, Math.floor(text.length / 4));
+  return [text.slice(0, cut), text.slice(nextStart(text, 0, cut, overlap))];
 }
 
 export function buildMessages(input: PromptInput): ChatMessage[] {
