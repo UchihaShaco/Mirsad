@@ -260,7 +260,7 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect((await timeline(contact.body.data.chatId)).body.data.chat.initiatedBy).toBe('contact');
   });
 
-  it('a benign inbound greeting lands in the New inbound list, publishes chat.created and has no findings', async () => {
+  it('a benign inbound greeting lands in the New inbound list, publishes chat.created and, once dispatched, is reviewed with no finding', async () => {
     const res = await ingest(envelope(h.accounts.intake, uniqueId('greet-'), recorded({ messageId: 40, text: 'Hi, good evening!' })));
     const chatId = res.body.data.chatId;
     const inbox = await officerA().get('/v1/chats?inboxStatus=new_inbound');
@@ -268,8 +268,11 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(listed).toMatchObject({ inboxStatus: 'new_inbound', messageCount: 1 });
     const created = streamEvents(h.dataDir, chatId).filter((e) => e.type === 'chat.created');
     expect(created).toEqual([expect.objectContaining({ chatId, data: { inboxStatus: 'new_inbound' } })]);
+    // Without a dispatch the review stays not_requested, and no finding would prove nothing about the greeting.
+    expect((await dispatch([chatId])).status).toBe(200);
     await h.drain();
     const tl = (await timeline(chatId)).body.data;
+    expect(tl.messages[0].review).toMatchObject({ status: 'completed', outcome: 'no_new_finding' });
     expect(tl.findings).toEqual([]);
     expect(countRows(h.dataDir, 'findings', 'chat_id = :chatId', { chatId })).toBe(0);
   });
