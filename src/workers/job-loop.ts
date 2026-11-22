@@ -19,69 +19,78 @@ export interface JobLoop {
   stop(): Promise<void>;
 }
 
-export function createJobLoop<Job>(options: JobLoopOptions<Job>): JobLoop {
-  let active = 0;
-  let scheduled = false;
-  let stopped = false;
-  let idleWaiters: (() => void)[] = [];
+/** What one loop tracks between wake-ups. */
+interface LoopState<Job> {
+  readonly options: JobLoopOptions<Job>;
+  active: number;
+  scheduled: boolean;
+  stopped: boolean;
+  idleWaiters: (() => void)[];
+}
 
-  const isIdle = () => active === 0 && !scheduled;
+function isIdle<Job>(state: LoopState<Job>): boolean {
+  return state.active === 0 && !state.scheduled;
+}
 
-  const settle = () => {
-    if (!isIdle()) return;
-    const waiting = idleWaiters;
-    idleWaiters = [];
-    for (const resolve of waiting) resolve();
-  };
+/** Resolves every idle() and stop() waiter once nothing runs and nothing is scheduled. */
+function settle<Job>(state: LoopState<Job>): void {
+  if (!isIdle(state)) return;
+  const waiting = state.idleWaiters;
+  state.idleWaiters = [];
+  for (const resolve of waiting) resolve();
+}
 
-  const report = (error: unknown, phase: 'claim' | 'work') => options.onError?.(error, phase);
+function whenIdle<Job>(state: LoopState<Job>): Promise<void> {
+  if (isIdle(state)) return Promise.resolve();
+  return new Promise<void>((resolve) => state.idleWaiters.push(resolve));
+}
 
-  const claimNext = (): Job | null => {
-    try {
-      return options.claim();
-    } catch (error) {
-      report(error, 'claim');
-      return null;
-    }
-  };
-
-  const run = (job: Job) => {
-    active += 1;
-    // Promise.resolve().then turns a synchronous throw in work() into a rejection, so `active` always settles.
-    Promise.resolve()
-      .then(() => options.work(job))
-      .catch((error: unknown) => report(error, 'work'))
-      .finally(() => {
-        active -= 1;
-        pump();
-      });
-  };
-
-  function pump() {
-    scheduled = false;
-    while (!stopped && active < options.concurrency) {
-      const job = claimNext();
-      if (job === null) break;
-      run(job);
-    }
-    settle();
+function claimNext<Job>(state: LoopState<Job>): Job | null {
+  try {
+    return state.options.claim();
+  } catch (error) {
+    state.options.onError?.(error, 'claim');
+    return null;
   }
+}
 
+/** Runs one job; when it ends, however it ends, the loop claims again. */
+function run<Job>(state: LoopState<Job>, job: Job): void {
+  state.active += 1;
+  // Promise.resolve().then turns a synchronous throw in work() into a rejection, so `active` always settles.
+  Promise.resolve()
+    .then(() => state.options.work(job))
+    .catch((error: unknown) => state.options.onError?.(error, 'work'))
+    .finally(() => {
+      state.active -= 1;
+      pump(state);
+    });
+}
+
+/** Claims and starts jobs up to the concurrency limit, then settles the idle waiters. */
+function pump<Job>(state: LoopState<Job>): void {
+  state.scheduled = false;
+  while (!state.stopped && state.active < state.options.concurrency) {
+    const job = claimNext(state);
+    if (job === null) break;
+    run(state, job);
+  }
+  settle(state);
+}
+
+export function createJobLoop<Job>(options: JobLoopOptions<Job>): JobLoop {
+  const state: LoopState<Job> = { options, active: 0, scheduled: false, stopped: false, idleWaiters: [] };
   return {
     wake() {
-      if (stopped || scheduled) return;
-      scheduled = true;
-      setImmediate(pump);
+      if (state.stopped || state.scheduled) return;
+      state.scheduled = true;
+      setImmediate(() => pump(state));
     },
-    idle() {
-      if (isIdle()) return Promise.resolve();
-      return new Promise<void>((resolve) => idleWaiters.push(resolve));
-    },
-    isIdle,
+    idle: () => whenIdle(state),
+    isIdle: () => isIdle(state),
     async stop() {
-      stopped = true;
-      if (isIdle()) return;
-      await new Promise<void>((resolve) => idleWaiters.push(resolve));
+      state.stopped = true;
+      await whenIdle(state);
     },
   };
 }
