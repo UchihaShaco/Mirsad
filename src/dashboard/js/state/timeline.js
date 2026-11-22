@@ -38,6 +38,15 @@ export function latestIncomingMessageId(timeline) {
 }
 
 /**
+ * The phone the source supplied as sender metadata of an incoming message, exactly as written, or null. A service from
+ * before the field existed sends no phone, which also gives null.
+ */
+export function senderPhoneOf(message) {
+  const phone = message.direction === 'incoming' ? message.sender?.phone : null;
+  return typeof phone === 'string' && phone.trim() !== '' ? phone : null;
+}
+
+/**
  * The Leave unanswered target after a timeline reload. Until the officer picks a message (`pinned`), the target follows
  * the newest incoming message on every reload; a picked message stays the target while it is in the timeline.
  */

@@ -12,7 +12,7 @@ import {
 } from '../../src/dashboard/js/state/composer.js';
 import { groupInbox } from '../../src/dashboard/js/state/inbox.js';
 import { chatHref, parseRoute, tokenFromFragment } from '../../src/dashboard/js/state/route.js';
-import { latestIncomingMessageId, replyTargetAfterReload, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
+import { latestIncomingMessageId, replyTargetAfterReload, senderPhoneOf, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
 
 const AT = '2026-11-21T08:00:00.000Z';
 const OFFICER_A = { id: 'prn_officer_a', displayName: 'Demo Officer 1' };
@@ -262,6 +262,21 @@ describe('timeline merge', () => {
     // A picked message that is no longer an incoming source message gives way to the newest one.
     expect(replyTargetAfterReload({ id: 'msg_9', pinned: true }, third)).toEqual({ id: 'msg_3', pinned: false });
     expect(replyTargetAfterReload(opened, { messages: [message('msg_0', 5, 'outgoing')] })).toEqual({ id: null, pinned: false });
+  });
+
+  it('the sender phone shows only on incoming messages that carry one, exactly as the source wrote it', () => {
+    const sentWith = (direction: 'incoming' | 'outgoing', phone: string | null) => ({
+      direction,
+      sender: { externalId: 'tg-user-1', displayName: 'Test Contact', phone },
+    });
+    expect(senderPhoneOf(sentWith('incoming', '+44 7700 900123'))).toBe('+44 7700 900123');
+    expect(senderPhoneOf(sentWith('outgoing', '+44 7700 900123'))).toBeNull();
+    expect(senderPhoneOf(sentWith('incoming', null))).toBeNull();
+    expect(senderPhoneOf(sentWith('incoming', '   '))).toBeNull();
+    expect(senderPhoneOf({ direction: 'incoming', sender: null })).toBeNull();
+    // A service from before the field existed sends no phone at all.
+    expect(senderPhoneOf({ direction: 'incoming', sender: { externalId: 'tg-user-1', displayName: 'Test Contact' } })).toBeNull();
+    expect(senderPhoneOf(message('msg_1', 10))).toBeNull();
   });
 });
 

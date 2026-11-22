@@ -7,7 +7,7 @@ import { bdi, clear, h, timeEl, withFocus } from '../dom.js';
 import { CAPTURE_METHOD_LABELS, DIRECTION_LABELS, formatTime, reviewStatusLabel } from '../format.js';
 import { canCompose } from '../state/composer.js';
 import { chatHref } from '../state/route.js';
-import { timelineEntries } from '../state/timeline.js';
+import { senderPhoneOf, timelineEntries } from '../state/timeline.js';
 import { renderCapture } from './capture.js';
 
 const BOTTOM_SLACK_PX = 40;
@@ -65,6 +65,9 @@ function replyTargetControl(message, ctx) {
 function messageFacts(message, chat) {
   const facts = [...sourceFact(chat, message.source.captureMethod), ...fact('Received', timeEl(message.receivedAt))];
   if (message.sentAt !== null) facts.push(...fact('Sent at source', timeEl(message.sentAt)));
+  // The number a sender-metadata watchlist observation cites; shown as the source wrote it.
+  const senderPhone = senderPhoneOf(message);
+  if (senderPhone !== null) facts.push(...fact('Sender phone', bdi(senderPhone)));
   if (message.unsupportedContent.length > 0) facts.push(...fact('Not captured', message.unsupportedContent.join(', ')));
   return h('dl', { className: 'facts' }, facts);
 }

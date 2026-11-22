@@ -12,6 +12,14 @@ export function timelineEntries(
 ): TimelineEntry[];
 export function latestIncomingMessageId(timeline: Pick<Timeline, 'messages'>): string | null;
 
+/** A message sender as senderPhoneOf reads it; `phone` is optional so a sender from before the field also fits. */
+export interface SenderWithOptionalPhone {
+  externalId: string | null;
+  displayName: string | null;
+  phone?: string | null;
+}
+export function senderPhoneOf(message: Pick<Message, 'direction'> & { sender: SenderWithOptionalPhone | null }): string | null;
+
 /** The incoming message Leave unanswered applies to; `pinned` once the officer picked it. */
 export interface ReplyTarget {
   id: string | null;

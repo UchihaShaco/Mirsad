@@ -250,6 +250,24 @@ describe('reference dashboard', () => {
     expect(problems).toEqual([]);
   });
 
+  it('an incoming message that carries the sender phone shows it as Sender phone, isolated for bidirectional text', async () => {
+    const label = 'Test Contact 8';
+    const phone = '+44 7700 900123';
+    // The contact's own Telegram contact card: no text, and the number arrives as sender metadata.
+    const sender = { externalId: 'tg-user-own-card', displayName: label, phone: { raw: phone, internationalFormat: true } };
+    const event = recorded({ messageId: 1, text: '', unsupportedContent: ['contact'], sender });
+    const res = await h.http(h.tokens.connector).post('/v1/ingest', envelope(h.accounts.intake, uniqueId('chat-'), event, label));
+    expect(res.status, res.text).toBe(CREATED);
+    expect((await timelineOf(res.body.data.chatId)).messages[0]?.sender?.phone).toBe(phone);
+
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, label);
+    const facts = page.locator(`#message-${res.body.data.messageId} dl.facts`);
+    await facts.waitFor();
+    expect(await facts.locator('dt:text-is("Sender phone") + dd bdi').textContent()).toBe(phone);
+    expect(problems).toEqual([]);
+  });
+
   it('message text containing markup is shown literally', async () => {
     const label = '<b>Test Contact 4</b>';
     const text = 'Hi <img src=x onerror="globalThis.__mirsadInjected = 1"> <script>globalThis.__mirsadInjected = 2</script> <b>plain</b> & more';
