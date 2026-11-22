@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateItem } from '../../src/domain/finding-validation.ts';
+import { acceptValidatedItems, normalizePhoneValue, validateItem } from '../../src/domain/finding-validation.ts';
 import type { ExtractedItem } from '../../src/ports/reviewer.ts';
 
 const MESSAGE_ID = 'msg_00000000000000000000000000000001';
@@ -123,5 +123,37 @@ describe('validateItem: payment recipients', () => {
   it('rejects a recipient the quote does not contain', () => {
     const recipient = item({ kind: 'payment_recipient', quote: 'Beneficiary:  Test   Trading LLC', extractedValue: 'Other Holdings' });
     expect(validateItem(recipient, record(text))).toEqual({ ok: false, reason: 'value_not_in_quote' });
+  });
+});
+
+describe('acceptValidatedItems: what the review pipeline and the evaluation act on', () => {
+  it('keeps the first supported item per kind and normalized value, drops a phone number without a concern and counts rejected items as unsupported', () => {
+    const text = 'Pay at https://pay.shop.test/inv/7. Call 07700 900123 to confirm, not the old desk on 07700 900456.';
+    const sentence = 'Pay at https://pay.shop.test/inv/7.';
+    const link = item({ quote: sentence, extractedValue: 'https://pay.shop.test/inv/7' });
+    const sameLink = item({ quote: sentence, extractedValue: 'https://pay.shop.test/inv/7.' });
+    // The same normalized value under another kind is another detail.
+    const linkAsRecipient = item({ kind: 'payment_recipient', quote: sentence, extractedValue: 'pay.shop.test/inv/7' });
+    const phone = item({ kind: 'phone_number', quote: 'Call 07700 900123 to confirm', extractedValue: '07700 900123', concern: 'callback_request', countryHint: 'GB' });
+    const noConcern = item({ kind: 'phone_number', quote: 'the old desk on 07700 900456', extractedValue: '07700 900456', countryHint: 'GB' });
+    const invented = item({ quote: 'Pay at https://pay.other.test/x', extractedValue: 'https://pay.other.test/x' });
+    const otherMessage = { ...link, sourceMessageId: 'msg_00000000000000000000000000000002' };
+
+    const result = acceptValidatedItems([link, invented, sameLink, phone, noConcern, otherMessage, linkAsRecipient], record(text));
+
+    expect(result).toEqual({
+      accepted: [
+        { item: link, normalizedValue: 'pay.shop.test/inv/7' },
+        { item: phone, normalizedValue: '+447700900123' },
+        { item: linkAsRecipient, normalizedValue: 'pay.shop.test/inv/7' },
+      ],
+      unsupported: 2,
+    });
+  });
+
+  it('normalizes a phone number as validation does: E.164 with the country hint, else its digits marked unnormalized', () => {
+    expect(normalizePhoneValue('07700 900123', 'GB')).toBe('+447700900123');
+    expect(normalizePhoneValue('+44 7700 900123', null)).toBe('+447700900123');
+    expect(normalizePhoneValue('07700 900123', null)).toBe('unnormalized:07700900123');
   });
 });

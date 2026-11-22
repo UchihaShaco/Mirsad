@@ -5,7 +5,7 @@
  */
 import type { Concern, ExtractedKind, ReviewOutcome } from '../contract/enums.ts';
 import { decideDetail, type DetailDecision, type KnownDetail } from '../domain/case-details.ts';
-import { validateItem, type ReviewedRecord } from '../domain/finding-validation.ts';
+import { acceptValidatedItems, type AcceptedItem } from '../domain/finding-validation.ts';
 import { detectPaymentLinks, hostOfNormalizedLink, lineAt, normalizeLink, urlTokenOffset } from '../domain/links.ts';
 import { normalizePhone, phoneHintFor } from '../domain/phone.ts';
 import type { ExtractedItem, PhoneMention } from '../ports/reviewer.ts';
@@ -74,29 +74,17 @@ function settleStaleResult(tx: Tx, ctx: ReviewContext): PublishOutcome | null {
   return null;
 }
 
-/** Rule 2: supported items only, one per kind and value; a phone number without a concern is dropped. */
-function acceptItems(items: readonly ExtractedItem[], record: ReviewedRecord): { candidates: Candidate[]; unsupported: number } {
-  const candidates = new Map<string, Candidate>();
-  let unsupported = 0;
-  for (const item of items) {
-    const result = validateItem(item, record);
-    if (!result.ok) {
-      unsupported += 1;
-      continue;
-    }
-    const key = `${item.kind}\u0000${result.normalizedValue}`;
-    if ((item.kind === 'phone_number' && item.concern === null) || candidates.has(key)) continue;
-    candidates.set(key, {
-      category: item.kind,
-      quote: item.quote.trim(),
-      extractedValue: item.extractedValue.trim(),
-      normalizedValue: result.normalizedValue,
-      concern: item.concern,
-      countryHint: item.countryHint,
-      reported: true,
-    });
-  }
-  return { candidates: [...candidates.values()], unsupported };
+/** Rule 2 is acceptValidatedItems: each item it accepts becomes a candidate the reviewer reported. */
+function toCandidate({ item, normalizedValue }: AcceptedItem): Candidate {
+  return {
+    category: item.kind,
+    quote: item.quote.trim(),
+    extractedValue: item.extractedValue.trim(),
+    normalizedValue,
+    concern: item.concern,
+    countryHint: item.countryHint,
+    reported: true,
+  };
 }
 
 /**
@@ -214,7 +202,8 @@ export function publishReview(tx: Tx, reviewId: string, items: readonly Extracte
   const stale = settleStaleResult(tx, ctx);
   if (stale) return stale;
   const text = ctx.messageEvent.text ?? '';
-  const { candidates, unsupported } = acceptItems(items, { messageId: ctx.message.id, text });
+  const { accepted, unsupported } = acceptValidatedItems(items, { messageId: ctx.message.id, text });
+  const candidates = accepted.map(toCandidate);
   const fraud = fraudContextOf(tx, ctx.chat.id);
   const considered = fraud ? withCodeFoundLinks(candidates, text) : candidates;
   const { recorded, suppressed } = recordCandidates(tx, ctx, considered, fraud);

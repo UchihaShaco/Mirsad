@@ -1,13 +1,12 @@
 /**
- * Scores an evaluation run (brief "Local model setup"). Every item a reviewer returned goes through validateItem as
- * in the review pipeline; an expected item matches an extracted one when kind and value agree after the pipeline's
- * normalization. The phone concern is a judgement call, so it is reported as agreement, not part of the match. The
- * report holds counts, IDs and timings only, never message text or extracted values.
+ * Scores an evaluation run (brief "Local model setup"). The items a reviewer returned go through the review
+ * pipeline's own accept step (acceptValidatedItems); an expected item matches an accepted one when kind and value
+ * agree after the pipeline's normalization. The phone concern is a judgement call, so it is reported as agreement, not
+ * part of the match. The report holds counts, IDs and timings only, never message text or extracted values.
  */
-import type { Concern, ExtractedKind } from '../../contract/enums.ts';
-import { normalizeRecipient, validateItem, type ReviewedRecord } from '../../domain/finding-validation.ts';
+import type { ExtractedKind } from '../../contract/enums.ts';
+import { acceptValidatedItems, normalizePhoneValue, normalizeRecipient, type AcceptedItem } from '../../domain/finding-validation.ts';
 import { normalizeLink } from '../../domain/links.ts';
-import { normalizePhone, phoneHintFor } from '../../domain/phone.ts';
 import type { ExtractedItem } from '../../ports/reviewer.ts';
 import type { ExpectedItem, Transcript, TranscriptMessage } from './transcript-schema.ts';
 
@@ -81,41 +80,14 @@ export interface EvalReport {
   messages: MessageScore[];
 }
 
-interface AcceptedItem {
-  kind: ExtractedKind;
-  normalizedValue: string;
-  concern: Concern | null;
-  countryHint: string | null;
-}
-
 interface Matching {
-  matched: Array<{ expected: ExpectedItem; item: AcceptedItem }>;
+  matched: Array<{ expected: ExpectedItem; found: AcceptedItem }>;
   missed: ExpectedItem[];
   extra: AcceptedItem[];
 }
 
 const P95_PERCENT = 95;
 const NO_PHONES: ConcernAgreement = { matchedPhones: 0, agreeing: 0 };
-
-/**
- * The items the pipeline would act on (publishReview, design section 10 step 2): supported ones only, one per kind and
- * value, without phone numbers that carry no concern. Rejected items are the unsupported findings.
- */
-function acceptItems(items: readonly ExtractedItem[], record: ReviewedRecord): { accepted: AcceptedItem[]; unsupported: number } {
-  const accepted = new Map<string, AcceptedItem>();
-  let unsupported = 0;
-  for (const item of items) {
-    const result = validateItem(item, record);
-    if (!result.ok) {
-      unsupported += 1;
-      continue;
-    }
-    const key = `${item.kind}\u0000${result.normalizedValue}`;
-    if ((item.kind === 'phone_number' && item.concern === null) || accepted.has(key)) continue;
-    accepted.set(key, { kind: item.kind, normalizedValue: result.normalizedValue, concern: item.concern, countryHint: item.countryHint });
-  }
-  return { accepted: [...accepted.values()], unsupported };
-}
 
 /** The expected value as validateItem normalizes an extracted one; a phone number takes the extracted item's country hint. */
 function normalizedExpected(expected: ExpectedItem, countryHint: string | null): string | null {
@@ -124,10 +96,8 @@ function normalizedExpected(expected: ExpectedItem, countryHint: string | null):
       return normalizeLink(expected.value);
     case 'payment_recipient':
       return normalizeRecipient(expected.value);
-    case 'phone_number': {
-      const phone = normalizePhone(expected.value, phoneHintFor(countryHint));
-      return phone.e164 ?? `unnormalized:${phone.digits}`;
-    }
+    case 'phone_number':
+      return normalizePhoneValue(expected.value, countryHint);
   }
 }
 
@@ -136,9 +106,9 @@ function matchItems(expected: readonly ExpectedItem[], accepted: readonly Accept
   const matched: Matching['matched'] = [];
   const missed: ExpectedItem[] = [];
   for (const want of expected) {
-    const index = remaining.findIndex((item) => item.kind === want.kind && normalizedExpected(want, item.countryHint) === item.normalizedValue);
-    const [item] = index < 0 ? [] : remaining.splice(index, 1);
-    if (item) matched.push({ expected: want, item });
+    const index = remaining.findIndex(({ item, normalizedValue }) => item.kind === want.kind && normalizedExpected(want, item.countryHint) === normalizedValue);
+    const [found] = index < 0 ? [] : remaining.splice(index, 1);
+    if (found) matched.push({ expected: want, found });
     else missed.push(want);
   }
   return { matched, missed, extra: remaining };
@@ -152,7 +122,7 @@ function scoreMessage(transcript: Transcript, message: TranscriptMessage, review
     const counts = { truePositives: 0, falsePositives: 0, falseNegatives: missedKinds.length, unsupported: 0 };
     return { ...base, ...counts, missedKinds, extraKinds: [], concernAgreement: NO_PHONES, ...timing, errorCode: review.answer.errorCode };
   }
-  const { accepted, unsupported } = acceptItems(review.answer.items, { messageId: review.reviewedMessageId, text: message.text });
+  const { accepted, unsupported } = acceptValidatedItems(review.answer.items, { messageId: review.reviewedMessageId, text: message.text });
   const { matched, missed, extra } = matchItems(message.expected, accepted);
   const phones = matched.filter(({ expected }) => expected.kind === 'phone_number');
   return {
@@ -162,8 +132,8 @@ function scoreMessage(transcript: Transcript, message: TranscriptMessage, review
     falseNegatives: missed.length,
     unsupported,
     missedKinds: missed.map((want) => want.kind),
-    extraKinds: extra.map((item) => item.kind),
-    concernAgreement: { matchedPhones: phones.length, agreeing: phones.filter(({ expected, item }) => item.concern === expected.concern).length },
+    extraKinds: extra.map(({ item }) => item.kind),
+    concernAgreement: { matchedPhones: phones.length, agreeing: phones.filter(({ expected, found }) => found.item.concern === expected.concern).length },
     ...timing,
     errorCode: null,
   };

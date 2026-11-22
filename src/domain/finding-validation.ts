@@ -16,6 +16,17 @@ export interface ReviewedRecord {
   text: string;
 }
 
+/** A supported item and its normalized value (design section 10, steps 2 and 3). */
+export interface AcceptedItem {
+  item: ExtractedItem;
+  normalizedValue: string;
+}
+
+export interface AcceptedItems {
+  accepted: AcceptedItem[];
+  unsupported: number;
+}
+
 /** E.164 allows at most 15 digits; shorter than 7 is no phone number. */
 const PHONE_MIN_DIGITS = 7;
 const PHONE_MAX_DIGITS = 15;
@@ -24,6 +35,12 @@ const WHITESPACE_RUN = /\s+/g;
 
 export function normalizeRecipient(value: string): string {
   return value.trim().replace(WHITESPACE_RUN, ' ').toLowerCase();
+}
+
+/** A phone number's normalized value (design section 10, step 3): its E.164 form, or `unnormalized:<digits>`. */
+export function normalizePhoneValue(value: string, countryHint: string | null): string {
+  const phone = normalizePhone(value, phoneHintFor(countryHint));
+  return phone.e164 ?? `unnormalized:${phone.digits}`;
 }
 
 /** The value must be a whole token of the quote (edge punctuation aside) and a web link with a dotted host. */
@@ -79,8 +96,7 @@ function phoneValue(value: string, quote: string, countryHint: string | null): s
   const digits = toAsciiDigits(value).replace(NON_DIGIT, '');
   if (!isNumberLength(digits.length)) return null;
   if (!findPhoneSpans(quote).some((span) => isNumberOfSpan(span.digitGroups, digits))) return null;
-  const phone = normalizePhone(value, phoneHintFor(countryHint));
-  return phone.e164 ?? `unnormalized:${phone.digits}`;
+  return normalizePhoneValue(value, countryHint);
 }
 
 /** The value must appear in the quote, ignoring case and repeated whitespace. */
@@ -108,4 +124,25 @@ export function validateItem(item: ExtractedItem, record: ReviewedRecord): Valid
   if (!record.text.includes(quote)) return { ok: false, reason: 'quote_not_found' };
   const normalizedValue = normalizedValueOf(item.kind, value, quote, item.countryHint);
   return normalizedValue === null ? { ok: false, reason: 'value_not_in_quote' } : { ok: true, normalizedValue };
+}
+
+/**
+ * What the review pipeline acts on (design section 10, step 2), and so what the evaluation scores: the supported
+ * items, the first of each kind and normalized value, without phone numbers that carry no concern. Rejected items are
+ * the unsupported findings.
+ */
+export function acceptValidatedItems(items: readonly ExtractedItem[], record: ReviewedRecord): AcceptedItems {
+  const accepted = new Map<string, AcceptedItem>();
+  let unsupported = 0;
+  for (const item of items) {
+    const result = validateItem(item, record);
+    if (!result.ok) {
+      unsupported += 1;
+      continue;
+    }
+    const key = `${item.kind}\u0000${result.normalizedValue}`;
+    if ((item.kind === 'phone_number' && item.concern === null) || accepted.has(key)) continue;
+    accepted.set(key, { item, normalizedValue: result.normalizedValue });
+  }
+  return { accepted: [...accepted.values()], unsupported };
 }
