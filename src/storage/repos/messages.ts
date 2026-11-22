@@ -155,6 +155,15 @@ export function findEventBySourceEventId(tx: Tx, chatId: string, sourceEventId: 
   );
 }
 
+/** Whether the message already holds a conflicting copy with this text, so delivering that copy again stores nothing new. */
+export function hasConflictingCopy(tx: Tx, messageId: string, textSha256: string): boolean {
+  const row = tx.get<{ id: string }>(
+    "SELECT id FROM message_events WHERE message_id = :messageId AND type = 'conflicting_copy' AND text_sha256 = :textSha256 LIMIT 1",
+    { messageId, textSha256 },
+  );
+  return row !== undefined;
+}
+
 export interface InsertMessageEventInput {
   /** Pre-generated `mev_` ID (see InsertSourceMessageInput.id). */
   id: string;

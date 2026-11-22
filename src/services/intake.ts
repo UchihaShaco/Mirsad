@@ -198,7 +198,9 @@ function storeRecorded(ctx: IntakeContext, chat: ChatRow, event: RecordedEvent):
   const existing = messages.findMessageBySourceId(ctx.tx, chat.id, event.sourceMessageId);
   const content = toContent(event);
   if (existing && existing.original_captured === 1) {
-    if (existing.text_sha256 === content.textSha256) return buildResult(ctx, chat.id, 'duplicate_message', existing.id, null);
+    // The original text, or a differing copy already kept, delivered again under a new event ID adds nothing.
+    const known = existing.text_sha256 === content.textSha256 || messages.hasConflictingCopy(ctx.tx, existing.id, content.textSha256);
+    if (known) return buildResult(ctx, chat.id, 'duplicate_message', existing.id, null);
     return storeConflictingCopy(ctx, chat, existing, event);
   }
   const messageId = existing?.id ?? newId('msg');

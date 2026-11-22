@@ -387,6 +387,27 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(streamEvents(h.dataDir, chatId).map((e) => e.type)).toContain('message.conflicting_copy');
   });
 
+  it('the same differing copy delivered again under a new event id is a duplicate, while a further different copy is kept', async () => {
+    const chat = uniqueId('conf-dup-');
+    const first = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 81, updateId: 610, text: 'Pay to account A' })));
+    const chatId = first.body.data.chatId;
+    const copy = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 81, updateId: 611, text: 'Pay to account B' })));
+    expect(copy.body.data.result).toBe('conflicting_copy');
+
+    const again = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 81, updateId: 612, text: 'Pay to account B' })));
+    expect(again.status).toBe(200);
+    expect(again.body.data).toMatchObject({
+      result: 'duplicate_message', messageId: first.body.data.messageId, messageEventId: null, captureId: null, textConflict: false,
+    });
+    const other = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 81, updateId: 613, text: 'Pay to account C' })));
+    expect(other.body.data.result).toBe('conflicting_copy');
+
+    expect(countRows(h.dataDir, 'message_events', "chat_id = :chatId AND type = 'conflicting_copy'", { chatId })).toBe(2);
+    expect(countRows(h.dataDir, 'case_actions', "chat_id = :chatId AND type = 'text_conflict_recorded'", { chatId })).toBe(2);
+    expect(countRows(h.dataDir, 'captures', 'chat_id = :chatId', { chatId })).toBe(3);
+    expect(countRows(h.dataDir, 'reviews', 'chat_id = :chatId', { chatId })).toBe(3);
+  });
+
   it('a dispatch that starts a chat bumps its revision, moves it out of New inbound and publishes chat.control_changed', async () => {
     const chatId = (await ingest(envelope(h.accounts.intake, uniqueId('start-'), recorded({ messageId: 90 })))).body.data.chatId;
     await dispatch([chatId]);
