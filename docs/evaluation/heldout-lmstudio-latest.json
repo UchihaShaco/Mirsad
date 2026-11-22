@@ -2,7 +2,7 @@
   "set": "heldout",
   "reviewer": "lmstudio",
   "modelId": "qwen3.5-9b",
-  "generatedAt": "2026-11-22T01:32:54.482Z",
+  "generatedAt": "2026-11-22T03:44:38.530Z",
   "transcripts": [
     "ar-01-gulf-maintenance",
     "ar-02-egyptian-curtains-link",
@@ -27,21 +27,21 @@
     "messages": 55,
     "unavailable": 0,
     "truePositives": 20,
-    "falsePositives": 5,
+    "falsePositives": 3,
     "falseNegatives": 1,
-    "precision": 0.8,
+    "precision": 0.8695652173913043,
     "recall": 0.9523809523809523,
-    "unsupported": 0,
+    "unsupported": 1,
     "concernAgreement": {
       "matchedPhones": 5,
-      "agreeing": 4
+      "agreeing": 5
     },
     "latency": {
       "count": 55,
-      "minMs": 199,
-      "medianMs": 244,
-      "p95Ms": 6011,
-      "maxMs": 9696
+      "minMs": 198,
+      "medianMs": 242,
+      "p95Ms": 5785,
+      "maxMs": 6211
     }
   },
   "byLanguage": {
@@ -60,31 +60,31 @@
       },
       "latency": {
         "count": 19,
-        "minMs": 223,
-        "medianMs": 248,
-        "p95Ms": 5405,
-        "maxMs": 5405
+        "minMs": 220,
+        "medianMs": 244,
+        "p95Ms": 5048,
+        "maxMs": 5048
       }
     },
     "en": {
       "messages": 18,
       "unavailable": 0,
       "truePositives": 5,
-      "falsePositives": 3,
+      "falsePositives": 1,
       "falseNegatives": 1,
-      "precision": 0.625,
+      "precision": 0.8333333333333334,
       "recall": 0.8333333333333334,
-      "unsupported": 0,
+      "unsupported": 1,
       "concernAgreement": {
         "matchedPhones": 1,
         "agreeing": 1
       },
       "latency": {
         "count": 18,
-        "minMs": 219,
-        "medianMs": 244.5,
-        "p95Ms": 9696,
-        "maxMs": 9696
+        "minMs": 202,
+        "medianMs": 241,
+        "p95Ms": 6211,
+        "maxMs": 6211
       }
     },
     "mixed": {
@@ -98,14 +98,14 @@
       "unsupported": 0,
       "concernAgreement": {
         "matchedPhones": 2,
-        "agreeing": 1
+        "agreeing": 2
       },
       "latency": {
         "count": 18,
-        "minMs": 199,
-        "medianMs": 239.5,
-        "p95Ms": 6231,
-        "maxMs": 6231
+        "minMs": 198,
+        "medianMs": 233.5,
+        "p95Ms": 5819,
+        "maxMs": 5819
       }
     }
   },
@@ -125,7 +125,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 244,
+      "latencyMs": 240,
       "errorCode": null
     },
     {
@@ -143,7 +143,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 235,
+      "latencyMs": 240,
       "errorCode": null
     },
     {
@@ -161,7 +161,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 239,
+      "latencyMs": 246,
       "errorCode": null
     },
     {
@@ -179,7 +179,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 249,
+      "latencyMs": 235,
       "errorCode": null
     },
     {
@@ -197,7 +197,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 5405,
+      "latencyMs": 5048,
       "errorCode": null
     },
     {
@@ -215,7 +215,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 238,
+      "latencyMs": 232,
       "errorCode": null
     },
     {
@@ -235,7 +235,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2664,
+      "latencyMs": 3058,
       "errorCode": null
     },
     {
@@ -253,7 +253,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 226,
+      "latencyMs": 220,
       "errorCode": null
     },
     {
@@ -271,7 +271,7 @@
         "matchedPhones": 1,
         "agreeing": 1
       },
-      "latencyMs": 3577,
+      "latencyMs": 3272,
       "errorCode": null
     },
     {
@@ -289,7 +289,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2732,
+      "latencyMs": 2929,
       "errorCode": null
     },
     {
@@ -307,7 +307,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2766,
+      "latencyMs": 2961,
       "errorCode": null
     },
     {
@@ -343,7 +343,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 242,
+      "latencyMs": 244,
       "errorCode": null
     },
     {
@@ -361,7 +361,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 254,
+      "latencyMs": 247,
       "errorCode": null
     },
     {
@@ -379,7 +379,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 248,
+      "latencyMs": 234,
       "errorCode": null
     },
     {
@@ -397,7 +397,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 223,
+      "latencyMs": 232,
       "errorCode": null
     },
     {
@@ -415,7 +415,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 228,
+      "latencyMs": 231,
       "errorCode": null
     },
     {
@@ -433,7 +433,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 250,
+      "latencyMs": 255,
       "errorCode": null
     },
     {
@@ -451,7 +451,7 @@
         "matchedPhones": 1,
         "agreeing": 1
       },
-      "latencyMs": 3307,
+      "latencyMs": 2986,
       "errorCode": null
     },
     {
@@ -469,7 +469,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 237,
+      "latencyMs": 251,
       "errorCode": null
     },
     {
@@ -487,7 +487,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 247,
+      "latencyMs": 250,
       "errorCode": null
     },
     {
@@ -505,7 +505,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 230,
+      "latencyMs": 227,
       "errorCode": null
     },
     {
@@ -523,7 +523,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 242,
+      "latencyMs": 224,
       "errorCode": null
     },
     {
@@ -541,7 +541,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 5415,
+      "latencyMs": 5086,
       "errorCode": null
     },
     {
@@ -577,7 +577,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 230,
+      "latencyMs": 225,
       "errorCode": null
     },
     {
@@ -595,7 +595,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 253,
+      "latencyMs": 242,
       "errorCode": null
     },
     {
@@ -613,34 +613,12 @@
         "matchedPhones": 1,
         "agreeing": 1
       },
-      "latencyMs": 2355,
+      "latencyMs": 2035,
       "errorCode": null
     },
     {
       "transcriptId": "en-04-new-collection-account",
       "messageId": "m1",
-      "language": "en",
-      "expected": 1,
-      "truePositives": 0,
-      "falsePositives": 1,
-      "falseNegatives": 1,
-      "unsupported": 0,
-      "missedKinds": [
-        "payment_recipient"
-      ],
-      "extraKinds": [
-        "payment_recipient"
-      ],
-      "concernAgreement": {
-        "matchedPhones": 0,
-        "agreeing": 0
-      },
-      "latencyMs": 2607,
-      "errorCode": null
-    },
-    {
-      "transcriptId": "en-04-new-collection-account",
-      "messageId": "m3",
       "language": "en",
       "expected": 1,
       "truePositives": 1,
@@ -653,19 +631,21 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2002,
+      "latencyMs": 2642,
       "errorCode": null
     },
     {
       "transcriptId": "en-04-new-collection-account",
-      "messageId": "m4",
+      "messageId": "m3",
       "language": "en",
-      "expected": 0,
+      "expected": 1,
       "truePositives": 0,
       "falsePositives": 0,
-      "falseNegatives": 0,
+      "falseNegatives": 1,
       "unsupported": 0,
-      "missedKinds": [],
+      "missedKinds": [
+        "payment_recipient"
+      ],
       "extraKinds": [],
       "concernAgreement": {
         "matchedPhones": 0,
@@ -675,6 +655,24 @@
       "errorCode": null
     },
     {
+      "transcriptId": "en-04-new-collection-account",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 232,
+      "errorCode": null
+    },
+    {
       "transcriptId": "en-05-system-note-injection",
       "messageId": "m1",
       "language": "en",
@@ -689,7 +687,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 229,
+      "latencyMs": 222,
       "errorCode": null
     },
     {
@@ -698,19 +696,18 @@
       "language": "en",
       "expected": 1,
       "truePositives": 1,
-      "falsePositives": 2,
+      "falsePositives": 1,
       "falseNegatives": 0,
-      "unsupported": 0,
+      "unsupported": 1,
       "missedKinds": [],
       "extraKinds": [
-        "payment_recipient",
-        "phone_number"
+        "payment_recipient"
       ],
       "concernAgreement": {
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 9696,
+      "latencyMs": 6211,
       "errorCode": null
     },
     {
@@ -728,7 +725,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 219,
+      "latencyMs": 202,
       "errorCode": null
     },
     {
@@ -746,7 +743,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 241,
+      "latencyMs": 213,
       "errorCode": null
     },
     {
@@ -764,7 +761,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 250,
+      "latencyMs": 242,
       "errorCode": null
     },
     {
@@ -782,7 +779,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 251,
+      "latencyMs": 243,
       "errorCode": null
     },
     {
@@ -800,7 +797,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 249,
+      "latencyMs": 248,
       "errorCode": null
     },
     {
@@ -818,7 +815,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 6231,
+      "latencyMs": 4882,
       "errorCode": null
     },
     {
@@ -836,7 +833,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 201,
+      "latencyMs": 198,
       "errorCode": null
     },
     {
@@ -854,7 +851,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 5774,
+      "latencyMs": 5819,
       "errorCode": null
     },
     {
@@ -872,7 +869,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 6011,
+      "latencyMs": 5785,
       "errorCode": null
     },
     {
@@ -890,7 +887,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 227,
+      "latencyMs": 223,
       "errorCode": null
     },
     {
@@ -908,7 +905,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 199,
+      "latencyMs": 208,
       "errorCode": null
     },
     {
@@ -944,7 +941,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 222,
+      "latencyMs": 228,
       "errorCode": null
     },
     {
@@ -962,7 +959,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 232,
+      "latencyMs": 220,
       "errorCode": null
     },
     {
@@ -982,7 +979,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2306,
+      "latencyMs": 2157,
       "errorCode": null
     },
     {
@@ -1000,7 +997,7 @@
         "matchedPhones": 1,
         "agreeing": 1
       },
-      "latencyMs": 2959,
+      "latencyMs": 2949,
       "errorCode": null
     },
     {
@@ -1018,7 +1015,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 232,
+      "latencyMs": 218,
       "errorCode": null
     },
     {
@@ -1036,7 +1033,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 220,
+      "latencyMs": 223,
       "errorCode": null
     },
     {
@@ -1054,7 +1051,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 236,
+      "latencyMs": 223,
       "errorCode": null
     },
     {
@@ -1072,7 +1069,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 243,
+      "latencyMs": 239,
       "errorCode": null
     },
     {
@@ -1090,7 +1087,7 @@
         "matchedPhones": 0,
         "agreeing": 0
       },
-      "latencyMs": 2826,
+      "latencyMs": 2810,
       "errorCode": null
     },
     {
@@ -1106,9 +1103,9 @@
       "extraKinds": [],
       "concernAgreement": {
         "matchedPhones": 1,
-        "agreeing": 0
+        "agreeing": 1
       },
-      "latencyMs": 3033,
+      "latencyMs": 2960,
       "errorCode": null
     }
   ]
