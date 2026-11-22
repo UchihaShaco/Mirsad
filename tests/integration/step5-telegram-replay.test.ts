@@ -129,6 +129,38 @@ describe('step 5: telegram replay', () => {
     expect([deletedFirst?.displayLabel, editedFirst?.displayLabel]).toEqual(['Test Contact 31', 'Test Contact 32']);
   });
 
+  it('a hidden link, a forward and content of an unknown kind are listed as not captured, and each message gets a capture', async () => {
+    const base = loadFixture('inbound-first-greeting');
+    const chat = { id: 6000000041, type: 'private', first_name: 'Test', last_name: 'Contact 41' };
+    const from = { ...chat, is_bot: false };
+    const at = (messageId: number, extra: Record<string, unknown>) => ({
+      update_id: 920_000_000 + messageId,
+      business_message: { message_id: messageId, date: 1790000400 + messageId, chat, from, business_connection_id: base.businessConnectionId, ...extra },
+    });
+    const fixture = {
+      ...base,
+      updates: [
+        at(5301, {
+          text: 'Please settle the invoice here',
+          entities: [{ type: 'text_link', offset: 26, length: 4, url: 'https://pay.other-host.test/invoice/9' }],
+        }),
+        at(5302, { text: 'Passing this on.', forward_origin: { type: 'hidden_user', date: 1790000400, sender_user_name: 'Someone' } }),
+        at(5303, { dice: { value: 4 } }),
+      ],
+    } as TelegramFixture;
+    const report = await replayFixture(fixture, options());
+    expect(report.events.map((e) => e.status)).toEqual([201, 201, 201]);
+    await h.drain();
+    const [stored] = await chatsFor('6000000041', 'tg-intake-1');
+    const timeline = await timelineOf(stored.id);
+    expect(timeline.messages.map((m: any) => [m.text, m.unsupportedContent, m.capture?.status ?? null])).toEqual([
+      ['Please settle the invoice here', ['text_link'], 'ready'],
+      ['Passing this on.', ['forwarded'], 'ready'],
+      ['', ['other'], 'ready'],
+    ]);
+    expect(JSON.stringify(timeline)).not.toContain('pay.other-host.test');
+  });
+
   it('the replay report contains ids and result codes but no message text', async () => {
     const fixture = loadFixture('payment-destination-change');
     const report = await replayFixture(fixture, options());

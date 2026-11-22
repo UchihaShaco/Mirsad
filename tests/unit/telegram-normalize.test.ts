@@ -121,6 +121,72 @@ describe('telegram normalizer', () => {
     expect(bare?.event).toMatchObject({ text: '', unsupportedContent: ['sticker'] });
   });
 
+  it('a formatted link, an inline keyboard and a forward are listed as unsupported content; the text stays as sent', () => {
+    const hiddenUrl = 'https://pay.other-shop.test/inv/1';
+    const [linked] = adapter().normalize(
+      incoming(900_000_017, {
+        text: 'Pay the deposit here today',
+        entities: [
+          { type: 'bold', offset: 0, length: 3 },
+          { type: 'text_link', offset: 16, length: 4, url: hiddenUrl },
+        ],
+      }),
+    );
+    expect(linked?.event).toMatchObject({ text: 'Pay the deposit here today', unsupportedContent: ['text_link'] });
+    const [captioned] = adapter().normalize(
+      incoming(900_000_018, {
+        text: undefined,
+        caption: 'Invoice here',
+        photo: [{ file_id: 'p' }],
+        caption_entities: [{ type: 'text_link', offset: 8, length: 4, url: hiddenUrl }],
+      }),
+    );
+    expect(captioned?.event).toMatchObject({ text: 'Invoice here', unsupportedContent: ['photo', 'text_link'] });
+    const [buttons] = adapter().normalize(
+      incoming(900_000_019, { text: 'Choose how to pay', reply_markup: { inline_keyboard: [[{ text: 'Pay now', url: hiddenUrl }]] } }),
+    );
+    expect(buttons?.event).toMatchObject({ text: 'Choose how to pay', unsupportedContent: ['inline_keyboard'] });
+    const [forwarded] = adapter().normalize(
+      incoming(900_000_020, { text: 'Look what I was sent', forward_origin: { type: 'hidden_user', date: DATE, sender_user_name: 'Someone' } }),
+    );
+    expect(forwarded?.event).toMatchObject({ text: 'Look what I was sent', unsupportedContent: ['forwarded'] });
+    // The hidden URLs are not stored in this version (docs/telegram/fixtures.md).
+    expect(JSON.stringify([linked, captioned, buttons])).not.toContain('pay.other-shop.test');
+    // Plain formatting and a link written in the text lose nothing, so nothing is listed.
+    const [plain] = adapter().normalize(
+      incoming(900_000_021, { text: 'See https://pay.shop.test/x', entities: [{ type: 'url', offset: 4, length: 23 }] }),
+    );
+    expect((plain?.event as { unsupportedContent?: unknown }).unsupportedContent).toBeUndefined();
+  });
+
+  it('a message with neither text nor a known media kind, such as a story or a dice, is listed as other content', () => {
+    const [story] = adapter().normalize(
+      incoming(900_000_022, { text: undefined, story: { chat: { id: CONTACT, type: 'private' }, id: 7 } } as Partial<TelegramMessage>),
+    );
+    const [dice] = adapter().normalize(incoming(900_000_023, { text: undefined, dice: { value: 4 } } as Partial<TelegramMessage>));
+    expect(story?.event).toMatchObject({ text: '', unsupportedContent: ['other'] });
+    expect(dice?.event).toMatchObject({ text: '', unsupportedContent: ['other'] });
+  });
+
+  it('an edit that changes only a hidden link URL keeps the visible text; an edit event has no unsupported content', () => {
+    const [edit] = adapter().normalize({
+      update_id: 900_000_024,
+      edited_business_message: message({
+        text: 'Pay the deposit here today',
+        edit_date: DATE + 60,
+        entities: [{ type: 'text_link', offset: 16, length: 4, url: 'https://pay.changed-shop.test/inv/9' }],
+      }),
+    });
+    expect(edit?.event).toEqual({
+      type: 'message.edited',
+      sourceEventId: `tg:u900000024:m4101:e${DATE + 60}`,
+      sourceMessageId: 'tg:4101',
+      text: 'Pay the deposit here today',
+      editedAt: new Date((DATE + 60) * 1000).toISOString(),
+      direction: 'incoming',
+    });
+  });
+
   it("a contact card for the sender's own user id supplies the sender phone and any other contact card does not", () => {
     const own = adapter().normalize(
       incoming(900_000_006, { text: undefined, contact: { phone_number: '+447700900123', first_name: 'Test', user_id: CONTACT } }),

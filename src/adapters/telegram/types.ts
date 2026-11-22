@@ -39,6 +39,22 @@ export const MEDIA_KINDS = [
 ] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
+/**
+ * A formatting span of the text or caption. Only `type` is read: a `text_link` points to `url`, which the visible text
+ * does not show and Mirsad does not store (it lists `text_link` as unsupported content instead).
+ */
+export interface TelegramMessageEntity {
+  type: string;
+  offset: number;
+  length: number;
+  url?: string;
+}
+
+/** Buttons attached to a message (labels, links, actions); Mirsad stores none of them. */
+export interface TelegramInlineKeyboardMarkup {
+  inline_keyboard?: unknown[][];
+}
+
 export type TelegramMessage = {
   message_id: number;
   date: number;
@@ -48,6 +64,11 @@ export type TelegramMessage = {
   sender_business_bot?: TelegramUser;
   text?: string;
   caption?: string;
+  entities?: TelegramMessageEntity[];
+  caption_entities?: TelegramMessageEntity[];
+  reply_markup?: TelegramInlineKeyboardMarkup;
+  /** Set on a forwarded message; who or where it came from is not stored. */
+  forward_origin?: unknown;
   edit_date?: number;
   contact?: TelegramContact;
 } & { [K in Exclude<MediaKind, 'contact'>]?: unknown };

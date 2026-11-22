@@ -25,6 +25,23 @@ function mediaKindsOf(msg: TelegramMessage): string[] {
   return MEDIA_KINDS.filter((kind) => msg[kind] !== undefined && msg[kind] !== null);
 }
 
+/**
+ * What the message carries outside its visible text and media kinds that Mirsad does not store, listed after the media
+ * kinds so the capture and the timeline say it was left out: a formatted link's hidden URL (`text_link`), buttons
+ * (`inline_keyboard`), a forward's origin (`forwarded`), and content of a kind Mirsad does not know, when the message
+ * has neither text nor a known media kind (`other`). The text itself is kept exactly as sent.
+ */
+function hiddenContentOf(msg: TelegramMessage, text: string, mediaKinds: readonly string[]): string[] {
+  const entities = [...(msg.entities ?? []), ...(msg.caption_entities ?? [])];
+  const markers: [string, boolean][] = [
+    ['text_link', entities.some((entity) => entity.type === 'text_link')],
+    ['inline_keyboard', (msg.reply_markup?.inline_keyboard ?? []).some((row) => row.length > 0)],
+    ['forwarded', msg.forward_origin !== undefined && msg.forward_origin !== null],
+    ['other', text === '' && mediaKinds.length === 0],
+  ];
+  return markers.filter(([, present]) => present).map(([marker]) => marker);
+}
+
 function senderOf(msg: TelegramMessage, direction: 'incoming' | 'outgoing') {
   if (!msg.from) return undefined;
   const displayName = fullName(msg.from);
@@ -53,7 +70,9 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
 
   const recorded = (updateId: number, msg: TelegramMessage): IntakeEnvelope => {
     const direction = directionOf(msg, options.businessUserId);
-    const unsupported = mediaKindsOf(msg);
+    const text = msg.text ?? msg.caption ?? '';
+    const media = mediaKindsOf(msg);
+    const unsupported = [...media, ...hiddenContentOf(msg, text, media)];
     const sender = senderOf(msg, direction);
     const isStart = starts.some((s) => s.chatId === msg.chat.id && s.messageId === msg.message_id);
     return envelope(msg.chat, {
@@ -61,7 +80,7 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
       sourceEventId: `tg:u${updateId}:m${msg.message_id}`,
       sourceMessageId: `tg:${msg.message_id}`,
       direction,
-      text: msg.text ?? msg.caption ?? '',
+      text,
       sentAt: toIso(msg.date),
       ...(sender ? { sender } : {}),
       ...(isStart ? { conversationStart: { basis: 'source_start_marker' as const } } : {}),
@@ -69,6 +88,8 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
     });
   };
 
+  // The intake contract gives message.edited no unsupportedContent, so an edit's hidden content (a text_link whose URL
+  // alone changed, say) cannot be listed; docs/telegram/fixtures.md records this limit.
   const edited = (updateId: number, msg: TelegramMessage): IntakeEnvelope => {
     const editStamp = msg.edit_date ?? msg.date;
     return envelope(msg.chat, {

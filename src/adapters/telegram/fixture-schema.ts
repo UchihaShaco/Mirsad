@@ -23,6 +23,15 @@ const contactSchema = z.looseObject({
   user_id: z.number().int().optional(),
 });
 
+const entitySchema = z.looseObject({
+  type: z.string(),
+  offset: z.number().int().nonnegative(),
+  length: z.number().int().nonnegative(),
+  url: z.string().optional(),
+});
+
+const inlineKeyboardSchema = z.looseObject({ inline_keyboard: z.array(z.array(z.unknown())).optional() });
+
 const messageSchema = z.looseObject({
   message_id: z.number().int(),
   date: z.number().int().nonnegative(),
@@ -32,6 +41,9 @@ const messageSchema = z.looseObject({
   sender_business_bot: userSchema.optional(),
   text: z.string().optional(),
   caption: z.string().optional(),
+  entities: z.array(entitySchema).optional(),
+  caption_entities: z.array(entitySchema).optional(),
+  reply_markup: inlineKeyboardSchema.optional(),
   edit_date: z.number().int().nonnegative().optional(),
   contact: contactSchema.optional(),
 });

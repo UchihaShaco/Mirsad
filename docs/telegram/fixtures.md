@@ -26,3 +26,21 @@ add it to a copy to exercise `Contact started chat`.
 | `watchlist-sequence.json` | intake | Chat A: number plus payment request. Chat B: new inbound chat sharing its own contact card with the same number. |
 | `takeover-pair.json` | intake | Two chats with several incoming messages, one carrying a payment link; used for dispatch and takeover. |
 | `merchant-conflict.json` | intake | Own contact card, then a payment link whose host differs from the case-reference merchant host `pay.merchant.example`. |
+
+## What the adapter does not store
+
+The adapter keeps a message's text (or caption) exactly as Telegram sent it and lists what it leaves out as unsupported
+content: media kinds (`photo`, `contact` and the others), a formatted link's hidden URL (`text_link`, from `entities`
+or `caption_entities`), buttons (`inline_keyboard`), a forward's origin (`forwarded`), and `other` for a message with
+neither text nor a known media kind (a story or a dice, say), which still gets its own capture. The capture's
+"Unsupported content" row and the timeline's "Not captured" line show the list.
+
+Known gaps in this version:
+
+- The URL behind a `text_link` is not stored, so it is never reviewed or compared with a merchant confirmation; only the
+  marker says a hidden link existed.
+- An edit cannot list unsupported content (the intake contract's `message.edited` has no such field), so an edit that
+  changes only a hidden URL is recorded as an edit with unchanged text.
+
+No shipped fixture contains formatted links, buttons, forwards or unknown kinds; adapter unit tests and a replay test
+cover them, and the event coverage worksheet (rows E17 to E20) lists them for the controlled test.

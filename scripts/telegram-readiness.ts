@@ -116,7 +116,7 @@ async function capturePerMessage(ctx: RunContext): Promise<CheckResult> {
   let edits = 0;
   for (const chatId of chatIds) {
     const timeline = await timelineOf(ctx, chatId);
-    const received = timeline.messages.filter((m) => m.origin === 'source' && m.originalCaptured && ((m.text ?? '') !== '' || m.unsupportedContent.length > 0));
+    const received = timeline.messages.filter((m) => m.origin === 'source' && m.originalCaptured);
     const changed = timeline.messageEvents.filter((e) => e.type !== 'deleted' && (e.text ?? '') !== '');
     edits += changed.length;
     captures.push(...received.map((m) => m.capture), ...changed.map((e) => e.capture));
