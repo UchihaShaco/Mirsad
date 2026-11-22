@@ -1,0 +1,3219 @@
+openapi: 3.1.0
+info:
+  title: Mirsad integration API
+  version: 0.1.0
+  description: Register conversations, submit intake events, control AI review and read timelines. Every JSON response uses the envelope `{ success, data, error }`; the artifact route (PNG) and the event stream (SSE) are the two exceptions. Everything here is served on a loopback address only.
+servers:
+  - url: http://127.0.0.1:8787
+    description: Default local address; the port is configurable.
+tags:
+  - name: contract
+    description: Routes of the integration contract.
+  - name: extension
+    description: Routes beyond the integration contract table; each exists because a requirement cannot be met without it.
+  - name: dashboard
+    description: Static files of the reference dashboard.
+security: []
+paths:
+  /v1/chats:
+    post:
+      operationId: post_v1Chats
+      summary: Register an existing conversation
+      tags:
+        - contract
+      security: &a1
+        - officerToken: []
+      description: Returns a stable `chatId` for the workspace, source, account and conversation. `201` when new, `200` when it already existed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterChatRequest"
+      responses:
+        "200":
+          description: The chat already existed.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/RegisterChatResponse"
+                  error:
+                    type: "null"
+        "201":
+          description: Chat registered.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/RegisterChatResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `account_not_authorized`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `account_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `channel_not_enabled`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    get:
+      operationId: get_v1Chats
+      summary: List authorized conversations
+      tags:
+        - contract
+      security: *a1
+      parameters:
+        - name: inboxStatus
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - new_inbound
+              - open
+        - name: limit
+          in: query
+          required: false
+          schema:
+            default: 100
+            type: integer
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          schema:
+            default: 0
+            type: integer
+            minimum: 0
+            maximum: 9007199254740991
+      responses:
+        "200":
+          description: A page of chats.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ListChatsResponse"
+                  error:
+                    type: "null"
+                  meta:
+                    $ref: "#/components/schemas/ListMeta"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/ingest:
+    post:
+      operationId: post_v1Ingest
+      summary: Submit an intake event
+      tags:
+        - contract
+      security: &a2
+        - connectorToken: []
+      description: Creates or finds the chat and appends the event in one transaction. An inbound message for a new chat enters `New inbound`. `201` when something new was stored, `200` for a duplicate.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngestRequest"
+      responses:
+        "200":
+          description: Duplicate event or message; nothing new stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/IngestResult"
+                  error:
+                    type: "null"
+        "201":
+          description: Event recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/IngestResult"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `account_not_authorized`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `message_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "413":
+          description: "Error envelope. `error.code` is one of: `payload_too_large`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/events:
+    post:
+      operationId: post_v1ChatsChatIdEvents
+      summary: Submit an intake event to a registered chat
+      tags:
+        - contract
+      security: *a2
+      description: Same ingestion logic as `POST /v1/ingest`, addressed by `chatId`.
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntakeEvent"
+      responses:
+        "200":
+          description: Duplicate event or message; nothing new stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/IngestResult"
+                  error:
+                    type: "null"
+        "201":
+          description: Event recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/IngestResult"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "413":
+          description: "Error envelope. `error.code` is one of: `payload_too_large`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/dispatches:
+    post:
+      operationId: post_v1Dispatches
+      summary: Start AI review on selected chats
+      tags:
+        - contract
+      security: *a1
+      description: Access to the whole selection is validated before any chat changes. An officer-controlled chat needs an explicit resume. Requires `Idempotency-Key`.
+      parameters:
+        - &a3
+          name: Idempotency-Key
+          in: header
+          required: true
+          description: Scoped to principal and route (and chat). The same key with the same body replays the stored response; the same key with a different body answers `422 idempotency_key_reused`.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DispatchRequest"
+      responses:
+        "200":
+          description: Per-chat dispatch results.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/DispatchResponse"
+                  error:
+                    type: "null"
+          headers: &a4
+            Idempotency-Replayed:
+              description: Set to `true` when the stored response of an earlier request with the same key is replayed.
+              schema:
+                type: string
+                enum:
+                  - "true"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/control:
+    post:
+      operationId: post_v1ChatsChatIdControl
+      summary: Pause, take over or resume a chat
+      tags:
+        - contract
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ControlRequest"
+      responses:
+        "200":
+          description: The chat after the transition.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ControlResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/officer-messages:
+    post:
+      operationId: post_v1ChatsChatIdOfficer-messages
+      summary: Send a message from the composer
+      tags:
+        - contract
+      security: *a1
+      description: The officer must control the chat at `expectedRevision`. The prototype stores a message labelled `Simulated send`. Requires `Idempotency-Key`.
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfficerMessageRequest"
+      responses:
+        "201":
+          description: The stored message.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/OfficerMessageResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `not_in_takeover`, `revision_conflict`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/officer-decisions:
+    post:
+      operationId: post_v1ChatsChatIdOfficer-decisions
+      summary: Record a decision on an incoming message
+      tags:
+        - contract
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfficerDecisionRequest"
+      responses:
+        "200":
+          description: The decision already existed.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/OfficerDecisionResponse"
+                  error:
+                    type: "null"
+        "201":
+          description: Decision recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/OfficerDecisionResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `not_in_takeover`, `revision_conflict`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/timeline:
+    get:
+      operationId: get_v1ChatsChatIdTimeline
+      summary: Read a chat timeline
+      tags:
+        - contract
+      security: *a1
+      description: Messages, message events, case actions, findings, case references and the stream cursor, each ordered by `position`.
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The timeline snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/Timeline"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/artifacts/{artifactId}:
+    get:
+      operationId: get_v1ArtifactsArtifactId
+      summary: Download a rendered capture
+      tags:
+        - contract
+      security: *a1
+      description: PNG bytes. The checksum is verified on every read; a mismatch answers `500 artifact_integrity_error`.
+      parameters:
+        - name: artifactId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The capture image.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: private, no-store
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Content-Disposition:
+              schema:
+                type: string
+              description: '`inline; filename="<artifactId>.png"`'
+            X-Mirsad-SHA256:
+              schema:
+                type: string
+              description: Checksum of the stored file, verified on every read.
+          content:
+            image/png:
+              schema:
+                type: string
+                contentMediaType: image/png
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `evidence_access_required`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `artifact_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `artifact_integrity_error`, `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/events:
+    get:
+      operationId: get_v1Events
+      summary: Subscribe to workspace events
+      tags:
+        - contract
+      security: *a1
+      description: Server-sent events. The start position is the `Last-Event-ID` header, else `cursor`, else the current head. A position outside retained history yields a `stream.reset` event telling the client to reload the inbox and timeline. Event data carries ids and statuses only.
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Decimal stream position, usually `cursor` from a timeline or chat list. Ignored when `Last-Event-ID` is sent.
+          schema:
+            type: string
+            pattern: ^\d{1,15}$
+        - name: Last-Event-ID
+          in: header
+          required: false
+          description: The `id` of the last event the client saw; the stream resumes after it.
+          schema:
+            type: string
+            pattern: ^\d{1,15}$
+      responses:
+        "200":
+          description: An open `text/event-stream`.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/watchlist:
+    get:
+      operationId: get_v1Watchlist
+      summary: List phone watchlist entries
+      tags:
+        - contract
+      security: *a1
+      responses:
+        "200":
+          description: Entries the caller can access.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ListWatchlistResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "501":
+          description: "Error envelope. `error.code` is one of: `not_implemented`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/watchlist/{entryId}/review:
+    post:
+      operationId: post_v1WatchlistEntryIdReview
+      summary: Approve, clear or reopen a watchlist entry
+      tags:
+        - contract
+      security: *a1
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistReviewRequest"
+      responses:
+        "200":
+          description: The updated entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/WatchlistReviewResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `watchlist_entry_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "501":
+          description: "Error envelope. `error.code` is one of: `not_implemented`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/case-references:
+    post:
+      operationId: post_v1ChatsChatIdCase-references
+      summary: Record a case reference
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseReferenceRequest"
+      responses:
+        "201":
+          description: Reference recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/CaseReferenceResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/captures/{captureId}/retry:
+    post:
+      operationId: post_v1CapturesCaptureIdRetry
+      summary: Retry a failed capture
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: captureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The capture, queued again.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/CaptureRetryResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `capture_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `capture_not_retryable`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/me:
+    get:
+      operationId: get_v1Me
+      summary: Identify the calling principal
+      tags:
+        - extension
+      security:
+        - officerToken: []
+        - connectorToken: []
+      responses:
+        "200":
+          description: The authenticated principal.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/MeResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/status:
+    get:
+      operationId: get_v1Status
+      summary: Service, worker, reviewer and channel status
+      tags:
+        - extension
+      security: *a1
+      responses:
+        "200":
+          description: Current status.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/Status"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "501":
+          description: "Error envelope. `error.code` is one of: `not_implemented`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /healthz:
+    get:
+      operationId: get_healthz
+      summary: Liveness check
+      tags:
+        - extension
+      security: &a5 []
+      responses:
+        "200":
+          description: The service is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/HealthResponse"
+                  error:
+                    type: "null"
+        "403":
+          description: "Error envelope. `error.code` is one of: `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /:
+    get:
+      operationId: get_root
+      summary: Reference dashboard
+      tags:
+        - dashboard
+      security: *a5
+      description: The dashboard page, served without authentication.
+      responses:
+        "200":
+          description: HTML.
+          content:
+            "*/*":
+              schema:
+                type: string
+        "403":
+          description: "Error envelope. `error.code` is one of: `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "501":
+          description: "Error envelope. `error.code` is one of: `not_implemented`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /assets/{assetPath}:
+    get:
+      operationId: get_assetsAsset
+      summary: Reference dashboard asset
+      tags:
+        - dashboard
+      security: *a5
+      parameters:
+        - name: assetPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A static file.
+          content:
+            "*/*":
+              schema:
+                type: string
+        "403":
+          description: "Error envelope. `error.code` is one of: `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "501":
+          description: "Error envelope. `error.code` is one of: `not_implemented`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+components:
+  securitySchemes:
+    officerToken:
+      type: http
+      scheme: bearer
+      description: An officer token, sent only in the Authorization header. Never put a token in a URL.
+    connectorToken:
+      type: http
+      scheme: bearer
+      description: A connector token (intake), sent only in the Authorization header. Never put a token in a URL.
+  schemas:
+    IngestRequest:
+      type: object
+      properties:
+        source:
+          $ref: "#/components/schemas/Source"
+        externalAccountId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        externalChatId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        chat:
+          type: object
+          properties:
+            displayLabel:
+              type: string
+              minLength: 1
+              maxLength: 200
+        event:
+          $ref: "#/components/schemas/IntakeEvent"
+      required:
+        - source
+        - externalAccountId
+        - externalChatId
+        - event
+    IntakeEvent:
+      oneOf:
+        - type: object
+          properties:
+            type:
+              type: string
+              const: message.recorded
+            sourceEventId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            sourceMessageId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            direction:
+              $ref: "#/components/schemas/Direction"
+            text:
+              type: string
+              maxLength: 65536
+            sentAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            sender:
+              type: object
+              properties:
+                externalId:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                displayName:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                phone:
+                  type: object
+                  properties:
+                    raw:
+                      type: string
+                      minLength: 1
+                      maxLength: 64
+                    country:
+                      type: string
+                      pattern: ^[A-Z]{2}$
+                    internationalFormat:
+                      type: boolean
+                  required:
+                    - raw
+            conversationStart:
+              type: object
+              properties:
+                basis:
+                  type: string
+                  enum:
+                    - source_start_marker
+                    - confirmed_complete_history
+              required:
+                - basis
+            unsupportedContent:
+              maxItems: 20
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 40
+          required:
+            - type
+            - sourceEventId
+            - sourceMessageId
+            - direction
+            - text
+        - type: object
+          properties:
+            type:
+              type: string
+              const: message.edited
+            sourceEventId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            sourceMessageId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            text:
+              type: string
+              maxLength: 65536
+            editedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            direction:
+              $ref: "#/components/schemas/Direction"
+          required:
+            - type
+            - sourceEventId
+            - sourceMessageId
+            - text
+        - type: object
+          properties:
+            type:
+              type: string
+              const: message.deleted
+            sourceEventId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            sourceMessageId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            deletedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+            direction:
+              $ref: "#/components/schemas/Direction"
+          required:
+            - type
+            - sourceEventId
+            - sourceMessageId
+    RegisterChatRequest:
+      type: object
+      properties:
+        source:
+          $ref: "#/components/schemas/Source"
+        externalAccountId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        externalChatId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        displayLabel:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+        - source
+        - externalAccountId
+        - externalChatId
+        - displayLabel
+    DispatchRequest:
+      type: object
+      properties:
+        chatIds:
+          minItems: 1
+          maxItems: 100
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+      required:
+        - chatIds
+    ControlRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - pause
+            - take_over
+            - resume
+        expectedRevision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - action
+        - expectedRevision
+    OfficerMessageRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 65536
+        expectedRevision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - text
+        - expectedRevision
+    OfficerDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          const: leave_unanswered
+        messageId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        expectedRevision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - decision
+        - messageId
+        - expectedRevision
+    CaseReferenceRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - merchant_payment_confirmation
+        paymentHosts:
+          minItems: 1
+          maxItems: 20
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 253
+        sourceNote:
+          type: string
+          minLength: 3
+          maxLength: 500
+      required:
+        - kind
+        - paymentHosts
+        - sourceNote
+    WatchlistReviewRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum:
+            - approve
+            - clear
+            - reopen
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+        expectedRevision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - decision
+        - reason
+        - expectedRevision
+    Source:
+      type: string
+      enum:
+        - telegram
+        - whatsapp
+    Direction:
+      type: string
+      enum:
+        - incoming
+        - outgoing
+    CaptureMethod:
+      type: string
+      enum:
+        - fixture_replay
+        - telegram_business_live
+        - approved_import
+        - host_intake
+        - officer_composer
+    AiMode:
+      type: string
+      enum:
+        - not_started
+        - ai_active
+        - paused
+        - officer_control
+    PrincipalRef:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+      required:
+        - id
+        - displayName
+      additionalProperties: false
+    IngestResult:
+      type: object
+      properties:
+        chatId:
+          type: string
+        chatCreated:
+          type: boolean
+        result:
+          type: string
+          enum:
+            - recorded
+            - duplicate_event
+            - duplicate_message
+            - conflicting_copy
+        messageId:
+          type: string
+        messageEventId:
+          type:
+            - string
+            - "null"
+        receivedAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            - type: "null"
+        captureId:
+          type:
+            - string
+            - "null"
+        startMarker:
+          type: string
+          enum:
+            - accepted
+            - ignored_untrusted
+            - ignored_conflict
+            - none
+        textConflict:
+          type: boolean
+      required:
+        - chatId
+        - chatCreated
+        - result
+        - messageId
+        - messageEventId
+        - receivedAt
+        - captureId
+        - startMarker
+        - textConflict
+      additionalProperties: false
+    EvidenceRef:
+      type: object
+      properties:
+        observationId:
+          type: string
+        chatId:
+          type: string
+        messageId:
+          type: string
+        messageEventId:
+          type: string
+        findingId:
+          type:
+            - string
+            - "null"
+        origin:
+          type: string
+          enum:
+            - sender_metadata
+            - message_mention
+        sourceRepresentation:
+          type: string
+        reason:
+          type: string
+        observedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - observationId
+        - chatId
+        - messageId
+        - messageEventId
+        - findingId
+        - origin
+        - sourceRepresentation
+        - reason
+        - observedAt
+      additionalProperties: false
+    ChatSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        source:
+          $ref: "#/components/schemas/Source"
+        channelLabel:
+          type: string
+          enum:
+            - Telegram
+            - WhatsApp
+        externalAccountId:
+          type: string
+        externalChatId:
+          type: string
+        displayLabel:
+          type: string
+        inboxStatus:
+          type: string
+          enum:
+            - new_inbound
+            - open
+        aiMode:
+          $ref: "#/components/schemas/AiMode"
+        revision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        controller:
+          anyOf:
+            - $ref: "#/components/schemas/PrincipalRef"
+            - type: "null"
+        originLabel:
+          type: string
+          enum:
+            - Contact started chat
+            - Officer started chat
+            - "First observed: incoming"
+            - "First observed: outgoing"
+            - No messages observed
+        initiatedBy:
+          type: string
+          enum:
+            - contact
+            - officer
+            - unknown
+        initiationBasis:
+          anyOf:
+            - type: string
+              enum:
+                - source_start_marker
+                - confirmed_complete_history
+            - type: "null"
+        firstObservedDirection:
+          anyOf:
+            - $ref: "#/components/schemas/Direction"
+            - type: "null"
+        intakeAccount:
+          type: boolean
+        acknowledgementTemplate:
+          anyOf:
+            - type: string
+              const: Message received.
+            - type: "null"
+        review:
+          type: object
+          properties:
+            state:
+              type: string
+              enum:
+                - idle
+                - active
+                - unavailable
+            pending:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            unavailable:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - state
+            - pending
+            - unavailable
+          additionalProperties: false
+        watchlistMatches:
+          type: array
+          items:
+            type: object
+            properties:
+              entryId:
+                type: string
+              numberDisplay:
+                type: string
+              matchedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+              evidence:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EvidenceRef"
+              restrictedEvidence:
+                type: boolean
+            required:
+              - entryId
+              - numberDisplay
+              - matchedAt
+              - evidence
+              - restrictedEvidence
+            additionalProperties: false
+        messageCount:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        lastActivityAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - id
+        - source
+        - channelLabel
+        - externalAccountId
+        - externalChatId
+        - displayLabel
+        - inboxStatus
+        - aiMode
+        - revision
+        - controller
+        - originLabel
+        - initiatedBy
+        - initiationBasis
+        - firstObservedDirection
+        - intakeAccount
+        - acknowledgementTemplate
+        - review
+        - watchlistMatches
+        - messageCount
+        - lastActivityAt
+        - createdAt
+      additionalProperties: false
+    RegisterChatResponse:
+      type: object
+      properties:
+        chat:
+          $ref: "#/components/schemas/ChatSummary"
+        created:
+          type: boolean
+      required:
+        - chat
+        - created
+      additionalProperties: false
+    ListChatsResponse:
+      type: object
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatSummary"
+        cursor:
+          type: string
+      required:
+        - chats
+        - cursor
+      additionalProperties: false
+    DispatchResponse:
+      type: object
+      properties:
+        dispatchId:
+          type: string
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              chatId:
+                type: string
+              status:
+                type: string
+                enum:
+                  - started
+                  - already_active
+                  - requires_resume
+              aiMode:
+                $ref: "#/components/schemas/AiMode"
+              revision:
+                type: integer
+                minimum: 1
+                maximum: 9007199254740991
+            required:
+              - chatId
+              - status
+              - aiMode
+              - revision
+            additionalProperties: false
+      required:
+        - dispatchId
+        - results
+      additionalProperties: false
+    ControlResponse:
+      type: object
+      properties:
+        chat:
+          $ref: "#/components/schemas/ChatSummary"
+        changedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - chat
+        - changedAt
+      additionalProperties: false
+    OfficerMessageResponse:
+      type: object
+      properties:
+        message:
+          $ref: "#/components/schemas/Message"
+      required:
+        - message
+      additionalProperties: false
+    OfficerDecisionResponse:
+      type: object
+      properties:
+        caseAction:
+          $ref: "#/components/schemas/CaseAction"
+        created:
+          type: boolean
+      required:
+        - caseAction
+        - created
+      additionalProperties: false
+    Capture:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - rendering
+            - ready
+            - failed
+        kind:
+          type: string
+          const: mirsad_rendered_capture
+        artifactId:
+          type:
+            - string
+            - "null"
+        sha256:
+          type:
+            - string
+            - "null"
+        attempts:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        errorCode:
+          type:
+            - string
+            - "null"
+        retryable:
+          type: boolean
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - id
+        - status
+        - kind
+        - artifactId
+        - sha256
+        - attempts
+        - errorCode
+        - retryable
+        - updatedAt
+      additionalProperties: false
+    ReviewState:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - not_requested
+            - pending
+            - running
+            - completed
+            - unavailable
+            - stale_discarded
+            - not_permitted
+        outcome:
+          anyOf:
+            - type: string
+              enum:
+                - no_new_finding
+                - findings
+            - type: "null"
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - status
+        - outcome
+        - updatedAt
+      additionalProperties: false
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        direction:
+          anyOf:
+            - $ref: "#/components/schemas/Direction"
+            - type: "null"
+        origin:
+          type: string
+          enum:
+            - source
+            - officer_composer
+        text:
+          type:
+            - string
+            - "null"
+        originalCaptured:
+          type: boolean
+        unsupportedContent:
+          type: array
+          items:
+            type: string
+        sentAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            - type: "null"
+        receivedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        source:
+          type: object
+          properties:
+            channel:
+              $ref: "#/components/schemas/Source"
+            captureMethod:
+              $ref: "#/components/schemas/CaptureMethod"
+            sourceEventId:
+              type:
+                - string
+                - "null"
+            sourceMessageId:
+              type:
+                - string
+                - "null"
+          required:
+            - channel
+            - captureMethod
+            - sourceEventId
+            - sourceMessageId
+          additionalProperties: false
+        sender:
+          anyOf:
+            - type: object
+              properties:
+                externalId:
+                  type:
+                    - string
+                    - "null"
+                displayName:
+                  type:
+                    - string
+                    - "null"
+              required:
+                - externalId
+                - displayName
+              additionalProperties: false
+            - type: "null"
+        author:
+          anyOf:
+            - $ref: "#/components/schemas/PrincipalRef"
+            - type: "null"
+        sendStatus:
+          anyOf:
+            - type: string
+              const: simulated
+            - type: "null"
+        sendStatusLabel:
+          anyOf:
+            - type: string
+              const: Simulated send
+            - type: "null"
+        capture:
+          anyOf:
+            - $ref: "#/components/schemas/Capture"
+            - type: "null"
+        review:
+          anyOf:
+            - $ref: "#/components/schemas/ReviewState"
+            - type: "null"
+        editedAtSource:
+          type: boolean
+        deletedAtSource:
+          type: boolean
+        position:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+        - id
+        - chatId
+        - direction
+        - origin
+        - text
+        - originalCaptured
+        - unsupportedContent
+        - sentAt
+        - receivedAt
+        - source
+        - sender
+        - author
+        - sendStatus
+        - sendStatusLabel
+        - capture
+        - review
+        - editedAtSource
+        - deletedAtSource
+        - position
+      additionalProperties: false
+    MessageEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        messageId:
+          type: string
+        type:
+          type: string
+          enum:
+            - edited
+            - deleted
+            - conflicting_copy
+        text:
+          type:
+            - string
+            - "null"
+        sourceEventId:
+          type: string
+        sourceOccurredAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            - type: "null"
+        receivedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        captureMethod:
+          $ref: "#/components/schemas/CaptureMethod"
+        capture:
+          anyOf:
+            - $ref: "#/components/schemas/Capture"
+            - type: "null"
+        review:
+          anyOf:
+            - $ref: "#/components/schemas/ReviewState"
+            - type: "null"
+        position:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+        - id
+        - chatId
+        - messageId
+        - type
+        - text
+        - sourceEventId
+        - sourceOccurredAt
+        - receivedAt
+        - captureMethod
+        - capture
+        - review
+        - position
+      additionalProperties: false
+    CaseAction:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        type:
+          type: string
+          enum:
+            - chat_registered
+            - dispatch_started
+            - control_pause
+            - control_take_over
+            - control_resume
+            - leave_unanswered
+            - officer_message_sent
+            - case_reference_recorded
+            - capture_retry_requested
+            - watchlist_match
+            - text_conflict_recorded
+        actor:
+          anyOf:
+            - $ref: "#/components/schemas/PrincipalRef"
+            - type: "null"
+        messageId:
+          type:
+            - string
+            - "null"
+        fromMode:
+          anyOf:
+            - $ref: "#/components/schemas/AiMode"
+            - type: "null"
+        toMode:
+          anyOf:
+            - $ref: "#/components/schemas/AiMode"
+            - type: "null"
+        revision:
+          anyOf:
+            - type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            - type: "null"
+        detail:
+          anyOf:
+            - type: object
+              propertyNames:
+                type: string
+              additionalProperties:
+                type:
+                  - string
+                  - number
+                  - boolean
+                  - "null"
+            - type: "null"
+        occurredAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        position:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+        - id
+        - chatId
+        - type
+        - actor
+        - messageId
+        - fromMode
+        - toMode
+        - revision
+        - detail
+        - occurredAt
+        - position
+      additionalProperties: false
+    Finding:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        messageId:
+          type: string
+        messageEventId:
+          type: string
+        kind:
+          type: string
+          enum:
+            - payment_link
+            - payment_recipient
+            - phone_number
+            - suspected_fraud
+        label:
+          type: string
+          enum:
+            - New payment link
+            - New payment recipient
+            - Payment destination changed
+            - Phone number tied to a concern
+            - Suspected fraud
+        quote:
+          type: string
+        extractedValue:
+          type: string
+        concern:
+          anyOf:
+            - type: string
+              enum:
+                - payment_request
+                - callback_request
+                - credential_request
+                - other_concern
+            - type: "null"
+        changedFrom:
+          type:
+            - string
+            - "null"
+        caseReferenceId:
+          type:
+            - string
+            - "null"
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        position:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+        - id
+        - chatId
+        - messageId
+        - messageEventId
+        - kind
+        - label
+        - quote
+        - extractedValue
+        - concern
+        - changedFrom
+        - caseReferenceId
+        - note
+        - createdAt
+        - position
+      additionalProperties: false
+    CaseReference:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        kind:
+          type: string
+          enum:
+            - merchant_payment_confirmation
+        paymentHosts:
+          type: array
+          items:
+            type: string
+        sourceNote:
+          type: string
+        recordedBy:
+          $ref: "#/components/schemas/PrincipalRef"
+        recordedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - id
+        - chatId
+        - kind
+        - paymentHosts
+        - sourceNote
+        - recordedBy
+        - recordedAt
+      additionalProperties: false
+    CaseReferenceResponse:
+      type: object
+      properties:
+        caseReference:
+          $ref: "#/components/schemas/CaseReference"
+        findingsCreated:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - caseReference
+        - findingsCreated
+      additionalProperties: false
+    Timeline:
+      type: object
+      properties:
+        chat:
+          $ref: "#/components/schemas/ChatSummary"
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        messageEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageEvent"
+        caseActions:
+          type: array
+          items:
+            $ref: "#/components/schemas/CaseAction"
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        caseReferences:
+          type: array
+          items:
+            $ref: "#/components/schemas/CaseReference"
+        cursor:
+          type: string
+      required:
+        - chat
+        - messages
+        - messageEvents
+        - caseActions
+        - findings
+        - caseReferences
+        - cursor
+      additionalProperties: false
+    CaptureRetryResponse:
+      type: object
+      properties:
+        capture:
+          $ref: "#/components/schemas/Capture"
+      required:
+        - capture
+      additionalProperties: false
+    WatchlistEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        number:
+          type: object
+          properties:
+            e164:
+              type:
+                - string
+                - "null"
+            display:
+              type: string
+            exactMatchEligible:
+              type: boolean
+          required:
+            - e164
+            - display
+            - exactMatchEligible
+          additionalProperties: false
+        status:
+          type: string
+          enum:
+            - needs_review
+            - approved
+            - cleared
+        statusLabel:
+          type: string
+          enum:
+            - Needs review
+            - Approved
+            - Cleared
+        revision:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        newEvidenceSinceReview:
+          type: boolean
+        firstSeenAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        lastSeenAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceRef"
+        restrictedEvidence:
+          type: boolean
+        matches:
+          type: array
+          items:
+            type: object
+            properties:
+              chatId:
+                type: string
+              matchedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            required:
+              - chatId
+              - matchedAt
+            additionalProperties: false
+        lastDecision:
+          anyOf:
+            - type: object
+              properties:
+                decision:
+                  type: string
+                  enum:
+                    - approve
+                    - clear
+                    - reopen
+                reason:
+                  type:
+                    - string
+                    - "null"
+                officer:
+                  $ref: "#/components/schemas/PrincipalRef"
+                decidedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+              required:
+                - decision
+                - reason
+                - officer
+                - decidedAt
+              additionalProperties: false
+            - type: "null"
+        canReview:
+          type: boolean
+      required:
+        - id
+        - number
+        - status
+        - statusLabel
+        - revision
+        - newEvidenceSinceReview
+        - firstSeenAt
+        - lastSeenAt
+        - evidence
+        - restrictedEvidence
+        - matches
+        - lastDecision
+        - canReview
+      additionalProperties: false
+    ListWatchlistResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/WatchlistEntry"
+        cursor:
+          type: string
+      required:
+        - entries
+        - cursor
+      additionalProperties: false
+    WatchlistReviewResponse:
+      type: object
+      properties:
+        entry:
+          $ref: "#/components/schemas/WatchlistEntry"
+      required:
+        - entry
+      additionalProperties: false
+    MeResponse:
+      type: object
+      properties:
+        principal:
+          type: object
+          properties:
+            id:
+              type: string
+            kind:
+              type: string
+              enum:
+                - officer
+                - connector
+            displayName:
+              type: string
+            workspaceId:
+              type: string
+          required:
+            - id
+            - kind
+            - displayName
+            - workspaceId
+          additionalProperties: false
+      required:
+        - principal
+      additionalProperties: false
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+      required:
+        - status
+      additionalProperties: false
+    Status:
+      type: object
+      properties:
+        service:
+          type: object
+          properties:
+            version:
+              type: string
+            startedAt:
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+          required:
+            - version
+            - startedAt
+          additionalProperties: false
+        storage:
+          type: object
+          properties:
+            database:
+              type: string
+            evidenceDirectory:
+              type: string
+          required:
+            - database
+            - evidenceDirectory
+          additionalProperties: false
+        workers:
+          type: object
+          properties:
+            capture:
+              type: object
+              properties:
+                pending:
+                  type: integer
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+                failed:
+                  type: integer
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+              required:
+                - pending
+                - failed
+              additionalProperties: false
+            review:
+              type: object
+              properties:
+                pending:
+                  type: integer
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+                running:
+                  type: integer
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+                unavailable:
+                  type: integer
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+              required:
+                - pending
+                - running
+                - unavailable
+              additionalProperties: false
+          required:
+            - capture
+            - review
+          additionalProperties: false
+        reviewer:
+          type: object
+          properties:
+            kind:
+              type: string
+              enum:
+                - lmstudio
+                - deterministic
+                - disabled
+            modelId:
+              type:
+                - string
+                - "null"
+            reachable:
+              type: boolean
+          required:
+            - kind
+            - modelId
+            - reachable
+          additionalProperties: false
+        channels:
+          type: object
+          properties:
+            telegram:
+              type: object
+              properties:
+                fixtureReplay:
+                  type: string
+                  const: available
+                liveConnector:
+                  type: string
+                  enum:
+                    - disabled
+                    - enabled
+                readiness:
+                  type: string
+                  enum:
+                    - not_assessed
+                    - ready_for_controlled_test
+                    - controlled_test_verified
+                readinessRecordedAt:
+                  anyOf:
+                    - type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                    - type: "null"
+              required:
+                - fixtureReplay
+                - liveConnector
+                - readiness
+                - readinessRecordedAt
+              additionalProperties: false
+            whatsapp:
+              type: object
+              properties:
+                status:
+                  type: string
+                  const: not_started
+                gate:
+                  type: string
+              required:
+                - status
+                - gate
+              additionalProperties: false
+          required:
+            - telegram
+            - whatsapp
+          additionalProperties: false
+      required:
+        - service
+        - storage
+        - workers
+        - reviewer
+        - channels
+      additionalProperties: false
+    ErrorEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: false
+        data:
+          type: "null"
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              propertyNames:
+                type: string
+              additionalProperties: {}
+          required:
+            - code
+            - message
+          additionalProperties: false
+      required:
+        - success
+        - data
+        - error
+      additionalProperties: false
+    ListMeta:
+      type: object
+      additionalProperties: false
+      required:
+        - total
+        - limit
+        - offset
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+x-workflow-example:
+  - step: 1
+    name: register_chat
+    summary: The host registers one of its conversations on the officer account.
+    method: POST
+    path: /v1/chats
+    headers:
+      Authorization: Bearer <officer token>
+      Content-Type: application/json
+    requestBody:
+      source: telegram
+      externalAccountId: tg-demo-officer
+      externalChatId: host-conversation-1001
+      displayLabel: Test Contact
+    response:
+      status: 201
+      body:
+        success: true
+        data:
+          chat:
+            id: chat_0123456789abcdef0123456789abcdef
+            source: telegram
+            channelLabel: Telegram
+            externalAccountId: tg-demo-officer
+            externalChatId: host-conversation-1001
+            displayLabel: Test Contact
+            inboxStatus: open
+            aiMode: not_started
+            revision: 1
+            controller: null
+            originLabel: No messages observed
+            initiatedBy: unknown
+            initiationBasis: null
+            firstObservedDirection: null
+            intakeAccount: false
+            acknowledgementTemplate: null
+            review:
+              state: idle
+              pending: 0
+              unavailable: 0
+            watchlistMatches: []
+            messageCount: 0
+            lastActivityAt: 2026-11-21T08:00:00.000Z
+            createdAt: 2026-11-21T08:00:00.000Z
+          created: true
+        error: null
+  - step: 2
+    name: dispatch
+    summary: The officer starts AI review on the chat. The Idempotency-Key makes a retry safe.
+    method: POST
+    path: /v1/dispatches
+    headers:
+      Authorization: Bearer <officer token>
+      Content-Type: application/json
+      Idempotency-Key: <unique key>
+    requestBody:
+      chatIds:
+        - chat_0123456789abcdef0123456789abcdef
+    response:
+      status: 200
+      body:
+        success: true
+        data:
+          dispatchId: dsp_0123456789abcdef0123456789abcdef
+          results:
+            - chatId: chat_0123456789abcdef0123456789abcdef
+              status: started
+              aiMode: ai_active
+              revision: 2
+        error: null
+  - step: 3
+    name: submit_inbound_event
+    summary: The connector reports one incoming message for the registered chat.
+    method: POST
+    path: /v1/chats/{chatId}/events
+    headers:
+      Authorization: Bearer <connector token>
+      Content-Type: application/json
+    requestBody:
+      type: message.recorded
+      sourceEventId: host-event-1
+      sourceMessageId: host-message-1
+      direction: incoming
+      text: Hello, is this the right number for my order?
+    response:
+      status: 201
+      body:
+        success: true
+        data:
+          chatId: chat_0123456789abcdef0123456789abcdef
+          chatCreated: false
+          result: recorded
+          messageId: msg_0123456789abcdef0123456789abcdef
+          messageEventId: mev_0123456789abcdef0123456789abcdef
+          receivedAt: 2026-11-21T08:00:02.000Z
+          captureId: cap_0123456789abcdef0123456789abcdef
+          startMarker: none
+          textConflict: false
+        error: null
+  - step: 4
+    name: fetch_timeline
+    summary: The officer reads the stored messages, case actions and the stream cursor.
+    method: GET
+    path: /v1/chats/{chatId}/timeline
+    headers:
+      Authorization: Bearer <officer token>
+    response:
+      status: 200
+      body:
+        success: true
+        data:
+          chat:
+            id: chat_0123456789abcdef0123456789abcdef
+            source: telegram
+            channelLabel: Telegram
+            externalAccountId: tg-demo-officer
+            externalChatId: host-conversation-1001
+            displayLabel: Test Contact
+            inboxStatus: new_inbound
+            aiMode: ai_active
+            revision: 2
+            controller: null
+            originLabel: "First observed: incoming"
+            initiatedBy: unknown
+            initiationBasis: null
+            firstObservedDirection: incoming
+            intakeAccount: false
+            acknowledgementTemplate: null
+            review: &a7
+              state: active
+              pending: 1
+              unavailable: 0
+            watchlistMatches: &a8 []
+            messageCount: 1
+            lastActivityAt: 2026-11-21T08:00:02.000Z
+            createdAt: 2026-11-21T08:00:00.000Z
+          messages:
+            - id: msg_0123456789abcdef0123456789abcdef
+              chatId: chat_0123456789abcdef0123456789abcdef
+              direction: incoming
+              origin: source
+              text: Hello, is this the right number for my order?
+              originalCaptured: true
+              unsupportedContent: []
+              sentAt: null
+              receivedAt: 2026-11-21T08:00:02.000Z
+              source:
+                channel: telegram
+                captureMethod: fixture_replay
+                sourceEventId: host-event-1
+                sourceMessageId: host-message-1
+              sender: null
+              author: null
+              sendStatus: null
+              sendStatusLabel: null
+              capture:
+                id: cap_0123456789abcdef0123456789abcdef
+                status: pending
+                kind: mirsad_rendered_capture
+                artifactId: null
+                sha256: null
+                attempts: 0
+                errorCode: null
+                retryable: false
+                updatedAt: 2026-11-21T08:00:02.000Z
+              review:
+                status: pending
+                outcome: null
+                updatedAt: 2026-11-21T08:00:02.000Z
+              editedAtSource: false
+              deletedAtSource: false
+              position: 1
+          messageEvents: []
+          caseActions:
+            - id: act_00000000000000000000000000000001
+              chatId: chat_0123456789abcdef0123456789abcdef
+              type: chat_registered
+              actor: &a6
+                id: pri_0123456789abcdef0123456789abcdef
+                displayName: Demo Officer 1
+              messageId: null
+              fromMode: null
+              toMode: null
+              revision: null
+              detail: null
+              occurredAt: 2026-11-21T08:00:00.000Z
+              position: 1
+            - id: act_00000000000000000000000000000002
+              chatId: chat_0123456789abcdef0123456789abcdef
+              type: dispatch_started
+              actor: *a6
+              messageId: null
+              fromMode: not_started
+              toMode: ai_active
+              revision: 2
+              detail: null
+              occurredAt: 2026-11-21T08:00:00.000Z
+              position: 2
+          findings: []
+          caseReferences: []
+          cursor: "6"
+        error: null
+  - step: 5
+    name: take_over
+    summary: The officer takes over at the revision the timeline reported.
+    method: POST
+    path: /v1/chats/{chatId}/control
+    headers:
+      Authorization: Bearer <officer token>
+      Content-Type: application/json
+    requestBody:
+      action: take_over
+      expectedRevision: 2
+    response:
+      status: 200
+      body:
+        success: true
+        data:
+          chat:
+            id: chat_0123456789abcdef0123456789abcdef
+            source: telegram
+            channelLabel: Telegram
+            externalAccountId: tg-demo-officer
+            externalChatId: host-conversation-1001
+            displayLabel: Test Contact
+            inboxStatus: new_inbound
+            aiMode: officer_control
+            revision: 3
+            controller: *a6
+            originLabel: "First observed: incoming"
+            initiatedBy: unknown
+            initiationBasis: null
+            firstObservedDirection: incoming
+            intakeAccount: false
+            acknowledgementTemplate: null
+            review: *a7
+            watchlistMatches: *a8
+            messageCount: 1
+            lastActivityAt: 2026-11-21T08:00:04.000Z
+            createdAt: 2026-11-21T08:00:00.000Z
+          changedAt: 2026-11-21T08:00:04.000Z
+        error: null
