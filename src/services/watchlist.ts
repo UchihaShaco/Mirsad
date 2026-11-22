@@ -273,10 +273,18 @@ function toLastDecision(row: repo.WatchlistReviewRow | undefined, canReview: boo
   };
 }
 
+/**
+ * The number as written in evidence this caller may open: its first accessible observation, else its first accessible
+ * match. The entry's own display is how the first observation wrote it, which may lie in a chat the caller cannot open.
+ */
+function displayFor(entry: repo.WatchlistEntryRow, view: EntryView): string {
+  return view.evidence[0]?.source_representation ?? view.matches[0]?.source_representation ?? entry.display;
+}
+
 function toWatchlistEntry(entry: repo.WatchlistEntryRow, view: EntryView, lastReview: repo.WatchlistReviewRow | undefined): WatchlistEntry {
   return {
     id: entry.id,
-    number: { e164: entry.e164, display: entry.display, exactMatchEligible: entry.e164 !== null },
+    number: { e164: entry.e164, display: displayFor(entry, view), exactMatchEligible: entry.e164 !== null },
     status: entry.status,
     statusLabel: WATCHLIST_STATUS_LABELS[entry.status],
     revision: entry.revision,
@@ -291,10 +299,11 @@ function toWatchlistEntry(entry: repo.WatchlistEntryRow, view: EntryView, lastRe
   };
 }
 
+/** A match shows the number as the matched chat's sender metadata wrote it; the caller can open that chat. */
 function toChatMatch(entry: repo.WatchlistEntryRow, match: repo.WatchlistMatchRow, view: EntryView): ChatWatchlistMatches[number] {
   return {
     entryId: entry.id,
-    numberDisplay: entry.display,
+    numberDisplay: match.source_representation,
     matchedAt: match.matched_at,
     evidence: view.evidence.map(toEvidenceRef),
     restrictedEvidence: view.restrictedEvidence,

@@ -258,7 +258,8 @@ describe('step 4: from a source-backed phone candidate to an inbox match', () =>
         const summary = inbox.body.data.chats.find((c: { id: string }) => c.id === chatBId);
         expect(summary.watchlistMatches).toEqual([{
           entryId: entry.id,
-          numberDisplay: '+44 7700 900123',
+          // The match shows the number as the matched chat's sender metadata wrote it.
+          numberDisplay: '+447700900123',
           matchedAt: expect.any(String),
           restrictedEvidence: false,
           evidence: [
@@ -698,18 +699,22 @@ describe('step 4: scope', () => {
 
     const asA = await entryFor('+447700900321');
     expect(asA.evidence.map((e) => e.chatId)).toEqual([mention.chatId, intakeSender.chatId, officerSender.chatId]);
-    expect(asA).toMatchObject({ restrictedEvidence: false, canReview: true });
+    expect(asA).toMatchObject({ restrictedEvidence: false, canReview: true, number: { display: '+44 7700 900321' } });
     expect(asA.matches.map((m) => m.chatId)).toEqual([intakeSender.chatId, officerSender.chatId]);
 
-    // Officer C sees E1 only through the intake chat, never E2, and the hidden evidence is flagged.
+    // Officer C sees E1 only through the intake chat, never E2, and the hidden evidence is flagged. The number is shown
+    // as that chat wrote it: how the officer-account chat wrote it is evidence C cannot open.
     const asC = (await watchlistOf(h, h.tokens.officerC)).entries;
     expect(asC.map((entry) => entry.id)).toContain(e1.id);
     expect(asC.map((entry) => entry.id)).not.toContain(e2.id);
     const e1AsC = asC.find((entry) => entry.id === e1.id);
     expect(e1AsC?.evidence.map((e) => e.chatId)).toEqual([intakeSender.chatId]);
-    expect(e1AsC).toMatchObject({ restrictedEvidence: true, canReview: false, matches: [{ chatId: intakeSender.chatId, matchedAt: expect.any(String) }] });
+    expect(e1AsC).toMatchObject({
+      restrictedEvidence: true, canReview: false, matches: [{ chatId: intakeSender.chatId, matchedAt: expect.any(String) }], number: { display: '+447700900321' },
+    });
     expect(await matchesShownIn(intakeSender.chatId, h.tokens.officerC)).toEqual([expect.objectContaining({
-      entryId: e1.id, restrictedEvidence: true, evidence: [expect.objectContaining({ chatId: intakeSender.chatId, origin: 'sender_metadata' })],
+      entryId: e1.id, numberDisplay: '+447700900321', restrictedEvidence: true,
+      evidence: [expect.objectContaining({ chatId: intakeSender.chatId, origin: 'sender_metadata' })],
     })]);
     const refusedC = await review(e1.id, 'clear', asA.revision, h.tokens.officerC);
     expect([refusedC.status, refusedC.body.error.code]).toEqual([403, 'evidence_access_required']);
