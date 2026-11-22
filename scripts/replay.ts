@@ -3,17 +3,36 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { replayFixture, validateFixture, type ReplayReport } from '../src/adapters/replay.ts';
 import { z } from 'zod';
+import { loadConfig } from '../src/config.ts';
+import { isEntryPoint, loadDotEnvIfPresent } from './entry-point.ts';
 
-const DEFAULT_BASE_URL = 'http://127.0.0.1:8787';
-const DEFAULT_DATA_DIR = './data';
 const CREDENTIALS_FILE = 'demo-credentials.json';
 const credentialsSchema = z.object({ connector: z.object({ token: z.string().min(1) }) });
 const DEMO_ACCOUNTS = { intake: 'tg-demo-intake', officer: 'tg-demo-officer' } as const;
 
-function connectorToken(): string {
-  const fromEnv = process.env.MIRSAD_CONNECTOR_TOKEN;
+type Env = Record<string, string | undefined>;
+
+export interface ReplayTarget {
+  baseUrl: string;
+  /** Where demo-credentials.json is looked for when MIRSAD_CONNECTOR_TOKEN is unset. */
+  dataDir: string;
+}
+
+/**
+ * The instance the configuration describes, read with the server's own rules and defaults: the address it listens on
+ * (MIRSAD_HOST, MIRSAD_PORT) unless MIRSAD_BASE_URL is set, and its data directory (MIRSAD_DATA_DIR). So replay reaches
+ * the instance `npm run demo` started with the same environment and .env.
+ */
+export function replayTarget(env: Env): ReplayTarget {
+  const config = loadConfig(env);
+  const host = config.host.includes(':') ? `[${config.host}]` : config.host;
+  return { baseUrl: env.MIRSAD_BASE_URL?.trim() || `http://${host}:${config.port}`, dataDir: config.dataDir };
+}
+
+function connectorToken(env: Env, dataDir: string): string {
+  const fromEnv = env.MIRSAD_CONNECTOR_TOKEN;
   if (fromEnv) return fromEnv;
-  const file = path.join(process.env.MIRSAD_DATA_DIR ?? DEFAULT_DATA_DIR, CREDENTIALS_FILE);
+  const file = path.join(dataDir, CREDENTIALS_FILE);
   if (!fs.existsSync(file)) {
     throw new Error(`no connector token: set MIRSAD_CONNECTOR_TOKEN or start Mirsad once so ${file} exists`);
   }
@@ -42,21 +61,25 @@ async function main(): Promise<number> {
     process.stderr.write(`replay refused:\n${problems.map((p) => `  - ${p}`).join('\n')}\n`);
     return 1;
   }
+  const target = replayTarget(process.env);
   const report = await replayFixture(fixture, {
-    baseUrl: process.env.MIRSAD_BASE_URL ?? DEFAULT_BASE_URL,
-    connectorToken: connectorToken(),
+    baseUrl: target.baseUrl,
+    connectorToken: connectorToken(process.env, target.dataDir),
     accounts: DEMO_ACCOUNTS,
   });
   process.stdout.write(`${formatReport(report)}\n`);
   return report.events.every((e) => e.status === 200 || e.status === 201) ? 0 : 1;
 }
 
-main().then(
-  (code) => {
-    process.exitCode = code;
-  },
-  (error: unknown) => {
-    process.stderr.write(`replay failed: ${error instanceof Error ? error.message : 'unknown error'}\n`);
-    process.exitCode = 1;
-  },
-);
+if (isEntryPoint(import.meta.url)) {
+  loadDotEnvIfPresent();
+  main().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error: unknown) => {
+      process.stderr.write(`replay failed: ${error instanceof Error ? error.message : 'unknown error'}\n`);
+      process.exitCode = 1;
+    },
+  );
+}

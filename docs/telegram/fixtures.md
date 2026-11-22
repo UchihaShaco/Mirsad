@@ -5,9 +5,10 @@ Everything under `fixtures/telegram/` is synthetic. Each file has `synthetic: tr
 Names are "Test Owner" and "Test Contact N"; domains end in `.test` or use `example.*`; phone numbers come only from
 `+44 7700 900000`-`900999` and `+1 <area> 555 0100`-`0199`.
 
-Replay: `npm run replay -- fixtures/telegram/<file>.json` (needs a running Mirsad; reads `MIRSAD_BASE_URL`, default
-`http://127.0.0.1:8787`, and `MIRSAD_CONNECTOR_TOKEN`, else `demo-credentials.json` in the data directory). The demo account
-map is `intake=tg-demo-intake`, `officer=tg-demo-officer`. The replay refuses a file that is not synthetic or that holds a
+Replay: `npm run replay -- fixtures/telegram/<file>.json` (needs a running Mirsad). Like `npm run demo`, it loads `.env`
+first. It posts to `MIRSAD_BASE_URL` when set, otherwise to the address `MIRSAD_HOST` and `MIRSAD_PORT` give the service
+(default `http://127.0.0.1:8787`), and uses `MIRSAD_CONNECTOR_TOKEN`, else `demo-credentials.json` in the data directory
+(`MIRSAD_DATA_DIR`, default `./data`). The demo account map is `intake=tg-demo-intake`, `officer=tg-demo-officer`. The replay refuses a file that is not synthetic or that holds a
 domain or phone number outside the reserved ranges (`validateFixture`), and its report lists IDs and result codes only.
 Phone numbers are checked exactly as in the evaluation transcripts (`src/domain/reserved-numbers.ts`; the layout rules
 are in `fixtures/eval/README.md`): every run of seven or more digits, in any spacing or digit set, must be a reserved

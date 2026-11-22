@@ -3,6 +3,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { replayFixture, type ReplayOptions } from '../../src/adapters/replay.ts';
 import type { TelegramFixture } from '../../src/adapters/telegram/types.ts';
+import { replayTarget } from '../../scripts/replay.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 
 const FIXTURE_DIR = path.resolve(import.meta.dirname, '../../fixtures/telegram');
@@ -220,5 +221,17 @@ describe('step 5: telegram replay', () => {
     await expect(replayFixture(missingId as never, options({ fetch: spy }))).rejects.toThrow(/message_id/);
     await expect(replayFixture(badStarts as never, options({ fetch: spy }))).rejects.toThrow(/conversationStarts/);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('npm run replay', () => {
+  it('targets the instance MIRSAD_HOST, MIRSAD_PORT and MIRSAD_DATA_DIR configure, unless MIRSAD_BASE_URL is set', () => {
+    expect(replayTarget({ MIRSAD_HOST: 'localhost', MIRSAD_PORT: '9123', MIRSAD_DATA_DIR: 'demo-data' })).toEqual({
+      baseUrl: 'http://localhost:9123',
+      dataDir: path.resolve('demo-data'),
+    });
+    expect(replayTarget({})).toEqual({ baseUrl: 'http://127.0.0.1:8787', dataDir: path.resolve('./data') });
+    expect(replayTarget({ MIRSAD_HOST: '::1', MIRSAD_PORT: '9123' }).baseUrl).toBe('http://[::1]:9123');
+    expect(replayTarget({ MIRSAD_BASE_URL: 'http://127.0.0.1:9999', MIRSAD_PORT: '9123' }).baseUrl).toBe('http://127.0.0.1:9999');
   });
 });
