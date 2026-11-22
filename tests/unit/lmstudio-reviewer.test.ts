@@ -443,6 +443,10 @@ describe('LM Studio reviewer', () => {
     // With thinking left on, the reasoning used up the budget: an empty answer cut off by length.
     expect(await codeFor(() => completion('', 'length'))).toBe('lmstudio_unfinished');
     expect(await codeFor(() => completion(JSON.stringify({ items: [] }), 'length'))).toBe('lmstudio_unfinished');
+    // A cut-off answer is halved and reviewed again, so these are what reach the stop-only rule: a parsable answer that
+    // finished for any other reason, or with no reason, is not used.
+    expect(await codeFor(() => completion(JSON.stringify({ items: [] }), 'content_filter'))).toBe('lmstudio_unfinished');
+    expect(await codeFor(() => completion(JSON.stringify({ items: [] }), null))).toBe('lmstudio_unfinished');
     expect(await codeFor(() => completion(''))).toBe('lmstudio_empty_content');
     expect(await codeFor(() => completion('  \n'))).toBe('lmstudio_empty_content');
     expect(await codeFor(() => completion(null))).toBe('lmstudio_empty_content');
