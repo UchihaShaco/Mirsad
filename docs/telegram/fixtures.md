@@ -9,6 +9,9 @@ Replay: `npm run replay -- fixtures/telegram/<file>.json` (needs a running Mirsa
 `http://127.0.0.1:8787`, and `MIRSAD_CONNECTOR_TOKEN`, else `demo-credentials.json` in the data directory). The demo account
 map is `intake=tg-demo-intake`, `officer=tg-demo-officer`. The replay refuses a file that is not synthetic or that holds a
 domain or phone number outside the reserved ranges (`validateFixture`), and its report lists IDs and result codes only.
+Phone numbers are checked exactly as in the evaluation transcripts (`src/domain/reserved-numbers.ts`; the layout rules
+are in `fixtures/eval/README.md`): every run of seven or more digits, in any spacing or digit set, must be a reserved
+number, so write any other number (a reference, a date, an amount) without such a run.
 
 `conversationStarts` is the fixture author's assertion about a synthetic conversation. Only fixtures may carry it; real
 Telegram updates have no start marker, so live intake always yields `First observed: ...`. No shipped fixture sets it; tests

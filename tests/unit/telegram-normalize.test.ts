@@ -208,6 +208,24 @@ describe('telegram normalizer', () => {
     expect(validateFixture(withText('اتصل بي على +٤٤ ٧٧٠٠ ٩٠٠١٢٣'))).toEqual([]);
   });
 
+  it('validateFixture applies the held-out reserved-number check to every run of seven or more digits', () => {
+    const base = {
+      description: 'x',
+      synthetic: true,
+      account: 'intake',
+      businessUserId: OWNER,
+      businessConnectionId: CONNECTION,
+      updates: [incoming(900_000_001)],
+    };
+    const phoneProblems = (text: string) =>
+      validateFixture({ ...base, updates: [incoming(900_000_001, { text })] }).filter((p) => p.includes('phone'));
+    // Outside the reserved ranges: a seven-digit local number, and a UK mobile split by an invisible direction mark.
+    expect(phoneProblems('call 555-0277 today')).not.toEqual([]);
+    expect(phoneProblems('call 07911\u200e123456 today')).not.toEqual([]);
+    // Reserved numbers in layouts the held-out check accepts, including the 00 prefix.
+    expect(phoneProblems('call 0044 7700 900123 or (312) 555-0188 today')).toEqual([]);
+  });
+
   it('validateFixture reports structurally invalid fixtures instead of trusting them', () => {
     const base = {
       description: 'x',

@@ -1,4 +1,5 @@
 /** Fixture validation and HTTP replay of synthetic Telegram fixtures (design section 13). */
+import { nonReservedPhones } from '../domain/reserved-numbers.ts';
 import { createTelegramAdapter } from './telegram/normalize.ts';
 import { SYNTHETIC_MARK_PROBLEM, telegramFixtureSchema } from './telegram/fixture-schema.ts';
 import type { TelegramUpdate } from './telegram/types.ts';
@@ -29,16 +30,9 @@ export interface ReplayReport {
 
 const RESERVED_TLDS = ['test', 'example', 'invalid'];
 const EXAMPLE_LABEL = 'example';
-const MIN_PHONE_DIGITS = 9;
-const UK_FICTIONAL = /^(?:44|0)7700900\d{3}$/;
-const US_FICTIONAL = /^1\d{3}55501\d{2}$/;
-const ARABIC_INDIC_ZERO = 0x0660;
-const EXT_ARABIC_INDIC_ZERO = 0x06f0;
-const ARABIC_INDIC_DIGIT = /[٠-٩۰-۹]/g;
 const URL_HOST = /https?:\/\/([^\s/:?#]+)/gi;
 const EMAIL_HOST = /[\w.+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)/gi;
 const BARE_HOST = /(?<![\p{L}\p{N}_-])[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.\p{L}{2,}(?![\p{L}\p{N}_-])/giu;
-const PHONE_LIKE = /\+?\d[\d\s().-]{7,}\d/g;
 
 function isReservedHost(host: string): boolean {
   const labels = host.toLowerCase().replace(/\.$/, '').split('.');
@@ -61,23 +55,9 @@ function domainProblems(text: string): string[] {
   return [...hosts].filter((host) => !isReservedHost(host)).map((host) => `non-reserved domain: ${host}`);
 }
 
-/** Maps Arabic-Indic and Extended Arabic-Indic digits to ASCII, as design section 11 does for phone numbers. */
-function asciiDigits(text: string): string {
-  return text.replace(ARABIC_INDIC_DIGIT, (digit) => {
-    const code = digit.charCodeAt(0);
-    return String(code >= EXT_ARABIC_INDIC_ZERO ? code - EXT_ARABIC_INDIC_ZERO : code - ARABIC_INDIC_ZERO);
-  });
-}
-
-function phoneProblems(rawText: string): string[] {
-  const text = asciiDigits(rawText);
-  const problems: string[] = [];
-  for (const match of text.matchAll(PHONE_LIKE)) {
-    const digits = match[0].replace(/\D/g, '');
-    if (digits.length < MIN_PHONE_DIGITS) continue;
-    if (!UK_FICTIONAL.test(digits) && !US_FICTIONAL.test(digits)) problems.push(`non-reserved phone number: ${match[0]}`);
-  }
-  return problems;
+/** The same reserved-number check as the held-out evaluation fixtures (src/domain/reserved-numbers.ts). */
+function phoneProblems(text: string): string[] {
+  return nonReservedPhones(text).map((span) => `non-reserved phone number: ${span}`);
 }
 
 function structureProblems(fixture: unknown): string[] {
