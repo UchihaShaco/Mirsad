@@ -83,8 +83,10 @@ const LATER_MESSAGE_DELAY_S = 3_600;
 const MENTION_UPDATES = 1;
 /** takeover-pair.json: update 2 is a routine message in the first chat, copied as the message that arrives under takeover. */
 const TAKEOVER_ROUTINE_UPDATE = 2;
-/** payment-destination-change.json: five routine messages, then the one that introduces a payment link. */
+/** payment-destination-change.json: five routine messages (three incoming, two outgoing), then one introducing a payment link. */
 const PAYMENT_FIXTURE_MESSAGES = 6;
+const PAYMENT_ROUTINE_INCOMING = 3;
+const PAYMENT_ROUTINE_OUTGOING = 2;
 const MERCHANT_HOST = 'pay.merchant.example';
 const REASONS = {
   approve: 'Walkthrough: the source message ties the number to a payment request.',
@@ -264,7 +266,7 @@ async function settledOne(run: Run, chatId: string): Promise<Timeline> {
 }
 
 /** Empty when every review settled; otherwise how many reviews were unavailable or still unfinished. */
-function reviewProblem(timelines: Timeline[]): string {
+function reviewProblem(timelines: readonly Pick<Timeline, 'messages' | 'messageEvents'>[]): string {
   const reviews = timelines.flatMap((t) => [...t.messages, ...t.messageEvents].flatMap((item) => (item.review ? [item.review] : [])));
   const unavailable = reviews.filter((r) => r.status === 'unavailable').length;
   const waiting = reviews.filter((r) => r.status === 'pending' || r.status === 'running').length;
@@ -379,22 +381,27 @@ async function batchDispatch(run: Run): Promise<Outcome> {
   return outcome(answer.results.length === 2 && started === 2, `${LABELS.dispatch} ${answer.dispatchId}`, ...results);
 }
 
+/** Check 9's verdict on the payment fixture's settled timeline (only its messages, message events and findings are read). */
+export function quietReviewOutcome(chatId: string, timeline: Pick<Timeline, 'messages' | 'messageEvents' | 'findings'>): Outcome {
+  const { messages, findings } = timeline;
+  const [last, routine] = [messages.at(-1), messages.slice(0, -1)];
+  const quiet = routine.filter((m) => m.review?.status === 'completed' && m.review.outcome === 'no_new_finding').length;
+  const outgoing = routine.filter((m) => m.direction === 'outgoing' && m.review === null).length;
+  const ready = messages.filter((m) => m.capture?.status === 'ready').length;
+  const note = findings[0];
+  const linked = findings.length === 1 && note !== undefined && note.messageId === last?.id && (last?.text ?? '').includes(note.quote);
+  const passed = messages.length === PAYMENT_FIXTURE_MESSAGES && ready === messages.length && linked
+    && quiet === PAYMENT_ROUTINE_INCOMING && outgoing === PAYMENT_ROUTINE_OUTGOING;
+  const notes = `${findings.length} finding(s)${note ? ` (${note.label})` : ''}${linked ? ' on the last message, quoting it exactly' : ''}`;
+  return outcome(passed, reviewProblem([timeline]), `chat ${chatId}: ${messages.length} messages, ${ready} ready captures`, notes,
+    `${routine.length} routine messages raised nothing (${quiet} reviews ${LABELS.noNewFinding}, ${outgoing} outgoing, not reviewed)`);
+}
+
 async function quietReview(run: Run): Promise<Outcome> {
   const chatId = onlyChat(await replay(run, loadFixture('payment-destination-change')));
   run.chats.set('payment', chatId);
   await dispatch(run, [chatId]);
-  const timeline = await settledOne(run, chatId);
-  const { messages, findings } = timeline;
-  const [last, routine] = [messages.at(-1), messages.slice(0, -1)];
-  const quiet = routine.filter((m) => m.review?.status === 'completed' && m.review.outcome === 'no_new_finding').length;
-  const outgoing = routine.filter((m) => m.review === null).length;
-  const ready = messages.filter((m) => m.capture?.status === 'ready').length;
-  const note = findings[0];
-  const linked = findings.length === 1 && note !== undefined && note.messageId === last?.id && (last?.text ?? '').includes(note.quote);
-  const passed = messages.length === PAYMENT_FIXTURE_MESSAGES && ready === messages.length && linked && quiet + outgoing === routine.length;
-  const notes = `${findings.length} finding(s)${note ? ` (${note.label})` : ''}${linked ? ' on the last message, quoting it exactly' : ''}`;
-  return outcome(passed, reviewProblem([timeline]), `chat ${chatId}: ${messages.length} messages, ${ready} ready captures`, notes,
-    `${routine.length} routine messages raised nothing (${quiet} reviews ${LABELS.noNewFinding}, ${outgoing} outgoing, not reviewed)`);
+  return quietReviewOutcome(chatId, await settledOne(run, chatId));
 }
 
 // ---- Checks 10-15: officer control and the takeover composer ----

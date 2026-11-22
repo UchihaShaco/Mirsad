@@ -2,8 +2,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { formatChecklist, runWalkthrough, type WalkthroughReport } from '../../scripts/demo-walkthrough.ts';
+import { formatChecklist, quietReviewOutcome, runWalkthrough, type WalkthroughReport } from '../../scripts/demo-walkthrough.ts';
 import { readDemoCredentials, signInLines } from '../../scripts/demo-credentials.ts';
+import { LABELS } from '../../src/contract/labels.ts';
+import type { Finding, Message, ReviewState } from '../../src/contract/schemas.ts';
 import type { DemoCredentials } from '../../src/identity/seed.ts';
 
 /** Two full walkthrough runs start a real instance each; on this machine one run takes several seconds. */
@@ -56,6 +58,30 @@ function stepOf(report: WalkthroughReport, id: string) {
   return step;
 }
 
+const AT = '2026-11-21T08:00:00.000Z';
+const NO_NEW_FINDING: ReviewState = { status: 'completed', outcome: 'no_new_finding', updatedAt: AT };
+const PAYMENT_LINK = 'https://pay.shop.test/inv/7';
+
+/** A captured message of the payment fixture's settled timeline. */
+function paymentMessage(position: number, direction: 'incoming' | 'outgoing', review: ReviewState | null, text = 'A routine message.'): Message {
+  return {
+    id: `msg_${position}`, chatId: 'chat_1', direction, origin: 'source', text, originalCaptured: true, unsupportedContent: [], sentAt: AT,
+    receivedAt: AT, source: { channel: 'telegram', captureMethod: 'fixture_replay', sourceEventId: `tg:u${position}:m${position}`, sourceMessageId: `tg:${position}` },
+    sender: null, author: null, sendStatus: null, sendStatusLabel: null, review, editedAtSource: false, deletedAtSource: false, position,
+    capture: { id: `cap_${position}`, status: 'ready', kind: 'mirsad_rendered_capture', artifactId: `art_${position}`, sha256: 'a'.repeat(64), attempts: 1, errorCode: null, retryable: false, updatedAt: AT },
+  };
+}
+
+/** Five routine messages, then the last one with its single New payment link note, quoted exactly. */
+function paymentTimeline(routine: Message[]) {
+  const last = paymentMessage(6, 'incoming', { status: 'completed', outcome: 'findings', updatedAt: AT }, `Please pay at ${PAYMENT_LINK} today.`);
+  const note: Finding = {
+    id: 'fnd_1', chatId: 'chat_1', messageId: last.id, messageEventId: 'mev_6', kind: 'payment_link', label: LABELS.newPaymentLink, quote: last.text ?? '',
+    extractedValue: PAYMENT_LINK, concern: null, changedFrom: null, caseReferenceId: null, note: 'A new payment link.', createdAt: AT, position: 7,
+  };
+  return { messages: [...routine, last], messageEvents: [], findings: [note] };
+}
+
 describe('demo walkthrough', () => {
   it('the walkthrough passes on a clean start with the deterministic reviewer', async () => {
     const report = await runWalkthrough({ reviewer: 'deterministic' });
@@ -90,6 +116,20 @@ describe('demo walkthrough', () => {
       fs.rmSync(report.dataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
     }
   }, WALKTHROUGH_TIMEOUT_MS);
+});
+
+describe('walkthrough check verdicts', () => {
+  it('quiet_review_one_note counts only outgoing messages as not reviewed and needs the fixture\'s three quiet reviews and two outgoing messages', () => {
+    const quiet = (position: number) => paymentMessage(position, 'incoming', NO_NEW_FINDING);
+    const outgoing = (position: number) => paymentMessage(position, 'outgoing', null);
+    const unreviewed = (position: number) => paymentMessage(position, 'incoming', null);
+
+    expect(quietReviewOutcome('chat_1', paymentTimeline([quiet(1), outgoing(2), quiet(3), outgoing(4), quiet(5)])).passed).toBe(true);
+    // An incoming routine message that was never reviewed is not an outgoing one.
+    expect(quietReviewOutcome('chat_1', paymentTimeline([quiet(1), outgoing(2), quiet(3), outgoing(4), unreviewed(5)])).passed).toBe(false);
+    // Four quiet reviews and one outgoing message is not the fixture's split.
+    expect(quietReviewOutcome('chat_1', paymentTimeline([quiet(1), outgoing(2), quiet(3), quiet(4), quiet(5)])).passed).toBe(false);
+  });
 });
 
 describe('demo credentials', () => {
