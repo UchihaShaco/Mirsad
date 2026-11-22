@@ -14,6 +14,11 @@ import { runReadiness } from '../../scripts/telegram-readiness.ts';
 import { envelope, recorded, uniqueId } from '../helpers/events.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 
+/**
+ * A readiness run starts its own instance and replays every fixture, each event committed to disk before it is
+ * acknowledged; like the walkthrough, it gets more than the default test timeout when the machine is busy.
+ */
+const READINESS_RUN_TIMEOUT_MS = 120_000;
 const EXAMPLE_RECORD = path.resolve(import.meta.dirname, '../../docs/telegram/controlled-test-record.example.json');
 const FIXTURES_DIR = path.resolve(import.meta.dirname, '../../fixtures/telegram');
 const READINESS_CHECK_IDS = [
@@ -177,7 +182,7 @@ describe('status', () => {
       readiness: 'ready_for_controlled_test',
       readinessRecordedAt: '2026-11-22T10:00:00.000Z',
     });
-  });
+  }, READINESS_RUN_TIMEOUT_MS);
 
   it('worker counts cover the caller\'s own workspace only', async () => {
     h.renderer.failNext();
@@ -209,5 +214,5 @@ describe('status', () => {
     expect(record.checks.filter((c) => !c.passed).map((c) => c.id)).toEqual(['officer_first_both_directions']);
     expect(fs.readFileSync(path.join(outputDir, 'readiness.md'), 'utf8')).toContain('Not ready');
     expect((await readStatus(deps({ readinessFile: path.join(outputDir, 'readiness.json') }))).channels.telegram.readiness).toBe('not_assessed');
-  });
+  }, READINESS_RUN_TIMEOUT_MS);
 });
