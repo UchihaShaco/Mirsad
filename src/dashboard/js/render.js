@@ -37,6 +37,8 @@ function renderShell(refs, state) {
   setCurrent(refs.navInbox, state.view === 'inbox');
   setCurrent(refs.navWatchlist, state.view === 'watchlist');
   refs.connection.textContent = CONNECTION_LABELS[state.connection] ?? '';
+  // The stylesheet colours the status dot from this: green when live, amber while connecting.
+  refs.connection.dataset.state = state.connection ?? '';
 }
 
 export function createRenderer({ refs, handlers, captures, watchlistView }) {

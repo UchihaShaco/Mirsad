@@ -444,6 +444,9 @@ From design section 18:
     or matched.
 13. Event IDs, positions and cursors are workspace-wide sequence numbers, so gaps show that other chats in the workspace
     had activity (not what it was).
+14. The dashboard has a light theme and switches to dark with the operating system setting. It uses the system's fonts
+    (Segoe UI Variable on Windows) and draws its marks in CSS, because its Content-Security-Policy allows no remote font
+    and its stylesheet references no files. The design it follows is on a design canvas, outside the repository.
 
 ## Known limits
 

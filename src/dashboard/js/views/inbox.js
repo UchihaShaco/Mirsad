@@ -28,10 +28,12 @@ function chatItem(chat, state, handlers) {
     h('span', { className: 'badge', text: chat.channelLabel }),
     h('span', { text: chat.originLabel }),
     h('span', { className: `ai-mode mode-${chat.aiMode}`, text: AI_MODE_LABELS[chat.aiMode] ?? chat.aiMode }),
-    REVIEW_NOTES[chat.review.state] ? h('span', { text: REVIEW_NOTES[chat.review.state] }) : null,
+    REVIEW_NOTES[chat.review.state]
+      ? h('span', { className: `review-note review-note-${chat.review.state}`, text: REVIEW_NOTES[chat.review.state] })
+      : null,
   ]);
   const body = h('div', { className: 'chat-item-body' }, [link, meta, matchBadge(chat)]);
-  return h('li', { className: 'chat-item', dataset: { chatId: chat.id } }, [selector(chat, state, handlers), body]);
+  return h('li', { className: current ? 'chat-item current' : 'chat-item', dataset: { chatId: chat.id } }, [selector(chat, state, handlers), body]);
 }
 
 function fillList(list, chats, state, handlers, emptyText) {

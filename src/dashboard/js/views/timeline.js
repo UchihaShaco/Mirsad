@@ -37,10 +37,16 @@ function heading(message) {
   return h('p', { className: 'entry-heading' }, parts);
 }
 
+/** The review line's classes; a completed review that recorded findings is marked so it reads like the finding it is. */
+function reviewClass(review) {
+  const findings = review.status === 'completed' && review.outcome === 'findings' ? ' review-findings' : '';
+  return `review review-${review.status}${findings}`;
+}
+
 function evidenceStatus(capture, review, subject, ctx) {
   return h('div', { className: 'evidence-status' }, [
     capture === null ? null : renderCapture(capture, subject, ctx),
-    review === null ? null : h('p', { className: `review review-${review.status}`, text: reviewStatusLabel(review) }),
+    review === null ? null : h('p', { className: reviewClass(review), text: reviewStatusLabel(review) }),
   ]);
 }
 
