@@ -4,7 +4,9 @@
  * prints what is missing and exits 1. It reads no messages and never prints the token.
  *
  * --discover-connections lists the business connections Telegram has pending (connection ID, owner user ID, enabled,
- * rights) with one short poll that confirms nothing, so the values for .env and telegram:provision can be found.
+ * rights) with one short poll that confirms nothing, so the values for .env and telegram:provision can be found. That
+ * poll leaves allowed_updates narrowed to business_connection until the connector's first poll, so message updates
+ * created in between are never queued (docs/telegram/setup.md, step 4).
  */
 import fs from 'node:fs';
 import path from 'node:path';

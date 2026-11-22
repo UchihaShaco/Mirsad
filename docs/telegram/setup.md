@@ -77,7 +77,10 @@ npm run telegram:verify -- --discover-connections
 
 It prints each pending business connection: connection ID, owner user ID, enabled or disabled, and any rights granted.
 It makes one short `getUpdates` call that asks for `business_connection` updates and passes no offset, so it confirms
-nothing and the connector still receives every pending update later. Other pending updates are counted, never read.
+nothing: updates already queued stay queued for the connector. Other pending updates are counted, never read.
+Telegram keeps that `allowed_updates=["business_connection"]` setting until the next `getUpdates` call, which is the
+connector's first poll in step 8. Message, edit and deletion updates created in between are therefore never queued and
+can never be fetched, so start the test conversations only after the log shows `telegram_live_connector_started`.
 Do not run it while the connector is running: two pollers on one bot conflict.
 
 ## 5. `.env` values
@@ -138,8 +141,9 @@ Set `TELEGRAM_LIVE_ENABLED=true` and restart Mirsad (`npm start`).
 - The log shows `telegram_live_connector_started`. If any gate is missing, it shows `telegram_live_connector_refused`
   with the names of the missing settings, and Mirsad keeps running with the connector off.
 - `GET /v1/status` reports `channels.telegram.liveConnector: "enabled"` while the connector runs.
-- Telegram keeps undelivered updates for up to 24 hours. Updates queued before you enabled the connector arrive on the
-  first poll; only those from the approved connection and chats are stored.
+- Telegram keeps undelivered updates for up to 24 hours. Updates queued before connection discovery (step 4) arrive on
+  the first poll; only those from the approved connection and chats are stored. Message updates created after discovery
+  and before that first poll were filtered out by discovery's `allowed_updates` setting and never arrive (step 4).
 
 ## What to watch during the test
 

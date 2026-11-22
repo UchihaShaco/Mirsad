@@ -179,8 +179,9 @@ export async function verifyConnection(api: BotApi, config: Pick<Config, 'telegr
 
 /**
  * Finds the business connection ID and owner user ID before the connector is set up: one short poll asking for
- * business_connection updates, with no offset, so no update is confirmed and the connector later receives them all.
- * Updates of other kinds that were already queued are counted and never read.
+ * business_connection updates, with no offset, so no queued update is confirmed and the connector receives those later.
+ * Updates of other kinds that were already queued are counted and never read. Telegram keeps the narrowed
+ * allowed_updates until the next poll (the connector's first), so message updates created in between are never queued.
  */
 export async function discoverConnections(api: BotApi): Promise<ConnectionDiscovery> {
   const updates = await api.getUpdates({ timeoutSeconds: 0, allowedUpdates: ['business_connection'] });

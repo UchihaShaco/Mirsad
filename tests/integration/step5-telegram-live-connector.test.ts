@@ -772,7 +772,9 @@ describe('step 5: telegram live connector', () => {
       connections: [{ id: CONNECTION_ID, ownerUserId: String(OWNER_ID), enabled: true, rightsGranted: [] }],
       otherUpdates: 1,
     });
-    // A short poll with no offset confirms nothing, so the live connector still receives every update later.
+    // A short poll with no offset confirms nothing, so updates already queued stay for the live connector. Telegram keeps
+    // its allowed_updates setting until the next poll, so message updates created before the connector's first poll are
+    // never queued (docs/telegram/setup.md, step 4).
     expect(fake.calls).toEqual([{ method: 'getUpdates', body: { timeout: 0, allowed_updates: ['business_connection'] } }]);
     expect(JSON.stringify(discovery)).not.toContain('canary');
   });
