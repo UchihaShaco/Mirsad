@@ -59,13 +59,13 @@ host it does not list is then marked **Suspected fraud**. Try it with `merchant-
 
 ## What was verified
 
-These are the results of this build's final runs on 2026-11-22, on Windows 11 with Node 24.18.0. The first five ran at
-commit `33cbefc`; the commits after it change only documentation. The last two rows are copied from their committed
-reports, which record when they ran:
+These are the results of this build's final runs on 2026-11-22, on Windows 11 with Node 24.18.0. The first three ran at
+commit `fa24c3f`; the commits after it change only documentation. The two walkthrough runs ran at commit `33cbefc`. The
+last two rows are copied from their committed reports, which record when they ran:
 
 | Run | Result |
 |---|---|
-| `npm test` | 46 test files: 407 tests passed and 4 skipped. The skipped block is the WhatsApp channel contract, which stays off while its gate is closed. The output has no warnings. |
+| `npm test` | 47 test files: 417 tests passed and 4 skipped. The skipped block is the WhatsApp channel contract, which stays off while its gate is closed. The output has no warnings. |
 | `npm run typecheck` | Clean. |
 | `npm run test:e2e` | 10 of 10 dashboard flows passed in a headless installed browser (the suite tries Microsoft Edge first, then Chrome). |
 | `npm run demo:walkthrough -- --reviewer deterministic` | 22 of 22 checks passed, in 2.3 s. |
