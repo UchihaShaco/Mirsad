@@ -2,7 +2,7 @@
  * Messages and their events (design sections 4 and 7). Original text is written once: at insert, or when the
  * original `recorded` event fills a placeholder's empty text. No function here overwrites stored text.
  */
-import type { Direction, MessageEventType } from '../../contract/enums.ts';
+import type { Direction, MessageEventType, ReviewStatus } from '../../contract/enums.ts';
 import type { Tx } from '../db.ts';
 import type { MessageEventRow, MessageRow } from '../rows.ts';
 
@@ -209,13 +209,14 @@ export function listMessages(tx: Tx, chatId: string): MessageRow[] {
   return tx.all<MessageRow>('SELECT * FROM messages WHERE chat_id = :chatId ORDER BY position, id', { chatId });
 }
 
-/** A message event that carries text. */
-export type TextEventRow = MessageEventRow & { text: string };
+/** An incoming message event that carries text, with the status of its review (null if it has none). */
+export type IncomingTextEventRow = MessageEventRow & { text: string; review_status: ReviewStatus | null };
 
 /** The chat's incoming source message events that carry text (recorded, edited, conflicting copy), in position order. */
-export function listIncomingTextEvents(tx: Tx, chatId: string): TextEventRow[] {
-  return tx.all<TextEventRow>(
-    `SELECT e.* FROM message_events e JOIN messages m ON m.id = e.message_id
+export function listIncomingTextEvents(tx: Tx, chatId: string): IncomingTextEventRow[] {
+  return tx.all<IncomingTextEventRow>(
+    `SELECT e.*, r.status AS review_status FROM message_events e JOIN messages m ON m.id = e.message_id
+     LEFT JOIN reviews r ON r.message_event_id = e.id
      WHERE e.chat_id = :chatId AND m.origin = 'source' AND m.direction = 'incoming'
        AND e.type IN ('recorded', 'edited', 'conflicting_copy') AND e.text IS NOT NULL AND e.text <> ''
      ORDER BY e.position, e.id`,

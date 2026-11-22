@@ -59,6 +59,21 @@ export function listFindingsOfKind(tx: Tx, chatId: string, kind: FindingKind): F
   return tx.all<FindingRow>('SELECT * FROM findings WHERE chat_id = :chatId AND kind = :kind ORDER BY position, id', { chatId, kind });
 }
 
+/**
+ * For each payment link a payment link or Suspected fraud finding of the chat cites (by normalized value), the position
+ * of the earliest message event that such a finding cites for it.
+ */
+export function firstLinkFindingPositions(tx: Tx, chatId: string): Map<string, number> {
+  const rows = tx.all<{ normalized_value: string; position: number }>(
+    `SELECT f.normalized_value, MIN(e.position) AS position
+     FROM findings f JOIN message_events e ON e.id = f.message_event_id
+     WHERE f.chat_id = :chatId AND f.kind IN ('payment_link', 'suspected_fraud')
+     GROUP BY f.normalized_value`,
+    { chatId },
+  );
+  return new Map(rows.map((row) => [row.normalized_value, row.position]));
+}
+
 /** The message and message event a finding cites. */
 export function findCitedEvidence(
   tx: Tx,

@@ -105,6 +105,17 @@ function extracted(request: ReviewRequest, over: Partial<ExtractedItem>): Extrac
   return { sourceMessageId: request.messageId, kind: 'payment_link', quote: '', extractedValue: '', concern: null, countryHint: null, ...over };
 }
 
+/** Each payment link detail of the chat, with the message event it was last seen on. */
+function paymentLinkSightings(chatId: string): Array<{ normalizedValue: string; lastSeenOn: string }> {
+  return queryRows<{ normalizedValue: string; lastSeenOn: string }>(
+    h.dataDir,
+    `SELECT d.normalized_value AS normalizedValue, e.id AS lastSeenOn
+     FROM case_details d JOIN message_events e ON e.chat_id = d.chat_id AND e.position = d.last_seen_position
+     WHERE d.chat_id = :chatId AND d.category = 'payment_link' ORDER BY d.rowid`,
+    { chatId },
+  );
+}
+
 /** What review publishing and case references handed to the watchlist for one message event. */
 function evidenceFor(messageEventId: string): watchlist.PublishedEvidence[] {
   return vi
@@ -490,6 +501,45 @@ describe('review pipeline: Suspected fraud and case references', () => {
     });
   });
 
+  it('the same unconfirmed link raises one Suspected fraud finding, on the earliest message that carries it, whether the confirmation comes last or first', async () => {
+    const first = 'Please pay the deposit here: https://pay.other-shop.test/inv/79';
+    const repeat = 'Reminder: pay at https://pay.other-shop.test/inv/79 today.';
+    const link = 'pay.other-shop.test/inv/79';
+    h.reviewer.respond(() => ({ items: [] }));
+    const findings = async (chatId: string) => (await timeline(chatId)).findings.map((f) => [f.messageEventId, f.kind]);
+
+    // The confirmation last, after both messages were reviewed: the repeat moves the link's last sighting and raises nothing.
+    const reviewed = await reviewedChat(first);
+    const reviewedRepeat = await addMessage(reviewed.chatId, 2, repeat);
+    await h.drain();
+    expect((await recordConfirmation(reviewed.chatId, ['good-shop.test'])).body.data.findingsCreated).toBe(1);
+    expect(await findings(reviewed.chatId)).toEqual([[reviewed.messageEventId, 'suspected_fraud']]);
+    expect(paymentLinkSightings(reviewed.chatId)).toEqual([{ normalizedValue: link, lastSeenOn: reviewedRepeat.messageEventId }]);
+
+    // The confirmation last, before either message was reviewed: the repeat's own review, still to come, records its
+    // sighting and suppresses it, so nothing more is raised.
+    const waiting = await newChat(first);
+    const waitingRepeat = await addMessage(waiting.chatId, 2, repeat);
+    expect((await recordConfirmation(waiting.chatId, ['good-shop.test'])).body.data.findingsCreated).toBe(1);
+    expect(paymentLinkSightings(waiting.chatId)).toEqual([{ normalizedValue: link, lastSeenOn: waiting.messageEventId }]);
+    expect((await dispatch([waiting.chatId])).status).toBe(200);
+    await h.drain();
+    expect(await findings(waiting.chatId)).toEqual([[waiting.messageEventId, 'suspected_fraud']]);
+    expect(paymentLinkSightings(waiting.chatId)).toEqual([{ normalizedValue: link, lastSeenOn: waitingRepeat.messageEventId }]);
+    expect(reviewRows(waiting.chatId).map((r) => [r.status, r.outcome, r.suppressed_count])).toEqual([
+      ['completed', 'no_new_finding', 0],
+      ['completed', 'no_new_finding', 1],
+    ]);
+
+    // The confirmation first.
+    const confirmed = await reviewedChat('Hello, I would like to pay a deposit for the lamp.');
+    expect((await recordConfirmation(confirmed.chatId, ['good-shop.test'])).body.data.findingsCreated).toBe(0);
+    const earliest = await addMessage(confirmed.chatId, 2, first);
+    await addMessage(confirmed.chatId, 3, repeat);
+    await h.drain();
+    expect(await findings(confirmed.chatId)).toEqual([[earliest.messageEventId, 'suspected_fraud']]);
+  });
+
   it('recording a confirmation checks the stored text of every incoming message event, in any mode and for any capture method, once per conflicting host', async () => {
     // Never dispatched: nothing in this chat has been reviewed.
     const chat = await newChat('Please pay at https://pay.other-shop.test/a or https://pay.other-shop.test/b, not https://pay.good-shop.test/c');
@@ -499,10 +549,13 @@ describe('review pipeline: Suspected fraud and case references', () => {
       [chat.messageEventId, 'suspected_fraud', 'https://pay.other-shop.test/a'],
     ]);
 
-    // An edit and a conflicting copy are checked as well, an outgoing message is not, and an event is flagged once per host.
+    // An edit and a conflicting copy are checked as well, an outgoing message is not, an event is flagged once per host,
+    // and a link only on the earliest event that carries it: the copy's repeat of the first link raises nothing.
     const events = h.http(h.tokens.connector);
     const edit = await events.post(`/v1/chats/${chat.chatId}/events`, edited({ messageId: 1, updateId: 7001, text: 'Sorry, pay at https://pay.third-shop.test/d' }));
-    const copy = await events.post(`/v1/chats/${chat.chatId}/events`, recorded({ messageId: 1, updateId: 7002, text: 'Pay at https://pay.other-shop.test/a now' }));
+    const copy = await events.post(`/v1/chats/${chat.chatId}/events`, recorded({
+      messageId: 1, updateId: 7002, text: 'Pay at https://pay.other-shop.test/a or https://pay.fifth-shop.test/f now',
+    }));
     expect(copy.body.data.result).toBe('conflicting_copy');
     await events.post(`/v1/chats/${chat.chatId}/events`, recorded({ messageId: 2, direction: 'outgoing', text: 'Pay at https://pay.fourth-shop.test/e' }));
     const second = await recordConfirmation(chat.chatId, ['pay.good-shop.test']);
@@ -511,7 +564,7 @@ describe('review pipeline: Suspected fraud and case references', () => {
     expect(tl.findings.map((f) => [f.messageEventId, f.extractedValue, f.caseReferenceId])).toEqual([
       [chat.messageEventId, 'https://pay.other-shop.test/a', first.body.data.caseReference.id],
       [edit.body.data.messageEventId, 'https://pay.third-shop.test/d', second.body.data.caseReference.id],
-      [copy.body.data.messageEventId, 'https://pay.other-shop.test/a', second.body.data.caseReference.id],
+      [copy.body.data.messageEventId, 'https://pay.fifth-shop.test/f', second.body.data.caseReference.id],
     ]);
 
     // Content captured live from Telegram is never reviewed, but its stored text is checked by code all the same.
