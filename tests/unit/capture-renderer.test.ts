@@ -148,6 +148,22 @@ describe('capture renderer', () => {
     for (const text of drawn) expect(hiddenCodePoints(text), JSON.stringify(text)).toEqual([]);
   });
 
+  it("an edit's capture labels the source time as the edit time; a recording and a conflicting copy label it as the sent time", async () => {
+    const at = '2026-11-21T08:05:00.000Z';
+    for (const [eventType, label, other] of [
+      ['edited', 'Edited (UTC):', 'Sent (UTC):'],
+      ['recorded', 'Sent (UTC):', 'Edited (UTC):'],
+      ['conflicting_copy', 'Sent (UTC):', 'Edited (UTC):'],
+    ] as const) {
+      const calls = watchDrawnText();
+      await drawCaptureCard(captureInput({ eventType, sentAt: at }));
+      const drawn = calls.map((call) => call.text);
+      expect(drawn.slice(drawn.indexOf(label), drawn.indexOf(label) + 2), eventType).toEqual([label, at]);
+      expect(drawn, eventType).not.toContain(other);
+      vi.restoreAllMocks();
+    }
+  });
+
   it('paragraphs take their base direction from the first strong character', async () => {
     const calls = watchDrawnText();
     await renderer.render(captureInput({ text: `${ARABIC} Mirsad 2026\nEnglish first ${ARABIC}\n12345` }));

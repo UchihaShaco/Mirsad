@@ -73,7 +73,8 @@ function cardRows(input: CaptureRenderInput): CardRow[] {
     ['Direction', input.direction ?? NOT_GIVEN],
     ['Sender', input.senderLabel ?? NOT_GIVEN],
     ['Received (UTC)', input.receivedAt],
-    ['Sent (UTC)', input.sentAt ?? NOT_GIVEN],
+    // An edit's source time is when the message was edited, not when it was first sent.
+    [input.eventType === 'edited' ? 'Edited (UTC)' : 'Sent (UTC)', input.sentAt ?? NOT_GIVEN],
     ['Unsupported content', input.unsupportedContent.length > 0 ? input.unsupportedContent.join(', ') : 'none'],
   ];
   return rows.map(([label, value]) => ({ label, value: toDisplayText(value, { singleLine: true }) }));
