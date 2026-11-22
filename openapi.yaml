@@ -2237,9 +2237,14 @@ components:
                   type:
                     - string
                     - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
               required:
                 - externalId
                 - displayName
+                - phone
               additionalProperties: false
             - type: "null"
         author:

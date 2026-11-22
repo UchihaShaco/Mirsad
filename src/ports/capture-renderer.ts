@@ -13,6 +13,8 @@ export interface CaptureRenderInput {
   eventType: 'recorded' | 'edited' | 'conflicting_copy';
   direction: Direction | null;
   senderLabel: string | null;
+  /** The sender's number exactly as the source supplied it as sender metadata; null when none came with this event. */
+  senderPhone: string | null;
   receivedAt: string;
   sentAt: string | null;
   text: string;

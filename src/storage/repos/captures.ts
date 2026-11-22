@@ -86,6 +86,7 @@ export interface CaptureSourceRow {
   direction: Direction | null;
   sender_display_name: string | null;
   sender_external_id: string | null;
+  sender_phone_raw: string | null;
   unsupported_content: string;
   message_event_id: string;
   event_type: MessageEventType;
@@ -99,7 +100,7 @@ export interface CaptureSourceRow {
 export function findCaptureSource(tx: Tx, captureId: string): CaptureSourceRow | undefined {
   return tx.get<CaptureSourceRow>(
     `SELECT c.id AS capture_id, ch.id AS chat_id, ch.workspace_id, ch.display_label AS chat_label, a.source,
-       m.id AS message_id, m.direction, m.sender_display_name, m.sender_external_id, m.unsupported_content,
+       m.id AS message_id, m.direction, m.sender_display_name, m.sender_external_id, m.sender_phone_raw, m.unsupported_content,
        e.id AS message_event_id, e.type AS event_type, e.text AS event_text, e.text_sha256 AS event_text_sha256,
        e.capture_method AS event_capture_method, e.received_at AS event_received_at,
        e.source_occurred_at AS event_source_occurred_at

@@ -298,6 +298,28 @@ describe('step 2: captures and artifacts', () => {
     expect(readTextChunks(image.bytes)).toMatchObject({ 'Mirsad-Message-Event-Id': copyEvent.id, 'Mirsad-Text-SHA256': sha256('Pay to account C') });
   });
 
+  it('the sender phone a source supplied is returned with its message and drawn on its capture; an edit does not repeat it', async () => {
+    const phone = '+44 7700 900123';
+    const sender = { externalId: '6000000006', displayName: 'Test Contact 6' };
+    const card = await ingest(envelope(h.accounts.officer, uniqueId('phone-'), recorded({
+      messageId: 1, text: '', unsupportedContent: ['contact'], sender: { ...sender, phone: { raw: phone, internationalFormat: true } },
+    })));
+    expect(card.status).toBe(201);
+    const { chatId } = card.body.data;
+    const events = h.http(h.tokens.connector);
+    const greeting = await events.post(`/v1/chats/${chatId}/events`, recorded({ messageId: 2, text: 'Hello again', sender }));
+    const edit = await events.post(`/v1/chats/${chatId}/events`, edited({ messageId: 1, updateId: 5001, text: 'Here is my number' }));
+    await h.drain();
+
+    const tl = await timeline(chatId);
+    expect(tl.messages.map((m: any) => m.sender)).toEqual([{ ...sender, phone }, { ...sender, phone: null }]);
+    const inputFor = (messageEventId: string) => h.renderer.inputs.find((input) => input.messageEventId === messageEventId);
+    expect(inputFor(card.body.data.messageEventId)).toMatchObject({ senderPhone: phone, unsupportedContent: ['contact'] });
+    expect(inputFor(greeting.body.data.messageEventId)).toMatchObject({ senderPhone: null });
+    // The number came with the original recording, as the unsupported content did, so an edit's capture does not repeat it.
+    expect(inputFor(edit.body.data.messageEventId)).toMatchObject({ eventType: 'edited', senderPhone: null });
+  });
+
   it('outgoing source messages are captured too', async () => {
     const { message } = await capturedMessage('Thanks, noted.', 'outgoing');
     expect(message).toMatchObject({ direction: 'outgoing', capture: { status: 'ready' } });

@@ -56,6 +56,8 @@ function senderLabel(source: CaptureSourceRow): string | null {
 /** The render input comes only from the capture's own message event and its message, chat and channel. */
 function toRenderInput(source: CaptureSourceRow): CaptureRenderInput {
   const text = source.event_text ?? '';
+  // Unsupported content and the sender's phone are stored on the message, so only the original recording can show them.
+  const recorded = source.event_type === 'recorded';
   return {
     captureKind: 'mirsad_rendered_capture',
     channel: source.source,
@@ -67,12 +69,12 @@ function toRenderInput(source: CaptureSourceRow): CaptureRenderInput {
     eventType: renderableEventType(source.event_type),
     direction: source.direction,
     senderLabel: senderLabel(source),
+    senderPhone: recorded ? source.sender_phone_raw : null,
     receivedAt: source.event_received_at,
     sentAt: source.event_source_occurred_at,
     text,
     textSha256: source.event_text_sha256 ?? sha256Hex(text),
-    // Unsupported content is stored on the message, so only the original recording can show it.
-    unsupportedContent: source.event_type === 'recorded' ? UnsupportedContent.parse(JSON.parse(source.unsupported_content)) : [],
+    unsupportedContent: recorded ? UnsupportedContent.parse(JSON.parse(source.unsupported_content)) : [],
   };
 }
 

@@ -32,6 +32,7 @@ function captureInput(overrides: Partial<CaptureRenderInput> = {}): CaptureRende
     eventType: 'recorded',
     direction: 'incoming',
     senderLabel: 'Test Contact (9001)',
+    senderPhone: null,
     receivedAt: '2026-11-21T08:00:00.000Z',
     sentAt: '2026-11-21T07:59:00.000Z',
     unsupportedContent: [],
@@ -130,6 +131,7 @@ describe('capture renderer', () => {
     const input = captureInput({
       chatLabel: `Test ${cp(0x202e)}tcatnoC${cp(0x202c)}\n<b>Second line</b>`,
       senderLabel: `Demo ${cp(0x2067)}Sender${cp(0x2069)} (9001${cp(0x200b)})`,
+      senderPhone: `+44 7700 900123${cp(0x202e)}321`,
       chatId: `chat_${cp(0x2066)}1`,
       messageId: `msg_${cp(0x0007)}2`,
       text: `Body <script>alert(1)</script> invoice${cp(0x202e)}gnp.exe${cp(0)}`,
@@ -141,11 +143,25 @@ describe('capture renderer', () => {
     const drawn = calls.map((call) => call.text);
 
     expect(drawn).toContain('Mirsad-rendered capture');
-    for (const value of [input.chatLabel, input.senderLabel ?? '', input.chatId, input.messageId, `photo${cp(0x200d)}`]) {
+    for (const value of [input.chatLabel, input.senderLabel ?? '', input.senderPhone ?? '', input.chatId, input.messageId, `photo${cp(0x200d)}`]) {
       expect(drawn).toContain(toDisplayText(value, { singleLine: true }));
     }
     expect(drawn).toContain(toDisplayText(input.text));
     for (const text of drawn) expect(hiddenCodePoints(text), JSON.stringify(text)).toEqual([]);
+  });
+
+  it('the sender phone the source supplied is drawn as its own row, and no such row is drawn without one', async () => {
+    let calls = watchDrawnText();
+    await drawCaptureCard(captureInput({ senderPhone: '+44 7700 900123' }));
+    let drawn = calls.map((call) => call.text);
+    expect(drawn.slice(drawn.indexOf('Sender phone:'), drawn.indexOf('Sender phone:') + 2)).toEqual(['Sender phone:', '+44 7700 900123']);
+    vi.restoreAllMocks();
+
+    calls = watchDrawnText();
+    await drawCaptureCard(captureInput({ senderPhone: null }));
+    drawn = calls.map((call) => call.text);
+    expect(drawn).toContain('Sender:');
+    expect(drawn).not.toContain('Sender phone:');
   });
 
   it("an edit's capture labels the source time as the edit time; a recording and a conflicting copy label it as the sent time", async () => {

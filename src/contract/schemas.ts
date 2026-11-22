@@ -236,7 +236,8 @@ export const Message = z.object({
     sourceEventId: z.string().nullable(),
     sourceMessageId: z.string().nullable(),
   }),
-  sender: z.object({ externalId: z.string().nullable(), displayName: z.string().nullable() }).nullable(),
+  /** phone: the sender's number exactly as the source supplied it as sender metadata (raw, not normalized). */
+  sender: z.object({ externalId: z.string().nullable(), displayName: z.string().nullable(), phone: z.string().nullable() }).nullable(),
   author: PrincipalRef.nullable(),
   sendStatus: z.literal('simulated').nullable(),
   sendStatusLabel: z.literal(LABELS.simulatedSend).nullable(),

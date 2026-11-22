@@ -71,7 +71,7 @@ export function toMessage(row: MessageRow, channel: Source, evidence: MessageEvi
       sourceEventId: recordedEvent?.source_event_id ?? null,
       sourceMessageId: row.source_message_id,
     },
-    sender: isComposer ? null : { externalId: row.sender_external_id, displayName: row.sender_display_name },
+    sender: isComposer ? null : { externalId: row.sender_external_id, displayName: row.sender_display_name, phone: row.sender_phone_raw },
     author: lookup(row.author_officer_id),
     sendStatus: row.send_status,
     sendStatusLabel: row.send_status === 'simulated' ? LABELS.simulatedSend : null,

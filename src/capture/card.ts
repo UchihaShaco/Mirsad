@@ -72,6 +72,8 @@ function cardRows(input: CaptureRenderInput): CardRow[] {
     ['Event type', input.eventType],
     ['Direction', input.direction ?? NOT_GIVEN],
     ['Sender', input.senderLabel ?? NOT_GIVEN],
+    // Drawn only when the source supplied one: it is the source reference of a sender watchlist observation.
+    ...(input.senderPhone === null ? [] : [['Sender phone', input.senderPhone] as const]),
     ['Received (UTC)', input.receivedAt],
     // An edit's source time is when the message was edited, not when it was first sent.
     [input.eventType === 'edited' ? 'Edited (UTC)' : 'Sent (UTC)', input.sentAt ?? NOT_GIVEN],
