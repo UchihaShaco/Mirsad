@@ -196,6 +196,25 @@ describe('reference dashboard', () => {
     expect(problems).toEqual([]);
   });
 
+  it('a new chat and a further message that arrive while the dashboard is open appear without any action by the officer', async () => {
+    const label = 'Test Contact 10';
+    const existing = await seedChat(h.accounts.intake, label, 'Hello, I am waiting for my parcel.');
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, label);
+    const messages = page.locator('#timeline article[data-kind="message"]');
+    await messages.first().waitFor();
+    await page.locator('#connection-status').filter({ hasText: 'Live updates on' }).waitFor();
+
+    // Both arrive over HTTP through the fixture connector; nothing is clicked in the page from here on.
+    await seedChat(h.accounts.intake, 'Test Contact 11', 'Good evening, is the shop open tomorrow?');
+    await ingestMessage(h.accounts.intake, existing.externalChatId, label, 2, 'It was due yesterday.');
+
+    await inboxItem(page, 'New inbound', 'Test Contact 11').waitFor();
+    await page.locator('#timeline .message-text').filter({ hasText: 'It was due yesterday.' }).waitFor();
+    expect(await messages.count()).toBe(2);
+    expect(problems).toEqual([]);
+  });
+
   it('Leave unanswered adds a case-log line and no outgoing message', async () => {
     const chat = await seedChat(h.accounts.officer, 'Test Contact 3', 'Can you call me back later today?');
     const { page, problems } = await openDashboard(h.tokens.officerA);
