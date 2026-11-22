@@ -1,0 +1,1115 @@
+{
+  "set": "heldout",
+  "reviewer": "lmstudio",
+  "modelId": "qwen3.5-9b",
+  "generatedAt": "2026-11-22T01:32:54.482Z",
+  "transcripts": [
+    "ar-01-gulf-maintenance",
+    "ar-02-egyptian-curtains-link",
+    "ar-03-levantine-sister-call",
+    "ar-04-msa-course-fee-link",
+    "ar-05-customs-fee-injection",
+    "ar-06-tracking-then-code",
+    "en-01-delivery-followup",
+    "en-02-catering-invoice",
+    "en-03-cousin-was-called",
+    "en-04-new-collection-account",
+    "en-05-system-note-injection",
+    "en-06-holding-deposit-no-details",
+    "mixed-01-photo-deposit",
+    "mixed-02-rent-iban-switch",
+    "mixed-03-supplier-no-recipient",
+    "mixed-04-neighbour-number-injection",
+    "mixed-05-shop-hours",
+    "mixed-06-pickup-map-and-charge"
+  ],
+  "overall": {
+    "messages": 55,
+    "unavailable": 0,
+    "truePositives": 20,
+    "falsePositives": 5,
+    "falseNegatives": 1,
+    "precision": 0.8,
+    "recall": 0.9523809523809523,
+    "unsupported": 0,
+    "concernAgreement": {
+      "matchedPhones": 5,
+      "agreeing": 4
+    },
+    "latency": {
+      "count": 55,
+      "minMs": 199,
+      "medianMs": 244,
+      "p95Ms": 6011,
+      "maxMs": 9696
+    }
+  },
+  "byLanguage": {
+    "ar": {
+      "messages": 19,
+      "unavailable": 0,
+      "truePositives": 6,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "precision": 0.8571428571428571,
+      "recall": 1,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 2,
+        "agreeing": 2
+      },
+      "latency": {
+        "count": 19,
+        "minMs": 223,
+        "medianMs": 248,
+        "p95Ms": 5405,
+        "maxMs": 5405
+      }
+    },
+    "en": {
+      "messages": 18,
+      "unavailable": 0,
+      "truePositives": 5,
+      "falsePositives": 3,
+      "falseNegatives": 1,
+      "precision": 0.625,
+      "recall": 0.8333333333333334,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latency": {
+        "count": 18,
+        "minMs": 219,
+        "medianMs": 244.5,
+        "p95Ms": 9696,
+        "maxMs": 9696
+      }
+    },
+    "mixed": {
+      "messages": 18,
+      "unavailable": 0,
+      "truePositives": 9,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "precision": 0.9,
+      "recall": 1,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 2,
+        "agreeing": 1
+      },
+      "latency": {
+        "count": 18,
+        "minMs": 199,
+        "medianMs": 239.5,
+        "p95Ms": 6231,
+        "maxMs": 6231
+      }
+    }
+  },
+  "messages": [
+    {
+      "transcriptId": "ar-01-gulf-maintenance",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 244,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-01-gulf-maintenance",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 235,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-01-gulf-maintenance",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 239,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-02-egyptian-curtains-link",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 249,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-02-egyptian-curtains-link",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 2,
+      "truePositives": 2,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 5405,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-02-egyptian-curtains-link",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 238,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-03-levantine-sister-call",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [
+        "phone_number"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2664,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-03-levantine-sister-call",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 226,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-03-levantine-sister-call",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latencyMs": 3577,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-04-msa-course-fee-link",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2732,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-04-msa-course-fee-link",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2766,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-04-msa-course-fee-link",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 244,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-05-customs-fee-injection",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 242,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-05-customs-fee-injection",
+      "messageId": "m2",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 254,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-05-customs-fee-injection",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 248,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-05-customs-fee-injection",
+      "messageId": "m5",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 223,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-06-tracking-then-code",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 228,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-06-tracking-then-code",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 250,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "ar-06-tracking-then-code",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latencyMs": 3307,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-01-delivery-followup",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 237,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-01-delivery-followup",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 247,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-01-delivery-followup",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 230,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-02-catering-invoice",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 242,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-02-catering-invoice",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 2,
+      "truePositives": 2,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 5415,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-02-catering-invoice",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 240,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-03-cousin-was-called",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 230,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-03-cousin-was-called",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 253,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-03-cousin-was-called",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latencyMs": 2355,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-04-new-collection-account",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 0,
+      "falsePositives": 1,
+      "falseNegatives": 1,
+      "unsupported": 0,
+      "missedKinds": [
+        "payment_recipient"
+      ],
+      "extraKinds": [
+        "payment_recipient"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2607,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-04-new-collection-account",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2002,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-04-new-collection-account",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 237,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-05-system-note-injection",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 229,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-05-system-note-injection",
+      "messageId": "m2",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 2,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [
+        "payment_recipient",
+        "phone_number"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 9696,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-05-system-note-injection",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 219,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-06-holding-deposit-no-details",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 241,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-06-holding-deposit-no-details",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 250,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "en-06-holding-deposit-no-details",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 251,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-01-photo-deposit",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 249,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-01-photo-deposit",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 2,
+      "truePositives": 2,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 6231,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-01-photo-deposit",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 201,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-02-rent-iban-switch",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 2,
+      "truePositives": 2,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 5774,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-02-rent-iban-switch",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 2,
+      "truePositives": 2,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 6011,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-02-rent-iban-switch",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 227,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-03-supplier-no-recipient",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 199,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-03-supplier-no-recipient",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 216,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-03-supplier-no-recipient",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 222,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-04-neighbour-number-injection",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 232,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-04-neighbour-number-injection",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [
+        "phone_number"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2306,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-04-neighbour-number-injection",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latencyMs": 2959,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-05-shop-hours",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 232,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-05-shop-hours",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 220,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-05-shop-hours",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 236,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-06-pickup-map-and-charge",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 243,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-06-pickup-map-and-charge",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 2826,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "mixed-06-pickup-map-and-charge",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 0
+      },
+      "latencyMs": 3033,
+      "errorCode": null
+    }
+  ]
+}
