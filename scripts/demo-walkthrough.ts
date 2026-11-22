@@ -13,7 +13,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { replayFixture, type ReplayReport } from '../src/adapters/replay.ts';
@@ -34,6 +33,7 @@ import { DEMO_ACCOUNTS } from '../src/identity/seed.ts';
 import { createJsonLogger } from '../src/logging/json-logger.ts';
 import { DATABASE_FILE, openDatabase } from '../src/storage/db.ts';
 import { dashboardBaseUrl, readDemoCredentials, signInLines } from './demo-credentials.ts';
+import { isEntryPoint } from './entry-point.ts';
 
 export interface WalkthroughOptions {
   reviewer: ReviewerKind;
@@ -781,17 +781,7 @@ async function main(argv: string[]): Promise<number> {
   return report.exitCode;
 }
 
-function isEntryPoint(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return fs.realpathSync.native(entry) === fs.realpathSync.native(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
-}
-
-if (isEntryPoint()) {
+if (isEntryPoint(import.meta.url)) {
   main(process.argv.slice(2)).then((code) => {
     process.exitCode = code;
   }, (error: unknown) => {
