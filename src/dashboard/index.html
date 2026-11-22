@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirsad</title>
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/styles.css">
+<script type="module" src="/assets/js/main.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <p class="brand">Mirsad <span class="brand-note">reference dashboard</span></p>
+  <nav id="view-nav" class="view-nav" aria-label="Views" hidden>
+    <a id="nav-inbox" href="#/">Inbox</a>
+    <a id="nav-watchlist" href="#/watchlist">Phone watchlist</a>
+  </nav>
+  <div id="session" class="session" hidden>
+    <span id="connection-status" class="connection"></span>
+    <span class="signed-in">Signed in as <bdi id="officer-name"></bdi></span>
+    <button type="button" id="sign-out">Sign out</button>
+  </div>
+</header>
+<main>
+  <section id="signin" class="signin" aria-labelledby="signin-heading" hidden>
+    <h1 id="signin-heading">Sign in</h1>
+    <p>Paste an officer token. It is kept for this browser tab only and is sent only in the Authorization header.</p>
+    <form id="signin-form" autocomplete="off">
+      <label for="token-input">Officer token</label>
+      <input id="token-input" name="token" type="password" autocomplete="off" spellcheck="false" required>
+      <button type="submit" class="primary">Sign in</button>
+    </form>
+    <p id="signin-message" role="status"></p>
+  </section>
+
+  <div id="workspace" class="workspace" hidden>
+    <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    <div id="inbox-view" class="columns">
+      <section id="inbox" class="inbox" aria-label="Inbox">
+        <div class="inbox-toolbar">
+          <button type="button" id="dispatch-button" class="primary" disabled>Dispatch</button>
+          <span id="selection-count" class="hint"></span>
+        </div>
+        <section class="queue" aria-labelledby="new-inbound-heading">
+          <h2 id="new-inbound-heading">New inbound</h2>
+          <ul id="new-inbound-list" class="chat-list"></ul>
+        </section>
+        <section class="queue" aria-labelledby="open-chats-heading">
+          <h2 id="open-chats-heading">Open chats</h2>
+          <ul id="open-list" class="chat-list"></ul>
+        </section>
+      </section>
+
+      <section id="chat-panel" class="chat-panel" aria-label="Selected chat">
+        <div id="chat-header" class="chat-header"></div>
+        <div id="timeline" class="timeline"></div>
+        <section id="composer" class="composer" aria-labelledby="composer-heading" hidden>
+          <h2 id="composer-heading">Takeover composer</h2>
+          <label for="composer-text">Reply</label>
+          <textarea id="composer-text" rows="3" maxlength="65536" dir="auto"></textarea>
+          <div class="composer-actions">
+            <button type="button" id="insert-acknowledgement" hidden>Insert acknowledgement</button>
+            <button type="button" id="send-button" class="primary">Send</button>
+            <button type="button" id="leave-unanswered-button">Leave unanswered</button>
+          </div>
+          <p id="reply-target" class="hint"></p>
+          <p class="hint">Send records the reply in Mirsad as a simulated send. Nothing is delivered to the channel.</p>
+        </section>
+      </section>
+
+      <aside id="side-panel" class="side-panel" aria-label="Case details">
+        <section aria-labelledby="matches-heading">
+          <h2 id="matches-heading">Watchlist matches</h2>
+          <div id="matches"></div>
+        </section>
+        <section aria-labelledby="case-log-heading">
+          <h2 id="case-log-heading">Case log</h2>
+          <ol id="case-log" class="case-log"></ol>
+        </section>
+      </aside>
+    </div>
+
+    <section id="watchlist-view" class="watchlist-view" aria-labelledby="watchlist-heading" hidden>
+      <h1 id="watchlist-heading">Phone watchlist</h1>
+      <div id="watchlist"></div>
+    </section>
+  </div>
+</main>
+
+<dialog id="capture-dialog" class="capture-dialog" aria-labelledby="capture-dialog-title">
+  <h2 id="capture-dialog-title">Mirsad-rendered capture</h2>
+  <img id="capture-dialog-image" class="capture-full" alt="">
+  <form method="dialog"><button type="submit">Close</button></form>
+</dialog>
+</body>
+</html>
