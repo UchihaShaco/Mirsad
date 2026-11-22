@@ -1,0 +1,32 @@
+{
+  "id": "dev-ar-01",
+  "language": "ar",
+  "tags": ["benign_first_message", "routine_only"],
+  "description": "A routine Arabic exchange about a meeting, ending with a map link that is not about paying.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "السلام عليكم، كيف حالك؟",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "outgoing",
+      "text": "وعليكم السلام، بخير والحمد لله. وأنت؟",
+      "expected": []
+    },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "بخير، شكراً. هل ما زال موعدنا يوم الخميس الساعة الخامسة قائماً؟",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "تمام، أراك هناك إن شاء الله. هذا موقع المقهى على الخريطة: https://maps.example.com/place/cafe-123",
+      "expected": []
+    }
+  ]
+}

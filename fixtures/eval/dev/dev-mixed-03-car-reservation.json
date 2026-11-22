@@ -1,0 +1,32 @@
+{
+  "id": "dev-mixed-03",
+  "language": "mixed",
+  "tags": ["quoted_third_party_number", "payment_recipient"],
+  "description": "A car seller mentions a relative's number in passing, then names the account to transfer a reservation fee to.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Hello أخي, about the car you asked about.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "My cousin bought one from me last month and was very happy. ابن عمي رقمه 07700 900654 لكنه مسافر الآن.",
+      "expected": []
+    },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "To reserve the car, transfer 500 USD to the account of Sample Motors Test Ltd, then send me the receipt. المبلغ غير قابل للاسترداد.",
+      "expected": [{ "kind": "payment_recipient", "value": "Sample Motors Test Ltd", "concern": null }]
+    },
+    {
+      "id": "m4",
+      "direction": "outgoing",
+      "text": "OK, I will think about it.",
+      "expected": []
+    }
+  ]
+}

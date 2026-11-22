@@ -1,0 +1,640 @@
+{
+  "set": "dev",
+  "reviewer": "deterministic",
+  "modelId": null,
+  "generatedAt": "2026-11-22T00:38:00.504Z",
+  "transcripts": [
+    "dev-ar-01",
+    "dev-ar-02",
+    "dev-ar-03",
+    "dev-en-01",
+    "dev-en-02",
+    "dev-en-03",
+    "dev-mixed-01",
+    "dev-mixed-02",
+    "dev-mixed-03"
+  ],
+  "overall": {
+    "messages": 29,
+    "unavailable": 0,
+    "truePositives": 9,
+    "falsePositives": 2,
+    "falseNegatives": 5,
+    "precision": 0.8181818181818182,
+    "recall": 0.6428571428571429,
+    "unsupported": 0,
+    "concernAgreement": {
+      "matchedPhones": 3,
+      "agreeing": 1
+    },
+    "latency": {
+      "count": 29,
+      "minMs": 0,
+      "medianMs": 0,
+      "p95Ms": 1,
+      "maxMs": 3
+    }
+  },
+  "byLanguage": {
+    "ar": {
+      "messages": 9,
+      "unavailable": 0,
+      "truePositives": 2,
+      "falsePositives": 1,
+      "falseNegatives": 2,
+      "precision": 0.6666666666666666,
+      "recall": 0.5,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latency": {
+        "count": 9,
+        "minMs": 0,
+        "medianMs": 0,
+        "p95Ms": 3,
+        "maxMs": 3
+      }
+    },
+    "en": {
+      "messages": 10,
+      "unavailable": 0,
+      "truePositives": 5,
+      "falsePositives": 0,
+      "falseNegatives": 1,
+      "precision": 1,
+      "recall": 0.8333333333333334,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 2,
+        "agreeing": 0
+      },
+      "latency": {
+        "count": 10,
+        "minMs": 0,
+        "medianMs": 0,
+        "p95Ms": 1,
+        "maxMs": 1
+      }
+    },
+    "mixed": {
+      "messages": 10,
+      "unavailable": 0,
+      "truePositives": 2,
+      "falsePositives": 1,
+      "falseNegatives": 2,
+      "precision": 0.6666666666666666,
+      "recall": 0.5,
+      "unsupported": 0,
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latency": {
+        "count": 10,
+        "minMs": 0,
+        "medianMs": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      }
+    }
+  },
+  "messages": [
+    {
+      "transcriptId": "dev-ar-01",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 3,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-01",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 1,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-01",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-02",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-02",
+      "messageId": "m2",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-02",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 1
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-03",
+      "messageId": "m1",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-03",
+      "messageId": "m3",
+      "language": "ar",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-ar-03",
+      "messageId": "m4",
+      "language": "ar",
+      "expected": 2,
+      "truePositives": 0,
+      "falsePositives": 1,
+      "falseNegatives": 2,
+      "unsupported": 0,
+      "missedKinds": [
+        "payment_recipient",
+        "payment_recipient"
+      ],
+      "extraKinds": [
+        "phone_number"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-01",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 1,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-01",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-01",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-02",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-02",
+      "messageId": "m3",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-02",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-02",
+      "messageId": "m5",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 1,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-03",
+      "messageId": "m1",
+      "language": "en",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-03",
+      "messageId": "m2",
+      "language": "en",
+      "expected": 2,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 1,
+      "unsupported": 0,
+      "missedKinds": [
+        "payment_recipient"
+      ],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-en-03",
+      "messageId": "m4",
+      "language": "en",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-01",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-01",
+      "messageId": "m2",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-01",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 1,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-01",
+      "messageId": "m5",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [
+        "payment_link"
+      ],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-02",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-02",
+      "messageId": "m2",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 1,
+      "unsupported": 0,
+      "missedKinds": [
+        "phone_number"
+      ],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-02",
+      "messageId": "m4",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-03",
+      "messageId": "m1",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-03",
+      "messageId": "m2",
+      "language": "mixed",
+      "expected": 0,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "unsupported": 0,
+      "missedKinds": [],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    },
+    {
+      "transcriptId": "dev-mixed-03",
+      "messageId": "m3",
+      "language": "mixed",
+      "expected": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "falseNegatives": 1,
+      "unsupported": 0,
+      "missedKinds": [
+        "payment_recipient"
+      ],
+      "extraKinds": [],
+      "concernAgreement": {
+        "matchedPhones": 0,
+        "agreeing": 0
+      },
+      "latencyMs": 0,
+      "errorCode": null
+    }
+  ]
+}

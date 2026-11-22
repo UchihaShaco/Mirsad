@@ -1,0 +1,32 @@
+{
+  "id": "dev-en-01",
+  "language": "en",
+  "tags": ["benign_first_message", "payment_link"],
+  "description": "A seller opens with a friendly note, then asks for a deposit through a payment link.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Hello! You asked about the road bike on the marketplace. It is still available if you want it.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "outgoing",
+      "text": "Great, can I come and see it this weekend?",
+      "expected": []
+    },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "Lots of people are asking, so I need a deposit to hold it. Pay the 50 GBP deposit here: https://pay.bike-deals.test/deposit/4471",
+      "expected": [{ "kind": "payment_link", "value": "https://pay.bike-deals.test/deposit/4471", "concern": null }]
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "Once you have paid, send me a screenshot and I will keep it for you until Saturday.",
+      "expected": []
+    }
+  ]
+}

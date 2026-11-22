@@ -1,0 +1,35 @@
+{
+  "id": "dev-en-03",
+  "language": "en",
+  "tags": ["changed_payment_destination", "payment_recipient", "payment_link", "long_message"],
+  "description": "A supplier announces new bank details, then sends long payment terms that warn against an old payee and end with a payment link.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Hello, a reminder that invoice INV-0331 for March is due on Friday.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "Please note that our bank details have changed. Pay invoice INV-0331 to the account holder Test Trading LLC, IBAN GB82 TEST 1234 5698 7654 32.",
+      "expected": [
+        { "kind": "payment_recipient", "value": "Test Trading LLC", "concern": null },
+        { "kind": "payment_recipient", "value": "GB82 TEST 1234 5698 7654 32", "concern": null }
+      ]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "Thanks, I will pass this to our finance team.",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "Dear customer,\n\nThank you for your continued business. This message sets out the payment terms for invoice INV-0331 so that there is no confusion at the end of the month.\n\nPayment terms: invoices are due within 30 days of the invoice date. Partial payments are accepted if they are agreed in writing beforehand. Please quote the invoice number with every payment so that our accounts team can match it quickly. Payments without a reference may take up to five working days to be applied to your account.\n\nDeliveries: goods remain our property until the invoice is paid in full. Any damage noticed on delivery must be reported within 48 hours, with photos, so that we can arrange a replacement. Returns are accepted within 14 days if the goods are unused and in their original packaging.\n\nAccount changes: do not send anything to our previous supplier account, Sample Supplies Co, as that account is closed and payments to it cannot be recovered. If you receive a message asking you to pay a different account, please check with us first.\n\nLate payments: a late fee of 2 percent per month applies to overdue balances. We will send a reminder seven days before the due date and another on the due date itself.\n\nTo avoid a late fee, you can also settle the balance online at https://invoices.example.com/settle?ref=INV-0331 before Friday.\n\nKind regards,\nAccounts team",
+      "expected": [{ "kind": "payment_link", "value": "https://invoices.example.com/settle?ref=INV-0331", "concern": null }]
+    }
+  ]
+}

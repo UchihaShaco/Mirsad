@@ -102,8 +102,8 @@ describe('reviewer factory', () => {
     await expect(failure).rejects.toMatchObject({ code: 'reviewer_disabled' });
   });
 
-  it('reports the LM Studio reviewer as not installed until its module lands', async () => {
-    const reviewer = createReviewer(config('lmstudio'), logger);
-    await expect(reviewer.review(request, new AbortController().signal)).rejects.toMatchObject({ code: 'reviewer_not_installed' });
+  it('builds the LM Studio reviewer from its configuration without sending a request', () => {
+    const lmStudio = { baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen3.5-9b', timeoutMs: 1_000, contextTokens: 4_096 };
+    expect(createReviewer({ reviewer: 'lmstudio', lmStudio } as Config, logger).name).toBe('lmstudio');
   });
 });

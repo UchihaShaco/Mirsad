@@ -1,0 +1,38 @@
+{
+  "id": "dev-mixed-01",
+  "language": "mixed",
+  "tags": ["payment_link", "changed_payment_destination"],
+  "description": "A customs fee link in English and Arabic, replaced by a second link; a tracking link that is not about paying follows.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Hi, مرحباً! Your parcel is held at customs until the fee is paid.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "Please pay the customs fee here: https://customs-fee.test/pay/5521 قبل نهاية اليوم",
+      "expected": [{ "kind": "payment_link", "value": "https://customs-fee.test/pay/5521", "concern": null }]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "The link does not open for me.",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "عذراً، استخدم هذا الرابط بدلاً منه: https://parcel-release.test/checkout?id=5521 the old one has expired.",
+      "expected": [{ "kind": "payment_link", "value": "https://parcel-release.test/checkout?id=5521", "concern": null }]
+    },
+    {
+      "id": "m5",
+      "direction": "incoming",
+      "text": "You can follow the parcel at https://track.example.org/5521 بعد الدفع.",
+      "expected": []
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "dev-en-02",
+  "language": "en",
+  "tags": ["phone_number", "callback_request", "credential_request", "quoted_third_party_number"],
+  "description": "A fake bookings desk asks for a call back and for a code by text, and quotes another guest's number.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "Good morning, this is the bookings desk. Your holiday payment did not go through.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "outgoing",
+      "text": "Oh no. What do I need to do?",
+      "expected": []
+    },
+    {
+      "id": "m3",
+      "direction": "incoming",
+      "text": "Please call our payments team on +44 7700 900456 today to complete the booking.",
+      "expected": [{ "kind": "phone_number", "value": "+44 7700 900456", "concern": "callback_request" }]
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "Another guest, Test Contact, had the same problem last week and rang us from 07700 900987. It was sorted in minutes.",
+      "expected": []
+    },
+    {
+      "id": "m5",
+      "direction": "incoming",
+      "text": "If you cannot call, text the six-digit code we send you to +44 7700 900321 and we will finish it for you.",
+      "expected": [{ "kind": "phone_number", "value": "+44 7700 900321", "concern": "credential_request" }]
+    }
+  ]
+}

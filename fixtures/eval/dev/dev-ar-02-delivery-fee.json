@@ -1,0 +1,32 @@
+{
+  "id": "dev-ar-02",
+  "language": "ar",
+  "tags": ["payment_link", "phone_number", "payment_request"],
+  "description": "A delivery fee asked for through a payment link, then through a mobile wallet number.",
+  "messages": [
+    {
+      "id": "m1",
+      "direction": "incoming",
+      "text": "مرحباً، طلبك رقم 5521 جاهز للتوصيل اليوم.",
+      "expected": []
+    },
+    {
+      "id": "m2",
+      "direction": "incoming",
+      "text": "يرجى دفع رسوم التوصيل عبر الرابط التالي: https://pay.delivery-fast.test/fee/5521",
+      "expected": [{ "kind": "payment_link", "value": "https://pay.delivery-fast.test/fee/5521", "concern": null }]
+    },
+    {
+      "id": "m3",
+      "direction": "outgoing",
+      "text": "هل يمكنني الدفع عند الاستلام؟",
+      "expected": []
+    },
+    {
+      "id": "m4",
+      "direction": "incoming",
+      "text": "للأسف لا، الدفع مسبق فقط. يمكنك أيضاً تحويل المبلغ إلى المحفظة على الرقم +44 7700 900222",
+      "expected": [{ "kind": "phone_number", "value": "+44 7700 900222", "concern": "payment_request" }]
+    }
+  ]
+}
