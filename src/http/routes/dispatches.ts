@@ -23,7 +23,8 @@ export const routes: RouteModule = {
     });
     const result = deps.db.transaction((tx) => {
       const stored = withIdempotency(tx, officer, 'dispatch_by_phone', key, { ...body, phoneNumber }, () => ({
-        status: OK, body: ok(dispatchByPhone(tx, officer, deps.config.telegram, phoneNumber, body.officerContext)),
+        status: OK, body: ok(dispatchByPhone(tx, officer, deps.config.telegram, phoneNumber, body.officerContext,
+          body.participantPermissionRecorded ? { runtimeAvailable: deps.telegramLive.running() && deps.telegramLive.repliesRunning() } : undefined)),
       }));
       const response = stored.body as SuccessEnvelope<DispatchByPhoneResponse> | FailureEnvelope;
       if (stored.replayed && response.success && response.data.outcome === 'dispatched') requireChat(tx, officer, response.data.chatId);

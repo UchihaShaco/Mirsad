@@ -84,7 +84,8 @@ export function createApi(token, { onUnauthenticated }) {
     dmReplies: async () => (await call('GET', '/v1/telegram/dm-replies')).data,
     setDmReplies: (enabled) => post('/v1/telegram/dm-replies', { enabled }),
     consentPrompt: async () => (await call('GET', '/v1/telegram/consent-prompt')).data,
-    setConsentPrompt: (enabled) => post('/v1/telegram/consent-prompt', { enabled }),
+    // Switching Test mode off in Settings selects manual dispatch with invitations suppressed.
+    setConsentPrompt: (enabled) => post('/v1/telegram/consent-prompt', enabled ? { enabled, manualDispatchOnly: true } : { enabled }),
     reloadReplyPrompt: () => post('/v1/telegram/reply-prompt/reload'),
     listChats: async () => {
       const { data, meta } = await call('GET', `/v1/chats?limit=${CHAT_LIST_LIMIT}`);
@@ -99,7 +100,7 @@ export function createApi(token, { onUnauthenticated }) {
     dispatch: (chatIds, idempotencyKey, officerContext, permission) =>
       post('/v1/dispatches', { chatIds, officerContext, ...permission }, { 'Idempotency-Key': idempotencyKey }),
     dispatchByPhone: (phoneNumber, officerContext, key) =>
-      post('/v1/dispatches/by-phone', { phoneNumber, officerContext }, { 'Idempotency-Key': key }),
+      post('/v1/dispatches/by-phone', { phoneNumber, officerContext, participantPermissionRecorded: true }, { 'Idempotency-Key': key }),
     investigationOpener: (officerContext, language) => post('/v1/investigation-opener', { officerContext, language }),
     control: (chatId, action, expectedRevision) => post(chatPath(chatId, '/control'), { action, expectedRevision }),
     sendOfficerMessage: ({ chatId, text, expectedRevision, idempotencyKey }) =>

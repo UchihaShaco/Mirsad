@@ -293,11 +293,13 @@ describe('reference dashboard', () => {
       const dialog = page.getByRole('dialog', { name: 'Dispatch a number' });
       await dialog.getByLabel('Phone number').fill(number);
       await dialog.getByLabel('Officer briefing').fill(brief);
+      await dialog.getByText(/For a verified match, choosing Dispatch confirms/).waitFor();
       await dialog.getByRole('button', { name: 'Dispatch', exact: true }).click();
       await dialog.getByRole('link', { name: 'Open conversation' }).click();
       await page.locator('#chat-header').getByRole('heading', { name: chat.displayLabel }).waitFor();
       expect(new URL(page.url()).hash).toBe(`#/chats/${chat.id}`);
       expect((await live.chatFor(contact))!.aiMode).toBe('ai_active');
+      expect(await live.caseActionsOf(contact, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
     } finally { await live.stop(); }
   });
 
@@ -315,7 +317,7 @@ describe('reference dashboard', () => {
     const keys: string[] = [];
     await page.route('**/v1/dispatches/by-phone', async route => {
       keys.push(route.request().headers()['idempotency-key'] ?? '');
-      expect(route.request().postDataJSON()).toEqual({ phoneNumber: phone, officerContext: brief });
+      expect(route.request().postDataJSON()).toEqual({ phoneNumber: phone, officerContext: brief, participantPermissionRecorded: true });
       if (keys.length === 1) await route.abort('failed');
       else await route.continue();
     });
@@ -672,7 +674,7 @@ describe('reference dashboard', () => {
       const replies = page.getByRole('switch', { name: 'Auto-reply to every Telegram DM' });
       const testMode = page.getByRole('switch', { name: 'Test mode', exact: true });
       const offHint = page.getByText(/new chats wait for manual dispatch/i);
-      const onHint = page.getByText(/whether you or the contact sends the first message/i);
+      const onHint = page.getByText(/new and returning chats become AI active automatically/i);
       await testMode.waitFor();
       await offHint.waitFor();
       expect(await testMode.getAttribute('aria-checked')).toBe('false');
@@ -689,12 +691,13 @@ describe('reference dashboard', () => {
       await testMode.press('Space');
       await offHint.waitFor();
       expect(await testMode.getAttribute('aria-checked')).toBe('false');
-      expect((await live.call('GET', '/v1/telegram/consent-prompt')).data.enabled).toBe(true);
+      expect((await live.call('GET', '/v1/telegram/consent-prompt')).data).toMatchObject({ enabled: true, manualDispatchOnly: true });
+      await page.getByText(/new contacts receive no invitation/i).waitFor();
       expect((await live.call('GET', '/v1/telegram/dm-replies')).data.enabled).toBe(true);
       live.stand.clock.advance(1_000);
       await live.receive(6000000997, 'Is the table available?');
       await live.app.drain();
-      await expect.poll(() => live.stand.sender.to(6000000997)[0]?.reply.text).toContain('I AGREE');
+      expect(live.stand.sender.to(6000000997)).toHaveLength(0);
       expect(live.stand.generator.histories).toHaveLength(0);
       expect((await live.chatFor(6000000997))?.aiMode).toBe('not_started');
     } finally { await live.stop(); }
@@ -724,6 +727,34 @@ describe('reference dashboard', () => {
     } finally { await live.stop(); }
   });
 
+  it('opens the selected live inbox chat for Dispatch confirmation and keeps its briefing', async () => {
+    const chosen = 6000000977;
+    const unrelated = 6000000978;
+    const stand = standIns();
+    const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_CHAT_SCOPE: 'all_private',
+      TELEGRAM_ALL_CHATS_REFERENCE: 'TEST', TELEGRAM_APPROVED_CHAT_IDS: '6000000900' }, stand);
+    try {
+      await live.call('POST', '/v1/telegram/dm-replies', { enabled: true });
+      await live.call('POST', '/v1/telegram/consent-prompt', { enabled: false });
+      await live.receive(chosen, 'Are you free tomorrow?');
+      await live.receive(unrelated, 'Do you still want the lamp?');
+      const chat = (await live.chatFor(chosen))!;
+      const { page } = await openDashboard(live.data.token, live.url);
+      await page.getByRole('checkbox', { name: 'Select ' + chat.displayLabel, exact: true }).check();
+      await page.getByText('Dispatch briefing', { exact: true }).click();
+      await page.locator('#dispatch-brief-text').fill('Ask about the time.');
+      await page.locator('#dispatch-button').click();
+      const dialog = page.getByRole('dialog', { name: 'Dispatch this chat' });
+      await dialog.getByText('Test mode on', { exact: true }).waitFor({ timeout: 5000 });
+      expect(await dialog.locator('#chat-dispatch-context').inputValue()).toBe('Ask about the time.');
+      expect(await live.caseActionsOf(chosen, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+      await dialog.getByRole('button', { name: 'Dispatch test chat' }).click();
+      await dialog.waitFor({ state: 'hidden' });
+      expect(await live.caseActionsOf(chosen, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
+      expect(await live.caseActionsOf(unrelated, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+    } finally { await live.stop(); }
+  });
+
   it('dispatches the existing first DM in Test mode with one officer confirmation and leaves an unrelated chat silent', async () => {
     const chosen = 6000000932;
     const unrelated = 6000000933;
@@ -750,6 +781,7 @@ describe('reference dashboard', () => {
       expect((await live.chatFor(unrelated))?.aiMode).toBe('ai_active');
       await openChat(page, chat.displayLabel);
       await page.locator('#chat-header').getByText('AI active', { exact: true }).waitFor();
+      await page.locator('#chat-header').getByText(/Waiting for participant permission/).waitFor();
       const requests: unknown[] = [];
       page.on('request', request => {
         if (request.method() === 'POST' && new URL(request.url()).pathname === '/v1/dispatches') requests.push(request.postDataJSON());
@@ -763,6 +795,7 @@ describe('reference dashboard', () => {
       await dialog.waitFor({ state: 'hidden' });
       expect(requests).toEqual([{ chatIds: [chat.id], participantPermissionRecorded: true, expectedTestMode: true }]);
       await expect.poll(() => stand.sender.to(chosen).length).toBe(1);
+      await page.locator('#chat-header').getByText('Approved for AI replies', { exact: true }).waitFor();
       expect(stand.generator.histories).toEqual([[{ from: 'contact', text: first }]]);
       expect(stand.sender.to(unrelated)).toHaveLength(0);
       await open.click();
@@ -771,20 +804,27 @@ describe('reference dashboard', () => {
       await dialog.getByRole('button', { name: 'Dispatch test chat' }).click();
       await dialog.getByText(/setting changed/i).waitFor();
       expect(requests).toHaveLength(1);
-      expect(await dialog.getByRole('checkbox', { name: /participant.*permission/i }).isChecked()).toBe(false);
-      await dialog.getByRole('button', { name: 'Dispatch', exact: true }).click();
-      await dialog.waitFor({ state: 'hidden' });
-      expect(requests.at(-1)).toEqual({ chatIds: [chat.id] });
-      await open.click();
-      await dialog.getByText('Test mode off', { exact: true }).waitFor();
-      await dialog.getByText(/An officer recorded participant permission/).waitFor();
-      const permission = dialog.getByRole('checkbox', { name: /participant.*permission/i });
-      expect(await permission.isChecked()).toBe(false);
-      await permission.check();
+      expect(await dialog.getByRole('checkbox', { name: /participant.*permission/i }).count()).toBe(0);
+      await dialog.getByText(/Choosing Dispatch confirms/i).waitFor();
       await dialog.getByRole('button', { name: 'Dispatch', exact: true }).click();
       await dialog.waitFor({ state: 'hidden' });
       expect(requests.at(-1)).toEqual({ chatIds: [chat.id], participantPermissionRecorded: true });
+      await open.click();
+      await dialog.getByText('Test mode off', { exact: true }).waitFor();
+      await dialog.getByText(/An officer recorded participant permission/).waitFor();
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      stand.clock.advance(1_000);
+      await live.receive(chosen, 'STOP');
       await live.app.drain();
+      expect((await live.chatFor(chosen))?.telegramReplyHold.contactOptedOut).toBe(true);
+      await open.click();
+      await dialog.getByText(/This participant opted out/).waitFor();
+      expect(await dialog.getByRole('button', { name: 'Dispatch', exact: true }).isDisabled()).toBe(true);
+      await live.call('POST', '/v1/telegram/consent-prompt', { enabled: false });
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await open.click();
+      await dialog.getByText('Test mode on', { exact: true }).waitFor();
+      expect(await dialog.getByRole('button', { name: 'Dispatch test chat' }).isDisabled()).toBe(true);
       expect(stand.sender.to(chosen)).toHaveLength(1);
       expect(stand.sender.to(unrelated)).toHaveLength(0);
     } finally { await live.stop(); }

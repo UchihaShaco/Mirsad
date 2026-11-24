@@ -212,6 +212,7 @@ export type DispatchResponse = z.infer<typeof DispatchResponse>;
 export const DispatchByPhoneRequest = z.strictObject({
   phoneNumber: z.string().trim().min(1).max(64).describe('One complete international phone number starting with + or 00.'),
   officerContext: OfficerContext.nullable().optional(),
+  participantPermissionRecorded: z.literal(true).optional().describe('The officer confirms permission for AI replies and screening in the uniquely verified conversation.'),
 });
 export type DispatchByPhoneRequest = z.infer<typeof DispatchByPhoneRequest>;
 export const DispatchByPhoneResponse = z.discriminatedUnion('outcome', [
@@ -378,6 +379,7 @@ export const CaseReferenceResponse = z.object({ caseReference: CaseReference, fi
 
 export const Timeline = z.object({
   chat: ChatSummary,
+  telegramAiPermission: z.enum(['approved', 'needed', 'withdrawn']).optional(),
   testSession: z.object({ position: z.number().int().positive(), previousMessageIds: z.array(id), previousReferenceIds: z.array(id) }).nullable(),
   messages: z.array(Message),
   messageEvents: z.array(MessageEvent),
@@ -446,7 +448,11 @@ export const OfficerLogoutResponse = z.object({ loggedOut: z.literal(true) });
 
 export const HealthResponse = z.object({ status: z.literal('ok') });
 export const DmRepliesRequest = z.strictObject({ enabled: z.boolean() });
-export const ConsentPromptResponse = z.object({ enabled: z.boolean(), available: z.boolean() });
+export const ConsentPromptRequest = z.discriminatedUnion('enabled', [
+  z.strictObject({ enabled: z.literal(false) }),
+  z.strictObject({ enabled: z.literal(true), manualDispatchOnly: z.literal(true).optional() }),
+]);
+export const ConsentPromptResponse = z.object({ enabled: z.boolean(), available: z.boolean(), manualDispatchOnly: z.literal(true).optional() });
 export const ReplyPromptReloadResponse = z.strictObject({ version: z.string().regex(/^[a-f0-9]{12}$/), changed: z.boolean() });
 export const DmRepliesResponse = z.object({
   enabled: z.boolean(), available: z.boolean(), mode: z.enum(['approved', 'all_private', 'off']),
@@ -491,5 +497,5 @@ export const CONTRACT_SCHEMAS = {
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
   WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, MeResponse,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
-  DmRepliesRequest, DmRepliesResponse, ConsentPromptResponse, ReplyPromptReloadResponse,
+  DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,
 } as const;

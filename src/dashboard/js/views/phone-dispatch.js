@@ -12,8 +12,7 @@ function telegramRecipient(raw) {
 
 function receipt(status) {
   if (status === 'requires_resume') return 'This chat is paused or under officer control. Open the conversation to review its controls.';
-  if (status === 'already_active') return 'The verified conversation is already active. Delivery depends on an eligible incoming message.';
-  return 'Dispatch accepted for the verified conversation. Ali can reply when there is an eligible incoming message.';
+  return 'Dispatch accepted for the verified conversation. If its latest DM is unanswered and eligible, Ali will assess it now.';
 }
 
 export function bindPhoneDispatch(ctx, openOpener) {

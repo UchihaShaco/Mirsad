@@ -66,7 +66,7 @@ After updating a checkout, run `npm ci` while the service is stopped whenever th
 | Enable Telegram on a new installation | Set the bot token, approved connection, scope and approval references in the local `.env`. For replies, configure the consent reference and Telegram's **Reply to Messages** right. Follow the setup guide to enable `TELEGRAM_LIVE_ENABLED` and `TELEGRAM_AI_REPLIES_ENABLED`. Run `npm run telegram:verify` and restart. |
 | Use Gemini for English and Emirati Arabic | In `.env`, set `MIRSAD_REPLY_PROVIDER=openrouter` and `MIRSAD_OPENROUTER_MODEL=google/gemini-3.8-flash`. Put the key in `OPENROUTER_API_KEY` using a local editor. Run `npm run openrouter:verify` for a synthetic test, then restart. During live operation, eligible reply text goes to OpenRouter and Google. |
 | Run with a local model | For local replies, choose `MIRSAD_REPLY_PROVIDER=lmstudio`. Start the LM Studio server at `http://127.0.0.1:1234/v1` and load the model named by `MIRSAD_LMSTUDIO_MODEL` (default `qwen3.5-9b`). The separate findings reviewer uses `MIRSAD_REVIEWER`. OpenRouter replies can run without LM Studio. |
-| Test automatic Dispatch | In **Settings**, enable **Auto-reply to every Telegram DM** and **Test mode** for the all-private inbox. The next eligible message activates a new chat. For your own account or a participant who already agreed, use **Dispatch this chat → Dispatch test chat** to record permission for replies. Switching Test mode off stops automatic Dispatch for new chats. |
+| Test automatic Dispatch | In **Settings**, enable **Auto-reply to every Telegram DM** and **Test mode**. Eligible DMs automatically activate new and returning chats. An approved contact can receive a reply from the first incoming DM. For your own test account or a participant who already agreed, **Dispatch this chat → Dispatch test chat** records permission once. |
 | Apply a prompt edit | Save `prompts/ali.md`, then select **Settings → Reload Ali’s prompt**. Check the confirmation and send the next test DM. A turn already in progress uses the prior version. A validation error leaves the last working prompt active. |
 
 Keep the live configuration, credentials, database and evidence on the operator machine. The repository supplies
@@ -447,8 +447,8 @@ When someone offers work, an item or a service, the model can ask one ordinary q
 If a new fee to start work has no stated purpose, it asks once what it covers. Once the sender explains, it acknowledges the answer and lets them lead.
 The prompt uses up to 32 recent eligible messages plus the sender's relevant earlier offer and correction.
 Offer memory comes from that chat's eligible messages in SQLite and carries over when the sender changes language.
-The worker waits for three quiet seconds after the latest incoming message, reads the burst together and checks
-officer controls and contact preferences before sending.
+For automatic replies, the worker waits for three quiet seconds so it can read consecutive messages together.
+Confirming Dispatch for one chat skips that delay for the selected DM. Officer controls and contact preferences apply before sending.
 
 A contact can end the current exchange with **Stop** and start a new one later with **Hi** or a direct question.
 After **Never contact me again**, the contact can explicitly invite a reply in their own words. The first volunteered
@@ -460,14 +460,20 @@ explanation of the fee does not count. Officer controls and contact opt-outs app
 **Chat scope.** All-private intake covers eligible private DMs on the connected account. In **Settings**, turn on
 **Auto-reply to every Telegram DM**. The **Test mode** switch then controls automatic Dispatch.
 
-- With **Test mode on**, the next eligible private message marks a never-started chat **AI active**. Either you or
-  the contact can start the conversation. When you send the opener in Telegram, Ali waits for the contact’s incoming
-  message and recorded permission before replying. Other contacts receive no invitation and their messages
-  stay out of the reply model. For your own test account or a participant who already agreed to AI replies and fraud
-  screening, choose **Dispatch this chat → Dispatch test chat** to record that permission.
-- With **Test mode off**, new chats wait for manual **Dispatch**. New contacts can receive a local invitation and respond
-  **I AGREE** or **أوافق**. Already-active chats with permission can continue. Turning off **Auto-reply to every Telegram
-  DM** pauses all automatic replies and invitations.
+- With **Test mode on**, a fresh eligible DM activates a new or returning chat automatically. Either participant can
+  open the conversation. Ali can answer an approved contact’s first incoming message. Other contacts receive no
+  invitation, and their messages stay local until permission is recorded.
+- Switching **Test mode off** in Settings stops automatic Dispatch and consent invitations for new contacts.
+  Already-active, approved contacts can continue receiving replies. **Auto-reply to every Telegram DM** is the
+  account-wide switch for pausing all replies.
+
+In either mode, open **Dispatch this chat** for your own account or a participant who already agreed to AI replies
+and fraud screening, including sending their messages to Gemini through OpenRouter when configured. Confirming
+**Dispatch test chat** or **Dispatch** records that permission and immediately requests a reply to the latest
+eligible unanswered DM already in the chat. Switching Test mode off keeps existing approvals.
+
+The chat header shows **Approved for AI replies** when permission is on record. An active chat that still needs
+permission displays **Waiting for participant permission**.
 
 Officer pauses, takeover, STOP and review holds remain effective in both modes. Excluded chats and Telegram’s service
 chat are dropped before storage.
@@ -519,8 +525,8 @@ optional briefing to one chat. Ali uses it as an unverified lead and bases its a
 From the inbox, **Dispatch a number** takes an international phone number and an optional private briefing.
 Mirsad can match a chat when the contact previously shared their own Telegram contact card with the linked business
 account. Cards received before verified matching was installed need to be shared again for an automatic match.
-A unique match starts the usual dispatch flow. The receipt lets you open the conversation and see whether Ali
-replied. If several conversations match, open the intended chat from the inbox and dispatch it there.
+For a unique verified match, Dispatch immediately requests a reply to the latest eligible unanswered DM. Open the
+conversation from the receipt to see the outcome. If several conversations match, open the intended chat from the inbox and dispatch it there.
 If there is no verified match, choose **Draft first message**, edit the opener, and open it in Telegram to send it
 yourself. Telegram limits business-bot replies to private chats with an incoming message in the past 24 hours.
 [Telegram Business Bot rights](https://core.telegram.org/bots/api#businessbotrights) · [Telegram phone links](https://core.telegram.org/api/links#phone-number-links)

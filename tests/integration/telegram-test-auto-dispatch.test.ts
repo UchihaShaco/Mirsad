@@ -78,6 +78,37 @@ it.each([
   expect(h.stand.sender.to(listed)).toHaveLength(0);
 });
 
+it.each([
+  { chatId: listed, expectedReplies: 1 },
+  { chatId: contact, expectedReplies: 0 },
+])('activates a returning chat on a captioned DM and sends $expectedReplies replies for its recorded permission', async ({ chatId, expectedReplies }) => {
+  await invitations(true);
+  await h.deliver(incoming(chatId, 'I have a desk.', now()));
+  expect(await h.chatFor(chatId)).toMatchObject({ aiMode: 'not_started' });
+
+  h.stand.clock.advance(1_000);
+  await invitations(false);
+  const update = incoming(chatId, '', now());
+  const photo = update.business_message as Record<string, unknown>;
+  delete photo.text;
+  photo.photo = [{ file_id: 'synthetic-photo' }];
+  photo.caption = 'Here is a photo of the desk.';
+  h.stand.generator.replyNext('How wide is the desk?');
+  await h.deliver(update, update);
+  h.stand.clock.advance(3_000);
+  await h.app.drain();
+
+  expect(await h.chatFor(chatId)).toMatchObject({ aiMode: 'ai_active' });
+  expect(await h.caseActionsOf(chatId, 'ai_auto_started')).toHaveLength(1);
+  expect(await h.caseActionsOf(chatId, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+  expect(h.stand.generator.histories).toHaveLength(expectedReplies);
+  expect(h.stand.sender.to(chatId)).toHaveLength(expectedReplies);
+  if (expectedReplies) {
+    expect(h.stand.generator.histories[0]?.at(-1)).toEqual({ from: 'contact', text: photo.caption });
+    expect(h.stand.sender.to(chatId)[0]?.reply.text).toBe('How wide is the desk?');
+  }
+});
+
 it('starts from the next genuine original, ignoring edits, bot echoes, forwarded, and wrong-sender messages', async () => {
   const edited = incoming(contact, 'Corrected text', now());
   const forwarded = incoming(contact, 'Forwarded text', now());

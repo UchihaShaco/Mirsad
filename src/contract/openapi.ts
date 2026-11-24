@@ -20,7 +20,7 @@ const JSON_TYPE = 'application/json';
 
 /** Component schemas that describe request bodies; everything else describes a response. */
 const REQUEST_SCHEMAS = [
-  'EraseRequest',
+  'EraseRequest', 'ConsentPromptRequest',
   'IngestRequest', 'IntakeEvent', 'RegisterChatRequest', 'DispatchRequest', 'DispatchByPhoneRequest', 'ControlRequest', 'DmRepliesRequest',
   'OfficerMessageRequest', 'OfficerDecisionRequest', 'CaseReferenceRequest', 'WatchlistReviewRequest', 'OfficerLoginRequest',
 ] as const;

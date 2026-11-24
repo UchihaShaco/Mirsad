@@ -70,7 +70,7 @@
           <summary>Dispatch briefing</summary>
           <label for="dispatch-brief-text">What should Ali keep in mind?</label>
           <textarea id="dispatch-brief-text" rows="2" maxlength="500" dir="auto" aria-describedby="dispatch-brief-hint"></textarea>
-          <p id="dispatch-brief-hint" class="hint">Ali replies when there’s a fresh eligible message and checks the conversation for evidence. Leave blank to keep a saved briefing.</p>
+          <p id="dispatch-brief-hint" class="hint">For one live Telegram chat, confirming Dispatch asks Ali to answer its latest eligible unanswered DM now. Leave blank to keep a saved briefing.</p>
           <label class="dispatch-brief-clear"><input type="checkbox" id="dispatch-brief-clear"> Clear saved briefing</label>
         </details>
         <div class="inbox-lists">
@@ -226,7 +226,6 @@
     <section id="chat-dispatch-permission-section" class="dispatch-permission" aria-labelledby="chat-dispatch-mode" hidden>
       <h3 id="chat-dispatch-mode"></h3>
       <p id="chat-dispatch-mode-hint"></p>
-      <label id="chat-dispatch-permission-label" hidden><input type="checkbox" id="chat-dispatch-permission"> I already have this participant’s permission to send this chat to Gemini through OpenRouter for replies and fraud screening.</label>
       <p id="chat-dispatch-record" class="hint" hidden></p>
       <p id="chat-dispatch-eligibility" class="hint"></p>
     </section>
@@ -245,7 +244,8 @@
     <p id="phone-dispatch-hint" class="hint">Include the country code, starting with + or 00.</p>
     <label for="phone-dispatch-brief">Officer briefing (optional)</label>
     <textarea id="phone-dispatch-brief" rows="2" maxlength="500" dir="auto"></textarea>
-    <button id="phone-dispatch-submit" type="submit" class="primary">Dispatch</button>
+    <p id="phone-dispatch-permission" class="hint">For a verified match, choosing Dispatch confirms this is your account or the participant has agreed to AI replies and fraud screening, including sending messages to Gemini through OpenRouter when configured.</p>
+    <button id="phone-dispatch-submit" type="submit" class="primary" aria-describedby="phone-dispatch-permission">Dispatch</button>
   </form>
   <p id="phone-dispatch-status" role="status" class="phone-receipt"></p>
   <a id="phone-dispatch-chat" hidden>Open conversation</a>

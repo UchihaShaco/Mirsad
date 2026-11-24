@@ -17,6 +17,61 @@ async function register(h: Harness, contact: number): Promise<string> {
   return result.data.chat.id as string;
 }
 
+it.each(['manual', 'test'] as const)('answers the selected unanswered DM immediately on confirmed Dispatch in %s mode', async mode => {
+  const stand = standIns();
+  const h = await Harness.start(env, stand);
+  try {
+    await h.call('POST', replies, { enabled: true });
+    const testMode = mode === 'test';
+    await h.call('POST', invites, testMode ? { enabled: false } : { enabled: true, manualDispatchOnly: true });
+    const at = stand.clock.now().getTime();
+    const latest = 'I have a pine table for sale.';
+    await h.deliver(incoming(first, 'I had an older listing.', at), incoming(first, latest, at));
+    const chat = (await h.chatFor(first))!;
+    const body = { chatIds: [chat.id], participantPermissionRecorded: true, ...(testMode && { expectedTestMode: true }) };
+    const key = { 'Idempotency-Key': randomUUID() };
+    stand.generator.replyNext('How wide is the table?');
+    expect((await h.call('POST', '/v1/dispatches', body, key)).success).toBe(true);
+    await h.app.drain();
+    expect(stand.sender.to(first).map(sent => sent.reply.text)).toEqual(['How wide is the table?']);
+    expect(stand.generator.histories).toEqual([[{ from: 'contact', text: latest }]]);
+
+    expect((await h.call('POST', '/v1/dispatches', body, key)).success).toBe(true);
+    await h.deliver(incoming(first, 'It is eighty centimetres wide.', at));
+    await h.app.drain();
+    expect(stand.sender.to(first)).toHaveLength(1);
+    stand.clock.advance(3_000);
+    await h.app.drain();
+    expect(stand.sender.to(first)).toHaveLength(2);
+  } finally { await h.stop(); }
+});
+
+it('replies immediately to an older eligible DM when Dispatch confirms a verified phone match', async () => {
+  const stand = standIns();
+  const h = await Harness.start(env, stand);
+  try {
+    await h.call('POST', replies, { enabled: true });
+    await h.call('POST', invites, { enabled: true, manualDispatchOnly: true });
+    const at = stand.clock.now().getTime();
+    const card = incoming(first, '', at);
+    const message = card.business_message as Record<string, unknown>;
+    delete message.text;
+    const phone = '+447700900010';
+    message.contact = { first_name: 'Test', phone_number: phone, user_id: first };
+    await h.deliver(card);
+    stand.clock.advance(20 * 60_000);
+    const offer = 'I have a small shelf for sale.';
+    await h.deliver(incoming(first, offer, at + 60_000));
+    stand.generator.replyNext('How wide is the shelf?');
+    const result = await h.call('POST', '/v1/dispatches/by-phone', { phoneNumber: phone, participantPermissionRecorded: true },
+      { 'Idempotency-Key': randomUUID() });
+    expect(result.data.outcome).toBe('dispatched');
+    await h.app.drain();
+    expect(stand.sender.to(first).map(sent => sent.reply.text)).toEqual(['How wide is the shelf?']);
+    expect(stand.generator.histories).toEqual([[{ from: 'contact', text: offer }]]);
+  } finally { await h.stop(); }
+});
+
 it('requires an explicit single-chat action and the confirmed test setting, including on an already-active chat', async () => {
   const stand = standIns();
   const h = await Harness.start(env, stand);
@@ -26,7 +81,9 @@ it('requires an explicit single-chat action and the confirmed test setting, incl
     expect((await dispatch(h, [selected], { participantPermissionRecorded: false })).error.code).toBe('validation_failed');
     expect((await dispatch(h, [selected], { expectedTestMode: true })).error.code).toBe('validation_failed');
     expect((await h.call('POST', '/v1/dispatches/by-phone', { phoneNumber: '+447700900010',
-      participantPermissionRecorded: true }, { 'Idempotency-Key': randomUUID() })).error.code).toBe('validation_failed');
+      participantPermissionRecorded: true }, { 'Idempotency-Key': randomUUID() })).data).toEqual({ outcome: 'no_verified_chat' });
+    expect(await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+    expect(await h.caseActionsOf(other, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
     expect((await dispatch(h, [selected], { participantPermissionRecorded: true, expectedTestMode: true })).error.code).toBe('revision_conflict');
     expect((await dispatch(h, [selected, untouched], {})).success).toBe(true);
     await h.call('POST', invites, { enabled: false });
@@ -37,6 +94,8 @@ it('requires an explicit single-chat action and the confirmed test setting, incl
     await h.app.drain();
     expect(stand.generator.histories).toEqual([[{ from: 'contact', text: 'First question from the selected participant' }]]);
     expect(stand.sender.to(other)).toHaveLength(0);
+    expect((await h.timelineOf(first)).telegramAiPermission).toBe('approved');
+    expect((await h.timelineOf(other)).telegramAiPermission).toBe('needed');
     expect((await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded'))[0]?.actor.displayName).toBe('Officer A');
   } finally { await h.stop(); }
 });
@@ -66,6 +125,7 @@ it('ignores delayed pre-permission content and retains the selected grant across
     expect(again.generator.histories[0]?.map(turn => turn.text)).not.toContain('Delayed private offer');
     await h.receive(first, 'Never contact me again.');
     await h.app.drain();
+    expect((await h.timelineOf(first)).telegramAiPermission).toBe('withdrawn');
     expect((await dispatch(h, [selected])).error.code).toBe('invalid_transition');
     await h.receive(first, 'Hello again');
     await h.app.drain();

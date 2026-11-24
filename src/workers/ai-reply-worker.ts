@@ -38,7 +38,7 @@ import { ingest } from '../services/intake.ts';
 import { applyModeChange } from '../services/mode-change.ts';
 import { DM_CONSENT_NOTICE, dmConsentForTurn, markDmConsentNotice } from '../services/telegram-dm-consent.ts';
 import { dispatchPermissionForTurn, permittedDispatchSourceSql, resumeDispatchPermissions } from '../services/telegram-dispatch-permission.ts';
-import { dmPolicyKey, dmPolicyMode, readConsentPromptPolicy, readDmPolicy, reconcileDmPolicy, suspendDmPolicies, type DmPolicy } from '../services/telegram-dm-policy.ts';
+import { dmPolicyKey, dmPolicyMode, invitationsEnabled, readConsentPromptPolicy, readDmPolicy, reconcileDmPolicy, suspendDmPolicies, type DmPolicy } from '../services/telegram-dm-policy.ts';
 import { backfillTelegramReplyHolds, isTelegramReplyHeld, recordConversationReview, recordModelPaymentLinkReview, reviewedModelPaymentLinkKeys } from '../services/telegram-reply-holds.ts';
 import type { Db, Tx } from '../storage/db.ts';
 import * as caseActions from '../storage/repos/case-actions.ts';
@@ -135,6 +135,7 @@ interface Session {
 /** A chat in scope and its latest message, which awaits a reply. */
 interface Waiting {
   officerPermission?: boolean;
+  dispatchRequested?: boolean;
   afterTelegramId?: number;
   kind: ReplyJob['kind'];
   chat: ChatRow & { enrolled_after: number; enrolled_second: number; has_dispatch_permission: number };
@@ -260,7 +261,7 @@ function earliestMs(message: Pick<MessageRow, 'sent_at' | 'received_at'>): numbe
 
 /** Re-enabling invitations applies to new turns, including when older Telegram deliveries arrive late. */
 function canInvite(policy: ReturnType<typeof readConsentPromptPolicy>, message: MessageRow): boolean {
-  return policy.enabled && message.position > policy.position && earliestMs(message) >= policy.second * MS_PER_SECOND;
+  return invitationsEnabled(policy) && message.position > policy.position && earliestMs(message) >= policy.second * MS_PER_SECOND;
 }
 
 /** Pure: whether a chat's latest message is one the local model should answer now. */
@@ -378,7 +379,8 @@ function currencyOf(tx: Tx, session: Session, job: ReplyJob, history: ReplyHisto
   if (job.officerPermission && (!permission || permission.enrolledAfter > job.enrolledAfter ||
     permission.enrolledSecond > job.enrolledSecond || (permission.afterTelegramId ?? 0) > (job.afterTelegramId ?? 0))) return 'reply_held';
   if (permission && job.kind === 'notice') return 'mode_changed';
-  if (!isAnswerable(chat, latest, nowMs, job.officerPermission ? permission?.catchUpUntil : null)) return 'not_answerable';
+  const catchUpUntil = job.officerPermission ? permission?.catchUpUntil : null;
+  if (!isAnswerable(chat, latest, nowMs, catchUpUntil)) return 'not_answerable';
   if (job.kind === 'notice' && !canInvite(readConsentPromptPolicy(tx, session.binding.principal.id, session.policyKey), latest)) {
     return 'mode_changed';
   }
@@ -386,7 +388,8 @@ function currencyOf(tx: Tx, session: Session, job: ReplyJob, history: ReplyHisto
     const consent = dmConsentForTurn(tx, session.binding.principal.id, chat.id, latest.id, latest.position, latest.text ?? '');
     if (consent.action !== job.kind || (job.kind === 'reply' && consent.enrolledAfter > job.enrolledAfter)) return 'reply_held';
   }
-  if (latest.activity_position !== job.activityPosition || nowMs < Date.parse(latest.activity_at) + REPLY_QUIET_MS) return 'history_changed';
+  if (latest.activity_position !== job.activityPosition) return 'history_changed';
+  if ((catchUpUntil ?? 0) <= nowMs && nowMs < Date.parse(latest.activity_at) + REPLY_QUIET_MS) return 'history_changed';
   return history === null || isDeepStrictEqual(historyFor(tx, job, offers), history) ? 'current' : 'history_changed';
 }
 
@@ -497,7 +500,9 @@ class TelegramAiReplyWorker implements AiReplyWorker {
       const mode = dmPolicyMode(policy, this.deps.config.telegram);
       if (mode === 'off') return null;
       const waiting = this.waiting(tx, session, nowMs, mode === 'all_private' ? policy : null);
-      const next = waiting.find(({ message }) => Date.parse(message.activity_at) + REPLY_QUIET_MS <= nowMs);
+      // An officer selected this particular inbound message for a reply. Later messages still wait for the burst to end.
+      const next = waiting.find(turn => turn.dispatchRequested)
+        ?? waiting.find(({ message }) => Date.parse(message.activity_at) + REPLY_QUIET_MS <= nowMs);
       if (!next) {
         this.scheduleQuietWake(waiting, nowMs);
         return null;
@@ -551,7 +556,7 @@ class TelegramAiReplyWorker implements AiReplyWorker {
        WHERE c.channel_account_id=:accountId AND (c.ai_mode='ai_active' OR (:invitations=1 AND c.ai_mode='not_started'))
        AND (g.chat_id IS NOT NULL OR EXISTS (SELECT 1 FROM messages m WHERE m.chat_id=c.id
          AND m.position>:position AND m.direction='incoming' AND m.received_at>=:since)) ORDER BY c.id`,
-      { ...binding, invitations: invitations?.enabled ? 1 : 0, position: policy.position, second: policy.second,
+      { ...binding, invitations: invitationsEnabled(invitations) ? 1 : 0, position: policy.position, second: policy.second,
         since: new Date(nowMs - REPLY_FRESHNESS_MS).toISOString() },
     ) : tx.all<Waiting['chat']>(
       `SELECT c.*, coalesce(json_extract(e.value,'$.position'),0) AS enrolled_after,
@@ -574,7 +579,8 @@ class TelegramAiReplyWorker implements AiReplyWorker {
           chat.enrolled_after = Math.max(chat.enrolled_after, permission.enrolledAfter);
           chat.enrolled_second = Math.max(chat.enrolled_second, permission.enrolledSecond);
           if (message.position <= chat.enrolled_after || earliestMs(message) < chat.enrolled_second * MS_PER_SECOND) return [];
-          return [{ kind: 'reply', officerPermission: true, chat, message, afterTelegramId: permission.afterTelegramId }];
+          return [{ kind: 'reply', officerPermission: true, dispatchRequested: (permission.catchUpUntil ?? 0) > nowMs,
+            chat, message, afterTelegramId: permission.afterTelegramId }];
         }
         if (session.approvedIds.has(chat.external_chat_id)) return [{ kind: 'reply', chat, message }];
         if (!policy) return [];

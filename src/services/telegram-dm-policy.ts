@@ -14,6 +14,8 @@ export interface DmPolicy {
   second: number;
   officerId: string;
   suspended?: boolean;
+  /** Applies to the consent-prompt preference when an officer selects manual Dispatch. */
+  manualDispatchOnly?: true;
 }
 
 export function readDmPolicy(tx: Tx, connectorId: string, key: string): DmPolicy | null {
@@ -23,20 +25,25 @@ export function readDmPolicy(tx: Tx, connectorId: string, key: string): DmPolicy
 }
 
 /** The enable boundary is shared by all future chats on this connection, including ones unknown today. */
-export function setDmPolicy(tx: Tx, connectorId: string, key: string, workspaceId: string, officerId: string, enabled: boolean): DmPolicy {
+export function setDmPolicy(tx: Tx, connectorId: string, key: string, workspaceId: string, officerId: string, enabled: boolean,
+  manualDispatchOnly?: true): DmPolicy {
   const previous = readDmPolicy(tx, connectorId, key);
-  if (previous?.enabled === enabled) return previous;
+  if (previous?.enabled === enabled && previous.manualDispatchOnly === manualDispatchOnly) return previous;
   const workspace = tx.get<{ stream_seq: number }>('SELECT stream_seq FROM workspaces WHERE id=:id', { id: workspaceId })!;
   const now = tx.now();
   const policy: DmPolicy = { enabled, revision: (previous?.revision ?? 0) + 1, position: workspace.stream_seq,
-    second: Math.ceil(Date.parse(now) / 1000), officerId };
+    second: Math.ceil(Date.parse(now) / 1000), officerId, ...(manualDispatchOnly && { manualDispatchOnly }) };
   tx.run(`INSERT INTO connector_state(connector_id,key,value,updated_at) VALUES (:connectorId,:key,:value,:now)
     ON CONFLICT(connector_id,key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`,
     { connectorId, key, value: JSON.stringify(policy), now });
   return policy;
 }
 
-type ConsentPromptPolicy = Pick<DmPolicy, 'enabled' | 'revision' | 'position' | 'second'>;
+type ConsentPromptPolicy = Pick<DmPolicy, 'enabled' | 'revision' | 'position' | 'second' | 'manualDispatchOnly'>;
+
+export function invitationsEnabled(policy: ConsentPromptPolicy | null): boolean {
+  return policy?.enabled === true && !policy.manualDispatchOnly;
+}
 
 /** An invitation preference shares the account/connection identity, but has its own enable boundary. */
 function consentPromptKey(accountPolicyKey: string): string {
@@ -49,10 +56,10 @@ export function readConsentPromptPolicy(tx: Tx, connectorId: string, accountPoli
 }
 
 export function setConsentPromptPolicy(tx: Tx, connectorId: string, accountPolicyKey: string,
-  workspaceId: string, officerId: string, enabled: boolean): ConsentPromptPolicy {
+  workspaceId: string, officerId: string, enabled: boolean, manualDispatchOnly?: true): ConsentPromptPolicy {
   const current = readConsentPromptPolicy(tx, connectorId, accountPolicyKey);
-  if (current.enabled === enabled) return current;
-  return setDmPolicy(tx, connectorId, consentPromptKey(accountPolicyKey), workspaceId, officerId, enabled);
+  if (current.enabled === enabled && current.manualDispatchOnly === manualDispatchOnly) return current;
+  return setDmPolicy(tx, connectorId, consentPromptKey(accountPolicyKey), workspaceId, officerId, enabled, manualDispatchOnly);
 }
 
 /** A stopped installation must not reply later to messages received while an installation gate was closed. */

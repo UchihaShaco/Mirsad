@@ -10,7 +10,7 @@ import { createRefresher, REFRESH_DELAY_MS } from './refresher.js';
 import { createRenderer } from './render.js';
 import { initialCaseReferenceDraft } from './state/case-reference.js';
 import { initialComposer } from './state/composer.js';
-import { parseRoute } from './state/route.js';
+import { chatHref, parseRoute } from './state/route.js';
 import { createEventStream } from './stream-client.js';
 import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
@@ -245,6 +245,16 @@ export function startDashboard({ api, me, token, refs, onSessionEnded }) {
     dmReplies: () => loadTelegramSetting(ctx, 'dmReplies'), consentPrompt: () => loadTelegramSetting(ctx, 'consentPrompt'),
   };
   ctx.applyChat = (chat) => applyChat(ctx, chat);
+  ctx.openQueuedDispatch = (timeline, briefing) => {
+    const route = chatHref(timeline.chat.id);
+    if (window.location.hash !== route) window.history.pushState(null, '', route);
+    applyRoute(ctx);
+    ctx.setState({ timeline, timelineError: null });
+    refs.openChatDispatch.click();
+    refs.chatDispatchContext.value = briefing ?? '';
+    refs.chatDispatchClear.checked = briefing === null;
+    refs.chatDispatchContext.disabled = briefing === null;
+  };
   ctx.clearErased = (id, receipt) => clearErasedHistory(ctx, id, receipt);
   ctx.refreshers = Object.fromEntries(Object.entries(ctx.load).map(([name, load]) => [name, createRefresher(load, REFRESH_DELAY_MS, ctx.showError)]));
   ctx.handlers = createActions(ctx);

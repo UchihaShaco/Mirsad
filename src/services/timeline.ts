@@ -4,6 +4,7 @@
  * are read straight from their tables so the tasks that insert them need no change here.
  */
 import type { CaptureMethod, Concern } from '../contract/enums.ts';
+import type { Config } from '../config.ts';
 import { LABELS, type FindingLabel } from '../contract/labels.ts';
 import type { Finding, Message, MessageEvent, Timeline } from '../contract/schemas.ts';
 import type { Principal } from '../ports/identity.ts';
@@ -14,6 +15,7 @@ import { listMessageEvents, listMessages } from '../storage/repos/messages.ts';
 import { listReviewsForChat } from '../storage/repos/reviews.ts';
 import type { CaseReferenceRow, ChatRow, FindingRow, MessageEventRow, MessageRow, ReviewRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
+import { telegramAiPermission } from './telegram-dispatch-permission.ts';
 import { currentCursor, summaryOf } from './chats.ts';
 import { currentTestMessageIds, readChatTestWindow } from './chat-test-session.ts';
 import {
@@ -105,7 +107,7 @@ function readEvidence(tx: Tx, chat: ChatRow, source: Message['source']['channel'
   };
 }
 
-export function readTimeline(tx: Tx, principal: Principal, chatId: string): Timeline {
+export function readTimeline(tx: Tx, principal: Principal, chatId: string, telegram: Config['telegram']): Timeline {
   const chat = requireChat(tx, principal, chatId);
   const cursor = currentCursor(tx, chat.workspace_id);
   const summary = summaryOf(tx, principal, chat);
@@ -117,6 +119,7 @@ export function readTimeline(tx: Tx, principal: Principal, chatId: string): Time
   const currentIds = window.position > 0 ? currentTestMessageIds(tx, chatId, window) : null;
   return {
     chat: summary,
+    ...(summary.source === 'telegram' && { telegramAiPermission: telegramAiPermission(tx, chat, telegram, summary.telegramReplyHold.contactOptedOut) }),
     testSession: currentIds ? {
       position: window.position,
       previousMessageIds: messages.filter(m => !currentIds.has(m.id)).map(m => m.id),

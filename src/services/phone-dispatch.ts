@@ -2,23 +2,25 @@ import { chatScopeOf, isChatInScope, isTelegramChatId } from '../adapters/telegr
 import { findLiveBindings } from '../adapters/telegram/live-connector.ts';
 import type { Config } from '../config.ts';
 import type { DispatchByPhoneResponse } from '../contract/schemas.ts';
+import { dispatchOutcome } from '../domain/control-machine.ts';
 import { normalizePhone } from '../domain/phone.ts';
 import type { Principal } from '../ports/identity.ts';
 import type { Tx } from '../storage/db.ts';
+import type { ChatRow } from '../storage/rows.ts';
 import { canAccessChat } from './access.ts';
 import { dispatchChats } from './dispatch.ts';
 
-interface ContactCard { chat_id: string; external_chat_id: string; sender_phone_raw: string }
+interface ContactCard { chat_id: string; external_chat_id: string; sender_phone_raw: string; ai_mode: ChatRow['ai_mode'] }
 
 export function dispatchByPhone(tx: Tx, officer: Principal, telegram: Config['telegram'], e164: string,
-  officerContext?: string | null): DispatchByPhoneResponse {
+  officerContext?: string | null, permission?: { runtimeAvailable: boolean }): DispatchByPhoneResponse {
   const bindings = findLiveBindings(tx);
   const binding = bindings[0];
   if (!binding || bindings.length !== 1 || !canAccessChat(tx, officer, {
     workspace_id: binding.account.workspace_id, channel_account_id: binding.account.id,
   })) return { outcome: 'no_verified_chat' };
 
-  const cards = tx.all<ContactCard>(`SELECT c.id AS chat_id, c.external_chat_id, m.sender_phone_raw
+  const cards = tx.all<ContactCard>(`SELECT c.id AS chat_id, c.external_chat_id, m.sender_phone_raw, c.ai_mode
     FROM telegram_dispatch_contacts d JOIN chats c ON c.id = d.chat_id
     JOIN messages m ON m.id = d.verified_message_id AND m.chat_id = d.chat_id
     WHERE d.connector_id = :connectorId AND c.channel_account_id = :accountId AND c.workspace_id = :workspaceId
@@ -33,5 +35,8 @@ export function dispatchByPhone(tx: Tx, officer: Principal, telegram: Config['te
   if (matches.length > 1) return { outcome: 'ambiguous' };
   const match = matches[0];
   if (!match) return { outcome: 'no_verified_chat' };
-  return { outcome: 'dispatched', chatId: match.chat_id, dispatch: dispatchChats(tx, officer, [match.chat_id], officerContext) };
+  const paused = permission && dispatchOutcome(match.ai_mode) === 'requires_resume';
+  const dispatch = dispatchChats(tx, officer, [match.chat_id], paused ? undefined : officerContext,
+    permission && !paused ? { telegram, expectedTestMode: false, runtimeAvailable: permission.runtimeAvailable } : undefined);
+  return { outcome: 'dispatched', chatId: match.chat_id, dispatch };
 }

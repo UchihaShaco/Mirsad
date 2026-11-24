@@ -1,7 +1,7 @@
 import { findLiveBindings } from '../../adapters/telegram/live-connector.ts';
 import type { AppDeps } from '../../app.ts';
 import { AppError, ok } from '../../contract/errors.ts';
-import { DmRepliesRequest } from '../../contract/schemas.ts';
+import { ConsentPromptRequest, DmRepliesRequest } from '../../contract/schemas.ts';
 import type { Principal } from '../../ports/identity.ts';
 import { AliPromptReloadError, reloadAliPrompt } from '../../replies/ali-prompt.ts';
 import {
@@ -36,7 +36,7 @@ function dmReplies(tx: Tx, deps: AppDeps, officer: Principal, enabled?: boolean)
   return { enabled: mode === 'all_private', available, mode };
 }
 
-function consentPrompt(tx: Tx, deps: AppDeps, officer: Principal, enabled?: boolean) {
+function consentPrompt(tx: Tx, deps: AppDeps, officer: Principal, enabled?: boolean, manualDispatchOnly?: true) {
   const binding = bindingForOfficer(tx, officer);
   const connection = deps.config.telegram.approvedConnectionId;
   if (!binding || !connection) {
@@ -45,8 +45,8 @@ function consentPrompt(tx: Tx, deps: AppDeps, officer: Principal, enabled?: bool
   }
   const key = dmPolicyKey(binding.account.id, connection);
   const policy = enabled === undefined ? readConsentPromptPolicy(tx, binding.principal.id, key)
-    : setConsentPromptPolicy(tx, binding.principal.id, key, officer.workspaceId, officer.id, enabled);
-  return { enabled: policy.enabled, available: true };
+    : setConsentPromptPolicy(tx, binding.principal.id, key, officer.workspaceId, officer.id, enabled, manualDispatchOnly);
+  return { enabled: policy.enabled, available: true, ...(policy.manualDispatchOnly && { manualDispatchOnly: true }) };
 }
 
 export const routes: RouteModule = {
@@ -80,8 +80,8 @@ export const routes: RouteModule = {
     return c.json(ok(deps.db.transaction(tx => consentPrompt(tx, deps, principalOf(c)))));
   },
   'POST /v1/telegram/consent-prompt': async (c, deps) => {
-    const { enabled } = await parseJsonBody(c, DmRepliesRequest);
-    const result = deps.db.transaction(tx => consentPrompt(tx, deps, principalOf(c), enabled));
+    const body = await parseJsonBody(c, ConsentPromptRequest);
+    const result = deps.db.transaction(tx => consentPrompt(tx, deps, principalOf(c), body.enabled, body.enabled ? body.manualDispatchOnly : undefined));
     deps.workers.review.wake();
     c.header('Cache-Control', 'no-store');
     return c.json(ok(result));

@@ -1,4 +1,4 @@
-import { chatScopeOf, isChatInScope } from '../adapters/telegram/chat-scope.ts';
+import { approvedReplyChatIds, chatScopeOf, isChatInScope } from '../adapters/telegram/chat-scope.ts';
 import { findLiveBindings } from '../adapters/telegram/live-connector.ts';
 import type { Config } from '../config.ts';
 import { AppError } from '../contract/errors.ts';
@@ -11,6 +11,23 @@ import { currentTestMessageSql, readChatTestWindow } from './chat-test-session.t
 import { dmConsentForTurn, recordedDmConsent } from './telegram-dm-consent.ts';
 import { dmPolicyKey, readConsentPromptPolicy, readDmPolicy } from './telegram-dm-policy.ts';
 import { getTelegramReplyHold, isTelegramReplyHeld, recordTelegramReplyHolds } from './telegram-reply-holds.ts';
+
+/** Reports the contact's permission independently of worker availability or the officer's AI controls. */
+export function telegramAiPermission(tx: Tx, chat: ChatRow, telegram: Config['telegram'], optedOut: boolean) {
+  const bindings = findLiveBindings(tx);
+  const binding = bindings[0];
+  if (!binding || bindings.length !== 1 || binding.account.id !== chat.channel_account_id ||
+    !telegram.approvedConnectionId || !isChatInScope(chatScopeOf(telegram), chat.external_chat_id, binding.ownerUserId)) return undefined;
+  if (optedOut) return 'withdrawn';
+  if (approvedReplyChatIds(telegram).includes(chat.external_chat_id)) return 'approved';
+  const connector = binding.principal.id;
+  const consent = recordedDmConsent(tx, connector, chat.id);
+  if (consent?.status === 'withdrawn') return 'withdrawn';
+  if (consent?.status === 'accepted') return 'approved';
+  const grant = tx.get('SELECT 1 FROM telegram_dispatch_permissions WHERE chat_id=? AND connector_id=? AND policy_key=?',
+    [chat.id, connector, dmPolicyKey(binding.account.id, telegram.approvedConnectionId)]);
+  return grant ? 'approved' : 'needed';
+}
 
 /** The one selected fresh message is an exception to the dispatch-time floor. All other sources must be newer. */
 export const permittedDispatchSourceSql = `EXISTS (

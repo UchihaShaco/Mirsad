@@ -213,19 +213,20 @@ With all-DM replies on, **Test mode** controls automatic Dispatch. The switch st
 and remembers your choice across restarts. An installation that previously disabled **Send consent prompt to new
 contacts** already has **Test mode** on.
 
-- **On.** A fresh private message from you or the contact automatically marks a never-started chat **AI active**.
-  If you send the opener in Telegram, Ali waits for an incoming DM from the contact. A participant with recorded
-  permission can receive an AI reply. A new participant without permission appears in the inbox without an invitation
-  or a request to the reply model. Turning the switch on does not dispatch past messages.
-- **Off.** New chats wait for an officer to choose **Dispatch this chat**. Already-active chats with permission can
-  continue automatically. New contacts can receive the bilingual consent invitation.
+- **On.** A fresh eligible private message from you or the contact automatically activates new and returning chats.
+  Ali waits for an incoming DM and can answer the first one from an approved contact. Other DMs appear in the
+  inbox and stay local until permission is recorded. Turning the switch on applies to fresh messages.
+- **Switched off in Settings.** New contacts wait for manual Dispatch and receive no invitation. Switching Test
+  mode off preserves existing approvals. Active, approved chats can continue automatically.
 
-To record permission for your own test account or a participant who already agreed to AI replies and fraud screening,
-open the conversation and choose **Dispatch this chat**. In Test mode, confirm with **Dispatch test chat**. With Test
-mode off, select the permission checkbox and choose **Dispatch**. This explicit action can pick up the latest unanswered
-eligible DM if it is less than 24 hours old. Earlier messages stay outside this new permission.
+To record permission for your own account or a participant who already agreed to AI replies and fraud screening,
+including sending their messages to Gemini through OpenRouter when configured, open **Dispatch this chat**. Confirm
+with **Dispatch test chat** in Test mode or **Dispatch** when Test mode is off. This single confirmation approves
+the selected chat and immediately requests a reply to its latest eligible unanswered DM if it is less than 24 hours old.
+The contact does not need to write again. Dispatch by phone works the same way for a unique verified match.
+Later incoming messages use the usual three-second wait to group consecutive messages. Earlier messages stay outside this new permission.
 
-When a contact receives an invitation, they can reply
+Installations using the earlier invitation setting can still send consent invitations. When a contact receives one, they can reply
 **I AGREE** or **أوافق**, then send the message they want Ali to answer. The AI provider receives only subsequent
 eligible messages. **STOP** or **توقف** withdraws consent. Contacts on the pre-approved list use the existing
 consent record. Pauses, officer takeover and pending officer reviews still apply. With **Auto-reply to every Telegram DM** off, incoming

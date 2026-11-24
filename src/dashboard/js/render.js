@@ -54,12 +54,14 @@ function renderTestMode(refs, state) {
   const setting = state.consentPrompt;
   refs.testMode.hidden = !setting?.available;
   if (refs.testMode.hidden) return;
-  // The saved preference controls invitations. Test mode is on when invitations are off.
+  // The legacy consent endpoint uses enabled=false for Test mode.
   const testModeOn = !setting.enabled;
   renderSwitch(refs.testModeSwitch, testModeOn, state.pending);
   refs.testModeHint.textContent = testModeOn
-    ? 'With all-DM replies on, a new chat becomes AI active whether you or the contact sends the first message. Ali waits for an incoming DM and recorded permission before replying. Consent invitations are off.'
-    : 'With all-DM replies on, new chats wait for manual Dispatch. New contacts can receive a consent invitation. Ali can continue replying in active chats with recorded permission.';
+    ? 'With all-DM replies on, new and returning chats become AI active automatically on an eligible DM. Ali can answer an approved contact’s first incoming message. Other chats stay local until permission is recorded.'
+    : setting.manualDispatchOnly
+      ? 'New chats wait for manual Dispatch. New contacts receive no invitation. Active chats with permission can continue.'
+      : 'New chats wait for manual Dispatch. Consent invitations are enabled for new contacts. Active chats with permission can continue.';
 }
 
 function renderShell(refs, state) {

@@ -177,7 +177,8 @@ function addEvidenceWork(ctx: IntakeContext, chat: ChatRow, message: MessageRow,
     if (incoming) {
       // Only the contact can give or withdraw permission. Record their holds before attempting activation.
       const listed = approvedReplyChatIds(telegram).includes(chat.external_chat_id);
-      const accepted = !listed && original && observeDmConsent(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text, broad && sinceEnable);
+      const allowAcceptance = broad && sinceEnable && !readConsentPromptPolicy(ctx.tx, ctx.connector.id, policyKey).manualDispatchOnly;
+      const accepted = !listed && original && observeDmConsent(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text, allowAcceptance);
       const permitted = mode !== 'off' && telegram.aiReplies.enabled && (!policy || sinceEnable) && inScope &&
         !!dispatchPermissionForTurn(ctx.tx, ctx.connector.id, policyKey, chat.id, message.id);
       const enrolled = !!telegram.aiReplies.consentReference && (listed || permitted || (broad && sinceEnable && (accepted ||

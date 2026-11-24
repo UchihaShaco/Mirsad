@@ -56,6 +56,16 @@ async function dispatchSelected(ctx) {
   const brief = state.dispatchBrief;
   const officerContext = brief !== null && brief.chatId === briefingChatId(state)
     ? (brief.clear ? null : brief.text.trim() || undefined) : undefined;
+  if (chatIds.length === 1 && state.chats.find(chat => chat.id === chatIds[0])?.source === 'telegram') {
+    const timeline = await ctx.api.timeline(chatIds[0]);
+    const current = ctx.getState();
+    if (ctx.listeners.signal.aborted || current.selectedChatId !== state.selectedChatId
+      || current.view !== 'inbox' || current.selection.size !== 1 || !current.selection.has(chatIds[0])) return;
+    if (timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live')
+      && ['not_started', 'ai_active'].includes(timeline.chat.aiMode)) {
+      return { timeline, officerContext };
+    }
+  }
   const result = await ctx.api.dispatch(chatIds, crypto.randomUUID(), officerContext);
   ctx.setState({ selection: new Set(), dispatchBrief: null });
   await finishDispatch(ctx, chatIds, result);
@@ -66,8 +76,11 @@ function dispatchCurrent(ctx, officerContext, expectedChatId, permission, live) 
   if (chatId === null) return Promise.resolve(false);
   return run(ctx, 'dispatch_current', async () => {
     const result = await ctx.api.dispatch([chatId], crypto.randomUUID(), officerContext, permission);
+    if (permission && ctx.getState().selection.size === 1 && ctx.getState().selection.has(chatId)) {
+      ctx.setState({ selection: new Set(), dispatchBrief: null });
+    }
     const receipt = live && result.results.some(item => item.chatId === chatId && item.status !== 'requires_resume')
-      ? 'Dispatch accepted. Check the conversation for a reply, a silence reason or an officer review request.' : undefined;
+      ? 'Dispatch accepted. If the latest DM is unanswered and eligible, Ali will assess it now. Check the conversation for the outcome.' : undefined;
     await finishDispatch(ctx, [chatId], result, receipt);
     return result.results.some(item => item.chatId === chatId && item.status !== 'requires_resume')
       && currentDispatchChatId(ctx.getState(), chatId) === chatId;
@@ -234,7 +247,10 @@ export function createActions(ctx) {
       const chatId = briefingChatId(getState());
       if (chatId !== null) setState({ dispatchBrief: { chatId, text, clear } });
     },
-    onDispatch: () => run(ctx, 'dispatch', () => dispatchSelected(ctx)),
+    onDispatch: async () => {
+      const review = await run(ctx, 'dispatch', () => dispatchSelected(ctx));
+      if (review && !ctx.listeners.signal.aborted) ctx.openQueuedDispatch(review.timeline, review.officerContext);
+    },
     onDispatchCurrent: (officerContext, expectedChatId, permission, live) => dispatchCurrent(ctx, officerContext, expectedChatId, permission, live),
     onGenerateOpener: () => generateOpener(ctx),
     onCopyOpener: () => copyOpener(ctx.refs),

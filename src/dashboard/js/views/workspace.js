@@ -1,6 +1,17 @@
 /** Navigation and controls shared by the inbox and the currently open conversation. */
 import { chatHref } from '../state/route.js';
 import { describeError, formatTime } from '../format.js';
+
+function liveDispatchBlocked(mode, chat) {
+  return mode === 'unavailable' || (Boolean(mode) && chat?.telegramReplyHold.contactOptedOut);
+}
+
+function dispatchEligibility(hold, repliesMode) {
+  if (hold.contactOptedOut) return 'This participant opted out. Automated replies are on hold.';
+  if (repliesMode === 'off') return 'Account-wide replies are off. Turn them on for future eligible DMs.';
+  return 'Confirming Dispatch asks Ali to answer the latest eligible unanswered DM now. Officer holds and Telegram’s reply window still apply.';
+}
+
 export function resetCaseTools(refs) {
   if (refs.chatDispatchDialog.open) refs.chatDispatchDialog.close();
   refs.chatDispatchForm.reset();
@@ -37,7 +48,10 @@ export function renderWorkspace(refs, state) {
   if (state.pending === 'reload_reply_prompt') refs.settingsStatus.textContent = 'Loading the saved prompt…';
   refs.confirmChatDispatch.disabled = state.pending !== null || refs.openChatDispatch.hidden
     || refs.chatDispatchForm.dataset.checking === 'true'
-    || (refs.chatDispatchForm.dataset.mode === 'test' && chat?.telegramReplyHold.contactOptedOut);
+    || liveDispatchBlocked(refs.chatDispatchForm.dataset.mode, chat);
+  if (chat && refs.chatDispatchDialog.open && refs.chatDispatchForm.dataset.mode) {
+    refs.chatDispatchEligibility.textContent = dispatchEligibility(chat.telegramReplyHold, state.dmReplies?.mode);
+  }
   refs.settingsUnavailable.hidden = !refs.dmReplies.hidden || !refs.testMode.hidden;
   refs.settingsUnavailable.textContent = state.dmReplies === null && state.consentPrompt === null
     ? 'Telegram settings are unavailable or still loading.' : 'No Telegram reply settings are available for this account.';
@@ -100,7 +114,7 @@ function bindChatDispatch(ctx, options) {
     refs.chatDispatchForm.dataset.checking = String(busy);
     const state = ctx.getState();
     refs.confirmChatDispatch.disabled = busy || state.pending !== null || refs.openChatDispatch.hidden
-      || (session?.mode === 'test' && state.timeline?.chat.telegramReplyHold.contactOptedOut);
+      || liveDispatchBlocked(session?.mode, state.timeline?.chat);
   }
 
   async function readMode(view) {
@@ -110,21 +124,15 @@ function bindChatDispatch(ctx, options) {
       if (!current(view)) return false;
       const mode = !invite.available ? 'unavailable' : invite.enabled ? 'normal' : 'test';
       const previous = view.mode;
-      if (previous !== mode) refs.chatDispatchPermission.checked = false;
       view.mode = mode;
       refs.chatDispatchForm.dataset.mode = mode;
       const test = mode === 'test';
       const holds = ctx.getState().timeline.chat.telegramReplyHold;
       refs.chatDispatchMode.textContent = test ? 'Test mode on' : mode === 'normal' ? 'Test mode off' : 'Telegram replies';
       refs.confirmChatDispatch.textContent = test ? 'Dispatch test chat' : 'Dispatch';
-      refs.chatDispatchModeHint.textContent = test
-        ? 'Choosing Dispatch test chat confirms this is your own test account or you already have the participant’s permission to send this chat to Gemini through OpenRouter for replies and fraud screening.'
-        : 'Ali can assess the latest eligible unanswered DM, including the first message, when participant permission is on record.';
-      refs.chatDispatchPermissionLabel.hidden = mode !== 'normal';
-      refs.chatDispatchPermission.disabled = holds.contactOptedOut;
-      refs.chatDispatchEligibility.textContent = holds.contactOptedOut ? 'This participant opted out. Automated replies are on hold.'
-        : replies.mode === 'off' ? 'Account-wide replies are off. Turn them on for future eligible DMs.'
-        : 'Ali checks the latest eligible unanswered DM. Officer review holds and Telegram’s reply window still apply.';
+      refs.chatDispatchModeHint.textContent = mode === 'unavailable' ? 'Dispatch requires access to the linked Telegram account.'
+        : 'Choosing ' + refs.confirmChatDispatch.textContent + ' confirms this is your own account or the participant has already agreed to AI replies and fraud screening, including sending their messages to Gemini through OpenRouter when configured.';
+      refs.chatDispatchEligibility.textContent = dispatchEligibility(holds, replies.mode);
       checking(false);
       if (previous !== null && previous !== mode) {
         refs.chatDispatchStatus.textContent = 'The Test mode setting changed. Review the updated mode before dispatching.';
@@ -152,7 +160,6 @@ function bindChatDispatch(ctx, options) {
     refs.chatDispatchStatus.textContent = '';
     refs.chatDispatchContext.disabled = false;
     refs.chatDispatchPermissionSection.hidden = !live;
-    refs.chatDispatchPermissionLabel.hidden = true;
     refs.chatDispatchMode.textContent = 'Checking Telegram settings…';
     refs.chatDispatchModeHint.textContent = '';
     refs.chatDispatchEligibility.textContent = '';
@@ -172,10 +179,10 @@ function bindChatDispatch(ctx, options) {
     const view = session;
     if (!view || !current(view) || refs.confirmChatDispatch.disabled) return;
     if (view.live && !(await readMode(view))) return;
-    if (!current(view)) return;
+    if (!current(view) || refs.confirmChatDispatch.disabled) return;
     let permission;
     if (view.mode === 'test') permission = { participantPermissionRecorded: true, expectedTestMode: true };
-    else if (view.mode === 'normal' && refs.chatDispatchPermission.checked) permission = { participantPermissionRecorded: true };
+    else if (view.mode === 'normal') permission = { participantPermissionRecorded: true };
     let context;
     if (ctx.getState().timeline?.chat.source === 'telegram') {
       context = refs.chatDispatchClear.checked ? null : refs.chatDispatchContext.value.trim() || undefined;

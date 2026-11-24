@@ -102,9 +102,12 @@ export function renderChatHeader(container, state, handlers) {
         h('span', { className: 'badge', text: chat.channelLabel }),
         h('span', { text: chat.originLabel }),
         modeLine(chat),
+        !state.previous && state.timeline.telegramAiPermission === 'approved' ? h('span', { text: 'Approved for AI replies' }) : null,
         h('span', { text: `Revision ${chat.revision}` }),
       ]),
       summary ? h('p', { className: 'hint', text: summary(chat.review) }) : null,
+      !state.previous && chat.aiMode === 'ai_active' && state.timeline.telegramAiPermission === 'needed'
+        ? h('p', { className: 'hint', text: 'Waiting for participant permission. If you already have it, choose Dispatch this chat to enable replies.' }) : null,
       chat.telegramReplyHold.contactOptedOut ? h('p', { className: 'flag', text: 'Contact opted out of automated replies. They can start a new exchange by asking for a reply.' }) : null,
       reviewNotice(state.wholeTimeline ?? state.timeline, state.pending !== null, handlers),
       !state.previous && chat.lowerConcern ? h('p', { className: 'lower-concern-note' }, [

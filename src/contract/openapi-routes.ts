@@ -114,7 +114,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   },
   'POST /v1/dispatches/by-phone': {
     summary: 'Dispatch an existing Telegram private chat by verified phone number',
-    description: 'Matches the latest self-shared contact card on an authorized live account. A unique match uses normal Dispatch controls. Missing or ambiguous matches return only an outcome, allowing officer-led contact without creating a chat or sending a message. Enter a complete international number with + or 00 and the exact international dialling digits.',
+    description: 'Matches the latest self-shared contact card on an authorized live account. A unique match uses normal Dispatch controls. An officer may record existing participant permission for that chat by setting participantPermissionRecorded to true. Missing or ambiguous matches return only an outcome. Enter a complete international number with + or 00 and the exact international dialling digits.',
     request: 'DispatchByPhoneRequest',
     idempotencyKey: true,
     success: [{ status: 200, description: 'Dispatch result or an unresolved match.', schema: 'DispatchByPhoneResponse', replayHeader: true }],
@@ -227,9 +227,9 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     errors: ['origin_not_allowed', 'account_not_found', 'validation_failed', 'reply_prompt_unavailable'],
   },
   'POST /v1/telegram/consent-prompt': {
-    summary: 'Turn Telegram consent invitations on or off',
-    description: 'Requires officer access to the linked account. With all-DM replies enabled, enabled=false turns on Test mode. A new private message written by either the owner or the contact automatically activates an eligible chat locally. The model can reply only to an eligible incoming message with participant permission. Setting enabled=true stops new automatic dispatches and enables local opt-in invitations. The selection persists across restarts.',
-    request: 'DmRepliesRequest',
+    summary: 'Choose how new private Telegram chats start',
+    description: 'Requires officer access to the linked account. With all-DM replies enabled, enabled=false turns on Test mode and fresh private messages can activate chats locally. For manual Dispatch, send enabled=true and manualDispatchOnly=true. New chats stay silent until dispatched and previously approved active chats continue. Sending enabled=true alone enables local consent invitations. The selection persists across restarts.',
+    request: 'ConsentPromptRequest',
     success: [{ status: 200, description: 'Saved invitation setting.', schema: 'ConsentPromptResponse' }],
     errors: ['account_not_found', 'validation_failed'],
   },
