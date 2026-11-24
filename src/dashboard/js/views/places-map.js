@@ -99,8 +99,12 @@ function externalLink(text, url, className) {
         if (oldUrl) URL.revokeObjectURL(oldUrl);
       }
       return url;
-    }, () => {
-      setStatus('Some map tiles could not be loaded. The places dots still work.');
+    }, (error) => {
+      setStatus(
+        error instanceof Error && 'code' in error && error.code === 'rate_limited'
+          ? 'Map tiles are rate-limited right now. The places dots still work; panning pauses the tiles briefly.'
+          : 'Some map tiles could not be loaded. The places dots still work.',
+      );
       return null;
     }).finally(() => {
       if (state.tileFetching.get(key) === pending) state.tileFetching.delete(key);
