@@ -3,43 +3,44 @@
 Mirsad Android is an on-device scam shield for people in the UAE: it decides on the phone whether an incoming call or
 message is a scam, holds or flags it, explains why in Arabic or English, lets you overrule it in one tap, and turns each
 attempt into a structured evidence packet you can choose to send to the police. It is a hackathon prototype for the
-Abu Dhabi Police hackathon by the Mirsad team, not an official app.
+Abu Dhabi Police hackathon by the Mirsad team, not an official app, and it holds no internet permission.
 
-![Mirsad Android demo](demo/mirsad-android-demo.gif)
+![Mirsad Android demo: a scam SMS is held, a wrongly held message is restored with one tap, a call from the scam number is rejected, the report preview](demo/mirsad-android-demo.gif)
 
-Full-resolution video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4)
+30-second video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4). It was recorded on an Android 14 emulator
+from the APK in `dist/`: the SMS and the call are injected through the emulator and go through the real notification
+listener and call screening service.
 
 ## 1. Try it in two minutes
 
 **Install** `dist/mirsad-android-debug.apk` (Android 10 or newer, debug-signed).
 
 - With adb: `adb install -r dist/mirsad-android-debug.apk`
-- On the phone: copy the APK to the phone, open it from **Files**, allow installs from that source when asked, tap
-  **Install**. Nothing else is needed: the app has no internet permission and asks for nothing at install time.
+- On the phone: copy the APK over, open it from **Files**, allow installs from that source when asked, tap **Install**.
 
-**See a verdict** without granting any permission:
+**See it work without granting anything:**
 
-1. Open Mirsad and tap **Demo**. Pick a sample message or call; Mirsad shows the verdict, the score, the reasons and the
-   time it took.
-2. In any messaging app, long-press a message, tap **Share** and choose **Check with Mirsad**. The incident screen opens
-   with the verdict for that text. This is the fastest thing to try on your own phone.
+1. Open Mirsad, tap **Skip** on the first screen, then **Demo**. Tap a sample scam: it is analysed on the phone, held,
+   and the incident screen shows the verdict, the reasons, the evidence and "Analysed on this phone in N ms".
+2. Still in Demo, tap **A real message Mirsad gets wrong** (a friend with a new number asking to be paid back). It is
+   held. Tap **Not a scam**: one tap restores it, allows the sender and remembers the template, with **Undo**. Tap the
+   sample again: it is no longer held.
+3. On any incident, tap **Report**: the preview shows the exact JSON that would be shared and what is never included.
+4. In any messaging app, long-press a message, tap **Share** and choose **Check with Mirsad**. The verdict opens.
 
-_Status: to confirm at M1 — Demo screen and share-target flow._
+**Optional: live protection.** Onboarding (or Settings > Permissions) walks through three switches, all revocable:
 
-**Optional: live protection.** Mirsad needs two permissions, both granted in system settings and both revocable:
+| Protects | What Android calls it |
+|---|---|
+| Messages from Google Messages and other SMS apps, WhatsApp, WhatsApp Business, Telegram, Botim | Notification access |
+| Calls from numbers not in your contacts | Call screening role ("Caller ID & spam app") |
+| Mirsad's own notices (Android 13+) | Notifications permission |
 
-| Protects | Permission | Where |
-|---|---|---|
-| Messages (SMS, WhatsApp, WhatsApp Business, Telegram, Botim) | Notification access | Settings > Notifications > Device & app notifications (or Apps > Special app access > Notification access) > Mirsad |
-| Calls | Call screening role ("Caller ID & spam app") | Onboarding asks for it; or Settings > Apps > Default apps > Caller ID & spam app > Mirsad |
+**Sideloaded APK:** Android 13+ greys out notification access for apps installed from a file until you open
+**Settings > Apps > Mirsad > ⋮ > Allow restricted settings**. This is an Android rule, not a Mirsad quirk.
 
-Android 13 and newer also ask once to let Mirsad post its own notifications.
-
-**Sideloaded APK hint.** On Android 13+, a sideloaded app cannot be given notification access until you open
-**Settings > Apps > Mirsad**, tap the three-dot menu in the top right and choose **Allow restricted settings**. Then grant
-notification access as above. This is an Android rule for all sideloaded apps, not a Mirsad quirk.
-
-_Status: to confirm at M2 — onboarding, notification listener and call screening._
+Tested on Android 14 and Android 16 emulators: an injected scam SMS is held and a call from the same number is rejected
+on both.
 
 ## 2. What it does
 
@@ -52,9 +53,15 @@ _Status: to confirm at M2 — onboarding, notification listener and call screeni
   </tr>
   <tr>
     <td align="center"><img src="screenshots/05_incident.png" width="200"><br>Incident</td>
-    <td align="center"><img src="screenshots/06_quarantine_not_a_scam.png" width="200"><br>Quarantine: Not a scam</td>
+    <td align="center"><img src="screenshots/06_quarantine_not_a_scam.png" width="200"><br>Quarantine (one item restored)</td>
     <td align="center"><img src="screenshots/07_report_preview.png" width="200"><br>Report preview</td>
     <td align="center"><img src="screenshots/08_home_arabic.png" width="200"><br>Home in Arabic</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/09_demo_arabic.png" width="200"><br>Demo in Arabic</td>
+    <td align="center"><img src="screenshots/10_incident_arabic.png" width="200"><br>Incident in Arabic</td>
+    <td align="center"><img src="screenshots/11_quarantine_arabic.png" width="200"><br>Quarantine in Arabic</td>
+    <td></td>
   </tr>
 </table>
 
@@ -62,187 +69,195 @@ Every call and message gets one of three levels:
 
 | Level | Message | Call |
 |---|---|---|
-| **ALLOW** | Nothing happens. | Nothing happens. |
-| **WARN** | The original notification stays. Mirsad adds a caution with the reasons and the safety line. | The phone rings with a heads-up warning. |
-| **HOLD** | Mirsad removes the original notification, keeps a copy in **Quarantine**, and posts a quiet notice "Held 1 suspicious message from <sender>" with two actions: **Not a scam** and **Report**. | The call is rejected before the phone rings, stays in the call log, and a notice says why. |
+| **ALLOW** | Nothing happens, and nothing is stored. | Nothing happens. |
+| **WARN** | The original notification stays. Mirsad adds a caution with the reasons and the safety line. | The phone rings, with a heads-up warning. |
+| **HOLD** | Mirsad removes the original notification, keeps a copy in **Quarantine**, and posts a quiet notice (no sound) "Held 1 suspicious message from <sender>" with **Not a scam** and **Report**. | The call is rejected before the phone rings, stays in the call log, and a notice says why. |
 
-Screens: **Onboarding** (what Mirsad does, the two optional permissions), **Home** (protection status, recent activity,
-Check a message), **Quarantine & Activity** (held and warned items, 30-day retention), **Incident** (verdict, reasons in
-plain language, artifacts, latency, Not a scam, Report), **Report preview** (the exact JSON before anything is shared),
-**Demo** (synthetic samples, clearly marked), **Settings** (sensitivity, language, monitored apps, allow and block lists,
-blocklist import).
+Screens: **Onboarding**, **Home** (protection status, counts for today and in total, latest incidents), **Quarantine &
+Activity** (held and warned items with reasons, filters by channel and level, 30-day retention), **Incident**,
+**Report preview**, **Demo**, **Settings** (language, sensitivity, monitored apps, allow and block lists, blocklist
+import, export of your corrections, delete all data).
 
 Every warning, in both languages, carries the Abu Dhabi Police public guidance line:
 *"Never share banking details, passwords or one-time codes with anyone."* /
 *"لا تشارك بياناتك البنكية أو كلمات المرور أو رموز التحقق مع أي شخص."*
 
-_Status: to confirm at M1 (Home, Demo, Incident, Quarantine, Report preview) and M2 (Onboarding, notices, calls)._
-
 ## 3. How detection works
 
-Everything runs on the phone, in pure Kotlin, in one synchronous call that never throws. Target: median under 100 ms,
-and the incident screen shows the real number for each verdict.
+Everything runs on the phone in pure Kotlin (`core/`, no Android imports), in one call that never throws.
 
-**Stage 1: rules and reputation.**
-- *Sender rules*: blocklisted or allow-listed sender; a plain number claiming to be a bank or ministry; a foreign country
-  code for a UAE entity; one-ring patterns; a number that appeared as sender in a held message in the last 7 days
-  (the cross-channel call rule).
-- *Link analysis*: URL shorteners, IP hosts, punycode or mixed-script hosts, plain HTTP, high-risk TLDs, a brand in a host
-  that is not the official domain, and lookalikes of official UAE domains (government, telecom, banks, couriers).
-- *Arabic normalisation*: alef and yaa variants, tatweel, diacritics, Arabic-Indic digits, and Arabic written in Latin
-  letters, so the same lure is recognised however it is spelt.
-- *Content signals for UAE lures*: urgency, threats, requests for credentials or one-time codes, a small fee behind a
-  link, prizes, daily-pay jobs, guaranteed returns, remote-access apps, "move to WhatsApp/Telegram", payment requests,
-  "I am your relative with a new number", impersonation of a local entity.
+**Stage 1: rules and reputation** (data in `app/src/main/assets/rules.json`, version 1.2.0):
+- *Sender*: block and allow lists; a plain mobile number that claims to be a bank, courier, telecom or government body;
+  a non-UAE country code while the text names a UAE entity; international and one-ring call patterns; a call from a
+  number that sent a held message in the last 7 days.
+- *Links*: every URL is extracted and checked for shorteners, IP hosts, punycode or mixed-script hosts, plain http,
+  high-risk TLDs, lookalikes of official domains (small edit distance) and a brand name in a host that is not the
+  official domain.
+- *Content*, after Arabic normalisation (diacritics and tatweel stripped, alef, ya and ta marbuta unified,
+  Arabic-Indic digits mapped): urgency, threats, requests for a one-time code, PIN, CVV, card number, Emirates ID or
+  UAE Pass approval, a small fee behind a link, prizes, daily-pay jobs, guaranteed returns, remote-access apps, a move to
+  WhatsApp or Telegram, payment requests with an IBAN or wallet, "a relative with a new number". "Do not share this
+  code" is recognised as advice, not a request.
 
-**Stage 2: classifier.** A hashed character n-gram plus word unigram logistic regression, trained by a Kotlin Gradle task
-(`./gradlew :core:trainModel`) on synthetic data: seed rows plus generated variants, at least 400 rows, balanced,
-English, Arabic and Arabizi, with 20 % held out. No Python, no network, no third-party ML library.
+**Stage 2: classifier.** Hashed character 2–5-grams plus word unigrams, logistic regression with L2, trained by the
+Kotlin task `./gradlew :core:trainModel` (no Python) on 1,400 synthetic rows. The model file is 1 MB.
 
-**Combination and the HOLD gate.** Stage 1 and Stage 2 produce one score in [0, 1]. The score alone can only reach WARN.
-HOLD needs the score threshold **and** at least one hard signal: a lookalike or blocklisted link, a blocklisted sender or
-fingerprint, or a request for credentials or payment. See [When Mirsad is wrong](#4-when-mirsad-is-wrong-the-false-positive-flow).
+**One score, then the HOLD gate.** Both stages combine into one score in [0, 1]. Thresholds (warn / hold): Relaxed
+0.60 / 0.80, Balanced 0.45 / 0.65 (default), Strict 0.35 / 0.55. **HOLD also needs at least one hard signal**:
 
-**Artifacts and fingerprint.** The engine extracts E.164 phone numbers, URLs and their registrable domains, UAE IBANs
-(mod-97 checked), e-mail addresses, crypto wallets, and wa.me / t.me handles. Each text gets a 64-bit SimHash
-fingerprint over the normalised text with digits and URLs masked, so the same scam campaign matches even when the
-amount, the code or the link changes. Fingerprints, not texts, are what the block lists and reports carry.
+- a lookalike link, a brand name in a non-official link host, or a blocklisted domain;
+- a blocklisted sender or message fingerprint (these hold at every sensitivity);
+- a request for credentials or a one-time code;
+- a request for payment: to an IBAN or wallet from an unknown number with something that corroborates it (pressure, a
+  "new number" story, impersonation, a foreign number), or a small fee behind a link with a named entity, a foreign
+  number, a deceptive link or a threat;
+- a request to install a remote-access app; a job or investment offer that sends you to a non-official link;
+- for calls only: a number that sent a held message in the last 7 days.
 
-Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The classifier can raise a WARN on its own, but never a HOLD.
 
-_Status: to confirm at M1 (Stage 1 engine) and M3 (classifier behind the gate)._
+**Evidence and fingerprint.** The engine extracts phone numbers (E.164, default region AE), URLs and registrable
+domains, IBANs (mod-97 checked for AE), e-mail addresses, crypto wallets and wa.me / t.me handles. Each text gets a
+64-bit SimHash over the normalised text with digits and URLs masked, so variants of one campaign share a fingerprint.
+
+**Speed.** On a laptop JVM the engine's median is about 2 ms per message (`core` latency test: p50 2.0 ms, p95 3.6 ms).
+On the Android emulators it logged 0–10 ms per message, with one first message after start at 175 ms. Only the first
+2,000 characters of a text are analysed, which bounds the worst case: adversarial inputs from the verification below
+take under 0.4 s.
+
+Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Try the same engine on a laptop without a phone:
+
+```sh
+scripts/analyse.sh "+447000000001" "Emirates Post: your parcel is held. Pay AED 3.50 within 24 hours: http://emiratespost-ae.delivery-fee.example/pay"
+```
 
 ## 4. When Mirsad is wrong: the false-positive flow
 
-A missed scam costs a warning. A wrongly held message costs trust. Mirsad is built so that a false positive costs the
-user one tap and nothing else:
+A wrongly held message must cost one tap and nothing else.
 
-- **Nothing is ever deleted.** A held message is still in its own app; Mirsad only removed the notification and kept a
-  copy. A held call is still in the call log.
-- **Never silent.** Every HOLD posts a notice naming the sender.
-- **Not a scam** does five things in one tap: marks the incident as a false positive, adds the sender to the allow list,
-  adds the message fingerprint to a known-good list, posts a normal notification with the original sender and text that
-  opens the source app, and shows a confirmation with **Undo**.
-- **HOLD needs evidence** (the gate above). A classifier score on its own can only WARN.
-- **Never HOLD** a sender that looks like a saved contact, anything on the allow list, a one-time code from an
-  alphanumeric sender with no link, or content the system hid.
-- **Calls are held only on hard evidence**: a blocklisted number, or a number that appeared in a held message in the
-  last 7 days. A missed real call costs more than a missed real text.
-- **Sensitivity** Relaxed / Balanced / Strict in Settings moves the score thresholds; it never removes the evidence
-  requirement or the never-HOLD rules.
-- **A legitimate-message suite** of 40+ UAE-style messages (bank OTPs, delivery updates, DEWA bills, school notices,
-  Salik top-ups) gates every build: none may be held, at most two may be warned.
-- Feedback stays on the phone and is exported with the training data so wrong verdicts become labelled rows.
+- **Nothing is ever deleted.** A held message is still in its own app; Mirsad only removed the notification. A held call
+  is still in the call log. The Quarantine screen says this in plain words.
+- **Never silent.** Every HOLD posts a notice with **Not a scam** and **Report**. If Mirsad cannot post notices
+  (permission or notifications turned off), it does not hold: the original notification stays and the call rings.
+- **Not a scam** (on the notice or the incident screen) does five things: marks the incident as a false positive; adds
+  the sender to the allow list; adds the message fingerprint to a known-good list so the same template is not held
+  again; posts a normal notification with the original sender and text that opens the source app; shows a confirmation
+  with **Undo**.
+- **Never HOLD**: a sender that looks like a saved contact (WARN at most), anything on the allow list, a one-time code
+  from a sender ID with no link, a notification whose content the system has hidden.
+- **Calls are held only on hard evidence** (a blocklisted number, or a number that sent a held message in the last 7
+  days). Everything else at most rings with a warning.
+- **Sensitivity** moves the thresholds; it never removes the evidence requirement or the never-HOLD rules.
+- **Your corrections stay on the phone** as labelled rows. Settings > *Export my corrections as training rows* shares
+  them as CSV in the training-data format, only when you choose to.
+- **The build gate**: `data/legit_suite.csv` holds 56 legitimate UAE-style messages (bank codes, delivery updates,
+  utility bills, appointment reminders, marketing, government notices, family chat in Arabic and English). The test
+  fails if any is held or more than two are warned; today 0 are held and 0 warned. Two more sets from the independent
+  verification (one-time codes from sender IDs, and bank and police fraud-awareness texts that say "do not share")
+  must never be held either. These tests run before every app build.
 
 Full policy: [docs/FALSE_POSITIVES.md](docs/FALSE_POSITIVES.md).
 
-_Status: to confirm at M1 — Not a scam flow, Undo, legitimate suite in the build._
-
 ## 5. What gets reported, and what never is
 
-Nothing leaves the phone unless you tap **Report** and then pick an app in the Android share sheet. The preview screen
-shows the exact JSON and lists what is and is not included. Scam report, version 1:
+Nothing leaves the phone unless you tap **Report**, look at the preview, and pick an app in the Android share sheet.
+There is no background upload. Scam report, version 1:
 
 | Field | Content |
 |---|---|
-| `reportId`, `version`, `createdAt` | Random id, schema version 1, ISO-8601 time |
+| `reportId`, `version`, `createdAt` | Stable id (`mrs-` + 12 hex, a hash of the incident, not of the device), schema version 1, ISO-8601 UTC time |
 | `channel`, `level`, `score` | CALL / SMS / CHAT; ALLOW / WARN / HOLD; combined score |
-| `reasonCodes` | Stable codes such as `LINK_LOOKALIKE_OFFICIAL`, `CONTENT_CREDENTIAL_REQUEST` |
-| `fingerprint` | 64-bit SimHash of the normalised, masked text (16 hex chars) |
-| `artifacts.sender`, `artifacts.senderType` | The sender number or ID; NUMBER / ALPHANUMERIC / CONTACT / UNKNOWN |
-| `artifacts.urls`, `artifacts.domains` | Links found and their registrable domains |
-| `artifacts.ibans`, `artifacts.emails`, `artifacts.wallets`, `artifacts.handles`, `artifacts.phones` | Other extracted artifacts |
-| `language` | EN / AR / LATIN_ARABIC / UNKNOWN |
-| `appVersion`, `modelVersion`, `synthetic` | Build and model identifiers; `true` for Demo and test incidents |
-| `text` | **Only** when you tick "include the message text" on the preview screen |
+| `reasonCodes` | Stable codes such as `LINK_BRAND_IN_HOST_NOT_OFFICIAL`, `CONTENT_SMALL_FEE_LINK` |
+| `fingerprint` | 64-bit SimHash of the normalised, masked text (16 hex characters) |
+| `artifacts.sender`, `artifacts.senderType` | Sender number (E.164) or sender ID; a saved contact's name is never included |
+| `artifacts.urls`, `domains`, `ibans`, `emails`, `wallets`, `handles`, `phones` | Evidence extracted from the message |
+| `language`, `appVersion`, `modelVersion`, `synthetic` | Detected language, build and model; `true` for Demo incidents |
+| `text` | **Only** when you tick *Include the message text* on the preview screen |
 
-**Never included:** your contacts, any other message, your location, device identifiers, your own phone number, or
-anything from apps other than the one incident.
+**Never included:** your contacts, any other message, your location, device identifiers, your own phone number.
 
-A **false-positive report** carries only the fingerprint, reason codes, sender type, model version, your verdict and the
-build identifiers (and the text, only if ticked), so wrong verdicts can improve the rules without exposing anyone.
+A **false-positive report** carries the fingerprint, reason codes, sender type, model version and your verdict (and the
+text only if ticked).
 
-**Reporting shortcuts.** The incident screen offers Abu Dhabi Police **Aman** (call 8002626, SMS 2828, e-mail
-aman@adpolice.gov.ae) and Dubai Police **eCrime** (ecrime.ae). They open the dialer, an SMS draft or an e-mail draft
-with a short bilingual summary; nothing is sent until you do it. They are **disabled for Demo and synthetic incidents**.
-The channels are marked *to be confirmed with the police team* in `app/src/main/assets/report_channels.json`.
+**Report to Abu Dhabi Police (Aman).** The report preview offers *Call 8002626*, *SMS 2828* and *Email
+aman@adpolice.gov.ae*. They only open the dialer, an SMS draft or an e-mail draft with a short bilingual summary that
+never contains the message text; you press send. They are **disabled for Demo and synthetic incidents**, with a note
+saying why, so no test data reaches a real police line. The channel details, and Dubai Police eCrime (ecrime.ae) for a
+later version, are in `app/src/main/assets/report_channels.json`, marked *to be confirmed with the police team*.
 
-**Blocklist import.** Settings can import a JSON file of numbers, domains and fingerprints
-(`app/src/main/assets/blocklist_example.json` shows the format). This is how a police alert could reach phones without
-the app ever going online.
+**Blocklist import.** Settings imports a JSON file of numbers, domains and fingerprints
+(`app/src/main/assets/blocklist_example.json`). This is how a police alert could reach phones without the app going
+online.
 
-_Status: to confirm at M1 (report preview, share, Aman shortcuts) and M3 (blocklist import)._
+Schema details: [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md).
 
 ## 6. Privacy: no internet permission, and how to verify it
 
-Mirsad holds no `INTERNET` or `ACCESS_NETWORK_STATE` permission. There is no analytics, no crash reporting, no network
-code and no foreground service. The manifest removes both permissions even if a library tries to merge them in, and the
-Gradle task `checkNoInternetDebug` fails the build if either appears in the merged manifest.
+Mirsad holds no `INTERNET` or `ACCESS_NETWORK_STATE` permission and contains no analytics, crash reporting, ads or
+network code. The manifest strips both permissions if a library merges them in, and the Gradle task
+`checkNoInternetDebug` fails the build if either survives in the merged manifest.
 
-Verify the APK yourself:
+Verify the APK yourself (`aapt` is in the Android SDK build-tools):
 
 ```sh
 aapt dump permissions dist/mirsad-android-debug.apk
-# or
-apkanalyzer manifest permissions dist/mirsad-android-debug.apk
 ```
 
-Expected output (checked against the current `dist/` APK):
+Output for the current `dist/` APK:
 
 ```
+package: app.mirsad.shield
 uses-permission: name='android.permission.POST_NOTIFICATIONS'
-uses-permission: name='android.permission.VIBRATE'
 permission: app.mirsad.shield.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 uses-permission: name='app.mirsad.shield.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
 ```
 
-The last two lines are a permission the app declares for itself (AndroidX adds it to keep its own broadcast receivers
-private); it grants nothing from the system. No `INTERNET`, no `ACCESS_NETWORK_STATE`, no contacts, no SMS, no
-location. Notification access and the call-screening role are not manifest permissions; they are granted in system
-settings and revoked there.
+The last two lines are a permission AndroidX declares for the app itself to keep its receivers private. Notification
+access and the call-screening role are not manifest permissions: you grant and revoke them in system settings. Mirsad
+never asks for contacts, SMS, call log or location.
 
-Data stays in the app's private Room database: incidents (Quarantine, 30-day retention), the allow and block lists, and
-feedback. `allowBackup` is off. The only export paths are the share sheet, after you tap Report, and the Aman drafts.
+What is stored, all in app-private storage: incidents Mirsad warned about or held (Quarantine, kept 30 days), Demo and
+shared checks, the allow and block lists, your corrections, settings, and a copy of each report you shared. Messages and
+calls that Mirsad allows are not stored at all. Backup and device-to-device transfer are disabled. Settings > *Delete all
+data* removes everything, including report copies and Mirsad's notices.
 
 ## 7. Built for the UAE
 
-- **Arabic and English everywhere**, right-to-left layout, an in-app language switch, and detection of English, Arabic
-  and Arabic written in Latin letters.
-- **A lexicon of local entities**: Abu Dhabi Police, Dubai Police, Ministry of Interior, ICP, Emirates ID, UAE Pass,
-  TAMM, Darb, Mawaqif, Salik, RTA, DEWA, ADDC, Emirates Post, Aramex, Central Bank of the UAE, FAB, ADCB, ADIB, Emirates
-  NBD, Mashreq, Etisalat/e&, du — so "your ADCB card is suspended" from a +44 number is read for what it is.
-- **Local formats**: +971 and 05x numbers, 02 landlines, 800/600 service numbers, AED amounts, AE IBANs.
-- **Local lures**: a parcel held for a three-dirham fee, an unpaid fine, a suspended card or account, "read out the
-  one-time code", an Emirates ID or UAE Pass update, a prize, a daily-pay job, guaranteed returns, a remote-access app,
-  a relative with a new number.
-- **The official-domain list** (`app/src/main/assets/official_domains.json`) is a starter list marked *to be verified*;
-  lookalike detection uses it as its reference.
-
-_Status: to confirm at M3 — Arabic polish and lexicon coverage._
+- **Arabic and English everywhere**, right-to-left layout and an in-app language switch; numbers and links stay
+  left-to-right inside Arabic text. The engine detects English, Arabic and Arabic written in Latin letters.
+- **Local entities** with Arabic names and common spellings (`assets/lexicon.json`): Abu Dhabi Police, Dubai Police,
+  Ministry of Interior, ICP, Emirates ID, UAE Pass, TAMM, Darb, Mawaqif, Salik, RTA, DEWA, ADDC, Emirates Post, Aramex,
+  Central Bank of the UAE, FAB, ADCB, ADIB, Emirates NBD, Mashreq, Etisalat / e&, du.
+- **Local formats**: +971 numbers, 05x mobiles, 02 landlines, 800 and 600 numbers, AED and dirham amounts, AE IBANs.
+- **Local lures**: a parcel held for a three-dirham fee, an unpaid traffic or parking fine, a suspended card,
+  "read out the one-time code", an Emirates ID or UAE Pass update, a prize, a daily-pay job, guaranteed returns, a
+  remote-access app, a relative with a new number.
+- **Reporting channels**: Abu Dhabi Police Aman shortcuts on every real incident (see section 5).
+- **Official domains** (`assets/official_domains.json`) are a starter list marked *to be verified*.
 
 ## 8. How it fits with the other Mirsad products
 
-The root of this repository holds the **Mirsad service**: officer-side evidence capture and review for investigations,
-with a dashboard, an HTTP API and an event stream. Mirsad Android is the citizen-side counterpart. The two meet at one
-point: an exported Android report can be posted to the service's `POST /v1/ingest` route, which accepts an intake event
-from a provisioned connector and creates or finds the matching chat. The phone never does this itself; a laptop-side
-script does, with the connector token kept on the laptop:
+The root of this repository is the **Mirsad service**: officer-side evidence capture and review, with a dashboard, an
+HTTP API and an event stream. Mirsad Android is the citizen-side counterpart, and the two meet at the service's
+`POST /v1/ingest` route. The phone never calls it: a laptop-side script pulls a report the user shared and posts it with
+a connector token that stays on the laptop.
 
 ```sh
-scripts/push_report_to_mirsad.sh <report.json> http://127.0.0.1:8787
+scripts/push_report_to_mirsad.sh --dry-run --file scripts/sample_report.json   # print the ingest body
+export MIRSAD_CONNECTOR_TOKEN=...                                              # connector token, laptop only
+scripts/push_report_to_mirsad.sh --file <report.json>                          # POST to $MIRSAD_BASE_URL (default http://127.0.0.1:8787)
+scripts/push_report_to_mirsad.sh [adb-serial]                                  # pull the newest report from the phone and POST it
 ```
 
-The field mapping from the Android report to the service's `IngestRequest` (source, external account and chat ids,
-`message.recorded` event with sender and text) is documented in [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md).
-The result: a scam attempt that one phone held becomes a timestamped, reviewable item on an officer's screen, with the
-same reason codes and artifacts the citizen saw.
-
-_Status: to confirm at M1 — script and schema document (workstream E)._
+The result is a timestamped, reviewable item on an officer's screen. The ingest schema has no fields for reason codes or
+artifacts, so the officer sees the sender and either the message text (if the user shared it) or a one-line summary
+with channel, level, score and reason codes. The field-by-field mapping is in
+[docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md).
 
 ## 9. Build from source, tests, evaluation
 
-Requirements: JDK 17, Android SDK with platform 37. The Gradle wrapper fetches Gradle 9.4.1; the build uses AGP 9.2.1,
-Kotlin 2.4.21, Compose BOM 2026.09.00, Room 2.8.5, minSdk 29, compile/target SDK 37, debug signing only.
+Requirements: JDK 17 and the Android SDK with platform 37. The wrapper fetches Gradle 9.4.1; the build uses AGP 9.2.1,
+Kotlin 2.4.21, Compose BOM 2026.09.00, Room 2.8.5, minSdk 29, compile and target SDK 37, debug signing only.
 
 ```sh
 cd mirsad-android
@@ -250,47 +265,60 @@ cd mirsad-android
 cp app/build/outputs/apk/debug/app-debug.apk dist/mirsad-android-debug.apk
 ```
 
-- `:core:test` runs the engine unit tests, the legitimate-message suite, the classifier tests and the report tests.
-  `:core` is pure Kotlin with no Android imports, so everything that decides runs on the JVM in tests.
-- `:app:assembleDebug` and `:app:lintDebug` both depend on `checkNoInternetDebug`.
-- `./gradlew :core:trainModel` retrains the Stage 2 model from `data/` and writes `app/src/main/assets/model.bin`.
-- JSON assets live in `app/src/main/assets/` and are exposed to `:core` as classpath resources, so tests read the same
-  files the APK ships.
+- `:core:test` (107 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports and the
+  legitimate-message sets. Every app build runs it first, and the no-internet check before packaging and lint.
+- `./gradlew :core:trainModel` regenerates the synthetic data, evaluates, and writes `app/src/main/assets/model.bin`.
+- `scripts/` holds the emulator, permission, injection, screenshot and video scripts used for the media here
+  (`scripts/full_capture.sh` runs them all).
 
-**Evaluation numbers:** _(evaluation numbers: filled from data/evaluation.md at M3 — held-out precision and recall of the
-classifier, legitimate-suite result, median latency on the emulator)_. No accuracy figure is claimed until that file
-exists and the tests that produce it are in the build.
+**Classifier evaluation (synthetic data only)**, from `data/evaluation.md`: 1,400 rows (700 scam, 700 legitimate;
+English, Arabic, Arabizi), 280 held out; precision 0.993, recall 1.000 at threshold 0.5. Variants of the same templates
+are on both sides of the split, so this measures how well the model fits the templates, not real-world accuracy.
+
+**Independent verification.** Verifiers who did not write the code wrote new messages and ran them through the engine
+at Balanced sensitivity:
+
+| Set | Rows | HOLD | WARN | ALLOW |
+|---|---|---|---|---|
+| New legitimate UAE-style messages | 289 | 1 | 54 | 234 |
+| New scam messages, including evasion attempts | 232 | 91 | 97 | 44 |
+
+Read these honestly: the rule fixes made tonight were tuned partly on the legitimate set, so its HOLD figure is
+optimistic; the WARN rate on legitimate messages (19 %) is still too high, and 44 scams pass with no warning (mostly
+text with no link, heavy obfuscation, or one-time-code requests phrased in dialect). Real, anonymised case data is the
+next step for both.
 
 ## 10. Known limits and next steps
 
-Platform limits, stated plainly:
+Platform limits:
 
-- **Call screening sees the number and direction, not audio**, and only for numbers that are not in your contacts.
-- **A notification listener can remove another app's notification, not the message itself.** The message stays in the
-  source app; that is why nothing is ever lost.
-- **Android 15+ hides one-time-code notifications from listeners.** Mirsad treats hidden content as unavailable, never
-  as a scam.
-- **A sideloaded APK needs "Allow restricted settings"** in App info before notification access can be granted.
-- **WhatsApp and other internet calls cannot be screened**; only carrier calls reach a CallScreeningService.
-- The app watches the default SMS app, WhatsApp, WhatsApp Business, Telegram and Botim by default; the list is editable,
-  and an app that is not on it is not watched.
+- **Call screening sees the number and direction, not the audio**, and runs only for numbers not in your contacts.
+- **A notification listener can remove another app's notification, not the message.** The message stays in its app.
+- **Android 15+ hides one-time-code notifications from listeners.** Hidden content is treated as unavailable, never as
+  a scam.
+- **A sideloaded APK needs "Allow restricted settings"** before notification access can be granted.
+- **WhatsApp and other internet calls cannot be screened.**
+- Messages are watched in Google Messages, the AOSP and Samsung messaging apps, your default SMS app, WhatsApp,
+  WhatsApp Business, Telegram and Botim; the list is editable in Settings.
 
-Prototype limits: the training data is synthetic; the official-domain list and the reporting channels are starter lists;
-the build is debug-signed; it has been exercised on an emulator and the team's phones only.
+Prototype limits: synthetic training data; starter lists of official domains and reporting channels; a single-word SMS
+sender is treated as a sender ID, so a contact saved under one word can be held on hard evidence (one tap restores it);
+debug-signed build with a debug-only demo autopilot that only adb can drive; tested on emulators.
 
-Next steps: train and evaluate on real, anonymised police case data instead of synthetic rows; verify the official
-domain list and the reporting channels (Aman, eCrime) with the police team; a signed release build; an OTP guard and an
-optional on-device explanation model behind an interface, only once the above has no open defects.
+Next steps: real, anonymised police case data for training and evaluation; lower the warning rate on legitimate
+messages; Arabic dialect phrasings of one-time-code requests; verify the official domains and reporting channels with
+the police team; a signed release build; an OTP guard during calls; an optional on-device explanation model behind an
+interface (Liquid AI LFM2.5-350M via llama.cpp is the candidate).
 
 ## 11. ملخص بالعربية
 
 مرصاد تطبيق أندرويد يقرّر على الهاتف نفسه إن كانت المكالمة أو الرسالة الواردة احتيالاً، فيحجزها أو يحذّر منها ويشرح السبب بالعربية أو الإنجليزية.
 هو نموذج أولي لهاكاثون شرطة أبوظبي من فريق مرصاد، وليس تطبيقاً رسمياً.
-لا يطلب التطبيق صلاحية الإنترنت إطلاقاً، فلا يخرج أي شيء من الهاتف إلا عندما يضغط المستخدم «إبلاغ» ويختار بنفسه التطبيق الذي يرسل به.
+لا يملك التطبيق صلاحية الإنترنت، فلا يخرج أي شيء من الهاتف إلا عندما تضغط «إبلاغ» وتختار بنفسك التطبيق الذي ترسل به.
 ثلاثة مستويات: سماح (لا يحدث شيء)، تحذير (تبقى الرسالة ويُضاف تنبيه بالأسباب)، حجز (يُزال إشعار الرسالة وتُحفظ نسخة في الحجر، أو تُرفض المكالمة قبل أن يرنّ الهاتف).
-الحجز يحتاج إلى دليل واضح: رابط يقلّد جهة رسمية، أو مرسل مدرج في قائمة الحظر، أو طلب بيانات بنكية أو دفع. درجة النموذج وحدها لا تكفي للحجز.
-لا يُحذف شيء أبداً؛ وإذا أخطأ مرصاد تضغط «ليست احتيالاً» مرة واحدة فتعود الرسالة ويُضاف المرسل إلى القائمة الآمنة، مع إمكانية التراجع.
-يحوّل كل محاولة إلى حزمة أدلة منظّمة (JSON) تضم المرسل والروابط والنطاقات وأرقام الآيبان ورموز الأسباب، ولا تضم أبداً جهات الاتصال أو الموقع أو رقمك.
+الحجز يحتاج إلى دليل واضح، مثل رابط يقلّد جهة رسمية، أو مرسل أو رابط مدرج في قائمة الحظر، أو طلب رمز تحقق أو بيانات بنكية أو دفع. درجة النموذج وحدها لا تكفي للحجز.
+لا يُحذف شيء أبداً؛ وإذا أخطأ مرصاد تضغط «ليس احتيالاً» مرة واحدة فتعود الرسالة ويُضاف المرسل إلى قائمة السماح، مع إمكانية التراجع.
+يحوّل كل محاولة إلى بلاغ منظّم (JSON) يضم المرسل والروابط والنطاقات وأرقام الآيبان ورموز الأسباب، ولا يضم أبداً جهات الاتصال أو الموقع أو رقمك.
 يفهم السياق الإماراتي: الجهات المحلية، أرقام ‎+971 و05x، الدرهم والآيبان الإماراتي، والحيل الشائعة كرسوم الطرود والمخالفات غير المدفوعة وطلب رموز التحقق.
-جرّبه في دقيقتين: ثبّت ملف APK، افتح «العرض التجريبي»، أو شارك أي رسالة مشبوهة إلى «تحقّق مع مرصاد».
+جرّبه في دقيقتين: ثبّت ملف APK، وافتح «تجربة»، أو شارك أي رسالة مشبوهة إلى «افحص مع مرصاد».
 وتذكّر دائماً: لا تشارك بياناتك البنكية أو كلمات المرور أو رموز التحقق مع أي شخص.

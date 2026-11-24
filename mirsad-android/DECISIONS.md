@@ -27,3 +27,4 @@ One line per decision taken without asking, newest at the bottom.
 - 2026-11-24 The held-number call rule counts only real held messages (not calls, not demo incidents, not items marked Not a scam), so demo runs never affect live protection.
 - 2026-11-24 HOLD notices use a quiet channel (IMPORTANCE_LOW, no sound); WARN stays high importance so a suspicious call shows a heads-up while it rings.
 - 2026-11-24 Report copies are saved in app-private storage only and removed by Delete all data; the report preview lists follow the app language.
+- 2026-11-24 The root README does not list products (it documents the single root service), so no line was added there.

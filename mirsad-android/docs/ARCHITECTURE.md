@@ -94,8 +94,6 @@ Calls take the same path with `stageOneOnly = true`, a 1 s budget, and allow on 
 
 No foreground service. The listener and the screening service are bound and unbound by the system.
 
-_Status: to confirm at M1 (share target) and M2 (listener, call screening, notice actions) — the manifest declares all
-of them; the behaviour described is the design._
 
 ## Storage
 
@@ -114,8 +112,6 @@ Composition root: `AppContainer` (engine, stores, pipeline, report builder). `Mi
 container; `bootstrap/InMemoryContainer` is the no-storage fallback that kept the app runnable while the stores were
 built.
 
-_Status: to confirm at M1 — Room-backed container installed; table names and the settings backend are the storage
-workstream's choice and may differ from this table._
 
 ## Threading
 
@@ -129,7 +125,6 @@ workstream's choice and may differ from this table._
   allow. `respondToCall` is always called exactly once.
 - The UI observes `Flow`s from the stores through ViewModels; Compose recomposes on changes.
 
-_Status: to confirm at M2 — listener and screening threading as implemented._
 
 ## Build gate
 
@@ -164,8 +159,6 @@ load the same files from the classpath that the APK ships. There is one copy of 
 All sample data is synthetic: zero-filled numbers such as `+971500000003` and `+440000000001`, domains ending in
 `.example`, incidents flagged `synthetic = true`.
 
-_Status: to confirm at M1 (`rules.json`, `lexicon.json`) and M3 (`model.bin`) — the other four files are in the tree
-today._
 
 ## Ownership (from PLAN.md)
 

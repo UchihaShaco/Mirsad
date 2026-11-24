@@ -121,7 +121,7 @@
     <string name="report_share">مشاركة البلاغ</string>
     <string name="report_share_failed">تعذّر فتح نافذة المشاركة على هذا الهاتف.</string>
     <string name="report_aman_title">الإبلاغ لشرطة أبوظبي (أمان)</string>
-    <string name="report_aman_body">هذه الاختصارات تفتح تطبيق الهاتف أو الرسائل أو البريد مع ملخص قصير فقط. لا يُرسل شيء حتى تفعل ذلك بنفسك.</string>
+    <string name="report_aman_body">هذه الاختصارات تفتح تطبيق الهاتف أو الرسائل أو البريد مع ملخص قصير فقط. لا يُرسل شيء حتى تفعل ذلك بنفسك. بيانات القناة بانتظار التأكيد مع فريق الشرطة.</string>
     <string name="report_aman_call">اتصال 8002626</string>
     <string name="report_aman_sms">رسالة إلى 2828</string>
     <string name="report_aman_email">بريد إلكتروني</string>

@@ -29,7 +29,7 @@ import kotlinx.serialization.json.Json
  */
 object Notices {
     /** Quiet by design: a held item is already safe, so its notice makes no sound. */
-    const val CHANNEL_HOLDS = "mirsad_holds_quiet"
+    const val CHANNEL_HOLDS = "mirsad_holds_silent"
     const val CHANNEL_WARNINGS = "mirsad_warnings"
     const val CHANNEL_RESTORED = "mirsad_restored"
 
@@ -50,7 +50,10 @@ object Notices {
 
     fun createChannels(context: Context) {
         val channels = listOf(
-            NotificationChannelCompat.Builder(CHANNEL_HOLDS, NotificationManagerCompat.IMPORTANCE_LOW)
+            // Default importance so the notice is shown in full, but no sound and no vibration: it is a quiet notice.
+            NotificationChannelCompat.Builder(CHANNEL_HOLDS, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setSound(null, null)
+                .setVibrationEnabled(false)
                 .setName(context.getString(R.string.channel_holds_name))
                 .setDescription(context.getString(R.string.channel_holds_description))
                 .build(),
@@ -65,7 +68,8 @@ object Notices {
         )
         NotificationManagerCompat.from(context).apply {
             createNotificationChannelsCompat(channels)
-            deleteNotificationChannel("mirsad_holds") // the earlier, noisy channel
+            deleteNotificationChannel("mirsad_holds") // earlier channels (noisy, then collapsed)
+            deleteNotificationChannel("mirsad_holds_quiet")
         }
     }
 
@@ -92,6 +96,8 @@ object Notices {
 
         val builder = NotificationCompat.Builder(context, if (hold) CHANNEL_HOLDS else CHANNEL_WARNINGS)
             .setSmallIcon(R.drawable.ic_notice)
+            // Never let the system add "Open link" for a suspicious URL to Mirsad's own notice.
+            .setAllowSystemGeneratedContextualActions(false)
             .setContentTitle(title)
             .setContentText(reasons.firstOrNull() ?: safety)
             .setStyle(NotificationCompat.BigTextStyle().bigText(lines.joinToString("\n")))
@@ -102,7 +108,8 @@ object Notices {
             .setShowWhen(true)
             .setGroup(if (hold) GROUP_HOLD else GROUP_WARN)
             .setCategory(if (isCall) NotificationCompat.CATEGORY_STATUS else NotificationCompat.CATEGORY_MESSAGE)
-            .setPriority(if (hold) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
+            .setPriority(if (hold) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
+            .setSilent(hold)
             .addAction(0, context.getString(R.string.notice_action_not_scam), notScamAction(context, incident.id))
             .addAction(0, context.getString(R.string.notice_action_report), openReport(context, incident.id))
         if (isCall && !hold) builder.setTimeoutAfter(CALL_WARN_TIMEOUT_MS)
@@ -124,6 +131,8 @@ object Notices {
         val text = if (isCall) context.getString(R.string.notice_not_scam_call_text) else incident.text.orEmpty()
         val builder = NotificationCompat.Builder(context, CHANNEL_RESTORED)
             .setSmallIcon(R.drawable.ic_notice)
+            // Never let the system add "Open link" for a suspicious URL to Mirsad's own notice.
+            .setAllowSystemGeneratedContextualActions(false)
             .setContentTitle(withDemoPrefix(context, incident, title))
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))

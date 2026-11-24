@@ -43,7 +43,7 @@ marked as such and cannot be sent to the police shortcuts.
 ### How is privacy guaranteed?
 
 The app holds no `INTERNET` permission, and that is checkable: `aapt dump permissions` on the APK lists
-`POST_NOTIFICATIONS`, `VIBRATE` and one permission the app declares for itself, nothing else. A Gradle task fails the build if any dependency merges the internet permission into
+`POST_NOTIFICATIONS` and one permission the app declares for itself, nothing else. A Gradle task fails the build if any dependency merges the internet permission into
 the manifest, so the guarantee cannot erode by accident. There is no account, no analytics, no crash reporting and no
 foreground service. Everything is stored in the app's private database, backups are off, and the only way data leaves
 is the share sheet after a deliberate tap. Notification access and call screening are system-level grants the user can
@@ -66,8 +66,8 @@ API and an event stream. Mirsad Android is the citizen-side counterpart that pro
 exported Android report maps onto the service's `POST /v1/ingest` intake event; a laptop-side script
 (`scripts/push_report_to_mirsad.sh`) posts it with a connector token that never touches the phone, and the mapping is
 documented in `docs/EVIDENCE_SCHEMA.md`. A scam that one phone held becomes a timestamped, reviewable item for an
-officer, with the same reason codes and artifacts the citizen saw, and the same fingerprint lets analysts group one
-campaign across many phones. Police intelligence flows the other way as a JSON blocklist the phone imports from a file.
+officer, showing the sender and either the message text (if the citizen shared it) or a one-line summary with the
+reason codes; the fingerprint in the report JSON lets analysts group one campaign across many phones. Police intelligence flows the other way as a JSON blocklist the phone imports from a file.
 
 ### What's next?
 

@@ -56,9 +56,9 @@ never by itself hold a message.
   services send these all day; holding one locks the user out of their own account.
 - Content hidden by the system (Android 15+ one-time-code notifications): ALLOW (`CONTENT_HIDDEN`). Unavailable is not
   suspicious.
-- Engine timeout or error: ALLOW (`ENGINE_TIMEOUT`, `ENGINE_ERROR`). Failing open is the only safe failure.
+- Engine error: a message with a link, a number or a money word gets WARN (`ENGINE_ERROR`), anything else ALLOW; a
+  WARN never removes anything, so this fails safe without failing silent. A call-screening timeout or error allows the call.
 
-_Status: to confirm at M1 — the exact set of hard reason codes and the never-HOLD checks as implemented in the engine._
 
 ## Calls
 
@@ -73,7 +73,6 @@ only**:
 Other call signals (international prefix for a claimed UAE entity, one-ring patterns) produce a WARN: the phone rings
 with a heads-up. The screening service has a 1 s budget and allows the call on timeout.
 
-_Status: to confirm at M2 — call screening and the cross-channel rule on the emulator._
 
 ## Sensitivity
 
@@ -88,7 +87,6 @@ Settings offer three levels. They move the WARN and HOLD score thresholds only:
 No level removes the hard-evidence requirement, the never-HOLD rules, or the call policy. Strict cannot make a score
 alone hold a message.
 
-_Status: to confirm at M1 — exact thresholds live in rules.json; this table describes the design._
 
 ## The legitimate-message suite
 
@@ -106,7 +104,6 @@ The suite gates every build:
 A rule or model change that breaks the suite does not ship. The suite grows with every false positive found during
 testing.
 
-_Status: to confirm at M1 — suite present and green in `./gradlew :core:test`._
 
 ## The Not a scam flow
 
@@ -128,7 +125,6 @@ The message itself needs no restoring: it never left its app.
 The user can also tap **Report** from the same notice to confirm a scam, or open Settings to edit the allow list, the
 block lists and the known-good list by hand. Nothing added by Not a scam is hidden from the user.
 
-_Status: to confirm at M1 — all five steps and Undo on the device._
 
 ## What the user loses when Mirsad is wrong
 
@@ -144,7 +140,7 @@ in Settings.
 
 ## Feedback and training
 
-Every Not a scam and every Report creates a `Feedback` row on the phone. Feedback is never uploaded. When the team
+Every Not a scam creates a `Feedback` row on the phone; Settings > *Export my corrections as training rows* shares them as CSV. Feedback is never uploaded. When the team
 exports training data from a test device, the feedback rows join `data/` as labelled examples, so the next
 `./gradlew :core:trainModel` learns from the mistakes. The same rows are what a false-positive report carries if the
 user chooses to share one: fingerprint, reason codes, sender type, model version, verdict, and the text only if ticked.

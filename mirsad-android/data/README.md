@@ -1,7 +1,7 @@
 # Mirsad data
 
 Everything in this folder is **synthetic**. Every phone number is zero-filled fiction (`+971500000003`,
-`+440000000001`), every IBAN is zero-filled, every scam domain ends in `.example`, and every legitimate link
+`+440000000001`), every IBAN is a fictional sample value, every scam domain ends in `.example`, and every legitimate link
 points only to an official host from the allowed list below. Nothing here comes from a real victim, a real
 case or a real message. Real, anonymised police case data is the intended next step and is not included.
 
@@ -44,7 +44,7 @@ files and used by the trainer unchanged (extra columns are ignored on read).
 ./gradlew :core:trainModel
 ```
 
-`app.mirsad.core.ml.train.TrainerMainKt` regenerates `generated_messages.csv` (seed + generated = 800 rows,
+`app.mirsad.core.ml.train.TrainerMainKt` regenerates `generated_messages.csv` (seed + generated = 1,400 rows, 700 scam and 700 legitimate,
 balanced), holds out 20 % stratified by label, trains the hashed n-gram logistic regression, prints and writes
 precision / recall / F1 / confusion matrix to `evaluation.md`, then retrains on all rows and writes
 `app/src/main/assets/model.bin` (`lr-ngram-v1`). Pure Kotlin, no Python, no network.

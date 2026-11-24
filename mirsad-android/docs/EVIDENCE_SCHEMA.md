@@ -199,7 +199,7 @@ files directory, falling back to the private files directory when external stora
 
 ```sh
 # App-specific external storage (usual case; no root or run-as needed)
-adb pull /sdcard/Android/data/app.mirsad.shield/files/reports/
+adb exec-out run-as app.mirsad.shield ls files/reports/   # reports are kept in app-private storage (debug build)
 
 # Private files directory (fallback; debug builds only)
 adb shell run-as app.mirsad.shield ls files/reports/

@@ -129,7 +129,7 @@
     <string name="report_share">Share report</string>
     <string name="report_share_failed">Could not open the share sheet on this phone.</string>
     <string name="report_aman_title">Report to Abu Dhabi Police (Aman)</string>
-    <string name="report_aman_body">These shortcuts only open your phone, SMS or email app with a short summary. Nothing is sent until you do it yourself.</string>
+    <string name="report_aman_body">These shortcuts only open your phone, SMS or email app with a short summary. Nothing is sent until you do it yourself. Channel details are to be confirmed with the police team.</string>
     <string name="report_aman_call">Call 8002626</string>
     <string name="report_aman_sms">SMS 2828</string>
     <string name="report_aman_email">Email</string>

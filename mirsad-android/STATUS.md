@@ -1,29 +1,31 @@
+FINAL
+
 # STATUS — Mirsad Android
 
-_Last update: 2026-11-24 22:30 (+04). Milestones M1 and M2 integrated; M3 (classifier) wired; independent verification running._
+_Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was checked"._
 
-## What works (checked by the lead on the emulator, Android 14)
-- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 103 core tests (engine, classifier, reports, the
-  56-row legitimate-message suite with 0 held and 0 warned, gate policy), lint with 0 errors, and the no-INTERNET gate.
-- Judge path with no permissions: Demo → a scam is held → incident with reasons and timing → Not a scam with Undo →
-  report preview with the exact JSON.
-- Live protection with permissions granted: an injected scam SMS is held (original notification removed, Mirsad notice
-  with Not a scam and Report), and a call from the same number is rejected before ringing and stays in the call log.
-- Real engine (rules 1.1.0) plus the trained classifier (`lr-ngram-v1`, 1 MB) behind the HOLD gate; share target; Room
-  storage; Arabic and English with an in-app switch; report builder, Aman shortcuts, blocklist import.
-- Media in `screenshots/` and `demo/` were captured from the APK in `dist/` through the real services.
-- `scripts/analyse.sh` runs the same engine on a laptop without a phone.
+## What works
+- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 107 core tests (engine, HOLD gate policy,
+  robustness, classifier, reports, the 56-row legitimate suite with 0 held and 0 warned, and two never-HOLD sets),
+  lint 0 errors, no-INTERNET gate. Every app build runs the core tests first.
+- Judge path without permissions: Demo → scam held → incident with reasons and timing → a wrongly held legitimate
+  message restored with Not a scam (Undo) → report preview with the exact JSON. Share target "Check with Mirsad".
+- Live protection with permissions: an injected scam SMS is held (original notification removed, quiet notice with
+  Not a scam and Report) and a call from the same number is rejected and kept in the call log. Checked on Android 14
+  (media emulator) and Android 16.
+- Engine rules 1.2.0 + classifier lr-ngram-v1 behind the HOLD gate; Arabic and English with RTL; blocklist import;
+  Aman shortcuts disabled for synthetic incidents; training-row export; laptop CLI `scripts/analyse.sh`.
+- dist/mirsad-android-debug.apk, 11 screenshots and the 30.0 s video/GIF all come from the same final build.
 
-## In progress
-- Independent verification (device walks, false-positive and scam-miss attacks, claims check, code, security and Arabic
-  review, fresh-clone build). The fix list lands in `VERIFIER_REPORT.md`.
-- README still carries "Status: to confirm" notes; they are removed once the claims check is in.
+## How it was checked
+Independent verification (VERIFIER_REPORT.md): six of eleven verifiers finished before the usage limit; every blocker
+they found is fixed and covered by a test. Open items are listed there and in README section 10.
 
-## Next
-1. Close the verifier fix list, re-capture media, push.
-2. Put the evaluation numbers and the measured false-positive and miss rates in the README.
-3. Android 16 smoke test (system image downloaded) and FINAL.
+## Next (if anyone continues)
+1. Lower the WARN rate on legitimate messages (retrain with legitimate messages that contain links).
+2. Arabic review items and dialect OTP-request phrasings.
+3. Allow-listed senders should still WARN on hard link evidence.
 
 ## How to resume
-Read PLAN.md, then `./gradlew :core:test :app:assembleDebug :app:lintDebug`. Emulators: `emulator-5554` is the media
-device (`scripts/full_capture.sh`), `emulator-5556` the dev device. Decisions are in DECISIONS.md.
+Read PLAN.md and DECISIONS.md, then `./gradlew :core:test :app:assembleDebug :app:lintDebug`.
+Media: `scripts/full_capture.sh` (emulator-5554). Engine on a laptop: `scripts/analyse.sh`.

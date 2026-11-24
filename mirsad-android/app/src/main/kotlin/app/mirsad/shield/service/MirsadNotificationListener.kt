@@ -61,7 +61,7 @@ class MirsadNotificationListener : NotificationListenerService() {
 
     private suspend fun handle(pkg: String, key: String, postTime: Long, content: Content) {
         val container = MirsadApp.container(this)
-        if (pkg !in container.settings.get().monitoredPackages) return
+        if (pkg !in container.settings.get().monitoredPackages && !isDefaultSmsApp(pkg)) return
         val dedupeKey = key + "|" + content.text.orEmpty().hashCode()
         val duplicate = synchronized(seen) { seen.put(dedupeKey, true) != null }
         if (duplicate) return
@@ -69,9 +69,11 @@ class MirsadNotificationListener : NotificationListenerService() {
         val sender = content.sender?.trim().orEmpty()
         val channel = if (isSmsApp(pkg)) Channel.SMS else Channel.CHAT
         val isNumber = Senders.looksLikePhoneNumber(sender)
-        // A name is treated as a saved contact; a short all-caps SMS sender ID (e.g. "ADCB") is not.
+        // A name is treated as a saved contact. On SMS a single short token ("ADCB", "EmiratesNBD", "Aramex") is a
+        // carrier sender ID, whatever its case: a spoofed brand ID must not get the contact cap.
+        val smsSenderId = channel == Channel.SMS && sender.trim().let { s -> s.length in 2..11 && s.none { it.isWhitespace() } }
         val looksLikeContact = !isNumber && sender.isNotBlank() &&
-            sender.any { it.isLetter() } &&
+            sender.any { it.isLetter() } && !smsSenderId &&
             !(channel == Channel.SMS && Senders.looksLikeAlphanumericId(sender))
         val hidden = content.text.isNullOrBlank()
         val event = Event(
@@ -94,6 +96,9 @@ class MirsadNotificationListener : NotificationListenerService() {
             container.incidents.update(incident.copy(notificationRemoved = true, notificationKey = key))
         }
     }
+
+    private fun isDefaultSmsApp(pkg: String): Boolean =
+        pkg == runCatching { Telephony.Sms.getDefaultSmsPackage(this) }.getOrNull()
 
     private fun isSmsApp(pkg: String): Boolean =
         pkg in SMS_PACKAGES || pkg == runCatching { Telephony.Sms.getDefaultSmsPackage(this) }.getOrNull()
