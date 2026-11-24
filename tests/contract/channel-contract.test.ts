@@ -1,7 +1,6 @@
 /**
  * The shared channel contract (brief step 5): every channel's fixtures must pass the same inbox, evidence, watchlist
- * hook and takeover checks, through the HTTP API only. Telegram runs now. The WhatsApp slot stays skipped until its
- * gate opens (design section 14); it will then supply WhatsApp fixtures to the same checks.
+ * hook and takeover checks, through the HTTP API only. Telegram is the one channel.
  */
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -14,8 +13,8 @@ import { startHarness, type TestHarness } from '../helpers/harness.ts';
 
 /** What a channel supplies: its labels and five scenario fixtures, replayed through the common intake API. */
 interface ChannelCase {
-  source: 'telegram' | 'whatsapp';
-  channelLabel: 'Telegram' | 'WhatsApp';
+  source: 'telegram';
+  channelLabel: 'Telegram';
   /** A number that the phone-mention scenario ties to a concern and the sender scenario shares as sender metadata. */
   watchedNumber: string;
   replay: {
@@ -54,21 +53,6 @@ const telegram: ChannelCase = {
     conversation: telegramReplay('takeover-pair'),
     phoneMention: telegramReplay('watchlist-sequence', 0, 1),
     senderWithWatchedNumber: telegramReplay('watchlist-sequence', 1),
-  },
-};
-
-/** Placeholder until the gate opens: there are no WhatsApp fixtures yet, and the block using it is skipped. */
-const noWhatsAppFixtures = (): Promise<ReplayReport> => Promise.reject(new Error('WhatsApp fixtures arrive only after the gate opens'));
-const whatsapp: ChannelCase = {
-  source: 'whatsapp',
-  channelLabel: 'WhatsApp',
-  watchedNumber: '+447700900124',
-  replay: {
-    inboundFirst: noWhatsAppFixtures,
-    officerFirst: noWhatsAppFixtures,
-    conversation: noWhatsAppFixtures,
-    phoneMention: noWhatsAppFixtures,
-    senderWithWatchedNumber: noWhatsAppFixtures,
   },
 };
 
@@ -171,8 +155,4 @@ function channelContract(channel: ChannelCase): void {
 
 describe('the shared channel contract passes for Telegram fixtures', () => {
   channelContract(telegram);
-});
-
-describe.skip('WhatsApp fixtures: gate closed until the Telegram controlled test is verified (MIRSAD_WHATSAPP_IMPORT_ENABLED, design section 14)', () => {
-  channelContract(whatsapp);
 });

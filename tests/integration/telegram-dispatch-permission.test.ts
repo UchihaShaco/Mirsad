@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
+import type { ReplyGenerator } from '../../src/replies/reply-generator.ts';
 import { Harness, incoming, LIVE_BASE_ENV, OWNER_ID, standIns } from '../helpers/telegram-live-harness.ts';
 
 const env = { ...LIVE_BASE_ENV, TELEGRAM_CHAT_SCOPE: 'all_private', TELEGRAM_ALL_CHATS_REFERENCE: 'TEST-SCOPE',
@@ -46,6 +47,50 @@ it.each(['manual', 'test'] as const)('answers the selected unanswered DM immedia
   } finally { await h.stop(); }
 });
 
+it.each(['existing chat grant', 'account activation'] as const)(
+  'answers the selected message across an earlier %s cutoff and continues on the next DM', async cutoff => {
+    const stand = standIns();
+    const h = await Harness.start(env, stand);
+    try {
+      const selected = await register(h, first);
+      if (cutoff === 'existing chat grant') {
+        const empty = await dispatch(h, [selected]);
+        expect(empty.data.results[0].telegram.reason).toBe('no_message');
+      } else {
+        await h.call('POST', replies, { enabled: false });
+      }
+      const earlier = 'I also listed a desk last week.';
+      const question = 'Are you interested in the oak table?';
+      const at = stand.clock.now().getTime() - 60_000;
+      await h.deliver(incoming(first, earlier, at), incoming(first, question, at + 1_000));
+      if (cutoff === 'account activation') await h.call('POST', replies, { enabled: true });
+      await h.app.drain();
+      expect(stand.generator.histories).toHaveLength(0);
+
+      const timeline = await h.timelineOf(first);
+      const target = timeline.telegramReplies.target;
+      expect(target).toBeTruthy();
+      expect(target.messageId).toBe(timeline.messages.find((m: { text: string }) => m.text === question)?.id);
+      const key = { 'Idempotency-Key': randomUUID() };
+      const body = { chatIds: [selected], participantPermissionRecorded: true, replyAgain: true,
+        replyToMessageId: target.messageId, replyToHeadPosition: target.headPosition };
+      stand.generator.replyNext('How wide is the table?');
+      const sent = await h.call('POST', '/v1/dispatches', body, key);
+      expect(sent.data.results[0].telegram).toMatchObject({ reply: 'queued', messageId: target.messageId });
+      await h.app.drain();
+      expect(stand.generator.histories).toEqual([[{ from: 'contact', text: question }]]);
+      expect(stand.sender.to(first).map(item => item.reply.text)).toEqual(['How wide is the table?']);
+      expect((await h.call('POST', '/v1/dispatches', body, key)).data.dispatchId).toBe(sent.data.dispatchId);
+
+      stand.clock.advance(3_000);
+      await h.receive(first, 'It is eighty centimetres wide.');
+      await h.app.drain();
+      expect(stand.sender.to(first)).toHaveLength(2);
+      expect(stand.generator.histories.at(-1)?.some(turn => turn.text === earlier)).toBe(false);
+    } finally { await h.stop(); }
+  },
+);
+
 it('replies immediately to an older eligible DM when Dispatch confirms a verified phone match', async () => {
   const stand = standIns();
   const h = await Harness.start(env, stand);
@@ -72,12 +117,42 @@ it('replies immediately to an older eligible DM when Dispatch confirms a verifie
   } finally { await h.stop(); }
 });
 
-it('requires an explicit single-chat action and the confirmed test setting, including on an already-active chat', async () => {
+it('lets the model ask for a description of an approved captionless photo using only its type', async () => {
+  const stand = standIns();
+  const clarification = 'Could you describe the item in the photo?';
+  const composePublicReply = vi.fn<ReplyGenerator['generate']>().mockResolvedValue(clarification);
+  Object.assign(stand.generator, { composePublicReply });
+  const h = await Harness.start(env, stand);
+  try {
+    await h.call('POST', replies, { enabled: true });
+    await h.call('POST', invites, { enabled: true, manualDispatchOnly: true });
+    const photo = incoming(first, '', stand.clock.now().getTime());
+    const message = photo.business_message as Record<string, unknown>;
+    delete message.text;
+    message.photo = [{ file_id: 'synthetic-private-media-id', file_unique_id: 'synthetic-private-media-key', width: 10, height: 10 }];
+    await h.deliver(photo);
+    const chat = (await h.chatFor(first))!;
+    const requested = await dispatch(h, [chat.id], { participantPermissionRecorded: true, replyAgain: true });
+    expect(requested.data.results[0].telegram).toMatchObject({ kind: 'ask_for_text', reply: 'queued' });
+    await h.app.drain();
+    expect(composePublicReply).toHaveBeenCalledOnce();
+    const [history, , , turn, , context] = composePublicReply.mock.calls[0]!;
+    expect(history).toEqual([]);
+    expect(turn).toEqual([]);
+    expect(context).toMatchObject({ attachmentKinds: ['photo'] });
+    expect(JSON.stringify(context)).not.toContain('synthetic-private-media');
+    expect(stand.sender.to(first).map(item => item.reply.text)).toEqual([clarification]);
+    expect(await h.caseActionsOf(first, 'ai_reply_sent')).toMatchObject([{ detail: { source: 'model', model: 'test-model' } }]);
+  } finally { await h.stop(); }
+});
+
+it('records existing permission only for selected chats and audits each attested Dispatch', async () => {
   const stand = standIns();
   const h = await Harness.start(env, stand);
   try {
     const selected = await register(h, first), untouched = await register(h, other);
-    expect((await dispatch(h, [selected, untouched])).error.code).toBe('validation_failed');
+    expect((await dispatch(h, [selected, untouched], { participantPermissionRecorded: true, replyAgain: true,
+      replyToMessageId: 'msg_00000000000000000000000000000001' })).error.code).toBe('validation_failed');
     expect((await dispatch(h, [selected], { participantPermissionRecorded: false })).error.code).toBe('validation_failed');
     expect((await dispatch(h, [selected], { expectedTestMode: true })).error.code).toBe('validation_failed');
     expect((await h.call('POST', '/v1/dispatches/by-phone', { phoneNumber: '+447700900010',
@@ -97,6 +172,24 @@ it('requires an explicit single-chat action and the confirmed test setting, incl
     expect((await h.timelineOf(first)).telegramAiPermission).toBe('approved');
     expect((await h.timelineOf(other)).telegramAiPermission).toBe('needed');
     expect((await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded'))[0]?.actor.displayName).toBe('Officer A');
+
+    const approval = { chatIds: [selected, untouched], participantPermissionRecorded: true, replyAgain: true };
+    const key = { 'Idempotency-Key': randomUUID() };
+    const batch = await h.call('POST', '/v1/dispatches', approval, key);
+    expect(batch.data.results).toMatchObject([
+      { chatId: selected, telegram: { reply: 'queued', kind: 'follow_up' } },
+      { chatId: untouched, telegram: { reply: 'queued', kind: 'reply' } },
+    ]);
+    await h.app.drain();
+    expect(stand.sender.to(first)).toHaveLength(2);
+    expect(stand.sender.to(other)).toHaveLength(1);
+    expect((await h.timelineOf(other)).telegramAiPermission).toBe('approved');
+    expect((await h.call('POST', '/v1/dispatches', approval, key)).data.dispatchId).toBe(batch.data.dispatchId);
+    for (const contact of [first, other]) {
+      const confirmations = await h.caseActionsOf(contact, 'telegram_dispatch_approved');
+      expect(confirmations.filter(action => action.detail.dispatchId === batch.data.dispatchId)).toHaveLength(1);
+      expect(await h.caseActionsOf(contact, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
+    }
   } finally { await h.stop(); }
 });
 

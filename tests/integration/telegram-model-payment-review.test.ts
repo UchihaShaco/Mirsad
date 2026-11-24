@@ -9,13 +9,15 @@ const linkedText = 'The same-day registration fee is described on this page: htt
 const flaggedDraft: AliDecision = { kind: 'reply', text: 'Could you explain the fee?',
   paymentLinkReview: { candidateId: 1, reason: 'unverified_payment_request' } };
 
-it('reviews a model-cited incoming payment link and exposes its exact source for the officer to resolve', async () => {
+it('delivers a Gemini reply alongside its link warning and remembers the reviewed URL', async () => {
   const stand = standIns();
   const decide = vi.fn<NonNullable<ReplyGenerator['decide']>>()
-    .mockResolvedValueOnce({ kind: 'silence', reason: 'other' })
+    .mockResolvedValueOnce({ kind: 'silence', reason: 'no_actionable_question', explanation: 'The sender only shared a page and asked nothing.' })
     .mockResolvedValueOnce(flaggedDraft)
     .mockResolvedValue({ kind: 'silence', reason: 'already_answered' });
-  Object.assign(stand.generator, { decide });
+  const composePublicReply = vi.fn<ReplyGenerator['generate']>()
+    .mockResolvedValueOnce('What is the registration for?').mockResolvedValue('Is there another way to register?');
+  Object.assign(stand.generator, { decide, composePublicReply });
   const h = await Harness.start(env, stand);
   try {
     const source = await h.receive(contact, linkedText);
@@ -26,34 +28,38 @@ it('reviews a model-cited incoming payment link and exposes its exact source for
     expect(modelContext?.paymentLinks).toEqual([{
       id: 1, host: 'registration.example.test', excerpt: 'The same-day registration fee is described on this page: [candidate link]',
     }]);
-    const [action] = await h.caseActionsOf(contact, 'telegram_officer_review_requested');
+    const actions = await h.caseActionsOf(contact, 'telegram_officer_review_requested');
+    const action = actions.find(item => item.detail.reason === 'model_payment_link');
     expect(action).toMatchObject({ messageId: source.id,
       detail: { reason: 'model_payment_link', indicators: 'unverified_payment_request', triggerMessageId: trigger.id,
-        messageEventId: expect.stringMatching(/^mev_/u), holdsReplies: true } });
+        messageEventId: expect.stringMatching(/^mev_/u), holdsReplies: false } });
     expect(JSON.stringify(action)).not.toContain('synthetic-link-reference');
     const chat = (await h.chatFor(contact))!;
-    expect(chat.telegramReplyHold).toMatchObject({ officerReview: { reason: 'model_payment_link', actionId: action!.id },
+    expect(chat.telegramReplyHold).toMatchObject({ officerReview: null,
       evidenceItems: [{ messageId: source.id, messageEventId: action!.detail.messageEventId }] });
-    expect(stand.sender.to(contact)).toEqual([]);
+    expect(stand.sender.to(contact).map(item => item.reply.text)).toEqual(['What is the registration for?', 'Could you explain the fee?']);
+    expect(composePublicReply).toHaveBeenCalledOnce();
     const reviewed = await h.call('POST', `/v1/chats/${chat.id}/officer-decisions`, {
       decision: 'mark_reviewed', reviewActionId: action!.id, expectedRevision: chat.revision,
     });
     expect(reviewed.success).toBe(true);
     expect((await h.chatFor(contact))!.telegramReplyHold.officerReview).toBeNull();
-    await h.receive(contact, 'Do you have any further questions?');
+    await h.receive(contact, linkedText);
     await h.app.drain();
     expect(decide.mock.calls.at(2)?.[5]?.paymentLinks).toEqual([]);
-    expect(await h.caseActionsOf(contact, 'telegram_officer_review_requested')).toHaveLength(1);
+    expect(await h.caseActionsOf(contact, 'telegram_officer_review_requested')).toHaveLength(actions.length);
+    expect((await h.chatFor(contact))!.telegramReplyHold.evidenceItems).toEqual([]);
   } finally { await h.stop(); }
 });
 
-it('rejects an invented payment citation and keeps an independent model handoff', async () => {
+it('rejects an invented payment citation, records a conversation warning and continues the turn', async () => {
   const stand = standIns();
   const decide = vi.fn<NonNullable<ReplyGenerator['decide']>>().mockResolvedValue({
     kind: 'review', status: 'HUMAN_INTERVENTION_REQUIRED', reasons: ['uncertain'],
     paymentLinkReview: { candidateId: 9, reason: 'unverified_payment_request' },
   });
-  Object.assign(stand.generator, { decide });
+  const composePublicReply = vi.fn<ReplyGenerator['generate']>().mockResolvedValue('Which conditions changed?');
+  Object.assign(stand.generator, { decide, composePublicReply });
   const h = await Harness.start(env, stand);
   try {
     const trigger = await h.receive(contact, 'There are some conflicting conditions.');
@@ -61,8 +67,9 @@ it('rejects an invented payment citation and keeps an independent model handoff'
     expect(decide.mock.calls[0]?.[5]?.paymentLinks).toEqual([]);
     const actions = await h.caseActionsOf(contact, 'telegram_officer_review_requested');
     expect(actions).toHaveLength(1);
-    expect(actions[0]).toMatchObject({ messageId: trigger.id, detail: { reason: 'conversation_review', indicators: 'uncertain' } });
-    expect(stand.sender.to(contact)).toEqual([]);
+    expect(actions[0]).toMatchObject({ messageId: trigger.id, detail: { reason: 'conversation_review', indicators: 'uncertain', holdsReplies: false } });
+    expect(stand.sender.to(contact).map(item => item.reply.text)).toEqual(['Which conditions changed?']);
+    expect((await h.chatFor(contact))!.telegramReplyHold.officerReview).toBeNull();
   } finally { await h.stop(); }
 });
 
@@ -79,6 +86,8 @@ it('requires one officer review when the model flags an already captured payment
     const chat = (await h.chatFor(contact))!;
     const [{ actionId, reason }] = chat.telegramReplyHold.evidenceItems;
     expect(chat.telegramReplyHold.evidenceItems).toHaveLength(1);
+    expect(chat.telegramReplyHold.officerReview).toBeNull();
+    expect(stand.sender.to(contact)).toHaveLength(1);
     expect(reason).toBe('model_payment_link');
     const reviewed = await h.call('POST', `/v1/chats/${chat.id}/officer-decisions`, {
       decision: 'mark_reviewed', reviewActionId: actionId, expectedRevision: chat.revision,
@@ -93,7 +102,7 @@ it('discards a link flag when its source changes while the model is drafting', a
   let resolve!: (result: AliDecision) => void;
   const decide = vi.fn<NonNullable<ReplyGenerator['decide']>>()
     .mockImplementationOnce(() => new Promise<AliDecision>(done => { resolve = done; }))
-    .mockResolvedValue({ kind: 'silence', reason: 'other' });
+    .mockResolvedValue({ kind: 'silence', reason: 'no_actionable_question', explanation: 'The sender corrected the fee and asked nothing.' });
   Object.assign(stand.generator, { decide });
   const h = await Harness.start(env, stand);
   try {
@@ -106,7 +115,8 @@ it('discards a link flag when its source changes while the model is drafting', a
     stand.clock.advance(3000);
     resolve(flaggedDraft);
     await h.app.drain();
-    expect(await h.caseActionsOf(contact, 'telegram_officer_review_requested')).toEqual([]);
+    expect((await h.caseActionsOf(contact, 'telegram_officer_review_requested'))
+      .filter(action => action.detail.reason === 'model_payment_link')).toEqual([]);
     expect(stand.sender.to(contact)).toEqual([]);
   } finally { await h.stop(); }
 });
@@ -127,7 +137,7 @@ it('supplies dispatch context separately from the eligible conversation and log'
       { 'Idempotency-Key': 'test-dispatch-with-brief' });
     expect(dispatched.success).toBe(true);
     await h.app.drain();
-    expect(decide.mock.calls[0]?.[5]).toEqual({ dispatchBrief: officerContext, paymentLinks: [] });
+    expect(decide.mock.calls[0]?.[5]).toEqual({ dispatchBrief: officerContext, dispatchIntent: 'reply', paymentLinks: [] });
     expect(JSON.stringify(decide.mock.calls[0]?.[0])).not.toContain(officerContext);
     expect(JSON.stringify(await h.caseActionsOf(contact, 'dispatch_started'))).not.toContain(officerContext);
     expect(h.logs.join('\n')).not.toContain(officerContext);

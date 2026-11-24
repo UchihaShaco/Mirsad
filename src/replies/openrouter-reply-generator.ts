@@ -1,8 +1,8 @@
 /** Writes Telegram replies through the configured OpenRouter model. Evidence review and delivery have separate clients. */
 import { z } from 'zod';
-import { ALI_RESPONSE_FORMAT, parseAliDecision, publicReplyFromDecision, type AliDecision } from './ali-decision.ts';
+import { ALI_PUBLIC_REPLY_FORMAT, ALI_RESPONSE_FORMAT, parseAliDecision, parseAliPublicReply, publicReplyFromDecision } from './ali-decision.ts';
 import { currentAliPrompt } from './ali-prompt.ts';
-import { buildReplyMessages, ReplyGenerationError, type ReplyGenerator } from './reply-generator.ts';
+import { buildReplyMessages, InvalidReplyDraftError, ReplyGenerationError, type ReplyGenerator, type ReplyOutputMode } from './reply-generator.ts';
 
 export const GEMINI_REPLY_MODEL = 'google/gemini-3.8-flash';
 export const CYDONIA_REPLY_MODEL = 'thedrummer/cydonia-24b-v4.1';
@@ -75,7 +75,7 @@ function httpError(model: OpenRouterReplyModel, status?: number): ReplyGeneratio
   return providerError(model, 'http_error');
 }
 
-function parseCompletion(expected: OpenRouterReplyModel, status: number, raw: string, minimumDistinctIndicators: number): AliDecision {
+function completionContent(expected: OpenRouterReplyModel, status: number, raw: string): string {
   // Router errors may echo credentials or chat content. Only return fixed codes.
   if (status < 200 || status >= 300) throw httpError(expected, status);
   let json: unknown;
@@ -102,8 +102,9 @@ function parseCompletion(expected: OpenRouterReplyModel, status: number, raw: st
     || (nativeFinish && nativeFinish !== 'STOP')) throw providerError(expected, 'blocked');
   if (candidate.finish_reason !== 'stop' || !candidate.message || candidate.message.tool_calls?.length)
     throw new ReplyGenerationError('invalid_response');
-  if (!candidate.message.content?.trim()) throw new ReplyGenerationError('empty_reply');
-  return parseAliDecision(candidate.message.content, minimumDistinctIndicators);
+  if (candidate.message.content === null) throw new ReplyGenerationError('empty_reply');
+  if (!candidate.message.content.trim()) throw new InvalidReplyDraftError('empty_reply');
+  return candidate.message.content;
 }
 
 export function createOpenRouterReplyGenerator(options: OpenRouterReplyOptions): Required<ReplyGenerator> {
@@ -112,10 +113,11 @@ export function createOpenRouterReplyGenerator(options: OpenRouterReplyOptions):
   const profile = PROFILES[model];
   const key = options.apiKey.trim();
   const send = options.fetch ?? fetch;
-  const decide: NonNullable<ReplyGenerator['decide']> = async (history, signal, correction, currentTurn, memory, context, prompt = currentAliPrompt()) => {
+  const complete = async (output: ReplyOutputMode, args: Parameters<ReplyGenerator['generate']>) => {
+    const [history, signal, correction, currentTurn, memory, context, prompt = currentAliPrompt()] = args;
     if (signal.aborted) throw new ReplyGenerationError('reply_aborted');
     if (!key) throw providerError(model, 'key_missing');
-    const messages = buildReplyMessages(history, prompt, undefined, correction, profile.contextTokens, currentTurn, memory, context);
+    const messages = buildReplyMessages(history, prompt, undefined, correction, profile.contextTokens, currentTurn, memory, context, output);
     const timeout = AbortSignal.timeout(options.timeoutMs);
     let response: Response;
     let body: string;
@@ -127,7 +129,7 @@ export function createOpenRouterReplyGenerator(options: OpenRouterReplyOptions):
         signal: AbortSignal.any([signal, timeout]),
         body: JSON.stringify({
           model, messages, max_tokens: OUTPUT_TOKENS,
-          response_format: ALI_RESPONSE_FORMAT, ...profile.parameters,
+          response_format: output === 'public_reply' ? ALI_PUBLIC_REPLY_FORMAT : ALI_RESPONSE_FORMAT, ...profile.parameters,
         }),
       });
       body = await response.text();
@@ -136,12 +138,20 @@ export function createOpenRouterReplyGenerator(options: OpenRouterReplyOptions):
       if (timeout.aborted) throw providerError(model, 'timeout');
       throw providerError(model, 'unreachable');
     }
-    return parseCompletion(model, response.status, body, prompt.minimumDistinctIndicators);
+    return { content: completionContent(model, response.status, body), prompt };
+  };
+  const decide: NonNullable<ReplyGenerator['decide']> = async (...args) => {
+    const { content, prompt } = await complete('decision', args);
+    return parseAliDecision(content, prompt.minimumDistinctIndicators);
   };
   return Object.freeze({
     model, decide,
     async generate(...args: Parameters<ReplyGenerator['generate']>) {
       return publicReplyFromDecision(await decide(...args));
+    },
+    async composePublicReply(...args: Parameters<ReplyGenerator['generate']>) {
+      const { content } = await complete('public_reply', args);
+      return parseAliPublicReply(content);
     },
   });
 }

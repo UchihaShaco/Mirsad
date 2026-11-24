@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { MODEL_SILENCE_REASONS, parseAliDecision, publicReplyFromDecision } from '../../src/replies/ali-decision.ts';
+import {
+  ALI_RESPONSE_FORMAT, MAX_SILENCE_EXPLANATION_CHARS, MODEL_SILENCE_REASONS, officerSilenceExplanation, parseAliDecision, parseAliPublicReply,
+  publicReplyFromDecision,
+} from '../../src/replies/ali-decision.ts';
 import { MINIMUM_DISTINCT_INDICATORS } from '../../src/replies/ali-prompt.ts';
 
 const ordinary = { case_status: 'MONITORING', should_reply: true, external_reply: 'هلا والله', review_reasons: [], silence_reason: null };
@@ -9,10 +12,22 @@ const urgent = { ...handoff, case_status: 'HUMAN_INTERVENTION_REQUIRED', review_
 const parse = (value: unknown) => parseAliDecision(JSON.stringify(value));
 
 describe('the shared live reply and handoff contract', () => {
+  it('accepts only public chat text when composition follows a private assessment', () => {
+    expect(parseAliPublicReply(JSON.stringify({ external_reply: '  كم عرض الرف؟  ' }))).toBe('كم عرض الرف؟');
+    for (const invalid of [
+      ordinary, urgent, { external_reply: null }, { external_reply: ' ' },
+      { external_reply: 'How tall is it?', case_status: 'MONITORING' }, { external_reply: 'HUMAN_INTERVENTION_REQUIRED' },
+      { external_reply: '[NO_REPLY]' }, { external_reply: 'a'.repeat(1_001) },
+    ]) {
+      expect(() => parseAliPublicReply(JSON.stringify(invalid))).toThrow('invalid_response');
+    }
+  });
+
   it('retains a suspicious assessment on both public and silent ordinary decisions', () => {
     expect(parse({ ...ordinary, case_status: 'SUSPICIOUS' })).toEqual({ kind: 'reply', text: ordinary.external_reply, higherConcern: true });
-    expect(parse({ ...ordinary, case_status: 'SUSPICIOUS', should_reply: false, external_reply: null, silence_reason: 'other' }))
-      .toEqual({ kind: 'silence', reason: 'other', higherConcern: true });
+    expect(parse({ ...ordinary, case_status: 'SUSPICIOUS', should_reply: false, external_reply: null, silence_reason: 'no_safe_follow_up',
+      silence_explanation: 'Any question now would push the sender towards the deposit.' }))
+      .toEqual({ kind: 'silence', reason: 'no_safe_follow_up', explanation: 'Any question now would push the sender towards the deposit.', higherConcern: true });
     expect(parse(ordinary)).toEqual({ kind: 'reply', text: ordinary.external_reply });
     for (const key of ['meeting_arranged', 'meeting_day_confirmed', 'repeated_meeting_question']) {
       expect(() => parse({ ...ordinary, external_reply: `Discuss ${key} please.` })).toThrow('invalid_response');
@@ -32,7 +47,43 @@ describe('the shared live reply and handoff contract', () => {
     const silence = parse({ ...ordinary, should_reply: false, external_reply: null, silence_reason: reason });
     expect(silence).toEqual({ kind: 'silence', reason });
     expect(publicReplyFromDecision(silence)).toBeNull();
-    if (reason !== 'other') expect(() => parse({ ...ordinary, external_reply: reason })).toThrow('invalid_response');
+    expect(() => parse({ ...ordinary, external_reply: reason })).toThrow('invalid_response');
+  });
+
+  describe('why Ali stays silent', () => {
+    const silent = { ...ordinary, should_reply: false, external_reply: null, silence_reason: 'already_answered' };
+
+    it('offers the model only specific reasons and asks it for an explanation', () => {
+      expect(MODEL_SILENCE_REASONS).not.toContain('other');
+      expect(() => parse({ ...silent, silence_reason: 'other' })).toThrow('invalid_response');
+      const { schema } = ALI_RESPONSE_FORMAT.json_schema;
+      expect(schema.required).toContain('silence_explanation');
+      expect(schema.properties.silence_explanation).toEqual({ anyOf: [{ type: 'string' }, { type: 'null' }] });
+    });
+
+    it('keeps the explanation with the silence and ignores one sent with a reply', () => {
+      const explanation = 'Ali asked about the warranty and the sender only repeated the price.';
+      expect(parse({ ...silent, silence_explanation: `  “${explanation}”  ` })).toEqual({ kind: 'silence', reason: 'already_answered', explanation });
+      expect(parse({ ...ordinary, silence_explanation: explanation })).toEqual({ kind: 'reply', text: ordinary.external_reply });
+      expect(parse({ ...silent, silence_explanation: null })).toEqual({ kind: 'silence', reason: 'already_answered' });
+      expect(parse({ ...silent, silence_explanation: ' ok ' })).toEqual({ kind: 'silence', reason: 'already_answered' });
+      expect(() => parse({ ...silent, silence_explanation: 42 })).toThrow('invalid_response');
+    });
+
+    it('masks links, addresses, handles and long numbers and keeps the explanation to one short line', () => {
+      expect(officerSilenceExplanation('The sender gave account 0000 0001 2345 6 and https://pay.example.test/x to pay.'))
+        .toBe('The sender gave account [number] and [link] to pay.');
+      expect(officerSilenceExplanation('They asked Ali to call +44 7700 900123 or write to seller@example.test or @seller_test.'))
+        .toBe('They asked Ali to call [number] or write to [email] or [handle].');
+      expect(officerSilenceExplanation('The page pay.example.test/checkout?ref=7 asks for a deposit, e.g. today.'))
+        .toBe('The page [link] asks for a deposit, e.g. today.');
+      expect(officerSilenceExplanation('The price of 1,450 AED in 2019\nwas\u202e already answered_twice.'))
+        .toBe('The price of 1,450 AED in 2019 was already answered twice.');
+      const long = officerSilenceExplanation('The sender repeated the same offer again. '.repeat(20))!;
+      expect(long.length).toBeLessThanOrEqual(MAX_SILENCE_EXPLANATION_CHARS);
+      expect(long.endsWith('…')).toBe(true);
+      expect(officerSilenceExplanation('[link] 👍')).toBeUndefined();
+    });
   });
 
   it('accepts only the constrained payment-link citation and keeps it from text-only callers', () => {
@@ -54,6 +105,8 @@ describe('the shared live reply and handoff contract', () => {
     { ...ordinary, should_reply: false, external_reply: null },
     { ...ordinary, should_reply: false, external_reply: null, silence_reason: 'a private explanation' },
     { ...ordinary, should_reply: false, external_reply: null, silence_reason: 'reason_unavailable' },
+    { ...ordinary, should_reply: false, external_reply: null, silence_reason: 'other' },
+    { ...ordinary, external_reply: 'The silence_explanation is private.' },
     { ...handoff, silence_reason: 'conversation_closed' },
     { ...ordinary, external_reply: 'The silence_reason is other.' },
     { ...ordinary, external_reply: '   ' },

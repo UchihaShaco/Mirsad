@@ -9,6 +9,8 @@ import { renderCaseReferenceForm, renderSidePanel } from './views/side-panel.js'
 import { renderTimeline } from './views/timeline.js';
 import { renderWorkspace } from './views/workspace.js';
 import { timelineForPeriod } from './state/timeline.js';
+import { bdi, h, withFocus } from './dom.js';
+import { chatHref } from './state/route.js';
 
 const CONNECTION_LABELS = {
   connecting: 'Connecting to live updates',
@@ -60,12 +62,20 @@ function renderTestMode(refs, state) {
   refs.testModeHint.textContent = testModeOn
     ? 'With all-DM replies on, new and returning chats become AI active automatically on an eligible DM. Ali can answer an approved contact’s first incoming message. Other chats stay local until permission is recorded.'
     : setting.manualDispatchOnly
-      ? 'New chats wait for manual Dispatch. New contacts receive no invitation. Active chats with permission can continue.'
+      ? 'New chats wait for Dispatch. Dispatch records the participant’s existing permission and asks Ali to reply. Active chats with permission can continue.'
       : 'New chats wait for manual Dispatch. Consent invitations are enabled for new contacts. Active chats with permission can continue.';
 }
 
 function renderShell(refs, state) {
-  refs.notice.textContent = state.notice === null ? '' : state.notice.text;
+  if (state.notice?.dispatchRows) {
+    const list = h('ul', { className: 'dispatch-results', 'aria-label': 'Dispatch results' }, state.notice.dispatchRows.map(row =>
+      h('li', {}, [
+        h('a', { href: chatHref(row.chatId), dataset: { focusKey: 'receipt:' + row.chatId } }, [bdi(row.label)]),
+        h('span', { text: row.text }),
+      ])));
+    const contents = state.notice.refreshNote ? [list, h('p', { className: 'hint', text: state.notice.refreshNote })] : [list];
+    withFocus(refs.notice, () => refs.notice.replaceChildren(...contents));
+  } else refs.notice.textContent = state.notice === null ? '' : state.notice.text;
   refs.notice.classList.toggle('notice-error', state.notice !== null && state.notice.tone === 'error');
   refs.inboxView.hidden = state.view !== 'inbox';
   refs.watchlistView.hidden = state.view !== 'watchlist';
@@ -82,7 +92,7 @@ export function createRenderer({ refs, handlers, captures, watchlistView }) {
     region((s) => renderTestMode(refs, s), (s) => [s.consentPrompt, s.pending]),
     region((s) => renderInbox(refs, s, handlers), (s) => [s.chats, s.chatsTotal, s.inboxLoaded, s.inboxFilter, s.selection, s.selectedChatId, s.pending]),
     region((s) => renderDispatchTools(refs, s), (s) => [s.chats, s.selection, s.dispatchBrief, s.pending]),
-    region((s) => renderChatHeader(refs.chatHeader, s, handlers), (s) => [s.timeline, s.timelineError, s.selectedChatId, s.pending, s.previous]),
+    region((s) => renderChatHeader(refs, s, handlers), (s) => [s.timeline, s.timelineError, s.selectedChatId, s.pending, s.previous, s.dmReplies]),
     region((s) => renderTimeline(refs.timeline, s, handlers, captures), (s) => [s.timeline, s.replyTargetId, s.focusMessageId, s.focusEventId]),
     region((s) => renderComposer(refs, s), (s) => [s.timeline, s.composer, s.replyTargetId, s.pending]),
     region((s) => renderSidePanel(refs, s), (s) => [s.timeline]),

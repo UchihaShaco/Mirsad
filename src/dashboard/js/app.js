@@ -5,7 +5,7 @@
  */
 import { createActions } from './actions.js';
 import { describeError } from './format.js';
-import { applyChat, loadInbox, loadTelegramSetting, loadTimeline, loadWatchlist } from './loaders.js';
+import { applyChat, loadInbox, loadTelegramSetting, loadTimeline, loadWatchlist, refreshBatchReceipts, refreshDispatchReceipt } from './loaders.js';
 import { createRefresher, REFRESH_DELAY_MS } from './refresher.js';
 import { createRenderer } from './render.js';
 import { initialCaseReferenceDraft } from './state/case-reference.js';
@@ -16,8 +16,9 @@ import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
 import { bindCaseReferenceForm } from './views/side-panel.js';
 import { createWatchlistView } from './views/watchlist.js';
-import { bindWorkspace, resetCaseTools } from './views/workspace.js';
+import { bindWorkspace, DOCKED_EVIDENCE, resetCaseTools } from './views/workspace.js';
 import { bindPhoneDispatch } from './views/phone-dispatch.js';
+import { bindScammerFlag } from './views/scammer-flag.js';
 import { bindErase } from './views/erase.js';
 
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
@@ -40,6 +41,7 @@ function selectChat(ctx, chatId, messageId, eventId = null) {
     return;
   }
   ctx.refreshers.timeline.cancel();
+  clearTimeout(ctx.dispatchExpiry);
   ctx.captures.revokeAll();
   ctx.tickets.timeline += 1;
   resetCaseTools(ctx.refs);
@@ -60,8 +62,11 @@ function applyRoute(ctx) {
     return;
   }
   // History may point back to a message while the phone is displaying its evidence pane.
-  // Reveal the timeline before selectChat moves focus to that source.
-  ctx.setState({ view: 'inbox', evidenceOpen: false, previousRequested: route.previous === true });
+  // Reveal the timeline before selectChat moves focus to that source. Where the pane sits beside the conversation it
+  // covers nothing, so it stays open while the officer moves between messages of the same chat.
+  const keepEvidence = previous.evidenceOpen && previous.view === 'inbox' && route.chatId !== null
+    && route.chatId === previous.selectedChatId && window.matchMedia(DOCKED_EVIDENCE).matches;
+  ctx.setState({ view: 'inbox', evidenceOpen: keepEvidence, previousRequested: route.previous === true });
   if (previous.selectedChatId === null && route.chatId !== null) {
     ctx.queueScroll = ctx.refs.inbox.querySelector('.inbox-lists').scrollTop;
   }
@@ -83,10 +88,14 @@ function onStreamEvent(ctx, event) {
   if (watchlistEvent && view === 'watchlist') ctx.refreshers.watchlist.request();
   if (!INBOX_NEUTRAL_EVENTS.has(event.type)) ctx.refreshers.inbox.request();
   if (selectedChatId !== null && (event.chatId === selectedChatId || watchlistEvent)) ctx.refreshers.timeline.request();
+  if (event.chatId && event.chatId !== selectedChatId && (event.type === 'case_action.recorded' || event.type.startsWith('message.'))) {
+    void refreshDispatchReceipt(ctx, event.chatId);
+  }
 }
 
 /** stream.reset: the position fell outside retained history, so reload the snapshots. */
 function onStreamReload(ctx) {
+  void refreshBatchReceipts(ctx);
   ctx.refreshers.inbox.request();
   ctx.refreshers.dmReplies.request();
   ctx.refreshers.consentPrompt.request();
@@ -95,6 +104,7 @@ function onStreamReload(ctx) {
 }
 
 function clearErasedHistory(ctx, id, receipt) {
+  ctx.dispatchKeys.clear();
   const state = ctx.getState();
   ctx.forgetErasePreview(id);
   // Fence reads started before erasure, including an inbox or watchlist request already in flight.
@@ -128,7 +138,8 @@ function bindPage(ctx) {
   const { signal } = ctx.listeners;
   bindWorkspace(ctx);
   ctx.forgetErasePreview = bindErase(ctx, ctx.clearErased);
-  refs.dispatchButton.addEventListener('click', () => handlers.onDispatch(), { signal });
+  refs.selectAllChats.addEventListener('change', () => handlers.onSelectAll(refs.selectAllChats.checked), { signal });
+  refs.dispatchButton.addEventListener('click', event => { if (event.detail < 2) void handlers.onDispatch(); }, { signal });
   const updateBrief = () => handlers.onDispatchBriefInput(refs.dispatchBriefText.value, refs.dispatchBriefClear.checked);
   refs.dispatchBriefText.addEventListener('input', updateBrief, { signal });
   refs.dispatchBriefClear.addEventListener('change', updateBrief, { signal });
@@ -152,6 +163,7 @@ function bindPage(ctx) {
   };
   refs.openOpener.addEventListener('click', () => openOpener(), { signal });
   bindPhoneDispatch(ctx, openOpener);
+  bindScammerFlag(ctx);
   refs.openerDialog.addEventListener('close', () => {
     if (refs.openerDialog.open) return;
     refs.openerForm.reset();
@@ -204,6 +216,7 @@ async function boot(ctx) {
 
 function stop(ctx) {
   ctx.listeners.abort();
+  clearTimeout(ctx.dispatchExpiry);
   if (ctx.stream !== null) ctx.stream.stop();
   for (const refresher of Object.values(ctx.refreshers)) refresher.cancel();
   ctx.captures.revokeAll();
@@ -230,7 +243,7 @@ export function startDashboard({ api, me, token, refs, onSessionEnded }) {
     captures: createCaptureCache(api),
     watchlistView: createWatchlistView(refs.watchlist),
     tickets: { inbox: 0, timeline: 0, watchlist: 0, dmReplies: 0, consentPrompt: 0 },
-    stream: null, queueScroll: 0,
+    stream: null, queueScroll: 0, dispatchKeys: new Map(), dispatchExpiry: null,
     render: () => undefined,
     getState: () => state,
     setState(patch) {
@@ -250,10 +263,7 @@ export function startDashboard({ api, me, token, refs, onSessionEnded }) {
     if (window.location.hash !== route) window.history.pushState(null, '', route);
     applyRoute(ctx);
     ctx.setState({ timeline, timelineError: null });
-    refs.openChatDispatch.click();
-    refs.chatDispatchContext.value = briefing ?? '';
-    refs.chatDispatchClear.checked = briefing === null;
-    refs.chatDispatchContext.disabled = briefing === null;
+    ctx.beginChatDispatch(timeline, briefing);
   };
   ctx.clearErased = (id, receipt) => clearErasedHistory(ctx, id, receipt);
   ctx.refreshers = Object.fromEntries(Object.entries(ctx.load).map(([name, load]) => [name, createRefresher(load, REFRESH_DELAY_MS, ctx.showError)]));

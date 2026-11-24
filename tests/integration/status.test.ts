@@ -1,12 +1,11 @@
 /**
- * GET /v1/status and the readiness states (design section 13), and the WhatsApp gate (section 14). The controlled-test
+ * GET /v1/status and the readiness states (design section 13). The controlled-test
  * record and readiness file live in a temporary directory; the example record is the one shipped in docs/telegram.
  */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ConfigError, loadConfig } from '../../src/config.ts';
 import { Status } from '../../src/contract/schemas.ts';
 import { readStatus, type StatusDeps } from '../../src/services/status.ts';
 import { DATABASE_FILE, openDatabase, type Db } from '../../src/storage/db.ts';
@@ -135,31 +134,6 @@ describe('status', () => {
     const config = h.app.config;
     const otherReference = { ...config, telegram: { ...config.telegram, approvalReference: 'TEST-APPROVAL-OTHER' } };
     expect((await readStatus(deps({ config: otherReference }))).channels.telegram.readiness).not.toBe('controlled_test_verified');
-    fs.rmSync(recordFile, { force: true });
-  });
-
-  it('the WhatsApp gate cannot be opened without that record', async () => {
-    const env = { MIRSAD_DATA_DIR: tmp, MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: recordFile };
-    fs.rmSync(recordFile, { force: true });
-    expect(() => loadConfig(env)).toThrow(ConfigError);
-    writeJson(recordFile, { ...approvedRecord(), eventCoverage: [{ event: 'business_message incoming', fixtureReplay: 'passed', liveCapture: 'failed' }] });
-    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    writeJson(recordFile, exampleRecord());
-    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-
-    // While the gate is closed, status says so and intake refuses WhatsApp events.
-    expect((await httpStatus()).channels.whatsapp).toEqual({ status: 'not_started', gate: 'closed_until_telegram_controlled_test_verified' });
-    const whatsapp = envelope({ source: 'whatsapp', externalAccountId: 'wa-test-1' }, uniqueId('wa-'), recorded({ messageId: 1 }));
-    const refused = await h.http(h.tokens.connector).post('/v1/ingest', whatsapp);
-    expect(refused.status).toBe(422);
-    expect(refused.body.error.code).toBe('channel_not_enabled');
-
-    // A verified record makes the gate available; it opens only when the import flag is also set.
-    writeJson(recordFile, approvedRecord());
-    expect((await httpStatus()).channels.whatsapp.gate).toBe('closed_until_import_enabled');
-    const opened = loadConfig(env);
-    expect(opened.whatsappImportEnabled).toBe(true);
-    expect((await readStatus(deps({ config: opened }))).channels.whatsapp).toEqual({ status: 'not_started', gate: 'open' });
     fs.rmSync(recordFile, { force: true });
   });
 

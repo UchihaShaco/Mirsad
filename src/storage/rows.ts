@@ -91,6 +91,7 @@ export interface MessageRow {
   author_officer_id: string | null;
   send_status: 'simulated' | null;
   edited_at_source: Flag;
+  telegram_edit_is_direct: Flag | null;
   deleted_at_source: Flag;
   position: number;
 }

@@ -104,13 +104,14 @@ describe('legacy Telegram reply consent and targeted review resolution', () => {
     expect(db.transaction(tx => isTelegramReplyHeld(tx, chatId))).toBe(false);
     backfill();
     const first = db.transaction(tx => getTelegramReplyHold(tx, chatId));
-    expect(first).toMatchObject({ contactOptedOut: true, officerReview: { messageId: doc.messageId, reason: 'document' } });
+    expect(first).toMatchObject({ contactOptedOut: true, officerReview: null,
+      evidenceItems: [{ messageId: doc.messageId, reason: 'document' }, { messageId: pin.messageId, reason: 'location' }] });
     const resolve = (id: string) => db.transaction(tx => record(tx, { chatId, workspaceId: binding.account.workspace_id,
       type: 'telegram_officer_review_resolved', actorId: null, detail: { reviewActionId: id } }));
-    resolve(first.officerReview!.actionId);
+    resolve(first.evidenceItems[0]!.actionId);
     const second = db.transaction(tx => getTelegramReplyHold(tx, chatId));
-    expect(second).toMatchObject({ contactOptedOut: true, officerReview: { messageId: pin.messageId, reason: 'location' } });
-    resolve(second.officerReview!.actionId);
+    expect(second).toMatchObject({ contactOptedOut: true, officerReview: null, evidenceItems: [{ messageId: pin.messageId, reason: 'location' }] });
+    resolve(second.evidenceItems[0]!.actionId);
     db.close();
     db = openDatabase(path.join(dir, DATABASE_FILE), { clock });
     backfill();
@@ -124,7 +125,7 @@ describe('legacy Telegram reply consent and targeted review resolution', () => {
     ]);
   });
 
-  it('honors a single immediate review request written before the two-item policy', () => {
+  it('shows a legacy document flag as evidence while allowing replies', () => {
     const old = submit('Existing source evidence');
     db.transaction(tx => record(tx, { chatId: old.chatId, workspaceId: binding.account.workspace_id,
       type: 'telegram_officer_review_requested', actorId: null, messageId: old.messageId,
@@ -132,8 +133,8 @@ describe('legacy Telegram reply consent and targeted review resolution', () => {
     db.close();
     db = openDatabase(path.join(dir, DATABASE_FILE), { clock });
     const hold = db.transaction(tx => getTelegramReplyHold(tx, old.chatId));
-    expect(hold.officerReview).toMatchObject({ reason: 'document', messageId: old.messageId });
-    expect(hold.evidenceItems).toHaveLength(1);
-    expect(db.transaction(tx => isTelegramReplyHeld(tx, old.chatId))).toBe(true);
+    expect(hold.officerReview).toBeNull();
+    expect(hold.evidenceItems).toMatchObject([{ reason: 'document', messageId: old.messageId }]);
+    expect(db.transaction(tx => isTelegramReplyHeld(tx, old.chatId))).toBe(false);
   });
 });

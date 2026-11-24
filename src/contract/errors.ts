@@ -24,8 +24,8 @@ export const ERROR_STATUS = {
   history_erased: 410,
   payload_too_large: 413,
   idempotency_key_reused: 422,
-  channel_not_enabled: 422,
   direction_required: 422,
+  phone_invalid: 422,
   reply_prompt_unavailable: 422,
   rate_limited: 429,
   internal_error: 500,
@@ -34,7 +34,6 @@ export const ERROR_STATUS = {
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;
-export const ERROR_CODES = Object.keys(ERROR_STATUS) as ErrorCode[];
 
 export type ErrorDetails = Record<string, unknown>;
 

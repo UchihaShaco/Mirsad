@@ -13,7 +13,7 @@ import { dispatchChats } from './dispatch.ts';
 interface ContactCard { chat_id: string; external_chat_id: string; sender_phone_raw: string; ai_mode: ChatRow['ai_mode'] }
 
 export function dispatchByPhone(tx: Tx, officer: Principal, telegram: Config['telegram'], e164: string,
-  officerContext?: string | null, permission?: { runtimeAvailable: boolean }): DispatchByPhoneResponse {
+  officerContext?: string | null, options?: { runtimeAvailable: boolean; recordPermission: boolean }): DispatchByPhoneResponse {
   const bindings = findLiveBindings(tx);
   const binding = bindings[0];
   if (!binding || bindings.length !== 1 || !canAccessChat(tx, officer, {
@@ -35,8 +35,8 @@ export function dispatchByPhone(tx: Tx, officer: Principal, telegram: Config['te
   if (matches.length > 1) return { outcome: 'ambiguous' };
   const match = matches[0];
   if (!match) return { outcome: 'no_verified_chat' };
-  const paused = permission && dispatchOutcome(match.ai_mode) === 'requires_resume';
+  const paused = options?.recordPermission && dispatchOutcome(match.ai_mode) === 'requires_resume';
   const dispatch = dispatchChats(tx, officer, [match.chat_id], paused ? undefined : officerContext,
-    permission && !paused ? { telegram, expectedTestMode: false, runtimeAvailable: permission.runtimeAvailable } : undefined);
+    options && { telegram, runtimeAvailable: options.runtimeAvailable, recordPermission: options.recordPermission && !paused, again: true });
   return { outcome: 'dispatched', chatId: match.chat_id, dispatch };
 }

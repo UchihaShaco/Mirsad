@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { CASE_ACTION_TYPES } from '../../src/contract/enums.ts';
-import { AI_REPLY_FAILURE_NOTES, CASE_ACTION_LABELS, describeDispatch, evidenceItemsFor, silenceSummary, TELEGRAM_EVIDENCE_LABELS } from '../../src/dashboard/js/format.js';
+import { AI_REPLY_FAILURE_NOTES, CASE_ACTION_LABELS, describeDispatch, evidenceItemsFor, silenceExplanation, silenceSummary, TELEGRAM_EVIDENCE_LABELS } from '../../src/dashboard/js/format.js';
 import { MODEL_SILENCE_REASONS } from '../../src/replies/ali-decision.ts';
 
 it('keeps pending evidence visible independently of the hold, including a legacy review', () => {
@@ -28,6 +28,14 @@ describe('case log labels', () => {
       expect(text).not.toMatch(/_/);
     }
     expect(silenceSummary({ source: 'model', reason: 'reason_unavailable' })).toBe('The model returned no reason for skipping this reply.');
+    // A silence recorded before reasons were required says so, rather than suggesting a reason exists.
+    expect(silenceSummary({ source: 'model', reason: 'other' })).toBe('The model gave no specific reason. This was recorded before a reason was required.');
+    expect(silenceExplanation({ source: 'model', reason: 'already_answered', explanation: ' Ali already asked about the size. ' }))
+      .toBe('Ali already asked about the size.');
+    for (const detail of [null, { source: 'model', reason: 'already_answered' }, { source: 'reply_guard', explanation: 'Guard text.' },
+      { source: 'model', explanation: 42 }, { source: 'model', explanation: 'x'.repeat(401) }]) {
+      expect(silenceExplanation(detail)).toBeNull();
+    }
     expect(silenceSummary({ source: 'reply_guard', reason: 'repeated_identity_question' })).toContain('Mirsad suppressed');
     expect(silenceSummary({ source: 'reply_guard', reason: 'repeated_meeting_question' })).toBe('Mirsad stopped a repeat question about meeting arrangements already discussed.');
     for (const detail of [null, { source: 'model', reason: 'private text' }, { source: 'model', reason: 'constructor' },
@@ -43,8 +51,9 @@ describe('case log labels', () => {
   });
 
   it('explains the AI reply failures whose code alone would mislead: a guard block, and a reply sent but not stored', () => {
-    expect(Object.keys(AI_REPLY_FAILURE_NOTES).sort()).toEqual(['blocked_reply', 'store_failed', 'telegram_chat_mismatch']);
-    expect(AI_REPLY_FAILURE_NOTES.store_failed).toContain('Sent in Telegram');
+    expect(Object.keys(AI_REPLY_FAILURE_NOTES).sort()).toEqual(['blocked_reply', 'delivery_unknown', 'empty_reply', 'invalid_response',
+      'selected_source_unavailable', 'source_unavailable', 'store_failed', 'telegram_chat_mismatch']);
+    expect(AI_REPLY_FAILURE_NOTES.store_failed).toContain('Check Telegram');
   });
 });
 

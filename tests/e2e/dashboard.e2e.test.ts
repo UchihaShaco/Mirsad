@@ -11,8 +11,6 @@ import type { ReplyGenerator } from '../../src/replies/reply-generator.ts';
 import type { Timeline } from '../../src/contract/schemas.ts';
 import { provisionLiveOfficer } from '../../src/identity/officer-password.ts';
 import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
-import { insertChat } from '../../src/storage/repos/chats.ts';
-import { grantAccount, insertChannelAccount } from '../../src/storage/repos/principals.ts';
 import { record as recordCaseAction } from '../../src/storage/repos/case-actions.ts';
 import { envelope, recorded, uniqueId } from '../helpers/events.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
@@ -26,7 +24,7 @@ const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited'
 const CONFIRMATION_NOTE = 'The merchant confirmed its payment page by phone.';
 
 type Account = { source: 'telegram'; externalAccountId: string };
-type InboxRegion = 'New inbound' | 'Open chats';
+type InboxRegion = 'New messages' | 'Suspects' | 'Open chats';
 
 interface Dashboard {
   page: Page;
@@ -90,7 +88,7 @@ async function ingestMessage(account: Account, externalChatId: string, label: st
   return { chatId: res.body.data.chatId as string, messageId: res.body.data.messageId as string };
 }
 
-/** A chat created by its first message through the fixture connector; an incoming first message enters New inbound. */
+/** A chat created by its first message through the fixture connector; an incoming first message enters New messages. */
 async function seedChat(account: Account, label: string, text: string, direction: 'incoming' | 'outgoing' = 'incoming') {
   const externalChatId = uniqueId('chat-');
   return { ...(await ingestMessage(account, externalChatId, label, 1, text, direction)), externalChatId };
@@ -115,7 +113,7 @@ async function openDashboard(token: string, baseUrl = h.baseUrl): Promise<Dashbo
   page.on('pageerror', (error) => problems.push(error.message));
   const response = await page.goto(`${baseUrl}/#token=${encodeURIComponent(token)}`);
   expect(response?.status()).toBe(OK);
-  await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
   return { page, problems };
 }
 
@@ -293,13 +291,14 @@ describe('reference dashboard', () => {
       const dialog = page.getByRole('dialog', { name: 'Dispatch a number' });
       await dialog.getByLabel('Phone number').fill(number);
       await dialog.getByLabel('Officer briefing').fill(brief);
-      await dialog.getByText(/For a verified match, choosing Dispatch confirms/).waitFor();
+      expect(await dialog.getByText(/already agreed/).count()).toBe(0);
       await dialog.getByRole('button', { name: 'Dispatch', exact: true }).click();
       await dialog.getByRole('link', { name: 'Open conversation' }).click();
       await page.locator('#chat-header').getByRole('heading', { name: chat.displayLabel }).waitFor();
       expect(new URL(page.url()).hash).toBe(`#/chats/${chat.id}`);
       expect((await live.chatFor(contact))!.aiMode).toBe('ai_active');
-      expect(await live.caseActionsOf(contact, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
+      expect(await live.caseActionsOf(contact, 'telegram_dispatch_approved')).toHaveLength(1);
+      expect(await live.caseActionsOf(contact, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
     } finally { await live.stop(); }
   });
 
@@ -673,7 +672,7 @@ describe('reference dashboard', () => {
       await openSettings(page);
       const replies = page.getByRole('switch', { name: 'Auto-reply to every Telegram DM' });
       const testMode = page.getByRole('switch', { name: 'Test mode', exact: true });
-      const offHint = page.getByText(/new chats wait for manual dispatch/i);
+      const offHint = page.getByText(/new chats wait for (manual )?dispatch/i);
       const onHint = page.getByText(/new and returning chats become AI active automatically/i);
       await testMode.waitFor();
       await offHint.waitFor();
@@ -692,7 +691,7 @@ describe('reference dashboard', () => {
       await offHint.waitFor();
       expect(await testMode.getAttribute('aria-checked')).toBe('false');
       expect((await live.call('GET', '/v1/telegram/consent-prompt')).data).toMatchObject({ enabled: true, manualDispatchOnly: true });
-      await page.getByText(/new contacts receive no invitation/i).waitFor();
+      await page.getByText(/Dispatch records the participant’s existing permission/i).waitFor();
       expect((await live.call('GET', '/v1/telegram/dm-replies')).data.enabled).toBe(true);
       live.stand.clock.advance(1_000);
       await live.receive(6000000997, 'Is the table available?');
@@ -727,7 +726,7 @@ describe('reference dashboard', () => {
     } finally { await live.stop(); }
   });
 
-  it('opens the selected live inbox chat for Dispatch confirmation and keeps its briefing', async () => {
+  it('confirms the selected Telegram chat and includes its briefing with one inbox Dispatch click', async () => {
     const chosen = 6000000977;
     const unrelated = 6000000978;
     const stand = standIns();
@@ -743,13 +742,15 @@ describe('reference dashboard', () => {
       await page.getByRole('checkbox', { name: 'Select ' + chat.displayLabel, exact: true }).check();
       await page.getByText('Dispatch briefing', { exact: true }).click();
       await page.locator('#dispatch-brief-text').fill('Ask about the time.');
-      await page.locator('#dispatch-button').click();
-      const dialog = page.getByRole('dialog', { name: 'Dispatch this chat' });
-      await dialog.getByText('Test mode on', { exact: true }).waitFor({ timeout: 5000 });
-      expect(await dialog.locator('#chat-dispatch-context').inputValue()).toBe('Ask about the time.');
+      expect(await page.locator('#inbox').getByText(/already agreed/).count()).toBe(0);
       expect(await live.caseActionsOf(chosen, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
-      await dialog.getByRole('button', { name: 'Dispatch test chat' }).click();
-      await dialog.waitFor({ state: 'hidden' });
+      const posted = page.waitForResponse(res => new URL(res.url()).pathname === '/v1/dispatches' && res.request().method() === 'POST');
+      await page.locator('#dispatch-button').click();
+      const response = await posted;
+      expect(response.ok()).toBe(true);
+      expect(response.request().postDataJSON()).toMatchObject({ chatIds: [chat.id], replyAgain: true,
+        participantPermissionRecorded: true, officerContext: 'Ask about the time.' });
+      expect(await page.locator('#chat-dispatch-dialog').isVisible()).toBe(false);
       expect(await live.caseActionsOf(chosen, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
       expect(await live.caseActionsOf(unrelated, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
     } finally { await live.stop(); }
@@ -781,51 +782,37 @@ describe('reference dashboard', () => {
       expect((await live.chatFor(unrelated))?.aiMode).toBe('ai_active');
       await openChat(page, chat.displayLabel);
       await page.locator('#chat-header').getByText('AI active', { exact: true }).waitFor();
-      await page.locator('#chat-header').getByText(/Waiting for participant permission/).waitFor();
+      expect(await page.locator('#chat-header').getByText(/already agreed/).count()).toBe(0);
       const requests: unknown[] = [];
       page.on('request', request => {
         if (request.method() === 'POST' && new URL(request.url()).pathname === '/v1/dispatches') requests.push(request.postDataJSON());
       });
-      const open = button(page, 'Dispatch this chat');
-      await open.click();
-      const dialog = page.getByRole('dialog', { name: 'Dispatch this chat' });
-      await dialog.getByText('Test mode on', { exact: true }).waitFor();
-      expect(await dialog.getByRole('checkbox', { name: /participant.*permission/i }).count()).toBe(0);
-      await dialog.getByRole('button', { name: 'Dispatch test chat' }).click();
-      await dialog.waitFor({ state: 'hidden' });
-      expect(requests).toEqual([{ chatIds: [chat.id], participantPermissionRecorded: true, expectedTestMode: true }]);
+      const dispatch = page.locator('#open-chat-dispatch');
+      await dispatch.click();
       await expect.poll(() => stand.sender.to(chosen).length).toBe(1);
+      expect(requests).toEqual([{ chatIds: [chat.id], participantPermissionRecorded: true, replyAgain: true,
+        replyToMessageId: expect.any(String), replyToHeadPosition: expect.any(Number) }]);
+      expect(await page.locator('#chat-dispatch-dialog').isVisible()).toBe(false);
       await page.locator('#chat-header').getByText('Approved for AI replies', { exact: true }).waitFor();
       expect(stand.generator.histories).toEqual([[{ from: 'contact', text: first }]]);
       expect(stand.sender.to(unrelated)).toHaveLength(0);
-      await open.click();
-      await dialog.getByText('Test mode on', { exact: true }).waitFor();
-      await live.call('POST', '/v1/telegram/consent-prompt', { enabled: true });
-      await dialog.getByRole('button', { name: 'Dispatch test chat' }).click();
-      await dialog.getByText(/setting changed/i).waitFor();
-      expect(requests).toHaveLength(1);
-      expect(await dialog.getByRole('checkbox', { name: /participant.*permission/i }).count()).toBe(0);
-      await dialog.getByText(/Choosing Dispatch confirms/i).waitFor();
-      await dialog.getByRole('button', { name: 'Dispatch', exact: true }).click();
-      await dialog.waitFor({ state: 'hidden' });
-      expect(requests.at(-1)).toEqual({ chatIds: [chat.id], participantPermissionRecorded: true });
-      await open.click();
-      await dialog.getByText('Test mode off', { exact: true }).waitFor();
-      await dialog.getByText(/An officer recorded participant permission/).waitFor();
-      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await live.call('POST', '/v1/telegram/consent-prompt', { enabled: true, manualDispatchOnly: true });
+      await button(page, 'Send follow-up').click();
+      await expect.poll(() => stand.sender.to(chosen).length).toBe(2);
+      expect(requests).toHaveLength(2);
+      expect(await live.caseActionsOf(chosen, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
+      expect(await live.caseActionsOf(chosen, 'telegram_dispatch_approved')).toHaveLength(2);
       stand.clock.advance(1_000);
       await live.receive(chosen, 'STOP');
       await live.app.drain();
       expect((await live.chatFor(chosen))?.telegramReplyHold.contactOptedOut).toBe(true);
-      await open.click();
-      await dialog.getByText(/This participant opted out/).waitFor();
-      expect(await dialog.getByRole('button', { name: 'Dispatch', exact: true }).isDisabled()).toBe(true);
-      await live.call('POST', '/v1/telegram/consent-prompt', { enabled: false });
-      await dialog.getByRole('button', { name: 'Cancel' }).click();
-      await open.click();
-      await dialog.getByText('Test mode on', { exact: true }).waitFor();
-      expect(await dialog.getByRole('button', { name: 'Dispatch test chat' }).isDisabled()).toBe(true);
-      expect(stand.sender.to(chosen)).toHaveLength(1);
+      await page.locator('#chat-header').getByText(/Ali is silent: the contact opted out/).waitFor();
+      const blocked = page.waitForResponse(res => new URL(res.url()).pathname === '/v1/dispatches' && res.request().method() === 'POST');
+      await dispatch.click();
+      expect((await (await blocked).json()).data.results[0].telegram.reason).toBe('opted_out');
+      await live.app.drain();
+      expect(stand.sender.to(chosen)).toHaveLength(2);
+      expect(await live.caseActionsOf(chosen, 'telegram_dispatch_approved')).toHaveLength(2);
       expect(stand.sender.to(unrelated)).toHaveLength(0);
     } finally { await live.stop(); }
   });
@@ -857,16 +844,22 @@ describe('reference dashboard', () => {
       const sentAt = stand.clock.now().getTime();
       await live.deliver(incoming(contact, 'Checking in.', sentAt));
       await live.dispatch(contact);
+      // One-click Dispatch answers the waiting DM at once. Nothing may be sent after the bank details arrive.
+      await live.app.drain();
+      expect(stand.sender.sent).toHaveLength(1);
       const chat = (await live.chatFor(contact))!;
       const { page, problems } = await openDashboard(live.data.token, live.url);
       await openChat(page, chat.displayLabel);
       const fixtureNumber = '000000123456';
+      await live.deliver(incoming(contact, 'Here are the photos: https://seller.example.test/photos', sentAt));
       await live.deliver(incoming(contact, `Pay by bank transfer to account number ${fixtureNumber}.`, sentAt));
       const header = page.locator('#chat-header');
       const item = inboxItem(page, 'Open chats', chat.displayLabel);
-      await item.getByText('1 item for officer review', { exact: true }).waitFor();
-      await header.getByText('Automated replies held for evidence review.', { exact: true }).waitFor();
-      const source = header.getByRole('link', { name: 'Review shared bank transfer details' });
+      await item.getByText('2 items for officer review', { exact: true }).waitFor();
+      await header.getByText('Link warning', { exact: true }).waitFor();
+      await header.getByText('Bank details are holding replies.', { exact: true }).waitFor();
+      const bankRow = header.locator('li[data-reason="bank_details"]');
+      const source = bankRow.getByRole('link', { name: 'Review shared bank transfer details' });
       await source.click();
       await page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: fixtureNumber }).waitFor();
       await openEvidence(page);
@@ -874,53 +867,65 @@ describe('reference dashboard', () => {
         expect(await secondary.innerText()).not.toContain(fixtureNumber);
       }
       await page.locator('#close-evidence').click();
-      await header.getByRole('button', { name: 'Mark reviewed' }).click();
+      await bankRow.getByRole('button', { name: 'Mark reviewed' }).click();
       await source.waitFor({ state: 'hidden' });
-      expect((await live.chatFor(contact))!.telegramReplyHold).toMatchObject({ evidenceItems: [], officerReview: null });
-      expect(stand.sender.sent).toHaveLength(0);
+      await header.getByText('Automated replies can continue.', { exact: true }).waitFor();
+      expect((await live.chatFor(contact))!.telegramReplyHold).toMatchObject({ evidenceItems: [{ reason: 'link' }], officerReview: null });
+      expect(stand.sender.sent).toHaveLength(1);
+      const [answer] = await live.caseActionsOf(contact, 'ai_reply_sent');
+      const [first] = (await live.timelineOf(contact)).messages;
+      expect(answer?.detail.inReplyTo).toBe(first.id);
       expect(problems).toEqual([]);
     } finally {
       await live.stop();
     }
   });
 
-  it('shows a local conversation review and its source, and releases the hold after officer review', async () => {
+  it('shows a conversation warning while Ali replies and clears it when acknowledged', async () => {
     const contact = 6000000890;
     const stand = standIns();
-    Object.assign(stand.generator, { decide: async () => ({
-      kind: 'review', status: 'READY_FOR_OFFICER_REVIEW', reasons: ['upfront_fee', 'payment_pressure'],
-    }) });
+    const assess: NonNullable<ReplyGenerator['decide']> = async () =>
+      ({ kind: 'review', status: 'HUMAN_INTERVENTION_REQUIRED', reasons: ['sensitive_request'] });
+    Object.assign(stand.generator, { decide: assess, composePublicReply: async () => 'My name is Ali.' });
     const live = await TelegramHarness.start({
       ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact), TELEGRAM_AI_AUTO_START: 'true',
     }, stand);
     try {
-      const text = 'There is a processing fee and you must pay right now.';
+      const text = 'What is your full name?';
       await live.receive(contact, text);
       await live.app.drain();
       const chat = (await live.chatFor(contact))!;
       const { page, problems } = await openDashboard(live.data.token, live.url);
+      await page.locator('#inbox-filter-review').click();
+      await page.locator('#inbox').getByText('Conversation warning', { exact: true }).waitFor();
       await openChat(page, chat.displayLabel);
       const header = page.locator('#chat-header');
-      const summary = 'Ready for officer review. Check for upfront fee, pressure to pay.';
+      const summary = 'Ali flagged a request for sensitive information.';
       await header.getByText(summary, { exact: true }).waitFor();
-      const source = header.getByRole('link', { name: 'View the message that triggered review' });
+      await header.getByText('Conversation warning', { exact: true }).waitFor();
+      await header.getByText('Automated replies can continue.', { exact: true }).waitFor();
+      expect(stand.sender.to(contact).map(item => item.reply.text)).toEqual(['My name is Ali.']);
+      const source = header.getByRole('link', { name: 'View flagged message' });
       await source.click();
-      await page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: text }).waitFor();
+      const message = page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: text });
+      await message.getByText('Conversation warning', { exact: true }).waitFor();
       await header.getByRole('button', { name: 'Mark reviewed' }).click();
       await source.waitFor({ state: 'hidden' });
+      await message.locator('.evidence-warning').waitFor({ state: 'hidden' });
       await openEvidence(page);
+      await page.locator('#case-log').getByText('Conversation warning recorded', { exact: true }).waitFor();
       await page.locator('#case-log').getByText(summary, { exact: true }).waitFor();
-      expect(stand.sender.to(contact)).toHaveLength(0);
+      expect((await live.chatFor(contact))!.telegramReplyHold).toMatchObject({ officerReview: null, evidenceItems: [] });
       expect(problems).toEqual([]);
     } finally { await live.stop(); }
   });
 
-  it('shows a red model payment flag at its source and clears it after officer review', async () => {
+  it('shows one link warning while Ali replies and keeps the same link cleared after review', async () => {
     const contact = 6000000896;
     const otherContact = 6000000895;
     const stand = standIns();
-    const assessPayment: NonNullable<ReplyGenerator['decide']> = async (_history, _signal, _correction, _turn, _memory, context) => ({
-      kind: 'silence', reason: 'other',
+    const assessPayment: NonNullable<ReplyGenerator['decide']> = async (history, _signal, _correction, _turn, _memory, context) => ({
+      kind: 'reply', text: history.some(turn => turn.from === 'owner') ? 'Can you tell me the size?' : 'Is it still available?',
       ...(context?.paymentLinks?.length ? { paymentLinkReview: { candidateId: 1, reason: 'unverified_payment_request' } } : {}),
     });
     Object.assign(stand.generator, { decide: assessPayment });
@@ -941,18 +946,26 @@ describe('reference dashboard', () => {
       await page.locator('#inbox-filter-review').click();
       await otherLink.waitFor({ state: 'hidden' });
       await openChat(page, chat.displayLabel);
-      const reviewRow = page.locator('#chat-header .review-item-payment');
-      await reviewRow.getByText('Payment link needs review', { exact: true }).waitFor();
+      const reviewRow = page.locator('#chat-header .review-item-warning');
+      await reviewRow.getByText('Payment link warning', { exact: true }).waitFor();
+      await page.locator('#chat-header').getByText('Automated replies can continue.', { exact: true }).waitFor();
+      expect(stand.sender.to(contact)).toHaveLength(1);
       const source = reviewRow.getByRole('link', { name: 'View payment link source' });
       expect(await source.getAttribute('href')).toMatch(/^#\/chats\/.*\/messages\/.*\/events\//u);
       await source.click();
       const message = page.locator('#timeline article.focused').filter({ hasText: url });
-      await message.locator('.payment-review-flag').waitFor();
+      await message.locator('.evidence-warning').waitFor();
       await reviewRow.getByRole('button', { name: 'Mark reviewed' }).click();
       await reviewRow.waitFor({ state: 'hidden' });
-      await page.locator('#timeline .payment-review-flag').waitFor({ state: 'hidden' });
+      await page.locator('#timeline .evidence-warning').waitFor({ state: 'hidden' });
       await inbox.getByRole('link', { name: chat.displayLabel, exact: true }).waitFor({ state: 'hidden' });
-      expect(stand.sender.to(contact)).toHaveLength(0);
+      await live.receive(contact, `Here is that link again. ${url}`);
+      await live.app.drain();
+      expect(stand.sender.to(contact)).toHaveLength(2);
+      expect((await live.chatFor(contact))!.telegramReplyHold).toMatchObject({ officerReview: null, evidenceItems: [] });
+      await page.reload();
+      await page.locator('#chat-header').getByText('Ali is handling replies', { exact: true }).waitFor();
+      expect(await reviewRow.count()).toBe(0);
       expect(problems).toEqual([]);
     } finally {
       await live.stop();
@@ -1008,34 +1021,102 @@ describe('reference dashboard', () => {
     expect((await dispatch).postDataJSON()).toEqual({ chatIds: [activeChat.chatId], officerContext: context });
     await inboxItem(page, 'Open chats', label).waitFor();
     expect(await otherCheckbox.isChecked()).toBe(true);
-    expect(await inboxItem(page, 'New inbound', otherLabel).isVisible()).toBe(true);
+    expect(await inboxItem(page, 'New messages', otherLabel).isVisible()).toBe(true);
   });
 
-  it('dispatches a registered non-Telegram case without offering an officer briefing', async () => {
-    const label = 'Registered WhatsApp Case';
-    const me = (await h.http(h.tokens.officerA).get('/v1/me')).body.data.principal;
-    const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
-    let chatId: string;
-    try {
-      chatId = db.transaction(tx => {
-        const account = insertChannelAccount(tx, {
-          workspaceId: me.workspaceId, source: 'whatsapp', externalAccountId: uniqueId('fixture-'),
-          label: 'Fixture WhatsApp Account', isIntake: false,
-        });
-        grantAccount(tx, me.id, account.id);
-        return insertChat(tx, { workspaceId: me.workspaceId, channelAccountId: account.id, externalChatId: uniqueId('chat-'),
-          displayLabel: label, createdVia: 'register', createdBy: me.id, inboxStatus: 'open' }).id;
-      });
-    } finally { db.close(); }
-    const { page } = await openDashboard(h.tokens.officerA);
-    await openChat(page, label);
-    await page.locator('#open-chat-dispatch').click();
-    expect(await page.locator('#chat-dispatch-context').isVisible()).toBe(false);
-    expect(await page.locator('#chat-dispatch-clear').isVisible()).toBe(false);
-    const dispatch = page.waitForRequest(request => request.method() === 'POST' && new URL(request.url()).pathname === '/v1/dispatches');
-    await page.locator('#confirm-chat-dispatch').click();
-    expect((await dispatch).postDataJSON()).toEqual({ chatIds: [chatId] });
-    await page.locator('#chat-header').getByText('AI active', { exact: true }).waitFor();
+  it('lists first-time contacts under New messages with a masked preview and dispatches the officer’s pick with its briefing', async () => {
+    const first = await seedChat(h.accounts.intake, 'First Contact A', 'Hi, my account is 0000 0012 3456, can you help?');
+    await ingestMessage(h.accounts.intake, first.externalChatId, 'First Contact A', 2, 'Are you there?');
+    await seedChat(h.accounts.intake, 'First Contact B', 'Is this the right place to ask?');
+    await seedChat(h.accounts.officer, 'Officer First C', 'Good morning, this is the order desk.', 'outgoing');
+    await h.drain();
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    const actions: { route: string; body: unknown }[] = [];
+    page.on('request', (request) => {
+      if (request.method() === 'POST') actions.push({ route: new URL(request.url()).pathname, body: request.postDataJSON() });
+    });
+    const filter = page.locator('#inbox-filter-new');
+    await filter.getByText('New messages', { exact: true }).waitFor();
+    await filter.locator('.count').waitFor();
+    await filter.click();
+    expect(await filter.getAttribute('aria-pressed')).toBe('true');
+
+    const rowA = inboxItem(page, 'New messages', 'First Contact A');
+    await rowA.locator('.first-contact q').getByText('Hi, my account is [number], can you help?', { exact: true }).waitFor();
+    expect(await rowA.locator('.first-contact-more').innerText()).toBe('2 messages');
+    expect(await rowA.innerText()).not.toContain('123456');
+    await inboxItem(page, 'New messages', 'First Contact B').locator('.first-contact q').waitFor();
+    // The category holds only first-time contacts: the officer-first chat and the open list stay out of it.
+    expect(await page.getByRole('region', { name: 'Open chats', exact: true }).isHidden()).toBe(true);
+    expect(await page.locator('#inbox').getByRole('link', { name: 'Officer First C', exact: true }).count()).toBe(0);
+    const listed = await page.getByRole('region', { name: 'New messages', exact: true }).locator('li[data-chat-id]').count();
+    expect(Number(await filter.locator('.count').innerText())).toBe(listed);
+
+    // Select all picks every listed first-time contact; the officer then keeps just one and briefs Ali for it.
+    await page.locator('#select-all-chats').check();
+    await page.locator('#selection-count').getByText(`${listed} selected`, { exact: true }).waitFor();
+    await page.locator('#select-all-chats').uncheck();
+    await page.getByRole('checkbox', { name: 'Select First Contact A', exact: true }).check();
+    await page.getByText('Dispatch briefing', { exact: true }).click();
+    await page.getByLabel('What should Ali keep in mind?', { exact: true }).fill('Ask which branch they visited.');
+    await button(page, 'Dispatch').click();
+    await rowA.waitFor({ state: 'detached' });
+    await inboxItem(page, 'New messages', 'First Contact B').waitFor();
+    expect(actions).toEqual([{ route: '/v1/dispatches', body: {
+      chatIds: [first.chatId], officerContext: 'Ask which branch they visited.', participantPermissionRecorded: true, replyAgain: true,
+    } }]);
+
+    await page.locator('#inbox-filter-all').click();
+    await inboxItem(page, 'Open chats', 'First Contact A').filter({ hasText: 'AI active' }).waitFor();
+    expect(await inboxItem(page, 'Open chats', 'First Contact A').locator('.first-contact').count()).toBe(0);
+    expect(problems).toEqual([]);
+  });
+
+  it('flags a contact as a scammer: the number goes to the phone watchlist and the chat moves to Suspects', async () => {
+    const seeded = await seedChat(h.accounts.intake, 'Flag Contact', 'Pay the fee first, then I ship.');
+    await h.drain();
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, 'Flag Contact');
+    const open = button(page, 'Flag as scammer');
+    await open.click();
+    const dialog = page.getByRole('dialog', { name: 'Flag as scammer' });
+    await dialog.getByText('Flag Contact', { exact: true }).waitFor();
+    await dialog.getByLabel('Their phone number').fill('07700 900321');
+    await dialog.getByLabel('Why are they a scammer?').fill('Asked for an upfront fee before shipping.');
+    await dialog.getByRole('button', { name: 'Flag and add to watchlist' }).click();
+    await dialog.getByText('Enter the number in international format, starting with + or 00.', { exact: true }).waitFor();
+    await dialog.getByLabel('Their phone number').fill('+44 7700 900321');
+    await dialog.getByRole('button', { name: 'Flag and add to watchlist' }).click();
+    await dialog.waitFor({ state: 'hidden' });
+
+    const header = page.locator('#chat-header');
+    await header.locator('.signal-suspect').getByText('+44 7700 900321', { exact: true }).waitFor();
+    expect(await open.isHidden()).toBe(true);
+    const row = inboxItem(page, 'Suspects', 'Flag Contact');
+    await row.getByText('Suspect', { exact: true }).waitFor();
+    expect(await inboxItem(page, 'New messages', 'Flag Contact').count()).toBe(0);
+    expect(await inboxItem(page, 'Open chats', 'Flag Contact').count()).toBe(0);
+    await page.locator('#inbox-filter-suspects').click();
+    await row.waitFor();
+    expect(await page.getByRole('region', { name: 'Open chats', exact: true }).isHidden()).toBe(true);
+
+    // Only the number is on the watchlist, approved, with the officer's flag as its evidence.
+    const entry = (await h.http(h.tokens.officerA).get('/v1/watchlist')).body.data.entries
+      .find((e: { number: { e164: string } }) => e.number.e164 === '+447700900321');
+    expect(entry).toMatchObject({ status: 'approved', evidence: [{ chatId: seeded.chatId, origin: 'officer_flag' }] });
+    await header.getByRole('link', { name: 'Open watchlist' }).click();
+    await page.locator('#watchlist-view').getByText('+44 7700 900321').first().waitFor();
+    await page.locator('#watchlist-view').getByText('Flagged by an officer').first().waitFor();
+
+    // Clearing the number on the watchlist moves the chat back.
+    const cleared = await h.http(h.tokens.officerA).post(`/v1/watchlist/${entry.id}/review`,
+      { decision: 'clear', reason: 'Entered the wrong number.', expectedRevision: entry.revision });
+    expect(cleared.status, cleared.text).toBe(200);
+    await page.goto(`${h.baseUrl}/#/chats/${seeded.chatId}`);
+    await button(page, 'Flag as scammer').waitFor();
+    expect(await page.getByRole('region', { name: 'Suspects', exact: true }).isHidden()).toBe(true);
+    // The one refused request is the local-format number, which the dialog explained.
+    expect(problems.filter((text) => !text.includes('status of 422'))).toEqual([]);
   });
 
   it('dispatches a briefing only for its selected chat and opens an editable local draft for a new contact', async () => {
@@ -1063,6 +1144,7 @@ describe('reference dashboard', () => {
     await inboxItem(page, 'Open chats', 'Briefing Contact').waitFor();
     expect(actions).toEqual([{ route: '/v1/dispatches', body: {
       chatIds: [first.chatId], officerContext: 'Earlier report mentioned an upfront fee.',
+      participantPermissionRecorded: true, replyAgain: true,
     } }]);
 
     await button(page, 'Draft first message').click();
@@ -1124,9 +1206,10 @@ describe('reference dashboard', () => {
     const decisionReady = new Promise<void>(resolve => { finishDecision = resolve; });
     Object.assign(stand.generator, { decide: async () => {
       await decisionReady;
-      return { kind: 'silence', reason: 'ordinary_terms_clear' };
+      return { kind: 'silence', reason: 'ordinary_terms_clear', explanation: 'The sender listed the terms and asked nothing new.' };
     } });
-    const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact) }, stand);
+    // Ali's automatic path decides on its own; a Dispatch would instead ask for a message.
+    const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact), TELEGRAM_AI_AUTO_START: 'true' }, stand);
     try {
       const latest = await live.receive(contact, 'Those are all the terms.');
       const chat = (await live.chatFor(contact))!;
@@ -1136,9 +1219,9 @@ describe('reference dashboard', () => {
       const reason = 'The model considered the terms of the offer clear.';
       await bubble.getByText('Those are all the terms.', { exact: true }).waitFor();
       expect(await bubble.getByText(reason, { exact: true }).count()).toBe(0);
-      await live.dispatch(contact);
       finishDecision();
       await bubble.getByText(reason, { exact: true }).waitFor();
+      await bubble.getByText('The sender listed the terms and asked nothing new.', { exact: true }).waitFor();
       await openEvidence(page);
       await page.locator('#case-log').getByText(reason, { exact: true }).waitFor();
       expect(stand.sender.to(contact)).toHaveLength(0);
@@ -1149,7 +1232,7 @@ describe('reference dashboard', () => {
     }
   });
 
-  it('shows the first evidence immediately, holds on the second and links each officer review to its source', async () => {
+  it('keeps replies enabled for links and documents and lets the officer acknowledge each source', async () => {
     const contact = 6000000707;
     const stand = standIns();
     const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact) }, stand);
@@ -1158,6 +1241,9 @@ describe('reference dashboard', () => {
       const original = incoming(contact, 'I can share the checkout details.', sentAt);
       await live.deliver(original);
       await live.dispatch(contact);
+      // One-click Dispatch answers the waiting DM at once; the rest of the exchange sends nothing more.
+      await live.app.drain();
+      expect(stand.sender.sent).toHaveLength(1);
       const chat = (await live.chatFor(contact))!;
       const { page, problems } = await openDashboard(live.data.token, live.url);
       await openChat(page, chat.displayLabel);
@@ -1167,10 +1253,10 @@ describe('reference dashboard', () => {
       await live.deliver({ update_id: edit.update_id, edited_business_message: {
         ...(edit.business_message as object), message_id: (original.business_message as { message_id: number }).message_id,
       } });
-      await item.getByText('1 item for officer review', { exact: true }).waitFor();
+      await item.getByText('Payment link warning', { exact: true }).waitFor();
       await header.getByText('Automated replies can continue.', { exact: true }).waitFor();
-      expect(await header.getByRole('button', { name: 'Mark reviewed' }).count()).toBe(0);
-      const payment = header.getByRole('link', { name: 'Review shared payment link' });
+      expect(await header.getByRole('button', { name: 'Mark reviewed' }).count()).toBe(1);
+      const payment = header.getByRole('link', { name: 'View payment link source' });
       await payment.click();
       await page.locator('#timeline article[data-event-type="edited"].focused').filter({ hasText: '/checkout/fixture' }).waitFor();
       await header.getByRole('button', { name: 'Pause AI' }).click();
@@ -1183,7 +1269,7 @@ describe('reference dashboard', () => {
       Object.assign(shared.business_message as object, { document: { file_id: 'fixture-only-file', file_unique_id: 'fixture-only-invoice' } });
       await live.deliver(shared);
       await item.getByText('2 items for officer review', { exact: true }).waitFor();
-      await header.getByText('Automated replies held for evidence review.', { exact: true }).waitFor();
+      await header.getByText('Automated replies can continue.', { exact: true }).waitFor();
       const documentRow = header.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Review shared document' }) });
       await documentRow.getByRole('link').click();
       await page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: 'Invoice attached.' }).waitFor();
@@ -1198,8 +1284,9 @@ describe('reference dashboard', () => {
       });
       expect((await resolve('not-a-review-in-this-chat')).success).toBe(false);
       await documentRow.getByRole('button', { name: 'Mark reviewed' }).click();
-      await item.getByText('1 item for officer review', { exact: true }).waitFor();
-      await header.getByText('Automated replies held for evidence review.', { exact: true }).waitFor();
+      await documentRow.waitFor({ state: 'hidden' });
+      await item.getByText('Payment link warning', { exact: true }).waitFor();
+      expect(await header.getByText('Bank details are holding replies.').count()).toBe(0);
       expect((await resolve(reviewId)).data.created).toBe(false);
       await header.getByRole('button', { name: 'Mark reviewed' }).click();
       await payment.waitFor({ state: 'hidden' });
@@ -1214,16 +1301,16 @@ describe('reference dashboard', () => {
       const location = header.getByRole('link', { name: 'Review shared location' });
       await location.click();
       await page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: '18 Sample Street' }).waitFor();
-      expect(await header.getByRole('button', { name: 'Mark reviewed' }).count()).toBe(0);
+      expect(await header.getByRole('button', { name: 'Mark reviewed' }).count()).toBe(1);
       expect(await header.getByText('Automated replies can continue.').count()).toBe(0);
-      expect(stand.sender.sent).toHaveLength(0);
+      expect(stand.sender.sent).toHaveLength(1);
       expect(problems).toEqual([]);
     } finally {
       await live.stop();
     }
   });
 
-  it('an officer signs in, sees the New inbound chat, dispatches two chats, takes one over, finds the composer blank, inserts the acknowledgement, sends, and sees one Simulated send message', async () => {
+  it('an officer signs in, sees the New messages chat, dispatches two chats, takes one over, finds the composer blank, inserts the acknowledgement, sends, and sees one Simulated send message', async () => {
     const inbound = await seedChat(h.accounts.intake, 'Test Contact 1', 'Hello, is anyone there?');
     await seedChat(h.accounts.officer, 'Test Contact 2', 'Good morning, this is the order desk.', 'outgoing');
     await h.drain();
@@ -1231,7 +1318,7 @@ describe('reference dashboard', () => {
     const { page, problems } = await openDashboard(h.tokens.officerA);
     expect(page.url()).toBe(`${h.baseUrl}/`);
 
-    const queued = inboxItem(page, 'New inbound', 'Test Contact 1');
+    const queued = inboxItem(page, 'New messages', 'Test Contact 1');
     await queued.waitFor();
     expect(await queued.textContent()).toContain('Telegram');
 
@@ -1243,7 +1330,7 @@ describe('reference dashboard', () => {
     await button(page, 'Dispatch').click();
     await inboxItem(page, 'Open chats', 'Test Contact 1').filter({ hasText: 'AI active' }).waitFor();
     await inboxItem(page, 'Open chats', 'Test Contact 2').filter({ hasText: 'AI active' }).waitFor();
-    expect(await inboxItem(page, 'New inbound', 'Test Contact 1').count()).toBe(0);
+    expect(await inboxItem(page, 'New messages', 'Test Contact 1').count()).toBe(0);
 
     await openChat(page, 'Test Contact 1');
     expect(await page.locator('#chat-header').textContent()).toContain('First observed: incoming');
@@ -1297,7 +1384,7 @@ describe('reference dashboard', () => {
     await seedChat(h.accounts.intake, 'Test Contact 11', 'Good evening, is the shop open tomorrow?');
     await ingestMessage(h.accounts.intake, existing.externalChatId, label, 2, 'It was due yesterday.');
 
-    await inboxItem(page, 'New inbound', 'Test Contact 11').waitFor();
+    await inboxItem(page, 'New messages', 'Test Contact 11').waitFor();
     await page.locator('#timeline .message-text').filter({ hasText: 'It was due yesterday.' }).waitFor();
     expect(await messages.count()).toBe(2);
     expect(problems).toEqual([]);
@@ -1501,13 +1588,13 @@ describe('reference dashboard', () => {
     await pasteTokenLink(page, h.tokens.officerB);
     await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer B');
     expect(page.url()).toBe(`${h.baseUrl}/`);
-    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
 
     await button(page, 'Sign out').click();
     await page.getByRole('heading', { name: 'Sign in', exact: true }).waitFor();
     await pasteTokenLink(page, h.tokens.officerA);
     await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer A');
-    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
     expect(page.url()).toBe(`${h.baseUrl}/`);
     expect(problems).toEqual([]);
   });

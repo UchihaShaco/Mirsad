@@ -1,6 +1,16 @@
 /** Inbox grouping and the multi-select for Dispatch (pure; types in inbox.d.ts). Inputs are never changed. */
+import { evidenceItemsFor, reviewWarningLabel } from '../format.js';
 
 const compareIds = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+/** The Dispatch API accepts at most this many chats in a single request. */
+export const DISPATCH_LIMIT = 100;
+
+/** Manual Dispatch confirms each selected Telegram participant's existing permission. */
+export function telegramDispatchRequest(target) {
+  const request = { participantPermissionRecorded: true, replyAgain: true };
+  return target ? { ...request, replyToMessageId: target.messageId, replyToHeadPosition: target.headPosition } : request;
+}
 
 /** Most recent activity first; ISO-8601 UTC timestamps of one format compare as strings. */
 function byRecentActivity(a, b) {
@@ -8,23 +18,40 @@ function byRecentActivity(a, b) {
   return a.lastActivityAt < b.lastActivityAt ? 1 : -1;
 }
 
-/** A single captured item can be informational. The service exposes officerReview when a decision is actionable. */
+/** The review filter also includes unacknowledged warnings while automatic replies continue. */
 export function needsOfficerReview(chat) {
-  return chat.telegramReplyHold.officerReview !== null;
+  const hold = chat.telegramReplyHold;
+  return hold.officerReview !== null || evidenceItemsFor(hold).some(item => reviewWarningLabel(item.reason));
 }
 
+/** An officer flagged the contact as a scammer and the number stays approved on the phone watchlist. */
+export function isSuspect(chat) {
+  return Boolean(chat.suspect);
+}
+
+/** A first-time contact: the contact wrote first and neither Ali nor an officer has acted on the chat yet. A suspect moves out. */
+export function isNewMessage(chat) {
+  return chat.inboxStatus === 'new_inbound' && !isSuspect(chat);
+}
+
+/** The inbox filters, in the order the officer sees them. */
+export const INBOX_FILTERS = ['all', 'new_messages', 'suspects', 'review', 'lower_concern'];
+
 function visibleInFilter(chat, filter) {
+  if (filter === 'new_messages') return isNewMessage(chat);
+  if (filter === 'suspects') return isSuspect(chat);
   if (filter === 'review') return needsOfficerReview(chat);
   if (filter === 'lower_concern') return Boolean(chat.lowerConcern);
   return true;
 }
 
-/** Splits the visible chats into the New inbound queue and the open list. */
+/** Splits the visible chats into the New messages queue, the Suspects queue and the open list; each chat is in one. */
 export function groupInbox(chats, filter = 'all') {
   const sorted = chats.filter(chat => visibleInFilter(chat, filter)).sort(byRecentActivity);
   return {
-    newInbound: sorted.filter((chat) => chat.inboxStatus === 'new_inbound'),
-    open: sorted.filter((chat) => chat.inboxStatus !== 'new_inbound'),
+    newInbound: sorted.filter(isNewMessage),
+    suspects: sorted.filter(isSuspect),
+    open: sorted.filter((chat) => !isNewMessage(chat) && !isSuspect(chat)),
   };
 }
 
@@ -37,8 +64,13 @@ export function toggleSelection(selection, chatId, selected) {
 
 /** A resolved review must leave the visible batch selection when the queue refreshes. */
 export function pruneSelection(selection, chats, filter = 'all') {
-  const listed = new Set(chats.filter(chat => visibleInFilter(chat, filter)).map((chat) => chat.id));
+  const listed = selectableChatIds(chats, filter);
   return new Set([...selection].filter((chatId) => listed.has(chatId)));
+}
+
+/** The current listed conversations; historical test entries are separate links without selection controls. */
+export function selectableChatIds(chats, filter = 'all') {
+  return new Set(chats.filter(chat => visibleInFilter(chat, filter)).map(chat => chat.id));
 }
 
 /** Resolve a conversation action against both the route and loaded timeline, even with unrelated batch selections. */

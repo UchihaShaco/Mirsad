@@ -29,7 +29,7 @@ import { applyModeChange } from './mode-change.ts';
 import { dispatchPermissionForTurn } from './telegram-dispatch-permission.ts';
 import { initialReviewStatus, requeueRetryableReviews } from './review-queue.ts';
 import { appendStreamEvent } from './stream.ts';
-import { dmConsentForTurn, observeDmConsent } from './telegram-dm-consent.ts';
+import { dmConsentForTurn, isOfficerEnrolledConsent, observeDmConsent, recordedDmConsent } from './telegram-dm-consent.ts';
 import { dmPolicyKey, dmPolicyMode, readConsentPromptPolicy, readDmPolicy } from './telegram-dm-policy.ts';
 import { isTelegramReplyHeld, markTelegramHoldIntakeStart, recordTelegramReplyHolds } from './telegram-reply-holds.ts';
 import * as watchlist from './watchlist.ts';
@@ -38,7 +38,7 @@ export type IntakeTarget =
   | { chatId: string }
   | { source: ChannelAccountRow['source']; externalAccountId: string; externalChatId: string; chat?: { displayLabel?: string } };
 
-export type IntakeConfig = Pick<Config, 'whatsappImportEnabled' | 'reviewAllowedCaptureMethods' | 'telegram'> & {
+export type IntakeConfig = Pick<Config, 'reviewAllowedCaptureMethods' | 'telegram'> & {
   /** Transport-specific scope check, after the account grant and before any evidence or placeholder is written. */
   authorizeTarget?: (account: ChannelAccountRow, externalChatId: string) => void;
   /** Supplied only by the poller for an original private message written by either human participant. */
@@ -67,12 +67,6 @@ interface StoredEvent {
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
 const toUtc = (iso: string | undefined): string | null => (iso === undefined ? null : new Date(iso).toISOString());
 
-function assertChannelEnabled(source: ChannelAccountRow['source'], config: IntakeConfig): void {
-  if (source === 'whatsapp' && !config.whatsappImportEnabled) {
-    throw AppError.of('channel_not_enabled', 'WhatsApp intake is not enabled until the Telegram controlled test is verified.');
-  }
-}
-
 function eventDirection(event: IntakeEvent): Direction | undefined {
   return event.direction;
 }
@@ -88,14 +82,12 @@ function resolveById(tx: Tx, connector: Principal, chatId: string, config: Intak
   if (!chat || !canAccessChat(tx, connector, chat)) throw AppError.of('chat_not_found', 'Chat not found.');
   const account = findChannelAccountById(tx, chat.channel_account_id);
   if (!account) throw new Error('chat_account_missing');
-  assertChannelEnabled(account.source, config);
   config.authorizeTarget?.(account, chat.external_chat_id);
   return { chat, account, created: false };
 }
 
 function resolveChat(tx: Tx, connector: Principal, target: IntakeTarget, event: IntakeEvent, config: IntakeConfig) {
   if ('chatId' in target) return resolveById(tx, connector, target.chatId, config);
-  assertChannelEnabled(target.source, config);
   const account = findChannelAccount(tx, connector.workspaceId, target.source, target.externalAccountId);
   if (!account || !hasGrant(tx, connector.id, account.id)) {
     throw AppError.of('account_not_authorized', 'This connector is not authorized for that channel account.');
@@ -177,12 +169,19 @@ function addEvidenceWork(ctx: IntakeContext, chat: ChatRow, message: MessageRow,
     if (incoming) {
       // Only the contact can give or withdraw permission. Record their holds before attempting activation.
       const listed = approvedReplyChatIds(telegram).includes(chat.external_chat_id);
-      const allowAcceptance = broad && sinceEnable && !readConsentPromptPolicy(ctx.tx, ctx.connector.id, policyKey).manualDispatchOnly;
-      const accepted = !listed && original && observeDmConsent(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text, allowAcceptance);
+      const consentState = recordedDmConsent(ctx.tx, ctx.connector.id, chat.id, policyKey);
+      const officerEnrolled = isOfficerEnrolledConsent(ctx.tx, consentState, chat.id, ctx.connector.id, policyKey);
+      const manualEnrollment = officerEnrolled && mode !== 'off' && inScope && telegram.aiReplies.enabled &&
+        !!telegram.aiReplies.consentReference && (!policy || sinceEnable);
+      const nativeIncoming = !!ctx.config.nativePrivateMessageId && message.source_message_id === `tg:${ctx.config.nativePrivateMessageId}`;
+      const allowAcceptance = officerEnrolled
+        ? manualEnrollment && nativeIncoming
+        : broad && sinceEnable && !readConsentPromptPolicy(ctx.tx, ctx.connector.id, policyKey).manualDispatchOnly;
+      const accepted = !listed && original && observeDmConsent(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text, allowAcceptance, policyKey);
       const permitted = mode !== 'off' && telegram.aiReplies.enabled && (!policy || sinceEnable) && inScope &&
         !!dispatchPermissionForTurn(ctx.tx, ctx.connector.id, policyKey, chat.id, message.id);
-      const enrolled = !!telegram.aiReplies.consentReference && (listed || permitted || (broad && sinceEnable && (accepted ||
-        dmConsentForTurn(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text).action === 'reply')));
+      const enrolled = !!telegram.aiReplies.consentReference && (listed || permitted || (((broad && sinceEnable) || manualEnrollment) && (accepted ||
+        dmConsentForTurn(ctx.tx, ctx.connector.id, chat.id, message.id, message.position, text, policyKey, nativeIncoming).action === 'reply')));
       markTelegramHoldIntakeStart(ctx.tx, ctx.connector.id, messageEvent.position);
       recordTelegramReplyHolds(ctx.tx, {
         workspaceId: chat.workspace_id, ...ids, text, media: reviewMedia,
@@ -326,7 +325,9 @@ function storeEditOrDeletion(ctx: IntakeContext, chat: ChatRow, event: EditedEve
     const messageEvent = insertEvent(ctx, base, 'deleted', event.sourceEventId, null, toUtc(event.deletedAt));
     return buildResult(ctx, chat.id, 'recorded', messageId, { message, messageEvent, captureId: null });
   }
-  const message = messages.markEditedAtSource(ctx.tx, target.id);
+  const telegramEditIsDirect = ctx.captureMethod === 'telegram_business_live'
+    ? !messages.hasTelegramQuote(event.reviewAttachments ?? []) : null;
+  const message = messages.markEditedAtSource(ctx.tx, target.id, telegramEditIsDirect);
   const messageEvent = insertEvent(ctx, base, 'edited', event.sourceEventId, event.text, toUtc(event.editedAt));
   const captureId = addEvidenceWork(ctx, updated, message, messageEvent, [], event.reviewAttachments);
   return buildResult(ctx, chat.id, 'recorded', messageId, { message, messageEvent, captureId });

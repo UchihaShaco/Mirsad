@@ -360,7 +360,7 @@ describe('reply quiet period', () => {
     }
   });
 
-  it.each(['document', 'location', 'bank_details', 'stop'] as const)('cancels active generation on a handoff or contact opt-out (%s)', async (kind) => {
+  it.each(['document', 'location', 'bank_details', 'stop'] as const)('rechecks a pending reply when the contact supplies new material or opts out (%s)', async (kind) => {
     const stand = standIns();
     const generate = vi.spyOn(stand.generator, 'generate');
     const h = await Harness.start({ ...LIVE_ENV, TELEGRAM_AI_AUTO_START: 'true' }, stand);
@@ -388,11 +388,12 @@ describe('reply quiet period', () => {
       stand.generator.releaseHeld();
       stand.clock.advance(3_000);
       await h.app.drain();
-      expect(stand.sender.sent).toHaveLength(0);
+      expect(stand.sender.sent).toHaveLength(kind === 'location' ? 1 : 0);
       expect(await h.caseActionsOf(CHATS.a, 'ai_reply_failed')).toHaveLength(0);
       if (kind !== 'stop') {
         const hold = (await h.chatFor(CHATS.a))?.telegramReplyHold;
-        expect(hold.officerReview).toBeTruthy();
+        if (kind === 'bank_details') expect(hold.officerReview?.reason).toBe('bank_details');
+        else expect(hold.officerReview).toBeNull();
         expect(hold.evidenceItems.map((item: Json) => item.reason).sort())
           .toEqual(kind === 'bank_details' ? ['bank_details'] : ['document', 'location']);
         if (kind === 'bank_details') expect(h.logs.join('\n')).not.toContain('0000000000123456');
@@ -700,25 +701,35 @@ describe('local-model replies in an approved Telegram chat', () => {
     expect(action?.detail.inReplyTo).toBe(question.id);
   });
 
-  it('does not answer a message older than the freshness window', async () => {
+  it('answers an older DM on a deliberate Dispatch, but answers automatically only while a message is fresh', async () => {
     await h.receive(CHATS.f, 'An old question');
     clock.advance(REPLY_FRESHNESS_MS + 60_000);
+    // Dispatch answers the latest eligible DM inside Telegram's 24-hour window.
     await h.dispatch(CHATS.f);
+    await vi.waitFor(() => expect(sender.to(CHATS.f)).toHaveLength(1), WAIT);
+
+    await h.control(CHATS.f, 'pause');
+    await h.receive(CHATS.f, 'A question while paused');
+    clock.advance(REPLY_FRESHNESS_MS + 60_000);
+    await h.control(CHATS.f, 'resume');
     await h.app.drain();
-    expect(sender.to(CHATS.f)).toHaveLength(0);
+    expect(sender.to(CHATS.f)).toHaveLength(1);
 
     await h.receive(CHATS.f, 'A new question');
-    await vi.waitFor(() => expect(sender.to(CHATS.f)).toHaveLength(1), WAIT);
+    await vi.waitFor(() => expect(sender.to(CHATS.f)).toHaveLength(2), WAIT);
   });
 
-  it('does not answer a backlog Telegram delivers late: a message sent before the window, received just now', async () => {
-    await h.receive(CHATS.g, 'Sent while Mirsad was down', clock.now().getTime() - REPLY_FRESHNESS_MS - 60_000);
+  it('does not answer automatically a backlog Telegram delivers late: a message sent before the window, received just now', async () => {
+    await h.receive(CHATS.g, 'First question');
     await h.dispatch(CHATS.g);
+    await vi.waitFor(() => expect(sender.to(CHATS.g)).toHaveLength(1), WAIT);
+
+    await h.receive(CHATS.g, 'Sent while Mirsad was down', clock.now().getTime() - REPLY_FRESHNESS_MS - 60_000);
     await h.app.drain();
-    expect(sender.to(CHATS.g)).toHaveLength(0);
+    expect(sender.to(CHATS.g)).toHaveLength(1);
 
     await h.receive(CHATS.g, 'Sent just now');
-    await vi.waitFor(() => expect(sender.to(CHATS.g)).toHaveLength(1), WAIT);
+    await vi.waitFor(() => expect(sender.to(CHATS.g)).toHaveLength(2), WAIT);
   });
 
   it('writes a blocked reply once more, and keeps a failure with the rule when every draft is blocked', async () => {
@@ -877,14 +888,15 @@ describe('local-model replies across a restart', () => {
   it('keeps a deliberately silent turn silent after a restart', async () => {
     const stand = standIns();
     const decide = vi.fn<NonNullable<ReplyGenerator['decide']>>()
-      .mockResolvedValue({ kind: 'silence', reason: 'conversation_closed' });
+      .mockResolvedValue({ kind: 'silence', reason: 'conversation_closed', explanation: 'The sender thanked Ali and closed the exchange.' });
     Object.assign(stand.generator, { decide });
     let h = await Harness.start({ ...LIVE_ENV, TELEGRAM_AI_AUTO_START: 'true' }, stand);
     try {
       const incomingText = 'Thanks for clearing up the sample order.';
       const message = await h.receive(CHATS.a, incomingText);
       await vi.waitFor(async () => expect(await h.caseActionsOf(CHATS.a, 'ai_reply_skipped')).toHaveLength(1), WAIT);
-      const detail = { source: 'model', reason: 'conversation_closed', model: stand.generator.model };
+      const detail = { source: 'model', reason: 'conversation_closed', model: stand.generator.model,
+        explanation: 'The sender thanked Ali and closed the exchange.' };
       expect((await h.caseActionsOf(CHATS.a, 'ai_reply_skipped'))[0]).toMatchObject({ messageId: message.id, detail });
       expect(h.logged('telegram_ai_reply_skipped', `"messageId":"${message.id}"`, '"source":"model"', '"reason":"conversation_closed"')).toBe(true);
       expect(h.logs.join('\n')).not.toContain(incomingText);

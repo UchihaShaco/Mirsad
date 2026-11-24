@@ -101,7 +101,7 @@ export interface LiveConnector {
 }
 
 export interface LiveConnectorDeps {
-  config: Pick<Config, 'telegram' | 'whatsappImportEnabled' | 'reviewAllowedCaptureMethods'>;
+  config: Pick<Config, 'telegram' | 'reviewAllowedCaptureMethods'>;
   db: Db;
   logger: Logger;
   /** Defaults to the real Bot API with the configured token. */

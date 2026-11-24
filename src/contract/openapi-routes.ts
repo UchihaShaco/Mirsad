@@ -74,7 +74,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Chat registered.', schema: 'RegisterChatResponse' },
       { status: 200, description: 'The chat already existed.', schema: 'RegisterChatResponse' },
     ],
-    errors: ['validation_failed', 'account_not_found', ...ACCOUNT, 'channel_not_enabled'],
+    errors: ['validation_failed', 'account_not_found', ...ACCOUNT],
   },
   'GET /v1/chats': {
     summary: 'List authorized conversations',
@@ -91,7 +91,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
+    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/chats/{chatId}/events': {
     summary: 'Submit an intake event to a registered chat',
@@ -101,12 +101,12 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
+    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/dispatches': {
-    summary: 'Start AI on selected chats',
+    summary: 'Dispatch selected chats and request eligible Telegram replies',
     description:
-      'Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.',
+      'Start eligible chats and return one receipt per chat. On live Telegram, participantPermissionRecorded=true is the officer’s attestation that every selected Telegram participant has already agreed to AI replies and screening through the configured provider for that chat. Each eligible chat records the attestation. replyAgain=true requests an immediate reply, retry or follow-up. Missing permission is reported to the officer. Approved chats continue answering eligible DMs. expectedTestMode=true also checks the invitation setting. To pin a particular message and timeline revision, use replyToMessageId and replyToHeadPosition with one chat. Telegram’s reply window, officer controls, opt-outs and review holds apply. A queued request has a requestId. Consult the timeline for delivery. An optional officer briefing applies to one chat. Send null to clear the briefing. Reuse the same Idempotency-Key for transport retries.',
     request: 'DispatchRequest',
     idempotencyKey: true,
     success: [{ status: 200, description: 'Per-chat dispatch results.', schema: 'DispatchResponse', replayHeader: true }],
@@ -152,7 +152,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   },
   'GET /v1/chats/{chatId}/timeline': {
     summary: 'Read a chat timeline',
-    description: 'Messages, message events, case actions, findings, case references and the stream cursor, each ordered by `position`.',
+    description: 'Messages, message events, case actions, findings, case references and the stream cursor. Live Telegram chats also report permission, ongoing automatic replies and the most recent Dispatch delivery outcome.',
     success: [{ status: 200, description: 'The timeline snapshot.', schema: 'Timeline' }],
     errors: [...CHAT],
   },
@@ -181,6 +181,14 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     request: 'WatchlistReviewRequest',
     success: [{ status: 200, description: 'The updated entry.', schema: 'WatchlistReviewResponse' }],
     errors: ['validation_failed', 'watchlist_entry_not_found', 'evidence_access_required', 'revision_conflict', 'invalid_transition'],
+  },
+  'POST /v1/chats/{chatId}/scammer-flags': {
+    summary: 'Flag the chat’s contact as a scammer',
+    description: 'Puts the contact’s number on the phone watchlist as Approved, with the officer’s reason, and matches every chat from that number. The chat lists under Suspects while the number stays approved; clearing the number on the watchlist withdraws it. Flagging the same message with the same number again returns 200 and changes nothing.',
+    request: 'ScammerFlagRequest',
+    success: [{ status: 201, description: 'Flag recorded.', schema: 'ScammerFlagResponse' },
+      { status: 200, description: 'Already flagged with this number.', schema: 'ScammerFlagResponse' }],
+    errors: ['validation_failed', ...CHAT, 'phone_invalid', 'message_not_found'],
   },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',

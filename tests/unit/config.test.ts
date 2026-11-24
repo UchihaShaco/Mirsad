@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ConfigError, loadConfig } from '../../src/config.ts';
@@ -50,7 +48,6 @@ describe('loadConfig', () => {
       reviewAllowedCaptureMethods: ['fixture_replay'],
       streamRetention: 5000,
       rateLimitPerMinute: 600,
-      whatsappImportEnabled: false,
       controlledTestRecordPath: fileURLToPath(
         new URL('../../docs/telegram/controlled-test-record.json', import.meta.url),
       ),
@@ -131,18 +128,6 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS: 'telegram_business_live' })).toThrow(
       /MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS/,
     );
-  });
-
-  it('loadConfig rejects MIRSAD_WHATSAPP_IMPORT_ENABLED without a controlled-test record', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mirsad-config-'));
-    try {
-      const missing = path.join(dir, 'controlled-test-record.json');
-      const env = { MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: missing };
-      expect(() => loadConfig(env)).toThrow(ConfigError);
-      expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
   });
 
   it('loadConfig defaults the reviewer to lmstudio and the model to qwen3.5-9b', () => {

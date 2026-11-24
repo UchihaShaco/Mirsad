@@ -4,6 +4,8 @@ import { mentionsProjectName, withoutAssistantIntroduction, type ReplyOfferMemor
 import type { ReplyGuardRule } from './reply-guard-rules.ts';
 export { REPLY_GUARD_RULES, type ReplyGuardRule } from './reply-guard-rules.ts';
 
+type PaymentInstructionPolicy = 'guarded' | 'prompt';
+
 /** The model wrote only blocked replies; `rule` names what the last one broke. */
 export class ReplyBlockedError extends Error {
   readonly rule: ReplyGuardRule;
@@ -278,12 +280,16 @@ const MIN_REPEAT_WORDS = 3;
  * in the chat. Long replies are compared with all available earlier replies. Short replies to an identity question
  * are compared with the most recent reply.
  */
-export function blockedRule(reply: string, earlierReplies: readonly string[] = [], latestContactText = '', expectedArabic?: boolean, skipWordingChecks = false): ReplyGuardRule | null {
+export function blockedRule(
+  reply: string, earlierReplies: readonly string[] = [], latestContactText = '', expectedArabic?: boolean,
+  skipWordingChecks = false, paymentInstructions: PaymentInstructionPolicy = 'guarded',
+): ReplyGuardRule | null {
   const text = normalise(reply);
   for (const [rule, pattern] of RULES) {
+    if (rule === 'payment_instructions' && paymentInstructions === 'prompt') continue;
     if (pattern.test(text)) return rule;
   }
-  if (includesPrivateTransferData(text)) return 'payment_instructions';
+  if (paymentInstructions === 'guarded' && includesPrivateTransferData(text)) return 'payment_instructions';
   if (isSellerOrDisclosureClaim(text) || PRICE_QUOTE.test(sellerText(text).trim())) return 'seller_disclosure';
   if (mentionsProjectName(text)) return 'unsolicited_brand';
   if (claimsUnverifiedPlace(text, latestContactText)) return 'unverified_location';
@@ -320,9 +326,12 @@ function asksFeePurpose(text: string): boolean {
 }
 
 /** Apply the same send-time checks to a generated worker reply and to an offline replay. */
-export function blockedRuleForTurn(reply: string, history: readonly ReplyTurn[], currentTurn: readonly string[], memory?: ReplyOfferMemory, skipWordingChecks = false): ReplyGuardRule | null {
+export function blockedRuleForTurn(
+  reply: string, history: readonly ReplyTurn[], currentTurn: readonly string[], memory?: ReplyOfferMemory,
+  skipWordingChecks = false, paymentInstructions: PaymentInstructionPolicy = 'guarded',
+): ReplyGuardRule | null {
   const earlierReplies = history.filter(turn => turn.from === 'owner').map(turn => turn.text);
-  const rule = blockedRule(reply, earlierReplies, currentTurn.at(-1) ?? '', isArabicReplyTurn(history, currentTurn), skipWordingChecks);
+  const rule = blockedRule(reply, earlierReplies, currentTurn.at(-1) ?? '', isArabicReplyTurn(history, currentTurn), skipWordingChecks, paymentInstructions);
   if (rule) return rule;
   if (currentTurn.some(asksAliName) && !/(?<!\p{L})(?:ali|علي)(?!\p{L})/u.test(sellerText(reply))) return 'seller_disclosure';
   if (answersAsSeller(reply, history, currentTurn)) return 'seller_disclosure';

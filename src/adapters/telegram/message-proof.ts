@@ -3,6 +3,19 @@ import type { Tx } from '../../storage/db.ts';
 import { MEDIA_KINDS, type TelegramMessage } from './types.ts';
 
 export const connectionHash = (id: string): string => createHash('sha256').update(id).digest('hex');
+
+export interface TelegramSourceProof { connector: string; policyKey: string }
+
+/** An invitation on one connection authorizes only source material attested on that connection. */
+export const verifiedTelegramSourceSql = `EXISTS (
+  SELECT 1 FROM telegram_message_proofs p JOIN chats c ON c.id=m.chat_id JOIN channel_accounts a ON a.id=c.channel_account_id
+  WHERE p.message_id=m.id AND p.connector_id=:connector AND p.connection_hash=substr(:policyKey,-64)
+    AND p.chat_number=CAST(c.external_chat_id AS INTEGER) AND m.source_message_id='tg:'||p.message_number
+    AND p.content_kind='normal' AND p.removal IS NULL
+    AND ((m.direction='incoming' AND m.sender_external_id=c.external_chat_id AND p.own_send=0)
+      OR (m.direction='outgoing' AND m.sender_external_id=a.external_account_id))
+    AND NOT EXISTS (SELECT 1 FROM message_events e WHERE e.message_id=m.id AND
+      (e.type='conflicting_copy' OR e.connector_id IS NOT :connector OR e.capture_method<>'telegram_business_live')))`;
 const addressKey = (connection: string, number: number) => 'telegram_delete_address:' + connectionHash(JSON.stringify([connection, number]));
 const chatKey = (connection: string, chat: number) => connectionHash(JSON.stringify([connection, 'chat', chat]));
 

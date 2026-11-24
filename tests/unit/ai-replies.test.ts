@@ -165,6 +165,19 @@ describe('reply history and language', () => {
     expect(request.slice(1).map(message => message.content)).toEqual([older.slice(0, 1_500), 'Noted.', latest]);
   });
 
+  it.each(['decision', 'public_reply'] as const)('retains the sender behind many outgoing follow-ups for %s', output => {
+    const question = 'Is the oak shelf wide enough for your room?';
+    const history: ReplyTurn[] = [
+      { from: 'contact', text: question },
+      ...Array.from({ length: 18 }, (_, i): ReplyTurn => ({ from: 'owner', text: `Follow-up ${i}. ${'x'.repeat(600)}` })),
+    ];
+    const messages = buildReplyMessages(history, 'Synthetic buyer prompt.', 500, undefined, DEFAULT_CONTEXT_TOKENS,
+      [], undefined, { dispatchIntent: 'follow_up' }, output);
+    const sender = messages.findIndex(message => message.role === 'user' && message.content.includes(question));
+    expect(sender).toBeGreaterThan(0);
+    expect(messages.slice(sender + 1).some(message => message.role === 'assistant' && message.content.includes('Follow-up 17.'))).toBe(true);
+  });
+
   it('keeps both ends of a clipped latest message within the smaller of the history budget and 3,000 characters', () => {
     const text = 'Start ' + '🔵'.repeat(880) + 'unneeded middle' + '🔴'.repeat(880) + ' End';
     for (const budget of [500, 2_999, 3_000, 8_000]) {
@@ -605,6 +618,7 @@ describe('which message the reply worker answers', () => {
     author_officer_id: null,
     send_status: null,
     edited_at_source: 0,
+    telegram_edit_is_direct: null,
     deleted_at_source: 0,
     position: 1,
     ...overrides,
@@ -618,7 +632,7 @@ describe('which message the reply worker answers', () => {
     const skipped: [string, Partial<MessageRow>][] = [
       ['an outgoing message', { direction: 'outgoing' }],
       ['an officer draft', { origin: 'officer_composer' }],
-      ['an imported message', { capture_method: 'whatsapp_export' }],
+      ['an imported message', { capture_method: 'approved_import' }],
       ['a placeholder for a message never seen', { original_captured: 0 }],
       ['a message deleted at the source', { deleted_at_source: 1 }],
       ['a message from someone else', { sender_external_id: '6000000999' }],

@@ -24,7 +24,8 @@ export const routes: RouteModule = {
     const result = deps.db.transaction((tx) => {
       const stored = withIdempotency(tx, officer, 'dispatch_by_phone', key, { ...body, phoneNumber }, () => ({
         status: OK, body: ok(dispatchByPhone(tx, officer, deps.config.telegram, phoneNumber, body.officerContext,
-          body.participantPermissionRecorded ? { runtimeAvailable: deps.telegramLive.running() && deps.telegramLive.repliesRunning() } : undefined)),
+          { runtimeAvailable: deps.telegramLive.running() && deps.telegramLive.repliesRunning(),
+            recordPermission: body.participantPermissionRecorded === true })),
       }));
       const response = stored.body as SuccessEnvelope<DispatchByPhoneResponse> | FailureEnvelope;
       if (stored.replayed && response.success && response.data.outcome === 'dispatched') requireChat(tx, officer, response.data.chatId);
@@ -38,14 +39,19 @@ export const routes: RouteModule = {
     const officer = principalOf(c);
     const key = requireIdempotencyKey(c);
     const body = await parseJsonBody(c, DispatchRequest);
-    const result = deps.db.transaction((tx) =>
-      withIdempotency(tx, officer, IDEMPOTENCY_SCOPE, key, body, () => ({
+    const result = deps.db.transaction((tx) => {
+      const stored = withIdempotency(tx, officer, IDEMPOTENCY_SCOPE, key, body, () => ({
         status: OK,
-        body: ok(dispatchChats(tx, officer, body.chatIds, body.officerContext, body.participantPermissionRecorded
-          ? { telegram: deps.config.telegram, expectedTestMode: body.expectedTestMode === true,
-            runtimeAvailable: deps.telegramLive.running() && deps.telegramLive.repliesRunning() } : undefined)),
-      })),
-    );
+        body: ok(dispatchChats(tx, officer, body.chatIds, body.officerContext, {
+          telegram: deps.config.telegram, runtimeAvailable: deps.telegramLive.running() && deps.telegramLive.repliesRunning(),
+          recordPermission: body.participantPermissionRecorded === true, expectedTestMode: body.expectedTestMode === true,
+          again: body.replyAgain === true, ...(body.replyToMessageId && { replyToMessageId: body.replyToMessageId }),
+          ...(body.replyToHeadPosition !== undefined && { replyToHeadPosition: body.replyToHeadPosition }),
+        })),
+      }));
+      if (stored.replayed) for (const chatId of body.chatIds) requireChat(tx, officer, chatId);
+      return stored;
+    });
     if (result.replayed) c.header(IDEMPOTENCY_REPLAYED_HEADER, 'true');
     else deps.workers.review.wake();
     return c.json(result.body as object, result.status as ContentfulStatusCode);

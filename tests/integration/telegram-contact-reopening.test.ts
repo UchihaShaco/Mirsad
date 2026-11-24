@@ -94,7 +94,7 @@ describe('a contact starts a new conversation after a plain Stop', () => {
     }
   });
 
-  it('keeps shared evidence held for officer review when the contact reopens, and does not answer the held turn after review', async () => {
+  it('keeps bank details held when the contact reopens and releases the hold independently of documents', async () => {
     const stand = standIns();
     const h = await Harness.start(env, stand);
     try {
@@ -103,9 +103,9 @@ describe('a contact starts a new conversation after a plain Stop', () => {
       Object.assign(document.business_message as object, { document: { file_id: 'synthetic-reopening-file' } });
       await h.deliver(document);
       expect((await h.chatFor(contact))?.telegramReplyHold.officerReview).toBeNull();
-      await h.deliver(incoming(contact, 'The pickup is at 12 Example Road.', stand.clock.now().getTime()));
+      await h.deliver(incoming(contact, 'For the transfer my bank account number is 0000000000123456.', stand.clock.now().getTime()));
       const flag = (await h.chatFor(contact))?.telegramReplyHold.officerReview;
-      expect(flag).toMatchObject({ reason: 'document' });
+      expect(flag).toMatchObject({ reason: 'bank_details' });
       await h.receive(contact, 'Can I ask a new question?');
       await h.app.drain();
       const chat = await h.chatFor(contact);
@@ -118,8 +118,9 @@ describe('a contact starts a new conversation after a plain Stop', () => {
       });
       expect(resolved.success).toBe(true);
       const remaining = await h.chatFor(contact);
-      const second = remaining?.telegramReplyHold.officerReview;
-      expect(second).toMatchObject({ reason: 'location' });
+      expect(remaining?.telegramReplyHold.officerReview).toBeNull();
+      const [second] = remaining?.telegramReplyHold.evidenceItems;
+      expect(second).toMatchObject({ reason: 'document' });
       const reviewed = await h.call('POST', `/v1/chats/${remaining?.id}/officer-decisions`, {
         decision: 'mark_reviewed', expectedRevision: remaining?.revision, reviewActionId: second.actionId,
       });

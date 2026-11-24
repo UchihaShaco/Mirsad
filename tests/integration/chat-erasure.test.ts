@@ -81,7 +81,7 @@ describe('permanently erasing a single chat', () => {
     const item = message(first,1,'Stop');
     db.transaction(tx => {
       record(tx,{chatId:item.chatId,workspaceId:officer.workspaceId,type:'telegram_officer_review_requested',
-        actorId:null,messageId:item.messageId,detail:{reason:'conversation_review',messageEventId:item.messageEventId,holdsReplies:true}});
+        actorId:null,messageId:item.messageId,detail:{reason:'bank_details',messageEventId:item.messageEventId,holdsReplies:true}});
       eraseChatHistory(tx,officer,item.chatId,1);
       expect(tx.get('SELECT ai_mode FROM chats WHERE id=?',[item.chatId])).toEqual({ai_mode:'paused'});
       expect(getTelegramReplyHold(tx,item.chatId)).toEqual({contactOptedOut:true,officerReview:null,evidenceItems:[]});
@@ -92,7 +92,7 @@ describe('permanently erasing a single chat', () => {
   it('cannot erase across a stale revision, a pending Telegram send or a revoked grant', () => {
     const {chatId} = message(first,1);
     expect(()=>db.transaction(tx=>eraseChatHistory(tx,officer,chatId,2))).toThrow(/changed/);
-    db.transaction(tx=>tx.run('INSERT INTO telegram_pending_sends VALUES (?,?,?)',[chatId,'synthetic','2099-01-01T00:00:00.000Z']));
+    db.transaction(tx=>tx.run('INSERT INTO telegram_pending_sends(chat_id,trigger_id,expires_at) VALUES (?,?,?)',[chatId,'synthetic','2099-01-01T00:00:00.000Z']));
     expect(()=>db.transaction(tx=>eraseChatHistory(tx,officer,chatId,1))).toThrow(/send is in progress/);
     db.transaction(tx=>tx.run('DELETE FROM account_grants WHERE principal_id=?',[officer.id]));
     expect(()=>db.transaction(tx=>eraseChatHistory(tx,officer,chatId,1))).toThrow(/not found/);

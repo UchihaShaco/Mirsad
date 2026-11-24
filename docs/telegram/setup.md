@@ -181,24 +181,23 @@ Live evidence stays ineligible for automated findings review.
    It can issue one reply for the burst or stay silent. Send **Hi** on its own for a brief greeting, then try
    **AI?** and **Are you a bot?** as separate turns. Compare the response when you repeat an answered question.
    The model chooses the words and can leave a turn unanswered. A subsequent stop, edit, deletion or takeover can discard a pending draft.
-3. Share a synthetic document. Open the chat in the dashboard and follow the first item's source-message link.
-   Automatic replies are still available. Share a second distinct item, such as a Telegram location.
-   The dashboard now shows the chat needs officer review. Examine both items and choose **Mark reviewed**
-   for each. The case log records each decision. A clearly identified payment link can also count as an item.
-   To test the immediate-pause exception, use a fresh synthetic fixture that supplies payment-recipient bank details.
-   The source-linked bank-details flag should hold the chat even if this is the first item.
+3. Share a synthetic link. Open its warning in the dashboard and choose **Mark reviewed**. When the same link
+   arrives again, its warning stays cleared. Gemini uses Ali’s active prompt to answer the sender while the link warning is open.
+   A different link gets its own warning. Documents and locations are also visible as evidence.
+   Use a synthetic fixture that supplies payment-recipient bank details to exercise the review hold. The
+   bank-details flag immediately pauses replies and links the reviewing officer to the source.
    For documents and native map pins, Mirsad records the type of share. Open the original in Telegram for the file
    or exact pin. A typed address remains part of the source message.
-   Each flagged item needs its own review. Marking it reviewed leaves officer controls and contact consent intact.
+   The case log records the officer's decision. Officer controls and contact consent still apply.
 4. Send **Please stop messaging me** while a reply is pending. The pending reply is cancelled. A closing **Thanks**
    keeps the exchange closed. Start a new one later with **Hi again**. **Stop testing now** from a contact
    cannot switch off the service or change officer controls.
 
 Native location and venue shares count as explicit location evidence. Text recognition is conservative. A location given
-as an address or a map pin can trigger review. A city in casual conversation alone does not. Human review is local and
+as an address or a map pin can appear as evidence. A city in casual conversation alone does not. Human review is local and
 the flag makes no determination of wrongdoing. A Telegram send already submitted before a stop may still be delivered.
 
-Repeated textual payment links, addresses and recipient accounts can be matched within a review cycle. Native files
+Repeated links are recognized by their normalized destination in the chat. Addresses and recipient accounts can be matched within a review cycle. Native files
 and pins have only a type marker and a source message. Sending the same file as a separate message can count again.
 The portal links to the captured payment instructions. The officer assesses the source and any supplied beneficiary name.
 
@@ -216,20 +215,20 @@ contacts** already has **Test mode** on.
 - **On.** A fresh eligible private message from you or the contact automatically activates new and returning chats.
   Ali waits for an incoming DM and can answer the first one from an approved contact. Other DMs appear in the
   inbox and stay local until permission is recorded. Turning the switch on applies to fresh messages.
-- **Switched off in Settings.** New contacts wait for manual Dispatch and receive no invitation. Switching Test
+- **Switched off in Settings.** New contacts wait for manual Dispatch. Switching Test
   mode off preserves existing approvals. Active, approved chats can continue automatically.
 
-To record permission for your own account or a participant who already agreed to AI replies and fraud screening,
-including sending their messages to Gemini through OpenRouter when configured, open **Dispatch this chat**. Confirm
-with **Dispatch test chat** in Test mode or **Dispatch** when Test mode is off. This single confirmation approves
-the selected chat and immediately requests a reply to its latest eligible unanswered DM if it is less than 24 hours old.
-The contact does not need to write again. Dispatch by phone works the same way for a unique verified match.
+Select only chats whose participants have already agreed to AI replies and fraud screening in that chat,
+including sending eligible messages to Gemini through OpenRouter when configured. Choose **Dispatch** in one chat,
+or use **Select all → Dispatch** if every chat in the filter meets that condition. One click records your confirmation
+for each eligible selected Telegram chat and requests an immediate reply, retry or follow-up. Manual Dispatch sends
+no permission invitation. Dispatch by phone uses the same delivery rules for a unique verified match.
 Later incoming messages use the usual three-second wait to group consecutive messages. Earlier messages stay outside this new permission.
 
-Installations using the earlier invitation setting can still send consent invitations. When a contact receives one, they can reply
+When a contact has already received an invitation, its delivery receipt stays in the chat history. They can reply
 **I AGREE** or **أوافق**, then send the message they want Ali to answer. The AI provider receives only subsequent
 eligible messages. **STOP** or **توقف** withdraws consent. Contacts on the pre-approved list use the existing
-consent record. Pauses, officer takeover and pending officer reviews still apply. With **Auto-reply to every Telegram DM** off, incoming
+consent record. Officer pauses, takeover and bank-details holds still apply. With **Auto-reply to every Telegram DM** off, incoming
 DMs continue to appear in the Inbox and Mirsad stops automated messages, including invitations. Turning it back on
 applies to new incoming messages. A request already submitted to Telegram can still be delivered.
 
@@ -280,4 +279,3 @@ to withdraw a chat or stop the connector.
   Never copy it as the real record. Its approval reference starts with `EXAMPLE-ONLY-`, and a record whose reference
   starts that way is never counted as verified, whatever its results and whether or not `TELEGRAM_APPROVAL_REFERENCE`
   is set.
-- A verified record is also what allows `MIRSAD_WHATSAPP_IMPORT_ENABLED=true` (see `docs/whatsapp/import-plan.md`).

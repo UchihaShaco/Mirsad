@@ -28,3 +28,11 @@ export class ReplyGenerationError extends Error {
     this.code = code;
   }
 }
+
+/** A completed generation from the selected provider contained an unusable draft. */
+export class InvalidReplyDraftError extends ReplyGenerationError {
+  constructor(code: 'invalid_response' | 'empty_reply') {
+    super(code);
+    this.name = 'InvalidReplyDraftError';
+  }
+}

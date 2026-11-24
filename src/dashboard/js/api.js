@@ -113,6 +113,7 @@ export function createApi(token, { onUnauthenticated }) {
     /** `request`: { kind, paymentHosts, sourceNote } (state/case-reference.js builds it). */
     recordCaseReference: (chatId, request) => post(chatPath(chatId, '/case-references'), request),
     watchlist: async () => (await call('GET', '/v1/watchlist')).data,
+    flagScammer: (chatId, phone, reason) => post(chatPath(chatId, '/scammer-flags'), { phone, reason }),
     reviewWatchlistEntry: (entryId, decision, reason, expectedRevision) =>
       post(`/v1/watchlist/${segment(entryId)}/review`, { decision, reason, expectedRevision }),
     /** The capture PNG; the caller turns it into an object URL. */

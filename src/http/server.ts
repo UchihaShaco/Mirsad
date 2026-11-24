@@ -40,7 +40,7 @@ function urlHost(host: string): string {
 }
 
 /** Binds to the configured loopback host. close() also ends open connections such as event streams. */
-export function startServer(app: Hono<AppEnv>, host: string, port: number): Promise<RunningServer> {
+export function startServer(app: Pick<Hono<AppEnv>, 'fetch'>, host: string, port: number): Promise<RunningServer> {
   return new Promise((resolve, reject) => {
     const server = serve({ fetch: app.fetch, hostname: host, port }, (info: AddressInfo) => {
       server.off('error', reject);

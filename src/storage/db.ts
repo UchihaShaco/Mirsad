@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 16;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -83,8 +83,10 @@ function plain<T>(row: unknown): T {
 function migrate(db: DatabaseSync): void {
   const version = db.prepare('PRAGMA user_version');
   if (Number(version.get()?.user_version) >= SCHEMA_VERSION) return;
-  db.exec('BEGIN IMMEDIATE');
+  // Foreign keys stay off while the schema changes; a table rebuild needs that, and the checks resume after COMMIT.
+  db.exec('PRAGMA foreign_keys = OFF');
   try {
+    db.exec('BEGIN IMMEDIATE');
     const current = Number(version.get()?.user_version);
     if (current === 0) db.exec(SCHEMA_SQL);
     if (current < 2) db.exec(EVIDENCE_SOURCES_SQL);
@@ -150,11 +152,49 @@ function migrate(db: DatabaseSync): void {
       );
       CREATE INDEX message_events_message_type_connector ON message_events(message_id,type,connector_id);
     `);
+    // v11 added tables for a WhatsApp demo that has since been removed; a new database skips them (see v15).
+    if (current < 12) db.exec(`
+      ALTER TABLE messages ADD COLUMN telegram_edit_is_direct INTEGER CHECK (telegram_edit_is_direct IN (0,1));
+    `);
+    if (current < 13) db.exec(`
+      ALTER TABLE telegram_pending_sends ADD COLUMN notice_policy_key TEXT;
+    `);
+    if (current < 14) db.exec(`
+      CREATE INDEX case_actions_chat_type_position ON case_actions(chat_id,type,position);
+      CREATE INDEX telegram_review_resolutions ON case_actions(chat_id,json_extract(detail,'$.reviewActionId'))
+        WHERE type='telegram_officer_review_resolved';
+    `);
+    // v15 drops the retired WhatsApp demo tables from a database that has them, but only while they hold no rows.
+    if (current < 15) {
+      for (const table of ['whatsapp_demo_opt_outs', 'whatsapp_reply_attempts', 'whatsapp_demo_bindings']) {
+        const exists = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table);
+        if (exists && !db.prepare(`SELECT 1 FROM ${table} LIMIT 1`).get()) db.exec(`DROP TABLE ${table}`);
+      }
+    }
+    // v16 lets an officer's scammer flag be a watchlist observation: SQLite changes a CHECK only by rebuilding the table.
+    if (current < 16) db.exec(`
+      CREATE TABLE watchlist_observations_v16 (
+        id TEXT PRIMARY KEY, entry_id TEXT NOT NULL REFERENCES watchlist_entries(id), workspace_id TEXT NOT NULL,
+        chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT NOT NULL REFERENCES messages(id),
+        message_event_id TEXT NOT NULL REFERENCES message_events(id), finding_id TEXT REFERENCES findings(id),
+        origin TEXT NOT NULL CHECK (origin IN ('sender_metadata','message_mention','officer_flag')),
+        source_representation TEXT NOT NULL, reason TEXT NOT NULL, observed_at TEXT NOT NULL,
+        UNIQUE (entry_id, message_event_id, origin)
+      );
+      INSERT INTO watchlist_observations_v16 (rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+        origin, source_representation, reason, observed_at)
+        SELECT rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+          origin, source_representation, reason, observed_at FROM watchlist_observations;
+      DROP TABLE watchlist_observations;
+      ALTER TABLE watchlist_observations_v16 RENAME TO watchlist_observations;
+    `);
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {
     if (db.isTransaction) db.exec('ROLLBACK');
     throw error;
+  } finally {
+    db.exec('PRAGMA foreign_keys = ON');
   }
 }
 

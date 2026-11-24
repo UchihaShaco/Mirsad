@@ -64,7 +64,10 @@ export type SentMessage = z.infer<typeof sentMessageSchema>;
 
 const envelopeSchema = z.discriminatedUnion('ok', [
   z.object({ ok: z.literal(true), result: z.unknown() }),
-  z.object({ ok: z.literal(false), error_code: z.number().int().optional(), description: z.string().optional() }),
+  z.object({
+    ok: z.literal(false), error_code: z.number().int().optional(), description: z.string().optional(),
+    parameters: z.object({ retry_after: z.number().int().nonnegative().optional() }).nullish().catch(null),
+  }),
 ]);
 
 export type BotApiErrorCode = 'aborted' | 'timeout' | 'network_error' | 'http_error' | 'api_error' | 'invalid_response';
@@ -75,14 +78,17 @@ export class BotApiError extends Error {
   readonly code: BotApiErrorCode;
   readonly status: number | null;
   readonly description: string | null;
+  readonly retryAfterSeconds: number | null;
 
-  constructor(method: BotApiMethod, code: BotApiErrorCode, status: number | null = null, description: string | null = null) {
+  constructor(method: BotApiMethod, code: BotApiErrorCode, status: number | null = null, description: string | null = null,
+    retryAfterSeconds: number | null = null) {
     super(`${method} failed: ${code}${status === null ? '' : ` (${status})`}`);
     this.name = 'BotApiError';
     this.method = method;
     this.code = code;
     this.status = status;
     this.description = description;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -190,8 +196,8 @@ async function call<T>(client: Client, method: BotApiMethod, body: object, schem
   const envelope = envelopeSchema.safeParse(await readJson(response));
   if (!envelope.success) throw new BotApiError(method, response.ok ? 'invalid_response' : 'http_error', response.status);
   if (!envelope.data.ok) {
-    const { error_code: code, description } = envelope.data;
-    throw new BotApiError(method, 'api_error', code ?? response.status, redact(client, description));
+    const { error_code: code, description, parameters } = envelope.data;
+    throw new BotApiError(method, 'api_error', code ?? response.status, redact(client, description), parameters?.retry_after ?? null);
   }
   const result = schema.safeParse(envelope.data.result);
   if (!result.success) throw new BotApiError(method, 'invalid_response', response.status);

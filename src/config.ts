@@ -7,7 +7,7 @@ import {
   type ConnectorCaptureMethod,
   type ReviewerKind,
 } from './contract/enums.ts';
-import { DEFAULT_CONTROLLED_TEST_RECORD, hasValidControlledTestRecord } from './contract/controlled-test-record.ts';
+import { DEFAULT_CONTROLLED_TEST_RECORD } from './contract/controlled-test-record.ts';
 import { GEMINI_REPLY_MODEL, OPENROUTER_REPLY_MODELS, type OpenRouterReplyModel } from './replies/openrouter-reply-generator.ts';
 
 export const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '::1'] as const;
@@ -37,8 +37,7 @@ export interface Config {
   reviewAllowedCaptureMethods: ConnectorCaptureMethod[];
   streamRetention: number;
   rateLimitPerMinute: number;
-  whatsappImportEnabled: boolean;
-  /** Absolute path of the Telegram controlled-test record that opens the WhatsApp gate. */
+  /** Absolute path of the Telegram controlled-test record that marks the live connector as verified. */
   controlledTestRecordPath: string;
   telegram: {
     liveEnabled: boolean;
@@ -143,18 +142,13 @@ export function loadConfig(env: Env): Config {
   if (!(LOOPBACK_HOSTS as readonly string[]).includes(host)) {
     throw new ConfigError('MIRSAD_HOST', `must be one of ${LOOPBACK_HOSTS.join(', ')}`);
   }
-  const whatsappImportEnabled = bool(env, 'MIRSAD_WHATSAPP_IMPORT_ENABLED', false);
   const recordPath = controlledTestRecordPath(env);
-  const approvalReference = value(env, 'TELEGRAM_APPROVAL_REFERENCE');
   const baseUrl = loopbackUrl(env, 'MIRSAD_LMSTUDIO_BASE_URL', 'http://127.0.0.1:1234/v1');
   const contextTokens = int(env, 'MIRSAD_LMSTUDIO_CONTEXT_TOKENS', 4096, 512);
   const arabicModel = value(env, 'MIRSAD_LMSTUDIO_ARABIC_MODEL');
   const replyProvider = oneOf(env, 'MIRSAD_REPLY_PROVIDER', ['lmstudio', 'openrouter'] as const, 'lmstudio');
   const now = Date.now();
   const wordingUntilMs = Date.parse(value(env, 'MIRSAD_TEST_WORDING_UNTIL') ?? '');
-  if (whatsappImportEnabled && !hasValidControlledTestRecord(recordPath, approvalReference)) {
-    throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a verified Telegram controlled-test record');
-  }
   return {
     host,
     port: int(env, 'MIRSAD_PORT', 8787, 0, MAX_PORT),
@@ -182,7 +176,6 @@ export function loadConfig(env: Env): Config {
     reviewAllowedCaptureMethods: reviewMethods(env),
     streamRetention: int(env, 'MIRSAD_STREAM_RETENTION', 5000, 1),
     rateLimitPerMinute: int(env, 'MIRSAD_RATE_LIMIT_PER_MINUTE', 600, 1),
-    whatsappImportEnabled,
     controlledTestRecordPath: recordPath,
     telegram: {
       liveEnabled: bool(env, 'TELEGRAM_LIVE_ENABLED', false),

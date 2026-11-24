@@ -5,12 +5,13 @@ import { principalOf, type RouteModule } from '../context.ts';
 
 export const routes: RouteModule = {
   'GET /v1/status': async (c, deps) => {
+    const officer = principalOf(c);
     const status = await readStatus({
       config: deps.config,
       db: deps.db,
       reviewer: deps.reviewer,
       startedAt: deps.startedAt,
-      workspaceId: principalOf(c).workspaceId,
+      workspaceId: officer.workspaceId,
       liveConnectorRunning: deps.telegramLive.running(),
     });
     return c.json(ok(status));

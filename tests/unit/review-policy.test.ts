@@ -19,14 +19,6 @@ describe('review policy', () => {
     }
   });
 
-  it('isReviewPermitted allows other sources only for allow-listed methods', () => {
-    expect(isReviewPermitted('whatsapp', 'fixture_replay', ['fixture_replay'])).toBe(true);
-    expect(isReviewPermitted('whatsapp', 'approved_import', ['fixture_replay'])).toBe(false);
-    expect(isReviewPermitted('whatsapp', 'approved_import', ['fixture_replay', 'approved_import'])).toBe(true);
-    expect(isReviewPermitted('whatsapp', 'host_intake', ['approved_import'])).toBe(false);
-    expect(isReviewPermitted('whatsapp', 'fixture_replay', [])).toBe(false);
-  });
-
   it('isReviewPermitted refuses Telegram fixture content when fixture_replay is not allow-listed', () => {
     expect(isReviewPermitted('telegram', 'fixture_replay', [])).toBe(false);
     expect(isReviewPermitted('telegram', 'fixture_replay', ['approved_import', 'host_intake'])).toBe(false);

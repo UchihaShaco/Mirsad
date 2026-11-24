@@ -39,26 +39,28 @@ describe('dispatch by a Telegram self-shared phone number', () => {
     expect(h.logs.join('')).not.toContain('7700');
   });
 
-  it('records permission only for a single verified match after explicit confirmation and only once on retry', async () => {
+  it('audits officer approval only for a single verified match and only once on retry', async () => {
     const confirm = (key: string) => h.call('POST', endpoint, { phoneNumber: phone, participantPermissionRecorded: true },
       { 'Idempotency-Key': key });
     expect((await confirm('absent')).data).toEqual({ outcome: 'no_verified_chat' });
     await h.deliver(card(first, phone), card(second, phone));
     expect((await confirm('ambiguous')).data).toEqual({ outcome: 'ambiguous' });
-    expect(await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
-    expect(await h.caseActionsOf(second, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+    expect(await h.caseActionsOf(first, 'telegram_dispatch_approved')).toHaveLength(0);
+    expect(await h.caseActionsOf(second, 'telegram_dispatch_approved')).toHaveLength(0);
     await h.deliver(card(second, other));
     const result = await confirm('unique');
     expect(result.data.outcome).toBe('dispatched');
     expect((await confirm('unique')).data).toEqual(result.data);
-    expect(await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded')).toHaveLength(1);
-    expect(await h.caseActionsOf(second, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+    expect(await h.caseActionsOf(first, 'telegram_dispatch_approved')).toHaveLength(1);
+    expect(await h.caseActionsOf(first, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
+    expect(await h.caseActionsOf(second, 'telegram_dispatch_approved')).toHaveLength(0);
 
     await h.dispatch(second);
     await h.control(second, 'pause');
     const paused = await h.call('POST', endpoint, { phoneNumber: other, officerContext: 'Ask about delivery.', participantPermissionRecorded: true },
       { 'Idempotency-Key': 'paused' });
     expect(paused.data.dispatch.results[0]).toMatchObject({ aiMode: 'paused', status: 'requires_resume' });
+    expect(await h.caseActionsOf(second, 'telegram_dispatch_approved')).toHaveLength(0);
     expect(await h.caseActionsOf(second, 'telegram_dispatch_permission_recorded')).toHaveLength(0);
   });
 

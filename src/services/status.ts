@@ -1,8 +1,7 @@
 /**
  * GET /v1/status (design section 13): service, storage, worker queues, reviewer, and the channel states. Telegram
  * readiness comes from the readiness file written by `npm run telegram:readiness`, and `controlled_test_verified`
- * only from a controlled-test record that validates and documents a verified test (the same check as the WhatsApp
- * gate). Nothing here reads message content.
+ * only from a controlled-test record that validates and documents a verified test. Nothing here reads message content.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,12 +44,6 @@ export const ReadinessRecord = z.object({
   checks: z.array(z.object({ id: z.string(), title: z.string(), passed: z.boolean(), detail: z.string() })),
 });
 export type ReadinessRecord = z.infer<typeof ReadinessRecord>;
-
-export const WHATSAPP_GATES = {
-  closed: 'closed_until_telegram_controlled_test_verified',
-  importDisabled: 'closed_until_import_enabled',
-  open: 'open',
-} as const;
 
 export interface StatusDeps {
   config: Config;
@@ -96,11 +89,6 @@ function readiness(config: Config, readinessFile: string): Pick<TelegramStatus, 
   const local = readReadinessRecord(readinessFile);
   if (local && isReadyForControlledTest(local)) return { readiness: 'ready_for_controlled_test', readinessRecordedAt: local.recordedAt };
   return { readiness: 'not_assessed', readinessRecordedAt: null };
-}
-
-function whatsappGate(config: Config): string {
-  if (config.whatsappImportEnabled) return WHATSAPP_GATES.open;
-  return hasVerifiedRecord(config) ? WHATSAPP_GATES.importDisabled : WHATSAPP_GATES.closed;
 }
 
 const CAPTURES_OF_WORKSPACE = 'SELECT COUNT(*) FROM captures c JOIN chats ch ON ch.id = c.chat_id WHERE ch.workspace_id = :workspaceId AND';
@@ -168,7 +156,6 @@ export async function readStatus(deps: StatusDeps): Promise<Status> {
         liveConnector: deps.liveConnectorRunning ? 'enabled' : 'disabled',
         ...readiness(config, deps.readinessFile ?? DEFAULT_READINESS_FILE),
       },
-      whatsapp: { status: 'not_started', gate: whatsappGate(config) },
     },
   };
 }

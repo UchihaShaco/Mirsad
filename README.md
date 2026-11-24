@@ -66,7 +66,7 @@ After updating a checkout, run `npm ci` while the service is stopped whenever th
 | Enable Telegram on a new installation | Set the bot token, approved connection, scope and approval references in the local `.env`. For replies, configure the consent reference and Telegram's **Reply to Messages** right. Follow the setup guide to enable `TELEGRAM_LIVE_ENABLED` and `TELEGRAM_AI_REPLIES_ENABLED`. Run `npm run telegram:verify` and restart. |
 | Use Gemini for English and Emirati Arabic | In `.env`, set `MIRSAD_REPLY_PROVIDER=openrouter` and `MIRSAD_OPENROUTER_MODEL=google/gemini-3.8-flash`. Put the key in `OPENROUTER_API_KEY` using a local editor. Run `npm run openrouter:verify` for a synthetic test, then restart. During live operation, eligible reply text goes to OpenRouter and Google. |
 | Run with a local model | For local replies, choose `MIRSAD_REPLY_PROVIDER=lmstudio`. Start the LM Studio server at `http://127.0.0.1:1234/v1` and load the model named by `MIRSAD_LMSTUDIO_MODEL` (default `qwen3.5-9b`). The separate findings reviewer uses `MIRSAD_REVIEWER`. OpenRouter replies can run without LM Studio. |
-| Test automatic Dispatch | In **Settings**, enable **Auto-reply to every Telegram DM** and **Test mode**. Eligible DMs automatically activate new and returning chats. An approved contact can receive a reply from the first incoming DM. For your own test account or a participant who already agreed, **Dispatch this chat → Dispatch test chat** records permission once. |
+| Test automatic Dispatch | In **Settings**, enable **Auto-reply to every Telegram DM** and **Test mode**. Eligible DMs automatically activate new and returning chats. An approved contact can receive a reply from the first incoming DM. Use manual **Dispatch** to record an existing participant agreement for each selected chat. |
 | Apply a prompt edit | Save `prompts/ali.md`, then select **Settings → Reload Ali’s prompt**. Check the confirmation and send the next test DM. A turn already in progress uses the prior version. A validation error leaves the last working prompt active. |
 
 Keep the live configuration, credentials, database and evidence on the operator machine. The repository supplies
@@ -127,8 +127,15 @@ npm run replay -- fixtures/telegram/inbound-first-greeting.json
 ```
 
 Open the `Demo Officer 1` link for the fixture port. The new chat appears
-in the **New inbound** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
-says what each one exercises. **Needs review** filters the queue to conversations waiting for an officer’s decision.
+in the **New messages** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
+says what each one exercises. **New messages** lists first-time contacts that neither Ali nor an officer has answered yet,
+each with a masked preview of its first message (links, numbers, e-mail addresses and handles hidden) and how many messages
+are waiting. Select whom to dispatch there; with one chat selected, **Dispatch briefing** tells Ali what to keep in mind.
+A chat leaves New messages once it is dispatched or an officer takes control. **Flag as scammer** in a conversation asks
+for the contact’s number (international format) and a reason: only the number goes to the **Phone watchlist**, approved,
+with the officer and reason as its decision, and every chat from that number shows a watchlist match. The flagged chat
+moves to **Suspects** while the number stays approved; clearing the number on the watchlist moves it back. Ali’s replies
+are not changed. **Needs review** filters the queue to conversations waiting for an officer’s decision.
 Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
 For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
 Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose
@@ -161,7 +168,7 @@ A conflicting host raises **Suspected fraud**. Try it with `merchant-conflict.js
 ## Verification
 
 On 2026-11-24 the Windows release passed type checking, 1,090 automated tests across 90 files, and all 37 dashboard
-browser tests. Four WhatsApp placeholder tests were skipped. A separate clean checkout installed with `npm ci`,
+browser tests. A separate clean checkout installed with `npm ci`,
 started using the example configuration with a deterministic reviewer, and served the portal, health endpoint and
 authenticated officer endpoint using newly seeded credentials.
 
@@ -173,7 +180,7 @@ evaluation rows give the dates of their committed reports.
 
 | Run | Result |
 |---|---|
-| `npm test` | 679 tests passed across 58 files. The 4 WhatsApp channel contract placeholders were skipped. Telegram tests cover the three-second minimum, fee questions and corrections, bounded history, distinct evidence items, and immediate cancellation when a sender provides bank-transfer details. |
+| `npm test` | 679 tests passed across 58 files. Telegram tests cover the three-second minimum, fee questions and corrections, bounded history, distinct evidence items, and immediate cancellation when a sender provides bank-transfer details. |
 | `npm run typecheck` | Clean. |
 | `npm run test:e2e` | 12 of 12 dashboard flows passed. They include the first visible item, a two-item hold, the immediate bank-details hold, and source-linked officer review. |
 | Synthetic Telegram replies on local Qwen | The 56-case regression replay met 34/41 development and 13/15 held-out criteria. Five misses used the previous first-material silence rule. In fresh worker conversations an English job-fee exchange followed the requested question and acknowledgment. Arabic clarification was inconsistent. |
@@ -194,8 +201,8 @@ instead of waiting forever.
 
 | # | Check | What it shows |
 |---|---|---|
-| 1 | `service_healthy` | `/healthz` answers. `GET /v1/status` reports the reviewer, Telegram readiness, the live connector state and the WhatsApp gate. |
-| 2 | `inbound_first_new_inbound` | An inbound-first chat lands in **New inbound** with `First observed: incoming`. |
+| 1 | `service_healthy` | `/healthz` answers. `GET /v1/status` reports the reviewer, Telegram readiness and the live connector state. |
+| 2 | `inbound_first_new_inbound` | An inbound-first chat lands in **New messages** with `First observed: incoming`. |
 | 3 | `officer_first_both_directions` | An officer-first chat shows both directions with `First observed: outgoing`. |
 | 4 | `start_marker_contact_started` | A fixture's start assertion, from the trusted fixture connector, gives `Contact started chat`. |
 | 5 | `capture_per_message` | Every received message has a ready capture. The fetched bytes match its SHA-256 and the `X-Mirsad-SHA256` header. |
@@ -285,7 +292,7 @@ different body gets `422 idempotency_key_reused`.
 | `GET /v1/chats` | officer | List authorized chats with channel, origin label, inbox status, AI mode and watchlist matches, plus the snapshot `cursor`. Query: `inboxStatus`, `limit`, `offset`. |
 | `POST /v1/ingest` | connector | Submit an intake event. Creates or finds the chat and appends the event in one transaction. |
 | `POST /v1/chats/{chatId}/events` | connector | The same intake for a registered chat: `message.recorded`, `message.edited`, `message.deleted`. |
-| `POST /v1/dispatches` | officer | Start AI review on 1 to 100 chats; per-chat status. Access to the whole selection is checked first. A chat that is already active keeps its mode, and its unavailable reviews are retried. |
+| `POST /v1/dispatches` | officer | Dispatch 1 to 100 chats after checking access to the whole selection. Live Telegram results report automatic-reply status and a queued reply request or the reason it could not be queued. |
 | `POST /v1/dispatches/by-phone` | officer | Dispatch one Telegram chat by an international phone number. Returns the dispatch receipt on a unique verified match, or an outcome for an unknown or ambiguous number. |
 | `POST /v1/chats/{chatId}/control` | officer | `pause`, `take_over` or `resume`, with `expectedRevision`. |
 | `GET /v1/chats/{chatId}/erase-preview`, `GET /v1/inbox/erase-preview` | officer | Get the affected conversation count and the snapshot needed to confirm erasure. |
@@ -301,7 +308,7 @@ different body gets `422 idempotency_key_reused`.
 | `POST /v1/chats/{chatId}/case-references` *(extension)* | officer | Records a merchant's payment confirmation. **Suspected fraud** needs independent merchant confirmation, and this is where the officer enters it. The dashboard's case panel calls it from **Record merchant confirmation** and lists the chat's confirmations. |
 | `POST /v1/captures/{captureId}/retry` *(extension)* | officer | Retries a failed capture: the brief's "retryable capture error". |
 | `GET /v1/me` *(extension)* | officer or connector | Who the token belongs to. The dashboard needs it to know the signed-in officer. |
-| `GET /v1/status` *(extension)* | officer | Service, workers, reviewer reachability, Telegram readiness and the WhatsApp gate: the brief's health and status checks. |
+| `GET /v1/status` *(extension)* | officer | Service, workers, reviewer reachability and Telegram readiness: the brief's health and status checks. |
 | `GET /healthz` *(extension)* | none | Liveness. |
 | `GET /`, `GET /assets/*` | none | The reference dashboard. |
 
@@ -425,7 +432,7 @@ for (;;) {
 Status: **Ready for controlled test**. `docs/telegram/readiness.json` records `ready_for_controlled_test`, with all eight
 local checks passed:
 
-- inbound-first chats are flagged New inbound;
+- inbound-first chats are flagged New messages;
 - officer-first chats show both directions;
 - every received message has its own capture;
 - edits and deletions are separate events;
@@ -448,29 +455,41 @@ If a new fee to start work has no stated purpose, it asks once what it covers. O
 The prompt uses up to 32 recent eligible messages plus the sender's relevant earlier offer and correction.
 Offer memory comes from that chat's eligible messages in SQLite and carries over when the sender changes language.
 For automatic replies, the worker waits for three quiet seconds so it can read consecutive messages together.
-Confirming Dispatch for one chat skips that delay for the selected DM. Officer controls and contact preferences apply before sending.
+Manual Dispatch skips that delay for each selected chat. Officer controls and contact preferences apply before sending.
 
 A contact can end the current exchange with **Stop** and start a new one later with **Hi** or a direct question.
-After **Never contact me again**, the contact can explicitly invite a reply in their own words. The first volunteered
-payment link, document or relevant location appears in the officer portal with a link to the source message.
-A second distinct item pauses automatic replies. Bank-transfer details volunteered by the sender trigger an immediate
-pause, including when they are the first item. The portal links the officer to the source. The officer marks each item reviewed. A request to pay or an
-explanation of the fee does not count. Officer controls and contact opt-outs apply independently. See setup step 9 for retesting.
+After **Never contact me again**, the contact can explicitly invite a reply in their own words. Links appear as
+warnings in the officer portal while Ali continues the conversation. **Mark reviewed** clears the warning for that
+link in the chat. Documents and locations also remain available as evidence. When the sender volunteers bank-transfer
+details, Ali pauses immediately so an officer can inspect the source and mark the item reviewed. Gemini can also
+record a conversation warning while Ali continues. Officer control and contact opt-outs still apply.
 
 **Chat scope.** All-private intake covers eligible private DMs on the connected account. In **Settings**, turn on
 **Auto-reply to every Telegram DM**. The **Test mode** switch then controls automatic Dispatch.
 
 - With **Test mode on**, a fresh eligible DM activates a new or returning chat automatically. Either participant can
   open the conversation. Ali can answer an approved contact’s first incoming message. Other contacts receive no
-  invitation, and their messages stay local until permission is recorded.
-- Switching **Test mode off** in Settings stops automatic Dispatch and consent invitations for new contacts.
+  automatic invitation. Their messages stay local until permission is recorded.
+- Switching **Test mode off** in Settings stops automatic Dispatch and automatic consent invitations for new contacts.
   Already-active, approved contacts can continue receiving replies. **Auto-reply to every Telegram DM** is the
   account-wide switch for pausing all replies.
 
-In either mode, open **Dispatch this chat** for your own account or a participant who already agreed to AI replies
-and fraud screening, including sending their messages to Gemini through OpenRouter when configured. Confirming
-**Dispatch test chat** or **Dispatch** records that permission and immediately requests a reply to the latest
-eligible unanswered DM already in the chat. Switching Test mode off keeps existing approvals.
+In either mode, select only chats whose participants have already agreed to AI replies and fraud screening for that chat,
+including sending eligible messages to Gemini through OpenRouter when configured. Use **Dispatch** in one chat or
+**Select all → Dispatch** for the current inbox filter (up to 100 chats per dispatch). One click confirms the existing
+agreement for each eligible selected Telegram chat and immediately requests a reply. Dispatch sends no permission invitation.
+Ali answers the latest eligible message, retries a missed reply, or sends a follow-up when the account already answered.
+If that message arrived before Mirsad activated automatic replies or saved the officer's approval, Dispatch can still
+send it to Gemini within the reply window. Only the selected message from before that cutoff is included.
+For an original attachment without a caption, the model can ask the contact to type their message.
+When a link raises a warning, Gemini uses Ali’s active prompt and the eligible conversation to answer the sender.
+If Gemini cannot produce a usable reply, the portal records the failure and sends nothing for that turn.
+Each selected chat has its own receipt. **Sent** means Telegram confirmed delivery.
+
+After Dispatch, Ali can answer subsequent eligible messages automatically. Previously delivered invitations and their
+receipts remain in the chat history. Consent already recorded for that chat continues to apply until withdrawn.
+Approval survives refresh, restart, or switching Test mode off. **Pause AI** and **Take over** stop automatic replies.
+**Resume AI** restores them for an approved chat.
 
 The chat header shows **Approved for AI replies** when permission is on record. An active chat that still needs
 permission displays **Waiting for participant permission**.
@@ -483,16 +502,6 @@ chat are dropped before storage.
 - Rollback: [docs/telegram/rollback.md](docs/telegram/rollback.md).
 - Observed event coverage worksheet: [docs/telegram/event-coverage-worksheet.md](docs/telegram/event-coverage-worksheet.md).
 - Local readiness results: [docs/telegram/readiness.md](docs/telegram/readiness.md). Fixtures: [docs/telegram/fixtures.md](docs/telegram/fixtures.md).
-
-## WhatsApp gate
-
-Only preparation exists: the shared channel adapter interface, the [data mapping](docs/whatsapp/data-mapping.md), the
-[import plan](docs/whatsapp/import-plan.md), and a skipped WhatsApp block in the shared channel contract tests.
-WhatsApp-specific work starts only after the Telegram controlled test is verified. Intake refuses `source: "whatsapp"`
-with `422 channel_not_enabled`. `MIRSAD_WHATSAPP_IMPORT_ENABLED=true` is itself rejected at startup unless a verified
-controlled-test record exists. Meta's Business Messaging Policy excludes law-enforcement use of the WhatsApp Business
-Platform, so the planned WhatsApp phase covers labelled fixtures and approved evidence imports through the common intake
-API only.
 
 ## Local model setup
 
@@ -525,14 +534,14 @@ optional briefing to one chat. Ali uses it as an unverified lead and bases its a
 From the inbox, **Dispatch a number** takes an international phone number and an optional private briefing.
 Mirsad can match a chat when the contact previously shared their own Telegram contact card with the linked business
 account. Cards received before verified matching was installed need to be shared again for an automatic match.
-For a unique verified match, Dispatch immediately requests a reply to the latest eligible unanswered DM. Open the
+For a unique verified match, Dispatch requests a message using the same Telegram delivery and permission rules. Open the
 conversation from the receipt to see the outcome. If several conversations match, open the intended chat from the inbox and dispatch it there.
 If there is no verified match, choose **Draft first message**, edit the opener, and open it in Telegram to send it
 yourself. Telegram limits business-bot replies to private chats with an incoming message in the past 24 hours.
 [Telegram Business Bot rights](https://core.telegram.org/bots/api#businessbotrights) · [Telegram phone links](https://core.telegram.org/api/links#phone-number-links)
 
-Ali can flag a captured payment link for officer review when the conversation gives a concrete reason for concern.
-The red review flag links to the incoming message. The officer can open the source and mark the item reviewed.
+Ali can identify a payment concern on a link warning while replying to the sender. The warning links to the incoming
+message. Reviewing the same link once clears it across repeat deliveries in the current chat episode.
 
 **Lower concern** lists conversations with a supported in-person arrangement. Open **Evidence** to see the
 messages supporting the contact’s agreement, the meeting time and the location. A date gets its own source when
@@ -556,8 +565,10 @@ Edit and save `prompts/ali.md` for live Telegram wording and officer handoff rul
 **Settings → Reload Ali’s prompt**. The next model turn uses the saved version. A turn already
 being drafted finishes with the version it started with. If the file fails validation, the last working
 version stays active. A normal message in an enrolled chat can produce a reply,
-silence, or a local officer report that holds further replies. When a reply is skipped, the dashboard
-shows the recorded reason under the incoming message and in the chat’s **Case log**. A reply suppressed by the repeat-question rule
+silence, or an advisory report alongside a reply. When a reply is skipped, the dashboard
+shows the recorded reason under the incoming message and in the chat’s **Case log**. The model must choose one specific
+reason, with no catch-all, and explain in one sentence why it stayed silent; links, addresses and long numbers in that
+sentence are masked. A decision without the sentence is asked for once more. A reply suppressed by the repeat-question rule
 is attributed to the reply guard. Older skips have no recorded reason. The generator interfaces,
 memory, delivery checks and tests are described in the
 [reply generator editor guide](docs/telegram/reply-generator.md).
@@ -750,10 +761,9 @@ From design section 18:
     where the platform allows it (Node cannot on Windows).
   - Incoming edits and source deletions preserve original message text as evidence. An explicit officer erasure
     removes the local evidence, including the original.
-- **Sending only when switched on.** With `TELEGRAM_AI_REPLIES_ENABLED=false` (the default) no code path sends a
-  message to Telegram or WhatsApp. The Telegram Bot API client has four read-only calls; replies go through a separate
+- **Channel settings.** Telegram AI replies use `TELEGRAM_AI_REPLIES_ENABLED`, off by default. The Telegram Bot API client has four read-only calls; replies go through a separate
   sender with one method (`sendMessage` on the approved business connection), created only when automated replies
-  are on. In all-DM mode, new contacts can enroll by invitation or an officer can record existing participant permission in the selected conversation.
+  are on. Manual **Dispatch** records the officer's confirmation of existing participant permission for each selected eligible chat.
 - **Officer-confirmed Telegram deletion.** A separate Bot API client calls `deleteBusinessMessages` only after the officer
   confirms the scope. Live capture and automated replies cannot invoke that operation.
 - **Not yet protected:** data at rest. Encryption and key custody belong to the approved environment.
@@ -781,7 +791,7 @@ examples/headless-client/   HTTP-only integration example
 fixtures/telegram/          synthetic Telegram-shaped updates
 fixtures/eval/              labelled synthetic evaluation transcripts (dev and held-out)
 assets/fonts/               Noto fonts for captures (SIL Open Font License 1.1)
-docs/                       telegram/, whatsapp/, evaluation/, deployment-notes.md, superpowers/ (brief, design notes, plan)
+docs/                       telegram/, evaluation/, deployment-notes.md, superpowers/ (brief, design notes, plan)
 tests/                      unit/, integration/, contract/, e2e/, helpers/
 openapi.yaml                the generated HTTP contract
 ```

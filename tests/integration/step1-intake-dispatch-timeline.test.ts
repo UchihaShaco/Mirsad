@@ -278,6 +278,32 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(countRows(h.dataDir, 'findings', 'chat_id = :chatId', { chatId })).toBe(0);
   });
 
+  it('lists a first-time contact under New messages with its first message masked, until a dispatch answers it', async () => {
+    const first = 'Hello, pay 0000 0012 3456 at https://pay.example.test/fixture or mail fixture@example.test';
+    const res = await ingest(envelope(h.accounts.intake, uniqueId('first-'), recorded({ messageId: 60, text: first })));
+    const chatId = res.body.data.chatId;
+    await connector().post(`/v1/chats/${chatId}/events`, recorded({ messageId: 61, text: 'Are you there?' }));
+    await connector().post(`/v1/chats/${chatId}/events`, recorded({ messageId: 62, text: '', unsupportedContent: ['photo'] }));
+    const summaryOf = async () => (await officerA().get('/v1/chats')).body.data.chats.find((c: { id: string }) => c.id === chatId);
+    const listed = await summaryOf();
+    expect(listed.inboxStatus).toBe('new_inbound');
+    expect(listed.firstContact).toMatchObject({
+      preview: 'Hello, pay [number] at [link] or mail [email]', notCaptured: [], deleted: false, incomingCount: 3,
+    });
+    const tl = (await timeline(chatId)).body.data;
+    expect(listed.firstContact.messageId).toBe(tl.messages[0].id);
+    for (const value of ['123456', 'pay.example.test', 'fixture@example.test']) expect(JSON.stringify(listed)).not.toContain(value);
+
+    expect((await dispatch([chatId])).status).toBe(200);
+    expect(await summaryOf()).toMatchObject({ inboxStatus: 'open', firstContact: null });
+  });
+
+  it('previews what a first message carried when it has no text', async () => {
+    const res = await ingest(envelope(h.accounts.intake, uniqueId('photo-'), recorded({ messageId: 70, text: '', unsupportedContent: ['photo'] })));
+    const chat = (await officerA().get('/v1/chats')).body.data.chats.find((c: { id: string }) => c.id === res.body.data.chatId);
+    expect(chat.firstContact).toMatchObject({ preview: null, notCaptured: ['photo'], deleted: false, incomingCount: 1 });
+  });
+
   it('every stored source message has a pending capture row created with it', async () => {
     const chat = uniqueId('cap-');
     const a = await ingest(envelope(h.accounts.intake, chat, recorded({ messageId: 50, text: 'One' })));
@@ -602,11 +628,12 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(missing.body.error.code).toBe('chat_not_found');
   });
 
-  it('whatsapp intake is refused while the gate is closed', async () => {
+  it('intake for a channel other than Telegram is refused and stores nothing', async () => {
     const before = await settledSnapshot();
-    const res = await ingest(envelope({ source: 'whatsapp', externalAccountId: 'wa-demo-1' }, uniqueId('wa-'), recorded({ messageId: 150 })));
-    expect(res.status).toBe(422);
-    expect(res.body.error.code).toBe('channel_not_enabled');
+    const other = { ...envelope(h.accounts.intake, uniqueId('other-'), recorded({ messageId: 150 })), source: 'other-channel' };
+    const res = await ingest(other);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('validation_failed');
     expect(storeSnapshot(h.dataDir)).toEqual(before);
   });
 

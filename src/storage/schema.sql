@@ -14,7 +14,7 @@ CREATE TABLE principals (
 );
 CREATE TABLE channel_accounts (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id),
-  source TEXT NOT NULL CHECK (source IN ('telegram','whatsapp')),
+  source TEXT NOT NULL CHECK (source IN ('telegram')),
   external_account_id TEXT NOT NULL, label TEXT NOT NULL,
   is_intake INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL,
   UNIQUE (workspace_id, source, external_account_id)

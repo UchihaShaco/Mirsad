@@ -217,12 +217,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
-        "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
         "429":
           description: "Error envelope. `error.code` is one of: `rate_limited`."
           content:
@@ -406,7 +400,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          description: "Error envelope. `error.code` is one of: `direction_required`."
           content:
             application/json:
               schema:
@@ -517,7 +511,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          description: "Error envelope. `error.code` is one of: `direction_required`."
           content:
             application/json:
               schema:
@@ -537,11 +531,11 @@ paths:
   /v1/dispatches:
     post:
       operationId: post_v1Dispatches
-      summary: Start AI on selected chats
+      summary: Dispatch selected chats and request eligible Telegram replies
       tags:
         - contract
       security: *a1
-      description: Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.
+      description: Start eligible chats and return one receipt per chat. On live Telegram, participantPermissionRecorded=true is the officer’s attestation that every selected Telegram participant has already agreed to AI replies and screening through the configured provider for that chat. Each eligible chat records the attestation. replyAgain=true requests an immediate reply, retry or follow-up. Missing permission is reported to the officer. Approved chats continue answering eligible DMs. expectedTestMode=true also checks the invitation setting. To pin a particular message and timeline revision, use replyToMessageId and replyToHeadPosition with one chat. Telegram’s reply window, officer controls, opt-outs and review holds apply. A queued request has a requestId. Consult the timeline for delivery. An optional officer briefing applies to one chat. Send null to clear the briefing. Reuse the same Idempotency-Key for transport retries.
       parameters:
         - &a3
           name: Idempotency-Key
@@ -1532,7 +1526,7 @@ paths:
       tags:
         - contract
       security: *a1
-      description: Messages, message events, case actions, findings, case references and the stream cursor, each ordered by `position`.
+      description: Messages, message events, case actions, findings, case references and the stream cursor. Live Telegram chats also report permission, ongoing automatic replies and the most recent Dispatch delivery outcome.
       parameters:
         - name: chatId
           in: path
@@ -1831,6 +1825,105 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "409":
           description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/scammer-flags:
+    post:
+      operationId: post_v1ChatsChatIdScammer-flags
+      summary: Flag the chat’s contact as a scammer
+      tags:
+        - extension
+      security: *a1
+      description: Puts the contact’s number on the phone watchlist as Approved, with the officer’s reason, and matches every chat from that number. The chat lists under Suspects while the number stays approved; clearing the number on the watchlist withdraws it. Flagging the same message with the same number again returns 200 and changes nothing.
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScammerFlagRequest"
+      responses:
+        "200":
+          description: Already flagged with this number.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ScammerFlagResponse"
+                  error:
+                    type: "null"
+        "201":
+          description: Flag recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ScammerFlagResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `phone_invalid`."
           content:
             application/json:
               schema:
@@ -2768,11 +2861,26 @@ components:
               maxLength: 500
             - type: "null"
         participantPermissionRecorded:
+          description: The officer confirms that each selected Telegram participant has already consented in that chat to AI replies, fraud screening and the configured AI provider.
           type: boolean
           const: true
         expectedTestMode:
           type: boolean
           const: true
+        replyAgain:
+          description: Explicitly request a message in each eligible selected chat, including a retry or follow-up if the conversation was already answered.
+          type: boolean
+          const: true
+        replyToMessageId:
+          description: The specific contact message the officer chose to retry or follow up on.
+          type: string
+          minLength: 1
+          maxLength: 200
+        replyToHeadPosition:
+          description: The timeline target’s headPosition when the officer chose it, including message changes and officer decisions.
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
       required:
         - chatIds
     DispatchByPhoneRequest:
@@ -2914,6 +3022,22 @@ components:
         - decision
         - reason
         - expectedRevision
+    ScammerFlagRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: The contact’s number in international format, starting with + or 00.
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: Why the officer judges the contact a scammer; kept with the watchlist decision.
+      required:
+        - phone
+        - reason
     OfficerLoginRequest:
       type: object
       properties:
@@ -2941,7 +3065,6 @@ components:
       type: string
       enum:
         - telegram
-        - whatsapp
     Direction:
       type: string
       enum:
@@ -3180,6 +3303,7 @@ components:
           enum:
             - sender_metadata
             - message_mention
+            - officer_flag
         sourceRepresentation:
           type: string
         reason:
@@ -3210,7 +3334,6 @@ components:
           type: string
           enum:
             - Telegram
-            - WhatsApp
         externalAccountId:
           type: string
         externalChatId:
@@ -3286,6 +3409,7 @@ components:
                       enum:
                         - document
                         - location
+                        - link
                         - payment_link
                         - bank_details
                         - conversation_review
@@ -3320,6 +3444,7 @@ components:
                     enum:
                       - document
                       - location
+                      - link
                       - payment_link
                       - bank_details
                       - conversation_review
@@ -3553,6 +3678,66 @@ components:
                 - sources
               additionalProperties: false
             - type: "null"
+        firstContact:
+          anyOf:
+            - type: object
+              properties:
+                messageId:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                at:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                preview:
+                  type:
+                    - string
+                    - "null"
+                notCaptured:
+                  type: array
+                  items:
+                    type: string
+                deleted:
+                  type: boolean
+                incomingCount:
+                  type: integer
+                  minimum: 1
+                  maximum: 9007199254740991
+              required:
+                - messageId
+                - at
+                - preview
+                - notCaptured
+                - deleted
+                - incomingCount
+              additionalProperties: false
+            - type: "null"
+        suspect:
+          anyOf:
+            - type: object
+              properties:
+                watchlistEntryId:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                numberDisplay:
+                  type: string
+                flaggedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                flaggedBy:
+                  anyOf:
+                    - $ref: "#/components/schemas/PrincipalRef"
+                    - type: "null"
+              required:
+                - watchlistEntryId
+                - numberDisplay
+                - flaggedAt
+                - flaggedBy
+              additionalProperties: false
+            - type: "null"
         messageCount:
           type: integer
           minimum: 0
@@ -3587,6 +3772,8 @@ components:
         - watchlistMatches
         - lowerConcern
         - previousLowerConcern
+        - firstContact
+        - suspect
         - messageCount
         - lastActivityAt
         - createdAt
@@ -3639,6 +3826,85 @@ components:
                 type: integer
                 minimum: 1
                 maximum: 9007199254740991
+              telegram:
+                type: object
+                properties:
+                  permission:
+                    type: string
+                    enum:
+                      - approved
+                      - needed
+                      - withdrawn
+                  automaticReplies:
+                    type: string
+                    enum:
+                      - active
+                      - not_started
+                      - paused
+                      - officer_control
+                      - opted_out
+                      - needs_permission
+                      - review_hold
+                      - replies_off
+                      - replies_offline
+                  reply:
+                    type: string
+                    enum:
+                      - queued
+                      - none
+                  kind:
+                    type: string
+                    enum:
+                      - reply
+                      - retry
+                      - follow_up
+                      - consent_notice
+                      - ask_for_text
+                  reason:
+                    anyOf:
+                      - type: string
+                        enum:
+                          - not_started
+                          - paused
+                          - officer_control
+                          - opted_out
+                          - needs_permission
+                          - awaiting_permission
+                          - review_hold
+                          - replies_off
+                          - replies_offline
+                          - no_message
+                          - latest_not_answerable
+                          - outside_reply_window
+                          - before_reply_scope
+                          - bank_evidence
+                          - left_unanswered
+                          - ai_skipped
+                          - ai_failed
+                          - reviewed
+                          - already_answered
+                          - send_in_progress
+                          - target_changed
+                      - type: "null"
+                  confirmable:
+                    type: boolean
+                  requestId:
+                    type:
+                      - string
+                      - "null"
+                  messageId:
+                    type:
+                      - string
+                      - "null"
+                required:
+                  - permission
+                  - automaticReplies
+                  - reply
+                  - reason
+                  - confirmable
+                  - requestId
+                  - messageId
+                additionalProperties: false
             required:
               - chatId
               - status
@@ -4019,6 +4285,8 @@ components:
             - chat_test_started
             - lower_concern_assessed
             - telegram_dispatch_permission_recorded
+            - telegram_dispatch_approved
+            - telegram_reply_requested
             - dispatch_started
             - control_pause
             - control_take_over
@@ -4028,6 +4296,7 @@ components:
             - case_reference_recorded
             - capture_retry_requested
             - watchlist_match
+            - scammer_flagged
             - text_conflict_recorded
             - ai_reply_sent
             - ai_reply_failed
@@ -4221,6 +4490,140 @@ components:
             - approved
             - needed
             - withdrawn
+        telegramReplies:
+          type: object
+          properties:
+            permission:
+              type: string
+              enum:
+                - approved
+                - needed
+                - withdrawn
+            automatic:
+              type: string
+              enum:
+                - active
+                - not_started
+                - paused
+                - officer_control
+                - opted_out
+                - needs_permission
+                - review_hold
+                - replies_off
+                - replies_offline
+            target:
+              anyOf:
+                - type: object
+                  properties:
+                    messageId:
+                      type: string
+                    state:
+                      type: string
+                      enum:
+                        - unanswered
+                        - left_unanswered
+                        - skipped
+                        - failed
+                        - reviewed
+                        - answered
+                    headPosition:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                  required:
+                    - messageId
+                    - state
+                    - headPosition
+                  additionalProperties: false
+                - type: "null"
+            blocked:
+              anyOf:
+                - type: string
+                  enum:
+                    - not_started
+                    - paused
+                    - officer_control
+                    - opted_out
+                    - needs_permission
+                    - awaiting_permission
+                    - review_hold
+                    - replies_off
+                    - replies_offline
+                    - no_message
+                    - latest_not_answerable
+                    - outside_reply_window
+                    - before_reply_scope
+                    - bank_evidence
+                    - left_unanswered
+                    - ai_skipped
+                    - ai_failed
+                    - reviewed
+                    - already_answered
+                    - send_in_progress
+                    - target_changed
+                - type: "null"
+            request:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    messageId:
+                      type:
+                        - string
+                        - "null"
+                    kind:
+                      type: string
+                      enum:
+                        - reply
+                        - retry
+                        - follow_up
+                        - consent_notice
+                        - ask_for_text
+                    status:
+                      type: string
+                      enum:
+                        - queued
+                        - sent
+                        - skipped
+                        - failed
+                        - held
+                        - expired
+                        - superseded
+                    requestedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                    requestedBy:
+                      anyOf:
+                        - $ref: "#/components/schemas/PrincipalRef"
+                        - type: "null"
+                    replyMessageId:
+                      type:
+                        - string
+                        - "null"
+                    failureCode:
+                      type:
+                        - string
+                        - "null"
+                  required:
+                    - id
+                    - messageId
+                    - kind
+                    - status
+                    - requestedAt
+                    - requestedBy
+                    - replyMessageId
+                    - failureCode
+                  additionalProperties: false
+                - type: "null"
+          required:
+            - permission
+            - automatic
+            - target
+            - blocked
+            - request
+          additionalProperties: false
         testSession:
           anyOf:
             - type: object
@@ -4420,6 +4823,17 @@ components:
       required:
         - entry
       additionalProperties: false
+    ScammerFlagResponse:
+      type: object
+      properties:
+        entry:
+          $ref: "#/components/schemas/WatchlistEntry"
+        created:
+          type: boolean
+      required:
+        - entry
+        - created
+      additionalProperties: false
     MeResponse:
       type: object
       properties:
@@ -4602,21 +5016,8 @@ components:
                 - readiness
                 - readinessRecordedAt
               additionalProperties: false
-            whatsapp:
-              type: object
-              properties:
-                status:
-                  type: string
-                  const: not_started
-                gate:
-                  type: string
-              required:
-                - status
-                - gate
-              additionalProperties: false
           required:
             - telegram
-            - whatsapp
           additionalProperties: false
       required:
         - service
@@ -4745,6 +5146,8 @@ x-workflow-example:
               evidenceItems: []
             lowerConcern: null
             previousLowerConcern: null
+            firstContact: null
+            suspect: null
             aiMode: not_started
             revision: 1
             controller: null
@@ -4843,6 +5246,8 @@ x-workflow-example:
               evidenceItems: []
             lowerConcern: null
             previousLowerConcern: null
+            firstContact: null
+            suspect: null
             aiMode: ai_active
             revision: 2
             controller: null
@@ -4957,6 +5362,8 @@ x-workflow-example:
             telegramReplyHold: *a7
             lowerConcern: null
             previousLowerConcern: null
+            firstContact: null
+            suspect: null
             aiMode: officer_control
             revision: 3
             controller: *a6
