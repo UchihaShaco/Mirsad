@@ -135,7 +135,10 @@ A chat leaves New messages once it is dispatched or an officer takes control. **
 for the contact’s number (international format) and a reason: only the number goes to the **Phone watchlist**, approved,
 with the officer and reason as its decision, and every chat from that number shows a watchlist match. The flagged chat
 moves to **Suspects** while the number stays approved; clearing the number on the watchlist moves it back. Ali’s replies
-are not changed. **Needs review** filters the queue to conversations waiting for an officer’s decision.
+are not changed. **Import report** takes the report file a citizen shared from Mirsad Android (`mirsad-android/`):
+it is filed under **Citizen reports**, one chat per reported sender, with the phone's verdict, reasons and evidence, and
+the numbers it names go to the Phone watchlist for review. A citizen report is never dispatched, answered or sent to a
+model. **Needs review** filters the queue to conversations waiting for an officer’s decision.
 Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
 For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
 Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose

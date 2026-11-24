@@ -1,6 +1,7 @@
 /** Closed value sets of the Mirsad contract (design sections 4 and 6). */
 
-export const SOURCES = ['telegram'] as const;
+/** `citizen_report`: reports a citizen shared from Mirsad Android, imported by an officer (never through /v1/ingest). */
+export const SOURCES = ['telegram', 'citizen_report'] as const;
 export type Source = (typeof SOURCES)[number];
 
 /** Capture methods a connector can be provisioned with. */
@@ -85,6 +86,7 @@ export const CASE_ACTION_TYPES = [
   'capture_retry_requested',
   'watchlist_match',
   'scammer_flagged',
+  'citizen_report_imported',
   'text_conflict_recorded',
   'ai_reply_sent',
   'ai_reply_failed',
@@ -179,8 +181,11 @@ export type WatchlistStatus = (typeof WATCHLIST_STATUSES)[number];
 export const WATCHLIST_DECISIONS = ['approve', 'clear', 'reopen'] as const;
 export type WatchlistDecision = (typeof WATCHLIST_DECISIONS)[number];
 
-/** `officer_flag`: an officer flagged the chat's contact as a scammer and supplied the contact's number. */
-export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention', 'officer_flag'] as const;
+/**
+ * `officer_flag`: an officer flagged the chat's contact as a scammer and supplied the contact's number.
+ * `citizen_report`: a citizen's phone held or flagged a message from, or naming, the number and the citizen reported it.
+ */
+export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention', 'officer_flag', 'citizen_report'] as const;
 export type ObservationOrigin = (typeof OBSERVATION_ORIGINS)[number];
 
 export const INGEST_RESULTS = ['recorded', 'duplicate_event', 'duplicate_message', 'conflicting_copy'] as const;

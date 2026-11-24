@@ -13,6 +13,7 @@ import { findChatById } from '../storage/repos/chats.ts';
 import type { ChatRow } from '../storage/rows.ts';
 import { canAccessChat } from './access.ts';
 import { applyModeChange } from './mode-change.ts';
+import { refuseCitizenReport } from './citizen-reports.ts';
 import { requeueReviewsForChat } from './review-queue.ts';
 import { recordDispatchPermission } from './telegram-dispatch-permission.ts';
 import { liveChatOf, replyTarget, requestTelegramReply, type TelegramDispatch } from './telegram-reply-requests.ts';
@@ -54,6 +55,7 @@ function setDispatchBrief(tx: Tx, officer: Principal, chat: ChatRow, context: st
 export function dispatchChats(tx: Tx, officer: Principal, chatIds: readonly string[], officerContext?: string | null,
   options?: TelegramDispatch & { recordPermission?: boolean; expectedTestMode?: boolean }): DispatchResult {
   const chats = resolveSelection(tx, officer, chatIds);
+  for (const chat of chats) refuseCitizenReport(tx, chat);
   if (options?.recordPermission && officer.kind !== 'officer') {
     throw AppError.of('validation_failed', 'Only an officer may confirm participant permission.');
   }

@@ -17,6 +17,7 @@ import type { CaseReferenceRow, ChatRow, FindingRow, MessageEventRow, MessageRow
 import { requireChat } from './access.ts';
 import { telegramRepliesOf } from './telegram-reply-requests.ts';
 import { currentCursor, summaryOf } from './chats.ts';
+import { readCitizenReports } from './citizen-reports.ts';
 import { currentTestMessageIds, readChatTestWindow } from './chat-test-session.ts';
 import {
   principalLookup,
@@ -131,6 +132,7 @@ export function readTimeline(tx: Tx, principal: Principal, chatId: string, teleg
     caseActions: listCaseActionsForChat(tx, chat.id).map((a) => toCaseAction(a, lookup)),
     findings: tx.all<FindingRow>('SELECT * FROM findings WHERE chat_id = :chatId ORDER BY position, id', params).map(toFinding),
     caseReferences: references.map((r) => toCaseReference(r, lookup)),
+    citizenReports: summary.source === 'citizen_report' ? readCitizenReports(tx, chat.id) : [],
     cursor,
   };
 }

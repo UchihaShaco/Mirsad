@@ -6,6 +6,7 @@ import { grantAccount, toPrincipal } from '../storage/repos/principals.ts';
 import type { PrincipalRow } from '../storage/rows.ts';
 import { provisionPrincipal } from './provision.ts';
 import { hashToken } from './tokens.ts';
+import { grantCitizenReports } from '../services/citizen-reports.ts';
 
 const USERNAME = /^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/;
 const HASH_BYTES = 32;
@@ -56,6 +57,7 @@ export async function provisionLiveOfficer(
     tx.run('INSERT INTO officer_passwords (principal_id, username, salt, password_hash, must_change_password) VALUES (?, ?, ?, ?, ?)',
       [principal.id, username, salt, hash, options.temporary ?? false]);
     grantAccount(tx, principal.id, binding.account.id);
+    grantCitizenReports(tx, principal.id, principal.workspaceId);
     return principal;
   });
 }

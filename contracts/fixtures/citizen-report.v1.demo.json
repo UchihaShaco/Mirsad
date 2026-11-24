@@ -1,0 +1,42 @@
+{
+  "reportId": "mrs-46ba1a4e71a3",
+  "version": 1,
+  "createdAt": "2026-11-24T23:36:03.745Z",
+  "channel": "SMS",
+  "level": "HOLD",
+  "score": 0.995,
+  "reasonCodes": [
+    "SENDER_PLAIN_NUMBER_CLAIMS_ENTITY",
+    "SENDER_FOREIGN_CODE_UAE_ENTITY",
+    "LINK_PRESENT",
+    "LINK_PLAIN_HTTP",
+    "LINK_BRAND_IN_HOST_NOT_OFFICIAL",
+    "CONTENT_URGENCY",
+    "CONTENT_THREAT",
+    "CONTENT_SMALL_FEE_LINK",
+    "CONTENT_PAYMENT_REQUEST",
+    "CONTENT_IMPERSONATES_ENTITY",
+    "MODEL_SCORE"
+  ],
+  "fingerprint": "a51d6ef86b7b801f",
+  "artifacts": {
+    "sender": "+440000000001",
+    "senderType": "NUMBER",
+    "urls": [
+      "http://emiratespost-ae.delivery-fee.example/pay"
+    ],
+    "domains": [
+      "delivery-fee.example"
+    ],
+    "ibans": [],
+    "emails": [],
+    "wallets": [],
+    "handles": [],
+    "phones": []
+  },
+  "language": "EN",
+  "appVersion": "0.1.0",
+  "modelVersion": "lr-ngram-v1",
+  "synthetic": true,
+  "text": null
+}

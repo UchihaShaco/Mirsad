@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 /**
  * The reference dashboard end to end (brief build step 3; design sections 6 and 12). A real Mirsad instance from the
  * test harness, chats seeded over HTTP by the fixture connector, and the installed Microsoft Edge or Google Chrome driven
@@ -24,7 +25,7 @@ const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited'
 const CONFIRMATION_NOTE = 'The merchant confirmed its payment page by phone.';
 
 type Account = { source: 'telegram'; externalAccountId: string };
-type InboxRegion = 'New messages' | 'Suspects' | 'Open chats';
+type InboxRegion = 'New messages' | 'Citizen reports' | 'Suspects' | 'Open chats';
 
 interface Dashboard {
   page: Page;
@@ -1117,6 +1118,54 @@ describe('reference dashboard', () => {
     expect(await page.getByRole('region', { name: 'Suspects', exact: true }).isHidden()).toBe(true);
     // The one refused request is the local-format number, which the dialog explained.
     expect(problems.filter((text) => !text.includes('status of 422'))).toEqual([]);
+  });
+
+  it('imports a citizen report file, files it under Citizen reports with its evidence and never offers Dispatch', async () => {
+    const report = JSON.parse(readFileSync(new URL('../../contracts/fixtures/citizen-report.v1.json', import.meta.url), 'utf8'));
+    const sender = '+971500000391';
+    report.reportId = 'mrs-0e2e0e2e0e2e';
+    report.artifacts.sender = sender;
+    report.artifacts.phones = [];
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await button(page, 'Import report').click();
+    const dialog = page.getByRole('dialog', { name: 'Import a citizen report' });
+    await dialog.getByLabel('Report file from Mirsad Android').setInputFiles({ name: 'report.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(report)) });
+    await dialog.getByRole('button', { name: 'Import report' }).click();
+    await dialog.getByText('Imported. 1 number was sent to the phone watchlist for review.', { exact: true }).waitFor();
+    await dialog.getByRole('button', { name: 'Import report' }).isDisabled();
+    // The same file again is recognised, not duplicated.
+    await dialog.getByLabel('Report file from Mirsad Android').setInputFiles({ name: 'report.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(report)) });
+    await dialog.getByRole('button', { name: 'Import report' }).click();
+    await dialog.getByText('This report was imported before. It is unchanged.', { exact: true }).waitFor();
+    await dialog.getByRole('link', { name: 'Open the report' }).click();
+    await dialog.waitFor({ state: 'hidden' });
+
+    const row = inboxItem(page, 'Citizen reports', sender);
+    await row.getByText('Held on the phone', { exact: true }).waitFor();
+    expect(await row.getByRole('checkbox').count()).toBe(0);
+    expect(await inboxItem(page, 'New messages', sender).count()).toBe(0);
+    const header = page.locator('#chat-header');
+    await header.getByText('Reported by citizens from Mirsad Android', { exact: true }).waitFor();
+    expect(await page.locator('#open-chat-dispatch').isHidden()).toBe(true);
+    expect(await header.getByRole('button', { name: 'Take over' }).count()).toBe(0);
+    const details = page.locator('#timeline .report-details');
+    await details.getByText('Link uses a brand name but is not the official site', { exact: true }).waitFor();
+    await details.getByText('AE000000000000000000000', { exact: true }).waitFor();
+    expect(await details.getByRole('link').count()).toBe(0);
+    await page.locator('#inbox-filter-reports').click();
+    await row.waitFor();
+    expect(await page.getByRole('region', { name: 'Open chats', exact: true }).isHidden()).toBe(true);
+
+    // The officer can flag the reported sender: the chat moves to Suspects.
+    await button(page, 'Flag as scammer').click();
+    const flag = page.getByRole('dialog', { name: 'Flag as scammer' });
+    await flag.getByLabel('Their phone number').fill(sender);
+    await flag.getByLabel('Why are they a scammer?').fill('Fake police fine reported by a citizen.');
+    await flag.getByRole('button', { name: 'Flag and add to watchlist' }).click();
+    await flag.waitFor({ state: 'hidden' });
+    await page.locator('#inbox-filter-all').click();
+    await inboxItem(page, 'Suspects', sender).waitFor();
+    expect(problems).toEqual([]);
   });
 
   it('dispatches a briefing only for its selected chat and opens an editable local draft for a new contact', async () => {

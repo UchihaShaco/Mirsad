@@ -5,6 +5,8 @@
 import type { CaptureMethod, Source } from '../contract/enums.ts';
 
 export function isReviewPermitted(source: Source, captureMethod: CaptureMethod, allowed: readonly CaptureMethod[]): boolean {
+  // A citizen shared a report with the police, not with a model: it is never sent to a reviewer.
+  if (source === 'citizen_report') return false;
   if (captureMethod === 'telegram_business_live') return false;
   if (!allowed.includes(captureMethod)) return false;
   return source !== 'telegram' || captureMethod === 'fixture_replay';

@@ -112,7 +112,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     request: 'DispatchRequest',
     idempotencyKey: true,
     success: [{ status: 200, description: 'Per-chat dispatch results.', schema: 'DispatchResponse', replayHeader: true }],
-    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', 'revision_conflict', 'invalid_transition', 'history_erased', ...CHAT],
+    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', 'revision_conflict', 'invalid_transition', 'history_erased', 'citizen_report_only', ...CHAT],
   },
   'POST /v1/dispatches/by-phone': {
     summary: 'Dispatch an existing Telegram private chat by verified phone number',
@@ -133,7 +133,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     summary: 'Pause, take over or resume a chat',
     request: 'ControlRequest',
     success: [{ status: 200, description: 'The chat after the transition.', schema: 'ControlResponse' }],
-    errors: ['validation_failed', ...CHAT, ...REVISION, 'not_controller'],
+    errors: ['validation_failed', ...CHAT, ...REVISION, 'not_controller', 'citizen_report_only'],
   },
   'POST /v1/chats/{chatId}/officer-messages': {
     summary: 'Send a message from the composer',
@@ -191,6 +191,14 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     success: [{ status: 201, description: 'Flag recorded.', schema: 'ScammerFlagResponse' },
       { status: 200, description: 'Already flagged with this number.', schema: 'ScammerFlagResponse' }],
     errors: ['validation_failed', ...CHAT, 'phone_invalid', 'message_not_found'],
+  },
+  'POST /v1/citizen-reports': {
+    summary: 'Import a citizen’s scam report from Mirsad Android',
+    description: 'The body carries the report v1 JSON exactly as the phone shared it. It becomes one incoming message in a Citizen report chat (one chat per reported sender), and the numbers it names enter the phone watchlist for review. A Demo or test report is refused unless demo is true, and then never reaches the watchlist. A false-positive report is refused. Citizen reports are never dispatched, taken over, answered or sent to a model.',
+    request: 'CitizenReportImportRequest',
+    success: [{ status: 201, description: 'Report imported.', schema: 'CitizenReportImportResponse' },
+      { status: 200, description: 'The same report was imported before.', schema: 'CitizenReportImportResponse' }],
+    errors: ['validation_failed', 'report_not_accepted'],
   },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',

@@ -12,6 +12,7 @@ import { findChannelAccount, findChannelAccountById, findPrincipalById, grantedA
 import { reviewStatusCounts } from '../storage/repos/reviews.ts';
 import { readLowerConcern, readPreviousLowerConcern } from './lower-concern.ts';
 import type { ChannelAccountRow, ChatRow } from '../storage/rows.ts';
+import { readCitizenReportSummary } from './citizen-reports.ts';
 import { readFirstContact } from './first-contact.ts';
 import { appendStreamEvent } from './stream.ts';
 import { getTelegramReplyHold } from './telegram-reply-holds.ts';
@@ -62,6 +63,7 @@ function toSummary(tx: Tx, chat: ChatRow, account: ChannelAccountRow, matches: C
     previousLowerConcern: readPreviousLowerConcern(tx, chat.id),
     firstContact: readFirstContact(tx, chat),
     suspect: watchlist.readSuspect(tx, chat.id),
+    citizenReport: account.source === 'citizen_report' ? readCitizenReportSummary(tx, chat.id) : null,
     messageCount: countMessages(tx, chat.id),
     lastActivityAt: chat.updated_at,
     createdAt: chat.created_at,
@@ -96,6 +98,9 @@ export interface RegisterChatResult {
 
 /** Registers an authorized conversation, or returns the existing chat for the same mapping unchanged. */
 export function registerChat(tx: Tx, officer: Principal, request: RegisterChatRequest): RegisterChatResult {
+  if (request.source === 'citizen_report') {
+    throw AppError.of('validation_failed', 'Citizen reports are imported from the phone app, not registered as chats.');
+  }
   const account = findChannelAccount(tx, officer.workspaceId, request.source, request.externalAccountId);
   if (!account || !hasGrant(tx, officer.id, account.id)) {
     throw AppError.of('account_not_found', 'Channel account not found.');

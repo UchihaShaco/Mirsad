@@ -143,54 +143,32 @@ normalised; values that cannot be normalised are dropped and counted (`invalid`)
 skipped (`skipped`), never duplicated. Imported entries get `origin = "import:<file name>"` and the list kinds
 `BLOCK_SENDER`, `BLOCK_DOMAIN`, `BLOCK_FINGERPRINT`. The import is local only; nothing is sent anywhere.
 
-## 7. Mapping to the root Mirsad product (`POST /v1/ingest`)
+## 7. Import into the Mirsad portal (`POST /v1/citizen-reports`)
 
-The root Mirsad product (the officer evidence service in the repository root, contract in `openapi.yaml`) can take a
-scam report as one incoming message in a new chat. The mapping lives in `MirsadIngestMapper` (Kotlin, unit-tested
-against the required keys of `IngestRequest`) and is reproduced in `scripts/push_report_to_mirsad.sh` (jq, with a
-python3 standard-library fallback; both outputs are identical for the sample).
+The Mirsad portal (the officer service in the repository root, contract in `openapi.yaml`) imports a scam report
+exactly as this app writes it. An officer either picks the file in the portal (**Import report** in the inbox) or a
+laptop sends it with `scripts/push_report_to_mirsad.sh`. Body: `{ "report": <the report JSON>, "demo": true? }`.
 
-| Ingest field | Value | Source |
-|---|---|---|
-| `source` | `whatsapp` for WhatsApp / WhatsApp Business captures, `telegram` for Telegram captures, otherwise the fallback (`telegram` by default; `MIRSAD_SOURCE` in the script) | `Incident.appPackage`; the schema's `Source` enum is only `telegram` \| `whatsapp` |
-| `externalAccountId` | `mirsad-android:<reportId>` | `report.reportId` |
-| `externalChatId` | the sender (`artifacts.sender`), or the fingerprint when there is no shareable sender | `report.artifacts.sender` ?: `report.fingerprint` |
-| `chat.displayLabel` | `Mirsad Android report <reportId>` | `report.reportId` |
-| `event.type` | `message.recorded` | constant |
-| `event.sourceEventId` | `<reportId>` | `report.reportId` (idempotent: a re-push is a `duplicate_event`) |
-| `event.sourceMessageId` | `<reportId>` | `report.reportId` |
-| `event.direction` | `incoming` | constant |
-| `event.text` | the message text when the user shared it; otherwise one line: `Mirsad Android report <id>: suspected scam, channel <channel>, level <level>, score <score>, reasons: <codes>. Message text withheld by the user.` | `report.text`, else built from `channel`, `level`, `score`, `reasonCodes` |
-| `event.sentAt` | ISO-8601 of the incident time when the caller has the incident; `report.createdAt` otherwise (the script always uses `createdAt`) | `Incident.createdAt` / `report.createdAt` |
-| `event.sender.externalId` | same as `externalChatId` | |
-| `event.sender.displayName` | the alphanumeric sender ID (`ADCB`) for `ALPHANUMERIC` senders; omitted for everyone else (never a contact name) | `report.artifacts.sender` |
-| `event.sender.phone.raw` | the E.164 sender, only for `NUMBER` senders | `report.artifacts.sender` |
-| `event.sender.phone.country` | `AE` when the number starts with `+971`; omitted otherwise | derived |
-| `event.sender.phone.internationalFormat` | `true` when the number starts with `+` | derived |
+What the portal does with it:
 
-Omitted on purpose: `conversationStart` (we do not know whether this is the first message of the chat) and
-`unsupportedContent`. Optional fields are left out rather than sent as `null`, because the schema does not accept
-nulls. String fields are cut to the schema maxima (ids and labels 200, `phone.raw` 64, `text` 65536).
+| Report | In the portal |
+|---|---|
+| The report as a whole | One incoming message in a **Citizen report** chat. Reports from the same sender (`artifacts.sender`, or the fingerprint when there is no shareable sender) share one chat. The full report is stored with the message and shown as report details: the phone's verdict, risk, channel, the reasons in plain words, and every artifact as text. |
+| `text` | The message text when the citizen shared it; otherwise one line such as "Scam SMS held on a citizen's phone (risk 91%). The citizen did not share the message text." |
+| `artifacts.sender` (a `NUMBER`) and `artifacts.phones` | Phone watchlist observations (origin `citizen_report`). A new number enters **Needs review**; an officer approves or clears it. A number already approved shows a watchlist match on the chat. |
+| `reportId` | Idempotency: the same report again answers 200 and changes nothing. |
+| `synthetic: true` | Refused (422 `report_not_accepted`) unless `demo` is true; then it is labelled Demo and never reaches the watchlist. |
+| A false-positive report, or `version` other than 1 | Refused (422 `report_not_accepted`). |
 
-**Limits and things to know**
+A Citizen report chat has no conversation behind it: the portal never dispatches, takes over, answers or sends it to
+a model (409 `citizen_report_only`). An officer can flag the reported sender as a scammer, which approves the number
+on the watchlist and moves the chat to Suspects.
 
-- **No SMS or call source.** `Source` has no value for SMS or calls; such reports are posted with the fallback
-  source and the real channel is written in `event.text`. Choose `whatsapp` only if the service's WhatsApp intake
-  is enabled, otherwise it answers `422 channel_not_enabled`.
-- **Capture method is on the token, not in the body.** The service fixes a connector's `captureMethod` when the
-  connector is provisioned. Provision the connector used for these pushes with `approved_import` (an imported,
-  officer-supplied capture), never `telegram_business_live`. A `fixture_replay` connector would also route the text
-  into the model review, which is not what a citizen report is for.
-- **Not carried by report v1:** the incident time (so `sentAt` from the script is the report time), the source app
-  package (so the script cannot tell WhatsApp from Telegram), the artifact lists (links, IBANs, phones), the score
-  precision beyond 3 decimals. The links and IBANs reach the officer only inside `event.text` when the user shared
-  the text.
-- **Auth.** `Authorization: Bearer <connector token>`; the script reads it from `MIRSAD_CONNECTOR_TOKEN` and passes
-  it to curl through a config file in a process substitution, never on the command line or in output.
-- **Responses.** `201` recorded, `200` duplicate (the same `sourceEventId` again), `400 validation_failed`,
-  `401 unauthenticated`, `403 forbidden_for_principal` (an officer token instead of a connector token),
-  `413 payload_too_large`, `422 channel_not_enabled`, `429 rate_limited`. Every answer is the envelope
-  `{ success, data, error }`.
+**Auth.** `Authorization: Bearer <officer token>`; the script reads it from `MIRSAD_OFFICER_TOKEN` and passes it to
+curl through a config file in a process substitution, never on the command line or in output.
+
+`MirsadIngestMapper` (core) maps a report to the older `POST /v1/ingest` body. The portal no longer accepts citizen
+reports there; the mapper is kept only because its tests document the earlier contract.
 
 ## 8. Pulling a report over adb
 
@@ -210,8 +188,8 @@ File names are the UI's hint made safe (`[A-Za-z0-9._-]`, max 80 chars) with a `
 this for you and takes the newest file:
 
 ```sh
-export MIRSAD_CONNECTOR_TOKEN=…          # never echoed
-scripts/push_report_to_mirsad.sh emulator-5556            # pull newest report, POST to http://127.0.0.1:8787/v1/ingest
+export MIRSAD_OFFICER_TOKEN=…            # never echoed
+scripts/push_report_to_mirsad.sh emulator-5556            # pull newest report, POST to http://127.0.0.1:8787/v1/citizen-reports
 scripts/push_report_to_mirsad.sh --dry-run                # print the body instead
 scripts/push_report_to_mirsad.sh --dry-run --file scripts/sample_report.json
 ```

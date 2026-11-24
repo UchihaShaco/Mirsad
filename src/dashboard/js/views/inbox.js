@@ -4,13 +4,13 @@
  * contact's row also previews its first message, masked, so the officer can choose whom to dispatch.
  */
 import { bdi, clear, h, withFocus } from '../dom.js';
-import { AI_MODE_LABELS, evidenceCountLabel, formatTime, reviewWarningLabel } from '../format.js';
+import { AI_MODE_LABELS, evidenceCountLabel, formatTime, PHONE_VERDICT_LABELS, reviewWarningLabel } from '../format.js';
 import { controlState, reviewQueue } from '../state/attention.js';
-import { briefingChatId, DISPATCH_LIMIT, groupInbox, isNewMessage, isSuspect, needsOfficerReview } from '../state/inbox.js';
+import { briefingChatId, DISPATCH_LIMIT, groupInbox, isCitizenReport, isNewMessage, isSuspect, needsOfficerReview } from '../state/inbox.js';
 import { chatHref } from '../state/route.js';
 
 /** Short channel marks for the dense list; the full channel name stays in the row for assistive tools. */
-const CHANNEL_CODES = { telegram: 'TG' };
+const CHANNEL_CODES = { telegram: 'TG', citizen_report: 'CR' };
 
 /** The checkbox names itself from the chat label, so every assistive tool announces which chat it selects. */
 function selector(chat, state, handlers) {
@@ -46,6 +46,17 @@ function contactMark(label, rowNumber) {
     h('span', { className: 'contact-mark', dir: 'auto', text: initials }),
     h('span', { className: 'chat-row-number', dir: 'ltr', text: String(rowNumber).padStart(2, '0') }),
   ]);
+}
+
+/** A citizen report has no controller: the row says what the citizen's phone did and how many reports there are. */
+function reportChips(chat) {
+  const report = chat.citizenReport;
+  if (!report) return [];
+  return [
+    h('span', { className: `report-verdict verdict-${report.latestLevel.toLowerCase()}`, text: PHONE_VERDICT_LABELS[report.latestLevel] }),
+    report.count > 1 ? h('span', { className: 'first-contact-more', text: `${report.count} reports` }) : null,
+    report.demo ? h('span', { className: 'demo-chip', text: 'Demo' }) : null,
+  ];
 }
 
 /** Who holds the chat. Replies held for review is its own state: the AI is active but waiting for the officer. */
@@ -98,11 +109,12 @@ function chatItem(chat, state, handlers, today, rowNumber) {
   const link = h('a', { href: chatHref(chat.id), className: 'chat-link', 'aria-current': current ? 'page' : null, dataset: { focusKey: `open:${chat.id}` } }, [
     bdi(chat.displayLabel),
   ]);
-  const heading = h('div', { className: 'chat-item-heading' }, [link, activityTime(chat.lastActivityAt, today), selector(chat, state, handlers)]);
+  const heading = h('div', { className: 'chat-item-heading' }, [link, activityTime(chat.lastActivityAt, today),
+    isCitizenReport(chat) ? h('span', { className: 'select-chat', 'aria-hidden': 'true' }) : selector(chat, state, handlers)]);
   const meta = h('p', { className: 'chat-meta' }, [
     channelMark(chat),
     isSuspect(chat) ? h('span', { className: 'suspect-chip', text: 'Suspect' }) : null,
-    ...controlChips(chat, control, state.me),
+    ...(isCitizenReport(chat) ? reportChips(chat) : controlChips(chat, control, state.me)),
     waitingCount(chat),
     chat.telegramReplyHold.contactOptedOut ? h('span', { className: 'flag', text: 'Contact opted out' }) : null,
     warnings.length ? h('span', { className: 'evidence-warning', text: warnings.length === 1 ? warnings[0] : `${warnings.length} warnings` }) : null,
@@ -136,6 +148,7 @@ export function renderDispatchTools(refs, state) {
   refs.dispatchBriefClear.disabled = busy;
   refs.openOpener.disabled = busy;
   refs.openPhoneDispatch.disabled = busy;
+  refs.openReportImport.disabled = busy;
   refs.generateOpener.disabled = busy;
 }
 
@@ -169,22 +182,28 @@ export function renderInbox(refs, state, handlers) {
   const lower = state.inboxFilter === 'lower_concern';
   const fresh = state.inboxFilter === 'new_messages';
   const suspecting = state.inboxFilter === 'suspects';
+  const reportsOnly = state.inboxFilter === 'citizen_reports';
   const filtered = state.inboxFilter !== 'all';
   const newCount = state.chats.filter(isNewMessage).length;
   const suspectCount = state.chats.filter(isSuspect).length;
+  const reportCount = state.chats.filter(chat => isCitizenReport(chat) && !isSuspect(chat)).length;
   const lowerCount = state.chats.filter(chat => chat.lowerConcern).length;
   const previousCount = state.chats.filter(chat => chat.previousLowerConcern).length;
   const previous = lower ? state.chats.filter(chat => chat.previousLowerConcern)
     .sort((a, b) => b.previousLowerConcern.assessedAt.localeCompare(a.previousLowerConcern.assessedAt)) : [];
-  const { newInbound, suspects, open } = groupInbox(state.chats, state.inboxFilter);
+  const { newInbound, citizenReports, suspects, open } = groupInbox(state.chats, state.inboxFilter);
   const reviewCount = state.chats.filter(needsOfficerReview).length;
   const today = new Date().toISOString().slice(0, 10);
   withFocus(refs.inbox, () => {
     fillList(refs.newInboundList, newInbound, state, handlers, today, 1, state.inboxLoaded ? 'No new messages.' : 'Loading…');
-    fillList(refs.suspectList, suspects, state, handlers, today, newInbound.length + 1, 'No suspects.');
-    fillList(refs.openList, open, state, handlers, today, newInbound.length + suspects.length + 1, state.inboxLoaded ? 'No open chats.' : 'Loading…');
+    let next = newInbound.length + 1;
+    fillList(refs.citizenReportList, citizenReports, state, handlers, today, next, 'No citizen reports.');
+    next += citizenReports.length;
+    fillList(refs.suspectList, suspects, state, handlers, today, next, 'No suspects.');
+    next += suspects.length;
+    fillList(refs.openList, open, state, handlers, today, next, state.inboxLoaded ? 'No open chats.' : 'Loading…');
     clear(refs.previousTestList);
-    refs.previousTestList.start = newInbound.length + suspects.length + open.length + 1;
+    refs.previousTestList.start = next + open.length;
     for (const [index, chat] of previous.entries()) {
       const { agreement } = chat.previousLowerConcern.sources;
       const link = h('a', { className: 'chat-link', href: chatHref(chat.id, agreement.messageId, agreement.messageEventId),
@@ -199,6 +218,7 @@ export function renderInbox(refs, state, handlers) {
     const loaded = state.inboxLoaded;
     fillFilter(refs.inboxFilterAll, 'All chats', loaded ? state.chatsTotal : null);
     fillFilter(refs.inboxFilterNew, 'New messages', loaded ? newCount : null, { urgent: newCount > 0 });
+    fillFilter(refs.inboxFilterReports, 'Citizen reports', loaded ? reportCount : null);
     fillFilter(refs.inboxFilterSuspects, 'Suspects', loaded ? suspectCount : null);
     fillFilter(refs.inboxFilterReview, 'Needs review', loaded ? reviewCount : null, { urgent: reviewCount > 0 });
     fillFilter(refs.inboxFilterLowerConcern, 'Lower concern', loaded ? lowerCount : null, { earlier: previousCount });
@@ -207,29 +227,34 @@ export function renderInbox(refs, state, handlers) {
   refs.previousTestQueue.hidden = previous.length === 0;
   refs.newInboundList.closest('.queue').hidden = filtered && newInbound.length === 0;
   refs.suspectQueue.hidden = suspects.length === 0;
+  refs.citizenReportQueue.hidden = citizenReports.length === 0;
   refs.openList.closest('.queue').hidden = filtered && open.length === 0;
   refs.inboxFilterAll.setAttribute('aria-pressed', String(!filtered));
   refs.inboxFilterNew.setAttribute('aria-pressed', String(fresh));
   refs.inboxFilterSuspects.setAttribute('aria-pressed', String(suspecting));
+  refs.inboxFilterReports.setAttribute('aria-pressed', String(reportsOnly));
   refs.inboxFilterReview.setAttribute('aria-pressed', String(reviewing));
   refs.inboxFilterLowerConcern.setAttribute('aria-pressed', String(lower));
   refs.inboxFilterLowerConcern.disabled = state.pending !== null;
   refs.inboxFilterAll.disabled = state.pending !== null;
   refs.inboxFilterNew.disabled = state.pending !== null;
   refs.inboxFilterSuspects.disabled = state.pending !== null;
+  refs.inboxFilterReports.disabled = state.pending !== null;
   refs.inboxFilterReview.disabled = state.pending !== null;
   const scope = [];
   if (state.chatsTotal > state.chats.length) scope.push(`Counts cover the ${state.chats.length} listed chats out of ${state.chatsTotal}.`);
   if (lower && state.inboxLoaded) scope.push(`${lowerCount} current · ${previous.length} previous`);
   if (reviewing && reviewCount === 0) scope.push(state.inboxLoaded ? 'No listed chats need officer review.' : 'Loading chats…');
   if (fresh && newCount === 0) scope.push(state.inboxLoaded ? 'No first-time messages are waiting.' : 'Loading chats…');
+  if (reportsOnly && reportCount === 0) scope.push(state.inboxLoaded ? 'No citizen reports yet. Use Import report to add one.' : 'Loading chats…');
+  if (reportsOnly && reportCount > 0) scope.push('Scams citizens reported from Mirsad Android, one chat per sender. They cannot be dispatched.');
   if (suspecting && suspectCount === 0) scope.push(state.inboxLoaded ? 'No chats are flagged as scammers.' : 'Loading chats…');
   if (suspecting && suspectCount > 0) scope.push('Contacts an officer flagged as scammers. Clearing the number on the phone watchlist moves a chat back.');
   if (fresh && newCount > 0) scope.push('First-time contacts nobody has answered yet. Select whom to dispatch; one selected chat can take a briefing.');
   refs.queueScope.textContent = scope.join(' ');
   refs.queueScope.hidden = scope.length === 0;
   const selected = state.selection.size;
-  const selectable = newInbound.length + suspects.length + open.length;
+  const selectable = [...newInbound, ...suspects, ...open].filter(chat => !isCitizenReport(chat)).length;
   const tooMany = selected > DISPATCH_LIMIT;
   refs.selectAllChats.checked = selectable > 0 && selected === selectable;
   refs.selectAllChats.indeterminate = selected > 0 && selected < selectable;

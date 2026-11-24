@@ -6,7 +6,8 @@
  */
 import { bdi, clear, h, timeEl, withFocus } from '../dom.js';
 import {
-  CAPTURE_METHOD_LABELS, DIRECTION_LABELS, formatClock, formatDay, formatTime, reviewWarningLabel, reviewStatusLabel, silenceExplanation, silenceSummary, TELEGRAM_EVIDENCE_LABELS,
+  CAPTURE_METHOD_LABELS, DIRECTION_LABELS, formatClock, formatDay, formatTime, PHONE_VERDICT_LABELS, REPORT_CHANNEL_LABELS, REPORT_REASON_LABELS,
+  reviewWarningLabel, reviewStatusLabel, silenceExplanation, silenceSummary, TELEGRAM_EVIDENCE_LABELS,
 } from '../format.js';
 import { evidenceSources } from '../state/attention.js';
 import { canCompose } from '../state/composer.js';
@@ -147,6 +148,33 @@ function authorOf(message, replySource) {
   return message.direction === 'outgoing' ? 'account' : 'contact';
 }
 
+/** What the citizen's phone decided and found, from the report. Links are shown as text and never opened. */
+function reportDetails(report) {
+  if (!report) return null;
+  const a = report.artifacts;
+  const groups = [
+    ['Links', a.urls], ['Domains', a.domains], ['IBANs', a.ibans], ['Phone numbers', [a.senderType === 'NUMBER' ? a.sender : null, ...a.phones].filter(Boolean)],
+    ['Emails', a.emails], ['Wallets', a.wallets], ['Handles', a.handles],
+  ].filter(([, values]) => values.length > 0);
+  return h('section', { className: 'report-details', dataset: { level: report.level.toLowerCase() }, 'aria-label': 'Citizen report details' }, [
+    h('p', { className: 'report-verdict-line' }, [
+      h('strong', { className: `report-verdict verdict-${report.level.toLowerCase()}`, text: PHONE_VERDICT_LABELS[report.level] }),
+      h('span', { text: `Risk ${Math.round(report.score * 100)}% · ${REPORT_CHANNEL_LABELS[report.channel]}` }),
+      report.demo ? h('span', { className: 'demo-chip', text: 'Demo' }) : null,
+    ]),
+    report.reasonCodes.length ? h('ul', { className: 'report-reasons', 'aria-label': 'Why the phone decided this' },
+      report.reasonCodes.filter(code => code !== 'MODEL_SCORE').map(code => h('li', { text: REPORT_REASON_LABELS[code] ?? code }))) : null,
+    groups.length ? h('dl', { className: 'report-artifacts' }, groups.flatMap(([label, values]) => [
+      h('dt', { text: label }),
+      h('dd', {}, values.map(value => h('bdi', { dir: 'ltr', text: value }))),
+    ])) : null,
+    h('p', { className: 'hint report-provenance' }, [
+      h('span', { text: `Report ${report.reportId} · shared ${formatTime(report.createdAt)} · imported ${formatTime(report.importedAt)}` }),
+      report.importedBy ? h('span', {}, [document.createTextNode(' by '), bdi(report.importedBy.displayName)]) : null,
+    ]),
+  ]);
+}
+
 function messageEntry(message, ctx) {
   const composerSent = message.origin === 'officer_composer';
   const direction = message.direction ?? 'unknown';
@@ -165,6 +193,7 @@ function messageEntry(message, ctx) {
   }, [
     entryTop(heading(message, replySource), message.receivedAt),
     messageText(message.text, missing),
+    reportDetails(ctx.reports.get(message.id)),
     ...sourceMarkers(message.id, ctx),
     meetingAgreement(message.id, ctx),
     skipped ? h('div', { className: 'skipped-reply' }, [
@@ -269,6 +298,7 @@ export function renderTimeline(container, state, handlers, captures) {
       selecting: !state.previous && canCompose(timeline.chat, state.me),
       replyTargetId: state.replyTargetId,
       replySources: replySourcesOf(timeline),
+      reports: new Map((timeline.citizenReports ?? []).map(report => [report.messageId, report])),
       evidenceSources: evidenceSources(timeline),
       previous: state.previous,
       meetingSource: timeline.messageEvents.some(e => e.id === agreement?.messageEventId) ? agreement.messageEventId : agreement?.messageId,

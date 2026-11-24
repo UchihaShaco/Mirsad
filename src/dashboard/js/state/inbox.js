@@ -29,29 +29,40 @@ export function isSuspect(chat) {
   return Boolean(chat.suspect);
 }
 
+/** A report a citizen shared from Mirsad Android: there is no conversation, so nothing can dispatch or answer it. */
+export function isCitizenReport(chat) {
+  return chat.source === 'citizen_report';
+}
+
 /** A first-time contact: the contact wrote first and neither Ali nor an officer has acted on the chat yet. A suspect moves out. */
 export function isNewMessage(chat) {
-  return chat.inboxStatus === 'new_inbound' && !isSuspect(chat);
+  return chat.inboxStatus === 'new_inbound' && !isSuspect(chat) && !isCitizenReport(chat);
 }
 
 /** The inbox filters, in the order the officer sees them. */
-export const INBOX_FILTERS = ['all', 'new_messages', 'suspects', 'review', 'lower_concern'];
+export const INBOX_FILTERS = ['all', 'new_messages', 'citizen_reports', 'suspects', 'review', 'lower_concern'];
 
 function visibleInFilter(chat, filter) {
   if (filter === 'new_messages') return isNewMessage(chat);
+  if (filter === 'citizen_reports') return isCitizenReport(chat) && !isSuspect(chat);
   if (filter === 'suspects') return isSuspect(chat);
   if (filter === 'review') return needsOfficerReview(chat);
   if (filter === 'lower_concern') return Boolean(chat.lowerConcern);
   return true;
 }
 
-/** Splits the visible chats into the New messages queue, the Suspects queue and the open list; each chat is in one. */
+/**
+ * Splits the visible chats into the New messages, Citizen reports and Suspects queues and the open list; each chat is in
+ * one. A flagged citizen report is a suspect like any other.
+ */
 export function groupInbox(chats, filter = 'all') {
   const sorted = chats.filter(chat => visibleInFilter(chat, filter)).sort(byRecentActivity);
+  const reported = (chat) => isCitizenReport(chat) && !isSuspect(chat);
   return {
     newInbound: sorted.filter(isNewMessage),
+    citizenReports: sorted.filter(reported),
     suspects: sorted.filter(isSuspect),
-    open: sorted.filter((chat) => !isNewMessage(chat) && !isSuspect(chat)),
+    open: sorted.filter((chat) => !isNewMessage(chat) && !isSuspect(chat) && !reported(chat)),
   };
 }
 
@@ -68,9 +79,9 @@ export function pruneSelection(selection, chats, filter = 'all') {
   return new Set([...selection].filter((chatId) => listed.has(chatId)));
 }
 
-/** The current listed conversations; historical test entries are separate links without selection controls. */
+/** The listed conversations Dispatch can act on; citizen reports and historical test entries have no selection control. */
 export function selectableChatIds(chats, filter = 'all') {
-  return new Set(chats.filter(chat => visibleInFilter(chat, filter)).map(chat => chat.id));
+  return new Set(chats.filter(chat => visibleInFilter(chat, filter) && !isCitizenReport(chat)).map(chat => chat.id));
 }
 
 /** Resolve a conversation action against both the route and loaded timeline, even with unrelated batch selections. */

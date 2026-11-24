@@ -54,6 +54,9 @@ export function runIntake(c: Context<AppEnv>, deps: AppDeps, target: IntakeTarge
 export const routes: RouteModule = {
   'POST /v1/ingest': async (c, deps) => {
     const body = await parseJsonBody(c, IngestRequest);
+    if (body.source === 'citizen_report') {
+      throw AppError.of('validation_failed', 'Citizen reports are imported by an officer through /v1/citizen-reports.');
+    }
     const target: IntakeTarget = {
       source: body.source,
       externalAccountId: body.externalAccountId,

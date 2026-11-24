@@ -140,6 +140,51 @@ const FirstContact = z.object({
   incomingCount: z.number().int().min(1),
 });
 
+// ---- Citizen reports (Mirsad Android scam report, version 1; see mirsad-android/docs/EVIDENCE_SCHEMA.md) ----
+
+const reportList = z.array(z.string().trim().min(1).max(2048)).max(50);
+/** A scam report exactly as the phone app writes it. Unknown keys are ignored, so a newer app can add fields. */
+export const CitizenReport = z.object({
+  reportId: z.string().regex(/^mrs-[0-9a-f]{12}$/),
+  version: z.literal(1),
+  createdAt: timestampIn,
+  channel: z.enum(['CALL', 'SMS', 'CHAT']),
+  level: z.enum(['ALLOW', 'WARN', 'HOLD']),
+  score: z.number().min(0).max(1),
+  reasonCodes: z.array(z.string().regex(/^[A-Z][A-Z0-9_]{1,63}$/)).max(64),
+  fingerprint: z.string().regex(/^[0-9a-f]{16}$/),
+  artifacts: z.object({
+    sender: z.string().trim().min(1).max(64).nullable(),
+    senderType: z.enum(['NUMBER', 'ALPHANUMERIC', 'CONTACT', 'UNKNOWN']),
+    urls: reportList, domains: reportList, ibans: reportList, emails: reportList,
+    wallets: reportList, handles: reportList, phones: reportList,
+  }),
+  language: z.string().max(32),
+  appVersion: z.string().max(64),
+  modelVersion: z.string().max(64),
+  synthetic: z.boolean(),
+  text: z.string().max(LIMITS.messageTextMax).nullable(),
+});
+export type CitizenReport = z.infer<typeof CitizenReport>;
+
+export const CitizenReportImportRequest = z.object({
+  report: z.unknown().describe('The report JSON file as shared from Mirsad Android (scam report, version 1).'),
+  demo: z.boolean().optional().describe('Import a Demo or test report from the app. It is labelled Demo and never reaches the watchlist.'),
+});
+export type CitizenReportImportRequest = z.infer<typeof CitizenReportImportRequest>;
+export const CitizenReportImportResponse = z.object({
+  chatId: id, messageId: id, created: z.boolean(), demo: z.boolean(),
+  watchlistNumbers: z.number().int().min(0).describe('Numbers from the report added to the phone watchlist for review.'),
+});
+
+/** The reports in one citizen report chat, oldest first, as the officer reads them. */
+export const CitizenReportView = z.object({
+  messageId: id, reportId: z.string(), createdAt: timestamp, importedAt: timestamp, importedBy: PrincipalRef.nullable(),
+  demo: z.boolean(), channel: z.enum(['CALL', 'SMS', 'CHAT']), level: z.enum(['ALLOW', 'WARN', 'HOLD']), score: z.number(),
+  reasonCodes: z.array(z.string()), fingerprint: z.string(), textShared: z.boolean(),
+  artifacts: CitizenReport.shape.artifacts,
+});
+
 /** A contact an officer flagged as a scammer, while the flagged number stays approved on the phone watchlist. */
 const Suspect = z.object({
   watchlistEntryId: id,
@@ -151,7 +196,7 @@ const Suspect = z.object({
 export const ChatSummary = z.object({
   id: z.string(),
   source: Source,
-  channelLabel: z.enum([CHANNEL_LABELS.telegram]),
+  channelLabel: z.enum([CHANNEL_LABELS.telegram, CHANNEL_LABELS.citizen_report]),
   externalAccountId: z.string(),
   externalChatId: z.string(),
   displayLabel: z.string(),
@@ -180,6 +225,9 @@ export const ChatSummary = z.object({
   previousLowerConcern: LowerConcern.nullable(),
   firstContact: FirstContact.nullable(),
   suspect: Suspect.nullable(),
+  /** For a Citizen report chat: how many reports it holds and the newest one's verdict on the phone. */
+  citizenReport: z.object({ count: z.number().int().min(1), latestLevel: z.enum(['ALLOW', 'WARN', 'HOLD']),
+    latestChannel: z.enum(['CALL', 'SMS', 'CHAT']), demo: z.boolean() }).nullable(),
   messageCount: z.number().int().min(0),
   lastActivityAt: timestamp,
   createdAt: timestamp,
@@ -471,6 +519,7 @@ export const Timeline = z.object({
   caseActions: z.array(CaseAction),
   findings: z.array(Finding),
   caseReferences: z.array(CaseReference),
+  citizenReports: z.array(CitizenReportView),
   cursor: z.string(),
 });
 export type Timeline = z.infer<typeof Timeline>;
@@ -634,7 +683,7 @@ export const CONTRACT_SCHEMAS = {
   InvestigationOpenerRequest, InvestigationOpenerResponse,
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
-  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, MeResponse,
+  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, CitizenReportImportRequest, CitizenReportImportResponse, MeResponse,
   PlaceRecord, PlacesSearchResponse, PlacesDetailResponse,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
   DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,

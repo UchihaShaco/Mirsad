@@ -26,6 +26,8 @@ export const ERROR_STATUS = {
   idempotency_key_reused: 422,
   direction_required: 422,
   phone_invalid: 422,
+  report_not_accepted: 422,
+  citizen_report_only: 409,
   reply_prompt_unavailable: 422,
   rate_limited: 429,
   internal_error: 500,

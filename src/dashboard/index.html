@@ -61,12 +61,14 @@
           <h1>Inbox</h1>
           <div class="inbox-contact-actions">
             <button type="button" id="open-phone-dispatch" aria-haspopup="dialog">Dispatch a number</button>
+            <button type="button" id="open-report-import" aria-haspopup="dialog">Import report</button>
             <button type="button" id="open-opener" aria-haspopup="dialog">Draft first message</button>
           </div>
         </div>
         <div class="queue-filters" role="group" aria-label="Filter conversations">
           <button type="button" id="inbox-filter-all" aria-pressed="true">All chats</button>
           <button type="button" id="inbox-filter-new" aria-pressed="false">New messages</button>
+          <button type="button" id="inbox-filter-reports" aria-pressed="false">Citizen reports</button>
           <button type="button" id="inbox-filter-suspects" aria-pressed="false">Suspects</button>
           <button type="button" id="inbox-filter-review" aria-pressed="false">Needs review</button>
           <button type="button" id="inbox-filter-lower-concern" aria-pressed="false">Lower concern</button>
@@ -74,7 +76,7 @@
         <p id="queue-scope" class="hint"></p>
         <div id="batch-tools" class="inbox-toolbar" role="group" aria-label="Select conversations">
           <label class="select-all-chats">
-            <input type="checkbox" id="select-all-chats" aria-controls="new-inbound-list suspect-list open-list" disabled>
+            <input type="checkbox" id="select-all-chats" aria-controls="new-inbound-list citizen-report-list suspect-list open-list" disabled>
             Select all
           </label>
           <span id="selection-count" role="status"></span>
@@ -91,6 +93,10 @@
           <section class="queue" aria-labelledby="new-inbound-heading">
             <div class="queue-head"><h2 id="new-inbound-heading">New messages</h2><span class="queue-count" aria-hidden="true"></span></div>
             <ol id="new-inbound-list" class="chat-list"></ol>
+          </section>
+          <section id="citizen-report-queue" class="queue queue-reports" aria-labelledby="citizen-reports-heading" hidden>
+            <div class="queue-head"><h2 id="citizen-reports-heading">Citizen reports</h2><span class="queue-count" aria-hidden="true"></span></div>
+            <ol id="citizen-report-list" class="chat-list"></ol>
           </section>
           <section id="suspect-queue" class="queue queue-suspects" aria-labelledby="suspects-heading" hidden>
             <div class="queue-head"><h2 id="suspects-heading">Suspects</h2><span class="queue-count" aria-hidden="true"></span></div>
@@ -307,6 +313,23 @@
   <p id="phone-dispatch-status" role="status" class="phone-receipt"></p>
   <a id="phone-dispatch-chat" hidden>Open conversation</a>
   <button type="button" id="phone-dispatch-draft" hidden>Draft first message</button>
+  <form method="dialog" class="dialog-footer"><button type="submit">Close</button></form>
+</dialog>
+<dialog id="report-dialog" class="opener-dialog dispatch-dialog" aria-labelledby="report-heading">
+  <h2 id="report-heading">Import a citizen report</h2>
+  <form id="report-form" autocomplete="off">
+    <label for="report-file">Report file from Mirsad Android</label>
+    <input id="report-file" type="file" accept=".json,application/json" aria-describedby="report-file-hint" required>
+    <p id="report-file-hint" class="hint">The JSON a citizen shared with Report on the phone. Its numbers go to the phone watchlist for review.</p>
+    <label class="check"><input id="report-demo" type="checkbox"> This is a Demo or test report (it is labelled Demo and never reaches the watchlist)</label>
+    <section class="consequence" aria-labelledby="report-effect-title">
+      <h3 id="report-effect-title">A citizen report has no conversation</h3>
+      <p>It is filed under Citizen reports, one chat per reported sender. It is never dispatched, answered or sent to a model.</p>
+    </section>
+    <p id="report-status" role="status"></p>
+    <a id="report-open" hidden>Open the report</a>
+    <button id="report-submit" type="submit" class="primary">Import report</button>
+  </form>
   <form method="dialog" class="dialog-footer"><button type="submit">Close</button></form>
 </dialog>
 <dialog id="flag-dialog" class="opener-dialog dispatch-dialog" aria-labelledby="flag-heading">

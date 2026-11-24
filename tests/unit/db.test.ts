@@ -41,7 +41,7 @@ describe('storage/db', () => {
     );
     expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['telegram_dispatch_contacts', 'chat_erasure_fences', 'telegram_message_proofs']));
     expect(tables.map(t => t.name).filter(name => name.startsWith('whatsapp'))).toEqual([]);
-    expect(tables).toHaveLength(32);
+    expect(tables).toHaveLength(33);
     expect(() =>
       db!.transaction((tx) =>
         tx.run(
@@ -65,7 +65,7 @@ describe('storage/db', () => {
       version: tx.get('PRAGMA user_version'),
       references: tx.all<{table:string}>('PRAGMA foreign_key_list(telegram_evidence_sources)').map(row => row.table).sort(),
     }));
-    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 16 }, references: ['case_actions','chats','messages'] });
+    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 17 }, references: ['case_actions','chats','messages'] });
     expect(() => db!.transaction(tx => tx.run("INSERT INTO telegram_evidence_sources VALUES ('c','m','document','opaque','a')"))).toThrow(/FOREIGN KEY/);
   });
 
@@ -83,7 +83,7 @@ describe('storage/db', () => {
     } finally { old.close(); }
     db = openDatabase(file());
     db.transaction(tx => {
-      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 16 });
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 17 });
       expect(tx.get('SELECT token_sha256 FROM principals WHERE id=?', ['officer'])).toEqual({ token_sha256: 'previous-hash' });
       expect(tx.get('SELECT channel_account_id FROM account_grants WHERE principal_id=?', ['officer'])).toEqual({ channel_account_id: 'account' });
       expect(tx.all('SELECT * FROM officer_passwords')).toEqual([]);
@@ -107,7 +107,7 @@ describe('storage/db', () => {
     const remaining = db.transaction(tx => tx.all<{ name: string }>(
       "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'whatsapp%' ORDER BY name").map(row => row.name));
     expect(remaining).toEqual(['whatsapp_demo_opt_outs']);
-    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 16 });
+    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 17 });
   });
 
   it('v16 rebuilds the watchlist observations so an officer flag is accepted, keeping every existing row', () => {
@@ -128,7 +128,7 @@ describe('storage/db', () => {
       expect(() => old.exec(flag)).toThrow(/CHECK/);
     } finally { old.close(); }
     db = openDatabase(file());
-    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 16 });
+    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 17 });
     db.close();
     db = null;
     const after = new DatabaseSync(file());
@@ -139,6 +139,39 @@ describe('storage/db', () => {
         .toEqual([{ id: 'wob_1', origin: 'message_mention' }, { id: 'wob_2', origin: 'officer_flag' }]);
       expect(() => after.exec(flag.replace("'wob_2'", "'wob_3'").replace("'officer_flag'", "'other'"))).toThrow(/CHECK/);
     } finally { after.close(); }
+  });
+
+  it('v17 accepts citizen report accounts and observations, keeps every account and refuses a retired source', () => {
+    db = openDatabase(file());
+    db.close();
+    db = null;
+    const old = new DatabaseSync(file());
+    try {
+      old.exec(`PRAGMA foreign_keys = OFF;
+        INSERT INTO workspaces (id,name,created_at) VALUES ('ws','W','2026-01-01');
+        INSERT INTO channel_accounts (id,workspace_id,source,external_account_id,label,is_intake,created_at)
+          VALUES ('acct_tg','ws','telegram','1001','Telegram',1,'2026-01-01');
+        PRAGMA user_version = 16;`);
+    } finally { old.close(); }
+    db = openDatabase(file());
+    db.transaction(tx => {
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 17 });
+      expect(tx.all('SELECT id, source FROM channel_accounts')).toEqual([{ id: 'acct_tg', source: 'telegram' }]);
+      tx.run(`INSERT INTO channel_accounts (id,workspace_id,source,external_account_id,label,is_intake,created_at)
+        VALUES ('acct_cr','ws','citizen_report','mirsad-android','Citizen reports',0,'2026-01-02')`);
+      expect(() => tx.run(`INSERT INTO channel_accounts (id,workspace_id,source,external_account_id,label,is_intake,created_at)
+        VALUES ('acct_x','ws','whatsapp','x','x',0,'2026-01-02')`)).toThrow(/CHECK/);
+    });
+    db.close();
+    db = null;
+    const retired = new DatabaseSync(file());
+    try {
+      retired.exec(`PRAGMA foreign_keys = OFF; PRAGMA ignore_check_constraints = ON;
+        INSERT INTO channel_accounts (id,workspace_id,source,external_account_id,label,is_intake,created_at)
+          VALUES ('acct_wa','ws','whatsapp','wa','WhatsApp',0,'2026-01-03');
+        PRAGMA user_version = 16;`);
+    } finally { retired.close(); }
+    expect(() => openDatabase(file())).toThrow(/remove the whatsapp channel accounts/);
   });
 
   it('a failed transaction leaves no rows', () => {

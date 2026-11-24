@@ -86,7 +86,7 @@ export function eraseChatHistory(tx: Tx, officer: Principal, chatId: string, exp
     OR (scope IN ('dispatch','dispatch_by_phone') AND EXISTS (SELECT 1 FROM json_tree(response_body) WHERE value=?))`,
     [JSON.stringify(expired), 'officer-message:' + chatId, chatId]);
   forgetWatchlistEvidence(tx, chatId);
-  for (const table of ['telegram_dispatch_permissions', 'telegram_dispatch_contacts', 'telegram_evidence_sources', 'dispatch_briefs', 'captures', 'artifacts',
+  for (const table of ['telegram_dispatch_permissions', 'telegram_dispatch_contacts', 'telegram_evidence_sources', 'dispatch_briefs', 'citizen_reports', 'captures', 'artifacts',
     'findings', 'case_references', 'case_details', 'reviews', 'stream_events']) {
     tx.run(`DELETE FROM ${table} WHERE chat_id=?`, [chatId]);
   }

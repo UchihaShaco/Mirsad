@@ -1,39 +1,40 @@
 #!/usr/bin/env bash
-# Pushes the newest Mirsad Android scam report from a connected device to the root Mirsad product's
-# POST /v1/ingest. Laptop-side only: the phone never does this itself (the app holds no INTERNET permission).
+# Sends the newest Mirsad Android scam report from a connected device to the Mirsad portal's
+# POST /v1/citizen-reports. Laptop-side only: the phone never does this itself (the app holds no INTERNET permission).
+# Officers can also import the same file in the portal with Import report; this script is for a laptop at a desk.
 #
 # Usage:
-#   scripts/push_report_to_mirsad.sh [serial] [--dry-run] [--file report.json]
+#   scripts/push_report_to_mirsad.sh [serial] [--dry-run] [--demo] [--file report.json]
 #
 #   serial       adb device serial (e.g. emulator-5556); default: the only connected device
-#   --dry-run    print the ingest body instead of posting it (no token needed)
-#   --file PATH  map a local report JSON instead of pulling one from the device
+#   --dry-run    print the request body instead of posting it (no token needed)
+#   --demo       allow a Demo or test report (synthetic: true); the portal labels it Demo and keeps it off the watchlist
+#   --file PATH  send a local report JSON instead of pulling one from the device
 #
 # Environment:
-#   MIRSAD_BASE_URL         default http://127.0.0.1:8787
-#   MIRSAD_CONNECTOR_TOKEN  required unless --dry-run; read only here, never printed
-#   MIRSAD_SOURCE           telegram (default) | whatsapp: the ingest `source` (the schema has no SMS value)
-#   MIRSAD_MAPPER           auto (default) | jq | python: how the report is mapped to the ingest body
+#   MIRSAD_BASE_URL       default http://127.0.0.1:8787
+#   MIRSAD_OFFICER_TOKEN  an officer's bearer token, required unless --dry-run; read only here, never printed
 #
-# The mapping is the one in core/src/main/kotlin/app/mirsad/core/report/MirsadIngestMapper.kt and is documented
-# in docs/EVIDENCE_SCHEMA.md. Re-runnable: the service answers 200 (duplicate) for a report it already has.
+# The report is sent exactly as the phone wrote it (docs/EVIDENCE_SCHEMA.md, section 1). Re-runnable: the portal
+# answers 200 for a report it already has. Answers: 201 imported, 200 already imported, 400 not a report,
+# 422 report_not_accepted (a Demo report without --demo, a false-positive report, another version).
 set -euo pipefail
 
 PACKAGE="app.mirsad.shield"
 EXTERNAL_DIR="/sdcard/Android/data/$PACKAGE/files/reports"
 BASE_URL="${MIRSAD_BASE_URL:-http://127.0.0.1:8787}"
-SOURCE="${MIRSAD_SOURCE:-telegram}"
-MAPPER="${MIRSAD_MAPPER:-auto}"
 DRY_RUN=0
+DEMO=0
 SERIAL=""
 FILE=""
 
-usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'; }
 die() { echo "error: $*" >&2; exit 1; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
+    --demo) DEMO=1 ;;
     --file) [ $# -ge 2 ] || die "--file needs a path"; FILE="$2"; shift ;;
     -h|--help) usage; exit 0 ;;
     -*) echo "unknown option: $1" >&2; usage; exit 2 ;;
@@ -41,8 +42,6 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-
-case "$SOURCE" in telegram|whatsapp) ;; *) die "MIRSAD_SOURCE must be telegram or whatsapp" ;; esac
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/mirsad-push.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
@@ -76,111 +75,40 @@ else
 fi
 [ -s "$REPORT" ] || die "the report is empty"
 
-# --- 2. Map it to the ingest body (same mapping as MirsadIngestMapper.kt) ----------------------
-map_with_jq() {
-  jq --arg source "$SOURCE" '
-    def cap($n): if length > $n then .[:$n] else . end;
-    . as $r
-    | (($r.artifacts.sender // "") | ltrimstr(" ") | rtrimstr(" ") | if . == "" then null else . end) as $sender
-    | ($sender // $r.fingerprint) as $chatId
-    | (if (($r.reasonCodes // []) | length) > 0 then ($r.reasonCodes | join(", ")) else "none" end) as $codes
-    | (if $r.text != null then $r.text
-       else "Mirsad Android report \($r.reportId): suspected scam, channel \($r.channel), level \($r.level), score \($r.score), reasons: \($codes). Message text withheld by the user."
-       end) as $text
-    | {
-        source: $source,
-        externalAccountId: (("mirsad-android:" + $r.reportId) | cap(200)),
-        externalChatId: ($chatId | cap(200)),
-        chat: { displayLabel: (("Mirsad Android report " + $r.reportId) | cap(200)) },
-        event: {
-          type: "message.recorded",
-          sourceEventId: ($r.reportId | cap(200)),
-          sourceMessageId: ($r.reportId | cap(200)),
-          direction: "incoming",
-          text: ($text | cap(65536)),
-          sentAt: $r.createdAt,
-          sender: (
-            { externalId: ($chatId | cap(200)) }
-            + (if $r.artifacts.senderType == "ALPHANUMERIC" and $sender != null then { displayName: ($sender | cap(200)) } else {} end)
-            + (if $r.artifacts.senderType == "NUMBER" and $sender != null then
-                 { phone: ({ raw: ($sender | cap(64)), internationalFormat: ($sender | startswith("+")) }
-                           + (if ($sender | startswith("+971")) then { country: "AE" } else {} end)) }
-               else {} end)
-          )
-        }
-      }' "$REPORT"
-}
-
-map_with_python() {
-  python3 -I - "$REPORT" "$SOURCE" <<'PY'
+# --- 2. Wrap it: { "report": <the file as written>, "demo": true? } ------------------------------
+if command -v jq >/dev/null 2>&1; then
+  jq --argjson demo "$DEMO" '{ report: . } + (if $demo == 1 then { demo: true } else {} end)' "$REPORT" > "$BODY" \
+    || die "the report is not valid JSON"
+elif command -v python3 >/dev/null 2>&1; then
+  python3 -I - "$REPORT" "$DEMO" > "$BODY" <<'PY' || die "the report is not valid JSON"
 import json, sys
-
-with open(sys.argv[1], encoding="utf-8") as f:
-    r = json.load(f)
-source = sys.argv[2]
-a = r.get("artifacts") or {}
-sender = (a.get("sender") or "").strip() or None
-chat_id = sender or r["fingerprint"]
-codes = ", ".join(r.get("reasonCodes") or []) or "none"
-text = r.get("text")
-if text is None:
-    text = ("Mirsad Android report %s: suspected scam, channel %s, level %s, score %s, reasons: %s. "
-            "Message text withheld by the user." % (r["reportId"], r["channel"], r["level"], r["score"], codes))
-sender_obj = {"externalId": chat_id[:200]}
-if a.get("senderType") == "ALPHANUMERIC" and sender:
-    sender_obj["displayName"] = sender[:200]
-if a.get("senderType") == "NUMBER" and sender:
-    phone = {"raw": sender[:64], "internationalFormat": sender.startswith("+")}
-    if sender.startswith("+971"):
-        phone["country"] = "AE"
-    sender_obj["phone"] = phone
-body = {
-    "source": source,
-    "externalAccountId": ("mirsad-android:" + r["reportId"])[:200],
-    "externalChatId": chat_id[:200],
-    "chat": {"displayLabel": ("Mirsad Android report " + r["reportId"])[:200]},
-    "event": {
-        "type": "message.recorded",
-        "sourceEventId": r["reportId"][:200],
-        "sourceMessageId": r["reportId"][:200],
-        "direction": "incoming",
-        "text": text[:65536],
-        "sentAt": r["createdAt"],
-        "sender": sender_obj,
-    },
-}
+body = {"report": json.load(open(sys.argv[1], encoding="utf-8"))}
+if sys.argv[2] == "1":
+    body["demo"] = True
 json.dump(body, sys.stdout, indent=2, ensure_ascii=False)
 print()
 PY
-}
-
-case "$MAPPER" in
-  auto)
-    if command -v jq >/dev/null 2>&1; then MAPPER=jq
-    elif command -v python3 >/dev/null 2>&1; then MAPPER=python
-    else die "need jq or python3 to build the ingest body"; fi ;;
-  jq|python) ;;
-  *) die "MIRSAD_MAPPER must be auto, jq or python" ;;
-esac
-if [ "$MAPPER" = jq ]; then map_with_jq > "$BODY"; else map_with_python > "$BODY"; fi
+else
+  die "need jq or python3 to build the request body"
+fi
 
 if [ "$DRY_RUN" -eq 1 ]; then
-  echo "dry run ($MAPPER): would POST $BASE_URL/v1/ingest with this body:"
+  echo "dry run: would POST $BASE_URL/v1/citizen-reports with this body:"
   cat "$BODY"
   exit 0
 fi
 
 # --- 3. POST it --------------------------------------------------------------------------------
-[ -n "${MIRSAD_CONNECTOR_TOKEN:-}" ] || die "MIRSAD_CONNECTOR_TOKEN is required (a connector token provisioned with captureMethod approved_import)"
+[ -n "${MIRSAD_OFFICER_TOKEN:-}" ] || die "MIRSAD_OFFICER_TOKEN is required (an officer's bearer token)"
 command -v curl >/dev/null 2>&1 || die "curl not found on PATH"
 
-echo "posting to $BASE_URL/v1/ingest (source=$SOURCE, mapper=$MAPPER)"
+echo "posting to $BASE_URL/v1/citizen-reports"
 # The token travels in a curl config read from a process substitution: it is never on the command line and never printed.
 set +e
 http_code="$(curl -sS --fail-with-body --max-time 20 \
-  -K <(printf 'header = "Authorization: Bearer %s"\n' "$MIRSAD_CONNECTOR_TOKEN") \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$MIRSAD_OFFICER_TOKEN") \
   -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  --data-binary @"$BODY" -o "$RESP" -w '%{http_code}' "$BASE_URL/v1/ingest")"
+  --data-binary @"$BODY" -o "$RESP" -w '%{http_code}' "$BASE_URL/v1/citizen-reports")"
 curl_status=$?
 set -e
 
@@ -189,5 +117,5 @@ if [ -s "$RESP" ]; then
   if command -v jq >/dev/null 2>&1; then jq . "$RESP" 2>/dev/null || cat "$RESP"; else cat "$RESP"; fi
   echo
 fi
-[ "$curl_status" -eq 0 ] || die "ingest failed (curl exit $curl_status)"
+[ "$curl_status" -eq 0 ] || die "import failed (curl exit $curl_status)"
 echo "done"

@@ -407,8 +407,8 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .inbox-contact-actions button { min-height: 31px; padding-inline: 11px; font-size: 12px; }
 .inbox-contact-actions #open-opener:not(:disabled) { background: transparent; border-color: transparent; color: var(--ink-2); }
 .inbox-contact-actions #open-opener:hover:not(:disabled) { background: var(--sunken); color: var(--ink); }
-/* The five queues as counters: the number first, its name under it. */
-.queue-filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
+/* The six queues as counters in two rows of three: the number first, its name under it. */
+.queue-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
 .queue-filters button {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -427,10 +427,6 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
   text-align: start;
 }
 .queue-filters button > span:first-child { grid-area: label; align-self: end; }
-/* Until the inbox reaches its widest (22.5rem) the five counters take two rows, so no label is clipped or crowded. */
-@media (min-width: 761px) and (max-width: 1439px) {
-  .queue-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
 .queue-filters button:hover:not(:disabled) { background: var(--pane); color: var(--ink); }
 .queue-filters button[aria-pressed="true"] { background: var(--raised); color: var(--you-ink); font-weight: 650; box-shadow: var(--shadow-soft); }
 .queue-filters button:disabled { background: transparent; color: var(--disabled-ink); }
@@ -512,6 +508,21 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .chat-item-suspect { box-shadow: inset 3px 0 0 var(--alert-solid); }
 .suspect-line { margin: 0; color: var(--ink-2); font-size: 12.5px; overflow-wrap: anywhere; }
 .suspect-line bdi[dir="ltr"] { color: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+/* Citizen reports: what the citizen's phone decided, and the evidence the report carried. */
+.report-verdict { display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 650; line-height: 20px; white-space: nowrap; }
+.verdict-hold { background: var(--alert-tint); color: var(--alert-ink); box-shadow: inset 0 0 0 1px var(--alert-line); }
+.verdict-warn { background: var(--attn-tint); color: var(--attn-ink); box-shadow: inset 0 0 0 1px var(--attn-line); }
+.verdict-allow { background: var(--sunken); color: var(--ink-2); }
+.demo-chip { padding: 0 7px; border-radius: 999px; background: var(--sunken); color: var(--ink-2); font-size: 11.5px; font-weight: 650; line-height: 19px; }
+.report-details { display: grid; gap: 8px; margin-top: 10px; padding: 11px 13px; border-radius: var(--radius); background: var(--sunken); font-size: 13px; }
+.report-verdict-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; color: var(--ink-2); }
+.report-reasons { display: grid; gap: 3px; margin: 0; padding-inline-start: 18px; color: var(--ink); }
+.report-artifacts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.report-artifacts dt { color: var(--ink-2); font-weight: 600; }
+.report-artifacts dd { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 0; }
+.report-artifacts bdi { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.report-provenance { margin: 0; overflow-wrap: anywhere; }
+.report-strip .control-mark { background: var(--sunken); color: var(--ink-2); }
 .empty { list-style: none; padding: 8px 14px 10px; color: var(--ink-3); font-size: 13px; }
 
 /* Conversation */

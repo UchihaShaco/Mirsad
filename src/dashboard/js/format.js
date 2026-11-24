@@ -80,6 +80,7 @@ export const CASE_ACTION_LABELS = {
   capture_retry_requested: 'Capture retry requested',
   watchlist_match: 'Watchlist match',
   scammer_flagged: 'Flagged as a scammer; number added to the phone watchlist',
+  citizen_report_imported: 'Citizen report imported from Mirsad Android',
   text_conflict_recorded: 'Conflicting copy recorded',
   ai_reply_sent: 'Automated reply sent',
   ai_reply_failed: 'AI reply failed',
@@ -158,7 +159,52 @@ export function silenceExplanation(detail) {
   return text && text.length <= 400 ? text : null;
 }
 
-export const OBSERVATION_ORIGIN_LABELS = { sender_metadata: 'Sender metadata', message_mention: 'Mentioned in a message', officer_flag: 'Flagged by an officer' };
+/** Mirsad Android's reason codes in the app's own English (strings_notices.xml), worded for the officer. */
+export const REPORT_REASON_LABELS = {
+  SENDER_BLOCKLISTED: "Sender is on the phone's block list",
+  SENDER_ALLOWLISTED: "Sender is on the phone's allow list",
+  SENDER_LOOKS_LIKE_CONTACT: "Sender looks like a saved contact",
+  SENDER_PLAIN_NUMBER_CLAIMS_ENTITY: "A plain phone number claims to be a bank or authority",
+  SENDER_FOREIGN_CODE_UAE_ENTITY: "A foreign number claims to be a UAE organisation",
+  SENDER_ONE_RING_PATTERN: "Looks like a one-ring call-back scam",
+  SENDER_INTERNATIONAL_CALL: "International number",
+  SENDER_SEEN_IN_HELD_MESSAGE: "This number sent a held message recently",
+  SENDER_OTP_FROM_ALPHANUMERIC: "One-time code from an official sender",
+  LINK_SHORTENER: "Shortened link hides the real address",
+  LINK_IP_HOST: "Link points to a raw IP address",
+  LINK_PUNYCODE_OR_MIXED_SCRIPT: "Link uses look-alike characters",
+  LINK_PLAIN_HTTP: "Link is not secure (http)",
+  LINK_HIGH_RISK_TLD: "Link uses a high-risk domain ending",
+  LINK_LOOKALIKE_OFFICIAL: "Link imitates an official website",
+  LINK_BRAND_IN_HOST_NOT_OFFICIAL: "Link uses a brand name but is not the official site",
+  LINK_BLOCKLISTED_DOMAIN: "Link domain is on the block list",
+  LINK_PRESENT: "Contains a link",
+  CONTENT_URGENCY: "Pressures the reader to act immediately",
+  CONTENT_THREAT: "Threatens a fine, block or suspension",
+  CONTENT_CREDENTIAL_REQUEST: "Asks for a password, PIN or card details",
+  CONTENT_SMALL_FEE_LINK: "Asks for a small fee through a link",
+  CONTENT_PRIZE: "Promises a prize or reward",
+  CONTENT_JOB_OFFER: "Unsolicited job offer",
+  CONTENT_INVESTMENT: "Investment or quick-profit offer",
+  CONTENT_REMOTE_ACCESS_APP: "Asks the reader to install a remote-access app",
+  CONTENT_MOVE_TO_MESSENGER: "Asks the reader to move to another messaging app",
+  CONTENT_PAYMENT_REQUEST: "Asks for a payment or transfer",
+  CONTENT_NEW_NUMBER_RELATIVE: "Claims to be a relative with a new number",
+  CONTENT_IMPERSONATES_ENTITY: "Pretends to be a bank, authority or company",
+  CONTENT_OTP_REQUEST: "Asks for a one-time code",
+  FINGERPRINT_BLOCKLISTED: "Matches a known scam message",
+  FINGERPRINT_KNOWN_GOOD: "Matches a message the citizen marked as not a scam",
+  MODEL_SCORE: "Wording resembles known scams",
+  CONTENT_HIDDEN: "Content hidden by the system",
+  ENGINE_TIMEOUT: "Check timed out",
+  ENGINE_ERROR: "Check failed",
+};
+
+/** What the citizen's phone did with the message or call. */
+export const PHONE_VERDICT_LABELS = { HOLD: 'Held on the phone', WARN: 'Flagged on the phone', ALLOW: 'Allowed on the phone' };
+export const REPORT_CHANNEL_LABELS = { SMS: 'SMS', CALL: 'Call', CHAT: 'Chat message' };
+
+export const OBSERVATION_ORIGIN_LABELS = { sender_metadata: 'Sender metadata', message_mention: 'Mentioned in a message', officer_flag: 'Flagged by an officer', citizen_report: 'Citizen report' };
 
 const ERROR_TEXT = {
   revision_conflict: 'The chat changed since it was loaded. It has been refreshed; check it and try again.',

@@ -1,0 +1,15 @@
+{
+  "reportId": "mrs-9c2e41d07f3a",
+  "version": 1,
+  "createdAt": "2026-11-24T20:15:00Z",
+  "fingerprint": "0123456789abcdef",
+  "reasonCodes": [
+    "CONTENT_URGENCY"
+  ],
+  "senderType": "ALPHANUMERIC",
+  "modelVersion": "none",
+  "userVerdict": "FALSE_POSITIVE",
+  "appVersion": "0.1.0",
+  "synthetic": false,
+  "text": null
+}

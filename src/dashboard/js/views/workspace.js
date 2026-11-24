@@ -94,7 +94,7 @@ export function renderWorkspace(refs, state) {
   refs.openEvidence.setAttribute('aria-expanded', String(state.evidenceOpen));
   refs.sidePanel.hidden = !state.evidenceOpen;
   if (evidenceChanged) restorePlace(refs.timeline, place);
-  refs.openChatDispatch.hidden = state.previous || !chat || !['not_started', 'ai_active'].includes(chat.aiMode);
+  refs.openChatDispatch.hidden = state.previous || !chat || !['not_started', 'ai_active'].includes(chat.aiMode) || chat.source === 'citizen_report';
   refs.archiveNotice.hidden = !state.previous;
   refs.previousConversationSection.hidden = !state.timeline?.testSession || state.previous;
   refs.addConfirmation.hidden = state.previous;
@@ -136,6 +136,7 @@ export function bindWorkspace(ctx) {
   refs.inboxFilterAll.addEventListener('click', () => handlers.onInboxFilter('all'), options);
   refs.inboxFilterNew.addEventListener('click', () => handlers.onInboxFilter('new_messages'), options);
   refs.inboxFilterSuspects.addEventListener('click', () => handlers.onInboxFilter('suspects'), options);
+  refs.inboxFilterReports.addEventListener('click', () => handlers.onInboxFilter('citizen_reports'), options);
   refs.inboxFilterReview.addEventListener('click', () => handlers.onInboxFilter('review'), options);
   refs.inboxFilterLowerConcern.addEventListener('click', () => handlers.onInboxFilter('lower_concern'), options);
   refs.openSettings.addEventListener('click', () => {

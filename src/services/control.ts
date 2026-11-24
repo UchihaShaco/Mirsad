@@ -11,6 +11,7 @@ import type { Tx } from '../storage/db.ts';
 import type { ChatRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
 import { summaryOf } from './chats.ts';
+import { refuseCitizenReport } from './citizen-reports.ts';
 import { applyModeChange } from './mode-change.ts';
 
 const CASE_ACTION_FOR: Record<ControlAction, CaseActionType> = {
@@ -46,6 +47,7 @@ export function applyControl(
   expectedRevision: number,
 ): ControlResult {
   const chat = requireChat(tx, officer, chatId);
+  refuseCitizenReport(tx, chat);
   assertRevision(chat, expectedRevision);
   const next = transition({ aiMode: chat.ai_mode, controllerId: chat.controller_id }, action, officer.id);
   if (!next.ok) {

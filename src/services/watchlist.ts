@@ -480,3 +480,27 @@ export function readSuspect(tx: Tx, chatId: string): ChatSummary['suspect'] {
     flaggedBy: row.officer_id && row.officer_name ? { id: row.officer_id, displayName: row.officer_name } : null,
   };
 }
+
+export interface ReportedNumber {
+  raw: string;
+  e164: string;
+  reason: string;
+}
+
+/**
+ * The numbers a citizen report names (its sender and any call-back numbers), each as a citizen_report observation at
+ * the report's message. A new number enters Needs review; an officer decides. Returns how many observations were added.
+ */
+export function onCitizenReport(tx: Tx, ctx: EvidenceContext, numbers: readonly ReportedNumber[]): number {
+  let added = 0;
+  for (const number of numbers) {
+    const before = tx.get<{ n: number }>('SELECT count(*) AS n FROM watchlist_observations WHERE message_event_id=? AND origin=?',
+      [ctx.messageEvent.id, 'citizen_report'])!.n;
+    recordObservation(tx, ctx, { matchKey: number.e164, e164: number.e164 },
+      { origin: 'citizen_report', findingId: null, sourceRepresentation: number.raw, reason: number.reason });
+    const after = tx.get<{ n: number }>('SELECT count(*) AS n FROM watchlist_observations WHERE message_event_id=? AND origin=?',
+      [ctx.messageEvent.id, 'citizen_report'])!.n;
+    added += after - before;
+  }
+  return added;
+}

@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 16;
+const SCHEMA_VERSION = 17;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -188,6 +188,49 @@ function migrate(db: DatabaseSync): void {
       DROP TABLE watchlist_observations;
       ALTER TABLE watchlist_observations_v16 RENAME TO watchlist_observations;
     `);
+    // v17 adds citizen reports from Mirsad Android: a source for their channel account, a watchlist origin and the
+    // stored report. SQLite changes a CHECK only by rebuilding the table, so channel_accounts and the observations are
+    // rebuilt with every row kept. A retired source (the WhatsApp demo) must be gone first, or the copy would fail.
+    if (current < 17) {
+      const retired = db.prepare("SELECT source FROM channel_accounts WHERE source NOT IN ('telegram','citizen_report') LIMIT 1").get();
+      if (retired) throw new Error(`v17 migration: remove the ${String(retired.source)} channel accounts before upgrading`);
+      db.exec(`
+        CREATE TABLE channel_accounts_v17 (
+          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+          source TEXT NOT NULL CHECK (source IN ('telegram','citizen_report')),
+          external_account_id TEXT NOT NULL, label TEXT NOT NULL,
+          is_intake INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL,
+          UNIQUE (workspace_id, source, external_account_id)
+        );
+        INSERT INTO channel_accounts_v17 (rowid, id, workspace_id, source, external_account_id, label, is_intake, created_at)
+          SELECT rowid, id, workspace_id, source, external_account_id, label, is_intake, created_at FROM channel_accounts;
+        DROP TABLE channel_accounts;
+        ALTER TABLE channel_accounts_v17 RENAME TO channel_accounts;
+        CREATE TABLE watchlist_observations_v17 (
+          id TEXT PRIMARY KEY, entry_id TEXT NOT NULL REFERENCES watchlist_entries(id), workspace_id TEXT NOT NULL,
+          chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT NOT NULL REFERENCES messages(id),
+          message_event_id TEXT NOT NULL REFERENCES message_events(id), finding_id TEXT REFERENCES findings(id),
+          origin TEXT NOT NULL CHECK (origin IN ('sender_metadata','message_mention','officer_flag','citizen_report')),
+          source_representation TEXT NOT NULL, reason TEXT NOT NULL, observed_at TEXT NOT NULL,
+          UNIQUE (entry_id, message_event_id, origin)
+        );
+        INSERT INTO watchlist_observations_v17 (rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+          origin, source_representation, reason, observed_at)
+          SELECT rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+            origin, source_representation, reason, observed_at FROM watchlist_observations;
+        DROP TABLE watchlist_observations;
+        ALTER TABLE watchlist_observations_v17 RENAME TO watchlist_observations;
+        CREATE TABLE IF NOT EXISTS citizen_reports (
+          message_id TEXT PRIMARY KEY REFERENCES messages(id),
+          chat_id TEXT NOT NULL REFERENCES chats(id), workspace_id TEXT NOT NULL,
+          report_id TEXT NOT NULL, report TEXT NOT NULL,                      -- the report v1 JSON as the citizen shared it
+          demo INTEGER NOT NULL CHECK (demo IN (0,1)),
+          imported_by TEXT NOT NULL REFERENCES principals(id), imported_at TEXT NOT NULL,
+          UNIQUE (workspace_id, report_id)
+        );
+        CREATE INDEX IF NOT EXISTS citizen_reports_chat ON citizen_reports(chat_id);
+      `);
+    }
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {
@@ -341,8 +384,14 @@ function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue, l
 export function openDatabase(file: string, options: OpenDatabaseOptions = {}): Db {
   const db = new DatabaseSync(file, { timeout: BUSY_TIMEOUT_MS, enableForeignKeyConstraints: true });
   // FULL: a commit returns only once it is on disk, so evidence acknowledged with 201 survives a power cut (design 19.2).
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON; PRAGMA secure_delete = ON;');
-  migrate(db);
+  try {
+    db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON; PRAGMA secure_delete = ON;');
+    migrate(db);
+  } catch (error) {
+    // A refused upgrade must not keep the file open: the caller cannot close a database it never received.
+    db.close();
+    throw error;
+  }
   const queue = new CommitQueue();
   const tx = createTx(db, options, queue);
   return {

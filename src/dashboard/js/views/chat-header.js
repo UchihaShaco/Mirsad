@@ -194,6 +194,25 @@ function controlStrip(refs, state, handlers, key) {
   ]);
 }
 
+/** A citizen report has nobody to answer: the strip says where it came from and what an officer can do instead. */
+function reportStrip(timeline) {
+  const reports = timeline.citizenReports;
+  const demo = reports.length > 0 && reports.every(report => report.demo);
+  const count = reports.length === 1 ? '1 report' : `${reports.length} reports`;
+  return h('section', { className: 'control-strip report-strip', dataset: { state: 'citizen_report' }, 'aria-label': 'Where this report came from' }, [
+    h('span', { className: 'control-mark', 'aria-hidden': 'true', text: 'CR' }),
+    h('div', { className: 'control-status' }, [
+      h('p', { className: 'control-headline' }, [text(demo ? 'Demo report from Mirsad Android' : 'Reported by citizens from Mirsad Android')]),
+      // One sentence in one span, so the note's flex gap does not split it around the link.
+      h('p', { className: 'control-note' }, [h('span', {}, [
+        document.createTextNode(`${count} from this sender. There is no conversation to answer: review its numbers on the `),
+        h('a', { href: '#/watchlist', text: 'Phone watchlist', dataset: { focusKey: 'report-watchlist' } }),
+        document.createTextNode(' or flag the sender as a scammer.'),
+      ])]),
+    ]),
+  ]);
+}
+
 function placeholder(state) {
   if (state.selectedChatId === null) return h('p', { className: 'placeholder conversation-empty' }, [
     h('span', { className: 'empty-chat-mark', 'aria-hidden': 'true' }),
@@ -338,7 +357,7 @@ export function renderChatHeader(refs, state, handlers) {
     container.dataset.control = key;
     append(container, [
       identity(state),
-      state.previous ? null : controlStrip(refs, state, handlers, key),
+      state.previous ? null : timeline.chat.source === 'citizen_report' ? reportStrip(timeline) : controlStrip(refs, state, handlers, key),
       reviewNotice(state.wholeTimeline ?? timeline, state.pending !== null, handlers, state.previous ? null : key),
       signals(state, handlers),
     ]);

@@ -237,22 +237,22 @@ data* removes everything, including report copies and Mirsad's notices.
 
 ## 8. How it fits with the other Mirsad products
 
-The root of this repository is the **Mirsad service**: officer-side evidence capture and review, with a dashboard, an
-HTTP API and an event stream. Mirsad Android is the citizen-side counterpart, and the two meet at the service's
-`POST /v1/ingest` route. The phone never calls it: a laptop-side script pulls a report the user shared and posts it with
-a connector token that stays on the laptop.
+The root of this repository is the **Mirsad portal**, where officers investigate scams. Mirsad Android is the
+citizen-side counterpart, and the two exchange files, so the phone never needs the internet:
+
+- **Phone to portal: citizen reports.** A report the citizen shares reaches an officer, who imports it with
+  **Import report** in the portal (or a laptop runs the script below). It lands under **Citizen reports**, one chat
+  per reported sender, with the phone's verdict, reasons and evidence; its numbers go to the phone watchlist for
+  review. A report of a number the police already flagged shows as a watchlist match.
 
 ```sh
-scripts/push_report_to_mirsad.sh --dry-run --file scripts/sample_report.json   # print the ingest body
-export MIRSAD_CONNECTOR_TOKEN=...                                              # connector token, laptop only
-scripts/push_report_to_mirsad.sh --file <report.json>                          # POST to $MIRSAD_BASE_URL (default http://127.0.0.1:8787)
-scripts/push_report_to_mirsad.sh [adb-serial]                                  # pull the newest report from the phone and POST it
+scripts/push_report_to_mirsad.sh --dry-run --file scripts/sample_report.json   # print the request body
+export MIRSAD_OFFICER_TOKEN=...                                                # an officer's token, laptop only
+scripts/push_report_to_mirsad.sh --file <report.json>                          # POST to $MIRSAD_BASE_URL/v1/citizen-reports
+scripts/push_report_to_mirsad.sh [adb-serial]                                  # pull the newest report from the phone and send it
 ```
 
-The result is a timestamped, reviewable item on an officer's screen. The ingest schema has no fields for reason codes or
-artifacts, so the officer sees the sender and either the message text (if the user shared it) or a one-line summary
-with channel, level, score and reason codes. The field-by-field mapping is in
-[docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md).
+The field-by-field handling is in [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md), section 7.
 
 ## 9. Build from source, tests, evaluation
 

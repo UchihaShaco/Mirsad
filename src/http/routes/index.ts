@@ -30,6 +30,7 @@ import { routes as telegramDmReplies } from './telegram-dm-replies.ts';
 import { routes as telegramErase } from './telegram-erase.ts';
 import { routes as watchlist } from './watchlist.ts';
 import { routes as scammerFlags } from './scammer-flags.ts';
+import { routes as citizenReports } from './citizen-reports.ts';
 
 export type RouteAuth = 'officer' | 'connector' | 'any' | 'none';
 
@@ -72,6 +73,7 @@ export const ROUTES: readonly RouteSpec[] = [
   route('GET', '/v1/watchlist', 'officer'),
   route('POST', '/v1/watchlist/{entryId}/review', 'officer'),
   route('POST', '/v1/chats/{chatId}/scammer-flags', 'officer', true),
+  route('POST', '/v1/citizen-reports', 'officer', true),
   route('GET', '/v1/places/search', 'officer', true),
   route('GET', '/v1/places/{placeId}', 'officer', true),
   route('GET', '/v1/map/tiles/{z}/{x}/{y}', 'officer', true),
@@ -91,7 +93,7 @@ export const ROUTES: readonly RouteSpec[] = [
 
 const MODULES: RouteModule[] = [
   chats, ingest, chatEvents, dispatches, timeline, artifacts, captures, control, erasure, telegramErase,
-  officer, eventsStream, watchlist, scammerFlags, caseReferences, status, health, me, dashboardStatic, telegramDmReplies, investigationOpeners,
+  officer, eventsStream, watchlist, scammerFlags, citizenReports, caseReferences, status, health, me, dashboardStatic, telegramDmReplies, investigationOpeners,
   places, mapTiles,
 ];
 

@@ -113,6 +113,7 @@ export function createApi(token, { onUnauthenticated }) {
     /** `request`: { kind, paymentHosts, sourceNote } (state/case-reference.js builds it). */
     recordCaseReference: (chatId, request) => post(chatPath(chatId, '/case-references'), request),
     watchlist: async () => (await call('GET', '/v1/watchlist')).data,
+    importCitizenReport: (report, demo) => post('/v1/citizen-reports', { report, ...(demo && { demo: true }) }),
     flagScammer: (chatId, phone, reason) => post(chatPath(chatId, '/scammer-flags'), { phone, reason }),
     searchPlaces: async ({ q, category, bbox, limit, cursor }) => {
       const params = new URLSearchParams();

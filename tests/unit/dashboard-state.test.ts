@@ -38,7 +38,7 @@ function chatSummary(overrides: Partial<ChatSummary> = {}): ChatSummary {
     acknowledgementTemplate: null,
     review: { state: 'idle', pending: 0, unavailable: 0 },
     telegramReplyHold: { contactOptedOut: false, officerReview: null, evidenceItems: [] },
-    lowerConcern: null, previousLowerConcern: null, firstContact: null, suspect: null,
+    lowerConcern: null, previousLowerConcern: null, firstContact: null, suspect: null, citizenReport: null,
     watchlistMatches: [],
     messageCount: 1,
     lastActivityAt: AT,
@@ -146,6 +146,7 @@ describe('fresh test history', () => {
       findings: [finding('late-old-finding', 'old', 15)],
       caseActions: [caseAction('old-action', 3), caseAction('current-action', 13)],
       caseReferences: [],
+      citizenReports: [],
     };
     const current = timelineForPeriod(whole, false);
     expect(current.messages.map(m => m.id)).toEqual(['fresh']);
@@ -280,13 +281,31 @@ describe('inbox grouping', () => {
       chatSummary({ id: 'chat_new_a', inboxStatus: 'new_inbound', lastActivityAt: '2026-11-21T08:02:00.000Z' }),
       chatSummary({ id: 'chat_new_b', inboxStatus: 'new_inbound', lastActivityAt: '2026-11-21T08:01:00.000Z' }),
     ];
-    expect(INBOX_FILTERS).toEqual(['all', 'new_messages', 'suspects', 'review', 'lower_concern']);
+    expect(INBOX_FILTERS).toEqual(['all', 'new_messages', 'citizen_reports', 'suspects', 'review', 'lower_concern']);
     const groups = groupInbox(chats, 'new_messages');
     expect(groups.newInbound.map(chat => chat.id)).toEqual(['chat_new_a', 'chat_new_b']);
     expect(groups.open).toEqual([]);
     expect([...selectableChatIds(chats, 'new_messages')].sort()).toEqual(['chat_new_a', 'chat_new_b']);
     // Switching to New messages drops an open chat from the batch, so Dispatch acts only on what the officer sees.
     expect([...pruneSelection(new Set(['chat_open', 'chat_new_b']), chats, 'new_messages')]).toEqual(['chat_new_b']);
+  });
+
+  it('citizen reports have their own queue, never count as new messages and cannot be selected for Dispatch', () => {
+    const report = { count: 1, latestLevel: 'HOLD' as const, latestChannel: 'SMS' as const, demo: false };
+    const suspect = { watchlistEntryId: 'wle_1', numberDisplay: '+44 7700 900123', flaggedAt: AT, flaggedBy: OFFICER_A };
+    const chats = [
+      chatSummary({ id: 'chat_report', source: 'citizen_report', channelLabel: 'Citizen report', inboxStatus: 'new_inbound', citizenReport: report }),
+      chatSummary({ id: 'chat_report_flagged', source: 'citizen_report', channelLabel: 'Citizen report', citizenReport: report, suspect }),
+      chatSummary({ id: 'chat_new', inboxStatus: 'new_inbound' }),
+    ];
+    const all = groupInbox(chats);
+    expect(all.newInbound.map(chat => chat.id)).toEqual(['chat_new']);
+    expect(all.citizenReports.map(chat => chat.id)).toEqual(['chat_report']);
+    expect(all.suspects.map(chat => chat.id)).toEqual(['chat_report_flagged']);
+    expect(all.open).toEqual([]);
+    expect(groupInbox(chats, 'citizen_reports').citizenReports.map(chat => chat.id)).toEqual(['chat_report']);
+    expect([...selectableChatIds(chats)]).toEqual(['chat_new']);
+    expect([...pruneSelection(new Set(['chat_report', 'chat_new']), chats)]).toEqual(['chat_new']);
   });
 
   it('a flagged chat moves to Suspects from New messages or the open list, and only there', () => {

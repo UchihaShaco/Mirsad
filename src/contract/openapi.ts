@@ -22,7 +22,7 @@ const JSON_TYPE = 'application/json';
 const REQUEST_SCHEMAS = [
   'EraseRequest', 'ConsentPromptRequest',
   'IngestRequest', 'IntakeEvent', 'RegisterChatRequest', 'DispatchRequest', 'DispatchByPhoneRequest', 'ControlRequest', 'DmRepliesRequest',
-  'OfficerMessageRequest', 'OfficerDecisionRequest', 'CaseReferenceRequest', 'WatchlistReviewRequest', 'ScammerFlagRequest', 'OfficerLoginRequest',
+  'OfficerMessageRequest', 'OfficerDecisionRequest', 'CaseReferenceRequest', 'WatchlistReviewRequest', 'ScammerFlagRequest', 'CitizenReportImportRequest', 'OfficerLoginRequest',
 ] as const;
 /** Small enums that both sides share; emitted once, from the output side. */
 const SHARED_SCHEMAS = ['Source', 'Direction'] as const;
