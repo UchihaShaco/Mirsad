@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Shield outline -->
+    <path android:fillColor="#F3F7F5"
+        android:pathData="M54,22 L78,31 C78,54 70,72 54,84 C38,72 30,54 30,31 Z" />
+    <!-- Eye: mirsad = observatory / watch post -->
+    <path android:fillColor="#0E4D45"
+        android:pathData="M40,52 C46,44 62,44 68,52 C62,60 46,60 40,52 Z" />
+    <path android:fillColor="#F3F7F5" android:pathData="M54,47 a5,5 0 1,0 0.01,0 Z" />
+</vector>

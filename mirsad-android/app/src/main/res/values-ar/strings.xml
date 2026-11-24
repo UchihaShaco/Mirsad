@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">مرصاد (Mirsad)</string>
+    <string name="share_target_label">افحص مع مرصاد</string>
+    <string name="skeleton_title">مرصاد</string>
+    <string name="skeleton_subtitle">درع ضد الاحتيال يعمل على الهاتف · نموذج أولي للهاكاثون</string>
+</resources>

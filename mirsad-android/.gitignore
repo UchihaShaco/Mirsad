@@ -1,0 +1,17 @@
+# Build outputs
+build/
+.gradle/
+.kotlin/
+*/build/
+# Local config and secrets
+local.properties
+*.keystore
+*.jks
+# IDE
+.idea/
+*.iml
+.DS_Store
+# Scratch
+captures/
+*.log
+# Keep dist/ and demo/ (committed deliverables)

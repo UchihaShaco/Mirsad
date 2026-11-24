@@ -1,0 +1,7 @@
+{
+  "note": "To be confirmed with the police team before any real use.",
+  "channels": [
+    { "id": "adp_aman", "name_en": "Abu Dhabi Police Aman service", "name_ar": "خدمة أمان - شرطة أبوظبي", "phone": "8002626", "sms": "2828", "email": "aman@adpolice.gov.ae", "status": "to_be_confirmed" },
+    { "id": "dubai_ecrime", "name_en": "Dubai Police eCrime", "name_ar": "الجرائم الإلكترونية - شرطة دبي", "web": "https://ecrime.ae", "status": "to_be_confirmed" }
+  ]
+}
