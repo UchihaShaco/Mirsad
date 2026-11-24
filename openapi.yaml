@@ -21,7 +21,7 @@ paths:
       summary: Sign in to the officer dashboard
       tags:
         - extension
-      security: &a5 []
+      security: &a6 []
       description: "A temporary password returns passwordChangeRequired. Submit the username and temporary password again with a different newPassword (12–128 characters) to receive a session. Pass the returned session token in the Authorization bearer header. Responses use Cache-Control: no-store. Browser requests must use the same origin and send JSON."
       requestBody:
         required: true
@@ -1605,7 +1605,7 @@ paths:
       responses:
         "200":
           description: The capture image.
-          headers:
+          headers: &a5
             Cache-Control:
               schema:
                 type: string
@@ -1831,6 +1831,223 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "409":
           description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/places/search:
+    get:
+      operationId: get_v1PlacesSearch
+      summary: Search the Abu Dhabi places directory
+      tags:
+        - extension
+      security: *a1
+      description: "Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), up to 200 per page with an opaque cursor."
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+        - name: bbox
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+        - name: limit
+          in: query
+          required: false
+          schema:
+            default: 100
+            type: integer
+            minimum: 1
+            maximum: 200
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+      responses:
+        "200":
+          description: Matching places, the distinct categories of all matches, and the next page cursor.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/PlacesSearchResponse"
+                  error:
+                    type: "null"
+                  meta:
+                    $ref: "#/components/schemas/ListMeta"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/places/{placeId}:
+    get:
+      operationId: get_v1PlacesPlaceId
+      summary: Read one place from the directory
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: placeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The place for the map details panel.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/PlacesDetailResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/map/tiles/{z}/{x}/{y}:
+    get:
+      operationId: get_v1MapTilesZXY
+      summary: Proxied map tile for the places map
+      tags:
+        - extension
+      security: *a1
+      description: "Raster tiles are served from our own origin with a disk cache, so the dashboard Content-Security-Policy stays same-origin. Map data: OpenStreetMap contributors."
+      parameters:
+        - name: z
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: y
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PNG tile bytes.
+          headers: *a5
+          content:
+            image/png:
+              schema:
+                type: string
+                contentMediaType: image/png
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
           content:
             application/json:
               schema:
@@ -2408,7 +2625,7 @@ paths:
       summary: Liveness check
       tags:
         - extension
-      security: *a5
+      security: *a6
       responses:
         "200":
           description: The service is up.
@@ -2452,7 +2669,7 @@ paths:
       summary: Reference dashboard
       tags:
         - dashboard
-      security: *a5
+      security: *a6
       description: The dashboard page, served without authentication.
       responses:
         "200":
@@ -2485,7 +2702,7 @@ paths:
       summary: Reference dashboard asset
       tags:
         - dashboard
-      security: *a5
+      security: *a6
       parameters:
         - name: assetPath
           in: path
@@ -4446,6 +4663,121 @@ components:
       required:
         - principal
       additionalProperties: false
+    PlaceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 200
+        name:
+          type: string
+          minLength: 1
+          maxLength: 300
+        name_ar:
+          anyOf:
+            - type: string
+              maxLength: 300
+            - type: "null"
+        location_link:
+          type: string
+          maxLength: 2000
+          format: uri
+        urls:
+          maxItems: 50
+          type: array
+          items:
+            type: string
+            maxLength: 2000
+            format: uri
+        phones:
+          maxItems: 20
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 32
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        category:
+          type: string
+          minLength: 1
+          maxLength: 120
+        address:
+          anyOf:
+            - type: string
+              maxLength: 500
+            - type: "null"
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+        confidence:
+          anyOf:
+            - type: number
+              minimum: 0
+              maximum: 1
+            - type: "null"
+        source:
+          type: string
+          enum:
+            - overture
+            - osm
+            - google
+        updated_at:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - id
+        - name
+        - name_ar
+        - location_link
+        - urls
+        - phones
+        - description
+        - category
+        - address
+        - lat
+        - lng
+        - confidence
+        - source
+        - updated_at
+      additionalProperties: false
+    PlacesSearchResponse:
+      type: object
+      properties:
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaceRecord"
+        nextCursor:
+          type:
+            - string
+            - "null"
+        categories:
+          type: array
+          items:
+            type: string
+      required:
+        - places
+        - nextCursor
+        - categories
+      additionalProperties: false
+    PlacesDetailResponse:
+      type: object
+      properties:
+        place:
+          $ref: "#/components/schemas/PlaceRecord"
+      required:
+        - place
+      additionalProperties: false
     OfficerLoginResponse:
       anyOf:
         - type: object
@@ -4837,7 +5169,7 @@ x-workflow-example:
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
             inboxStatus: open
-            telegramReplyHold: &a7
+            telegramReplyHold: &a8
               contactOptedOut: false
               officerReview: null
               evidenceItems: []
@@ -4852,11 +5184,11 @@ x-workflow-example:
             firstObservedDirection: incoming
             intakeAccount: false
             acknowledgementTemplate: null
-            review: &a8
+            review: &a9
               state: active
               pending: 1
               unavailable: 0
-            watchlistMatches: &a9 []
+            watchlistMatches: &a10 []
             messageCount: 1
             lastActivityAt: 2026-11-21T08:00:02.000Z
             createdAt: 2026-11-21T08:00:00.000Z
@@ -4904,7 +5236,7 @@ x-workflow-example:
             - id: act_00000000000000000000000000000001
               chatId: chat_0123456789abcdef0123456789abcdef
               type: chat_registered
-              actor: &a6
+              actor: &a7
                 id: pri_0123456789abcdef0123456789abcdef
                 displayName: Demo Officer 1
               messageId: null
@@ -4917,7 +5249,7 @@ x-workflow-example:
             - id: act_00000000000000000000000000000002
               chatId: chat_0123456789abcdef0123456789abcdef
               type: dispatch_started
-              actor: *a6
+              actor: *a7
               messageId: null
               fromMode: not_started
               toMode: ai_active
@@ -4954,20 +5286,20 @@ x-workflow-example:
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
             inboxStatus: open
-            telegramReplyHold: *a7
+            telegramReplyHold: *a8
             lowerConcern: null
             previousLowerConcern: null
             aiMode: officer_control
             revision: 3
-            controller: *a6
+            controller: *a7
             originLabel: "First observed: incoming"
             initiatedBy: unknown
             initiationBasis: null
             firstObservedDirection: incoming
             intakeAccount: false
             acknowledgementTemplate: null
-            review: *a8
-            watchlistMatches: *a9
+            review: *a9
+            watchlistMatches: *a10
             messageCount: 1
             lastActivityAt: 2026-11-21T08:00:04.000Z
             createdAt: 2026-11-21T08:00:00.000Z

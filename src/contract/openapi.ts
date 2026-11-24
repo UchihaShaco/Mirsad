@@ -8,7 +8,7 @@ import { ROUTES, type RouteAuth, type RouteSpec } from '../http/routes/index.ts'
 import { ERROR_STATUS, type ErrorCode } from './errors.ts';
 import { ROUTE_DOCS, type RouteDoc, type SuccessDoc } from './openapi-routes.ts';
 import { WORKFLOW_EXAMPLE } from './openapi-workflow.ts';
-import { CONTRACT_SCHEMAS, ListChatsQuery } from './schemas.ts';
+import { CONTRACT_SCHEMAS, ListChatsQuery, PlacesSearchQuery } from './schemas.ts';
 
 type Json = Record<string, unknown>;
 
@@ -158,8 +158,18 @@ function pathParameters(path: string): Json[] {
 
 /** Query parameters of `GET /v1/chats`, taken from the zod query schema. */
 function listChatsQuery(): Json[] {
-  const schema = z.toJSONSchema(ListChatsQuery, { io: 'input' }) as { properties: Record<string, Json> };
-  return Object.entries(schema.properties).map(([name, property]) => ({ name, in: 'query', required: false, schema: property }));
+  return zodQueryParameters(ListChatsQuery);
+}
+
+/** Query parameters of `GET /v1/places/search`, taken from the zod query schema. */
+function placesSearchQuery(): Json[] {
+  return zodQueryParameters(PlacesSearchQuery);
+}
+
+/** Every query parameter of a GET route, taken from its zod input schema. */
+function zodQueryParameters(schema: z.ZodType): Json[] {
+  const rendered = z.toJSONSchema(schema, { io: 'input' }) as { properties: Record<string, Json> };
+  return Object.entries(rendered.properties).map(([name, property]) => ({ name, in: 'query', required: false, schema: property }));
 }
 
 const STREAM_PARAMETERS: Json[] = [
@@ -193,6 +203,7 @@ function parameters(spec: RouteSpec, doc: RouteDoc): Json[] {
   return [
     ...pathParameters(documentedPath(spec.path)),
     ...(doc.listChatsQuery ? listChatsQuery() : []),
+    ...(doc.placesSearchQuery ? placesSearchQuery() : []),
     ...(doc.kind === 'event-stream' ? STREAM_PARAMETERS : []),
     ...(doc.idempotencyKey ? [IDEMPOTENCY_PARAMETER] : []),
   ];
