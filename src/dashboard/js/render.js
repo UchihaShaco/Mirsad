@@ -69,8 +69,10 @@ function renderShell(refs, state) {
   refs.notice.classList.toggle('notice-error', state.notice !== null && state.notice.tone === 'error');
   refs.inboxView.hidden = state.view !== 'inbox';
   refs.watchlistView.hidden = state.view !== 'watchlist';
+  refs.placesView.hidden = state.view !== 'places';
   setCurrent(refs.navInbox, state.view === 'inbox');
   setCurrent(refs.navWatchlist, state.view === 'watchlist');
+  setCurrent(refs.navPlaces, state.view === 'places');
   refs.connection.textContent = CONNECTION_LABELS[state.connection] ?? '';
   // The stylesheet colours the status dot from this: green when live, amber while connecting.
   refs.connection.dataset.state = state.connection ?? '';

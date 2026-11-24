@@ -113,9 +113,22 @@ export function createApi(token, { onUnauthenticated }) {
     /** `request`: { kind, paymentHosts, sourceNote } (state/case-reference.js builds it). */
     recordCaseReference: (chatId, request) => post(chatPath(chatId, '/case-references'), request),
     watchlist: async () => (await call('GET', '/v1/watchlist')).data,
+    searchPlaces: async ({ q, category, bbox, limit, cursor }) => {
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (category) params.set('category', category);
+      if (bbox) params.set('bbox', bbox);
+      params.set('limit', String(limit));
+      if (cursor) params.set('cursor', cursor);
+      const { data, meta } = await call('GET', `/v1/places/search?${params}`);
+      return { places: data.places, nextCursor: data.nextCursor, categories: data.categories ?? [], total: meta === null ? data.places.length : meta.total };
+    },
+    getPlace: async (placeId) => (await call('GET', `/v1/places/${segment(placeId)}`)).data.place,
     reviewWatchlistEntry: (entryId, decision, reason, expectedRevision) =>
       post(`/v1/watchlist/${segment(entryId)}/review`, { decision, reason, expectedRevision }),
     /** The capture PNG; the caller turns it into an object URL. */
     artifactBlob: (artifactId) => blob(`/v1/artifacts/${segment(artifactId)}`),
+    /** A proxied map tile PNG; the caller turns it into an object URL. */
+    tileBlob: (z, x, y) => blob(`/v1/map/tiles/${z}/${x}/${y}`),
   };
 }
