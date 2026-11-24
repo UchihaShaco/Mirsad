@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { maskUrls } from '../domain/links.ts';
+import { maskSensitiveText, truncateText } from '../domain/masked-text.ts';
 import { MINIMUM_DISTINCT_INDICATORS } from './ali-prompt.ts';
 import { InvalidReplyDraftError } from './reply-errors.ts';
 
@@ -104,26 +104,6 @@ export function hasInternalReplyContent(text: string): boolean {
 
 function invalid(): never { throw new InvalidReplyDraftError('invalid_response'); }
 
-const EMAIL = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
-const HANDLE = /(^|[^\p{L}\p{N}_])@[A-Za-z0-9_]{3,32}/gu;
-/** A host written without a scheme, such as pay.example.test/checkout. */
-const BARE_HOST = /(?<![\p{L}\p{N}@._-])(?:[\p{L}\p{N}-]+\.)+\p{L}{2,}(?:[/?#][^\s]*)?/gu;
-/** Six or more digits, in any script, with the separators people type: phone, account and card numbers, IBAN digits. */
-const LONG_NUMBER = /\+?[0-9٠-٩۰-۹](?:[\s().\/-]*[0-9٠-٩۰-۹]){5,}/gu;
-const HIDDEN_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\u061c\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/gu;
-const EDGE_QUOTES = /^["'“”‘’«»„]+|["'“”‘’«»„]+$/gu;
-
-/** Each link in `text` becomes "[link]"; maskUrls blanks a link's characters in place, so positions line up. */
-function withLinksMasked(text: string): string {
-  const masked = maskUrls(text);
-  let out = '';
-  for (let i = 0; i < text.length; i++) {
-    if (masked[i] === text[i]) out += text[i];
-    else if (masked[i - 1] === text[i - 1] || i === 0) out += '[link]';
-  }
-  return out;
-}
-
 /**
  * The model's explanation of a silence, as the officer may see it: one line, links (with or without a scheme), e-mail
  * addresses, handles and long numbers masked, so it never repeats a value that belongs only in its source message, and at most
@@ -131,24 +111,9 @@ function withLinksMasked(text: string): string {
  */
 export function officerSilenceExplanation(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
-  let text = withLinksMasked(value.normalize('NFKC').replace(HIDDEN_CHARACTERS, ' '))
-    .replace(EMAIL, '[email]')
-    .replace(HANDLE, '$1[handle]')
-    .replace(BARE_HOST, '[link]')
-    .replace(LONG_NUMBER, '[number]')
-    .replace(/[`{}]/gu, '')
-    .replace(/_/gu, ' ')
-    .replace(/\s+/gu, ' ')
-    .trim()
-    .replace(EDGE_QUOTES, '')
-    .trim();
+  const text = maskSensitiveText(value);
   if ((text.match(/\p{L}/gu) ?? []).length < 8) return undefined;
-  if (text.length > MAX_SILENCE_EXPLANATION_CHARS) {
-    const cut = text.slice(0, MAX_SILENCE_EXPLANATION_CHARS - 1);
-    const space = cut.lastIndexOf(' ');
-    text = (space > MAX_SILENCE_EXPLANATION_CHARS / 2 ? cut.slice(0, space) : cut).replace(/[\s,;:.،؛-]+$/u, '') + '…';
-  }
-  return text;
+  return truncateText(text, MAX_SILENCE_EXPLANATION_CHARS);
 }
 
 function parseJson(raw: string): unknown {

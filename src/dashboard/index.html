@@ -65,6 +65,7 @@
         </div>
         <div class="queue-filters" role="group" aria-label="Filter conversations">
           <button type="button" id="inbox-filter-all" aria-pressed="true">All chats</button>
+          <button type="button" id="inbox-filter-new" aria-pressed="false">New messages</button>
           <button type="button" id="inbox-filter-review" aria-pressed="false">Needs review</button>
           <button type="button" id="inbox-filter-lower-concern" aria-pressed="false">Lower concern</button>
         </div>
@@ -86,7 +87,7 @@
         </details>
         <div class="inbox-lists">
           <section class="queue" aria-labelledby="new-inbound-heading">
-            <div class="queue-head"><h2 id="new-inbound-heading">New inbound</h2><span class="queue-count" aria-hidden="true"></span></div>
+            <div class="queue-head"><h2 id="new-inbound-heading">New messages</h2><span class="queue-count" aria-hidden="true"></span></div>
             <ol id="new-inbound-list" class="chat-list"></ol>
           </section>
           <section class="queue" aria-labelledby="open-chats-heading">

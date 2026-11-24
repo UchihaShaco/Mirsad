@@ -20,7 +20,7 @@ add it to a copy to exercise `Contact started chat`.
 
 | File | Account | Exercises |
 |---|---|---|
-| `inbound-first-greeting.json` | intake | A contact's benign first message: New inbound, `First observed: incoming`. |
+| `inbound-first-greeting.json` | intake | A contact's benign first message: New messages, `First observed: incoming`. |
 | `officer-first.json` | officer | The owner writes first, the contact replies in Arabic: open chat, `First observed: outgoing`, both directions. |
 | `edit-and-delete.json` | intake | A message, its edit, its deletion and a redelivered update: separate events, original text stays, no duplicate. |
 | `payment-destination-change.json` | officer | Exactly six messages; five routine with no link, number or payee, the sixth introduces the only payment link as a change of where to pay. |

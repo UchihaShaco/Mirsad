@@ -24,7 +24,7 @@ const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited'
 const CONFIRMATION_NOTE = 'The merchant confirmed its payment page by phone.';
 
 type Account = { source: 'telegram'; externalAccountId: string };
-type InboxRegion = 'New inbound' | 'Open chats';
+type InboxRegion = 'New messages' | 'Open chats';
 
 interface Dashboard {
   page: Page;
@@ -88,7 +88,7 @@ async function ingestMessage(account: Account, externalChatId: string, label: st
   return { chatId: res.body.data.chatId as string, messageId: res.body.data.messageId as string };
 }
 
-/** A chat created by its first message through the fixture connector; an incoming first message enters New inbound. */
+/** A chat created by its first message through the fixture connector; an incoming first message enters New messages. */
 async function seedChat(account: Account, label: string, text: string, direction: 'incoming' | 'outgoing' = 'incoming') {
   const externalChatId = uniqueId('chat-');
   return { ...(await ingestMessage(account, externalChatId, label, 1, text, direction)), externalChatId };
@@ -113,7 +113,7 @@ async function openDashboard(token: string, baseUrl = h.baseUrl): Promise<Dashbo
   page.on('pageerror', (error) => problems.push(error.message));
   const response = await page.goto(`${baseUrl}/#token=${encodeURIComponent(token)}`);
   expect(response?.status()).toBe(OK);
-  await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
   return { page, problems };
 }
 
@@ -1021,7 +1021,55 @@ describe('reference dashboard', () => {
     expect((await dispatch).postDataJSON()).toEqual({ chatIds: [activeChat.chatId], officerContext: context });
     await inboxItem(page, 'Open chats', label).waitFor();
     expect(await otherCheckbox.isChecked()).toBe(true);
-    expect(await inboxItem(page, 'New inbound', otherLabel).isVisible()).toBe(true);
+    expect(await inboxItem(page, 'New messages', otherLabel).isVisible()).toBe(true);
+  });
+
+  it('lists first-time contacts under New messages with a masked preview and dispatches the officer’s pick with its briefing', async () => {
+    const first = await seedChat(h.accounts.intake, 'First Contact A', 'Hi, my account is 0000 0012 3456, can you help?');
+    await ingestMessage(h.accounts.intake, first.externalChatId, 'First Contact A', 2, 'Are you there?');
+    await seedChat(h.accounts.intake, 'First Contact B', 'Is this the right place to ask?');
+    await seedChat(h.accounts.officer, 'Officer First C', 'Good morning, this is the order desk.', 'outgoing');
+    await h.drain();
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    const actions: { route: string; body: unknown }[] = [];
+    page.on('request', (request) => {
+      if (request.method() === 'POST') actions.push({ route: new URL(request.url()).pathname, body: request.postDataJSON() });
+    });
+    const filter = page.locator('#inbox-filter-new');
+    await filter.getByText('New messages', { exact: true }).waitFor();
+    await filter.locator('.count').waitFor();
+    await filter.click();
+    expect(await filter.getAttribute('aria-pressed')).toBe('true');
+
+    const rowA = inboxItem(page, 'New messages', 'First Contact A');
+    await rowA.locator('.first-contact q').getByText('Hi, my account is [number], can you help?', { exact: true }).waitFor();
+    expect(await rowA.locator('.first-contact-more').innerText()).toBe('2 messages');
+    expect(await rowA.innerText()).not.toContain('123456');
+    await inboxItem(page, 'New messages', 'First Contact B').locator('.first-contact q').waitFor();
+    // The category holds only first-time contacts: the officer-first chat and the open list stay out of it.
+    expect(await page.getByRole('region', { name: 'Open chats', exact: true }).isHidden()).toBe(true);
+    expect(await page.locator('#inbox').getByRole('link', { name: 'Officer First C', exact: true }).count()).toBe(0);
+    const listed = await page.getByRole('region', { name: 'New messages', exact: true }).locator('li[data-chat-id]').count();
+    expect(Number(await filter.locator('.count').innerText())).toBe(listed);
+
+    // Select all picks every listed first-time contact; the officer then keeps just one and briefs Ali for it.
+    await page.locator('#select-all-chats').check();
+    await page.locator('#selection-count').getByText(`${listed} selected`, { exact: true }).waitFor();
+    await page.locator('#select-all-chats').uncheck();
+    await page.getByRole('checkbox', { name: 'Select First Contact A', exact: true }).check();
+    await page.getByText('Dispatch briefing', { exact: true }).click();
+    await page.getByLabel('What should Ali keep in mind?', { exact: true }).fill('Ask which branch they visited.');
+    await button(page, 'Dispatch').click();
+    await rowA.waitFor({ state: 'detached' });
+    await inboxItem(page, 'New messages', 'First Contact B').waitFor();
+    expect(actions).toEqual([{ route: '/v1/dispatches', body: {
+      chatIds: [first.chatId], officerContext: 'Ask which branch they visited.', participantPermissionRecorded: true, replyAgain: true,
+    } }]);
+
+    await page.locator('#inbox-filter-all').click();
+    await inboxItem(page, 'Open chats', 'First Contact A').filter({ hasText: 'AI active' }).waitFor();
+    expect(await inboxItem(page, 'Open chats', 'First Contact A').locator('.first-contact').count()).toBe(0);
+    expect(problems).toEqual([]);
   });
 
   it('dispatches a briefing only for its selected chat and opens an editable local draft for a new contact', async () => {
@@ -1215,7 +1263,7 @@ describe('reference dashboard', () => {
     }
   });
 
-  it('an officer signs in, sees the New inbound chat, dispatches two chats, takes one over, finds the composer blank, inserts the acknowledgement, sends, and sees one Simulated send message', async () => {
+  it('an officer signs in, sees the New messages chat, dispatches two chats, takes one over, finds the composer blank, inserts the acknowledgement, sends, and sees one Simulated send message', async () => {
     const inbound = await seedChat(h.accounts.intake, 'Test Contact 1', 'Hello, is anyone there?');
     await seedChat(h.accounts.officer, 'Test Contact 2', 'Good morning, this is the order desk.', 'outgoing');
     await h.drain();
@@ -1223,7 +1271,7 @@ describe('reference dashboard', () => {
     const { page, problems } = await openDashboard(h.tokens.officerA);
     expect(page.url()).toBe(`${h.baseUrl}/`);
 
-    const queued = inboxItem(page, 'New inbound', 'Test Contact 1');
+    const queued = inboxItem(page, 'New messages', 'Test Contact 1');
     await queued.waitFor();
     expect(await queued.textContent()).toContain('Telegram');
 
@@ -1235,7 +1283,7 @@ describe('reference dashboard', () => {
     await button(page, 'Dispatch').click();
     await inboxItem(page, 'Open chats', 'Test Contact 1').filter({ hasText: 'AI active' }).waitFor();
     await inboxItem(page, 'Open chats', 'Test Contact 2').filter({ hasText: 'AI active' }).waitFor();
-    expect(await inboxItem(page, 'New inbound', 'Test Contact 1').count()).toBe(0);
+    expect(await inboxItem(page, 'New messages', 'Test Contact 1').count()).toBe(0);
 
     await openChat(page, 'Test Contact 1');
     expect(await page.locator('#chat-header').textContent()).toContain('First observed: incoming');
@@ -1289,7 +1337,7 @@ describe('reference dashboard', () => {
     await seedChat(h.accounts.intake, 'Test Contact 11', 'Good evening, is the shop open tomorrow?');
     await ingestMessage(h.accounts.intake, existing.externalChatId, label, 2, 'It was due yesterday.');
 
-    await inboxItem(page, 'New inbound', 'Test Contact 11').waitFor();
+    await inboxItem(page, 'New messages', 'Test Contact 11').waitFor();
     await page.locator('#timeline .message-text').filter({ hasText: 'It was due yesterday.' }).waitFor();
     expect(await messages.count()).toBe(2);
     expect(problems).toEqual([]);
@@ -1493,13 +1541,13 @@ describe('reference dashboard', () => {
     await pasteTokenLink(page, h.tokens.officerB);
     await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer B');
     expect(page.url()).toBe(`${h.baseUrl}/`);
-    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
 
     await button(page, 'Sign out').click();
     await page.getByRole('heading', { name: 'Sign in', exact: true }).waitFor();
     await pasteTokenLink(page, h.tokens.officerA);
     await expect.poll(() => officerName.textContent(), { timeout: UI_TIMEOUT_MS }).toBe('Officer A');
-    await page.getByRole('heading', { name: 'New inbound', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'New messages', exact: true }).waitFor();
     expect(page.url()).toBe(`${h.baseUrl}/`);
     expect(problems).toEqual([]);
   });

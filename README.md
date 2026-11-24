@@ -127,8 +127,12 @@ npm run replay -- fixtures/telegram/inbound-first-greeting.json
 ```
 
 Open the `Demo Officer 1` link for the fixture port. The new chat appears
-in the **New inbound** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
-says what each one exercises. **Needs review** filters the queue to conversations waiting for an officer’s decision.
+in the **New messages** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
+says what each one exercises. **New messages** lists first-time contacts that neither Ali nor an officer has answered yet,
+each with a masked preview of its first message (links, numbers, e-mail addresses and handles hidden) and how many messages
+are waiting. Select whom to dispatch there; with one chat selected, **Dispatch briefing** tells Ali what to keep in mind.
+A chat leaves New messages once it is dispatched or an officer takes control. **Needs review** filters the queue to
+conversations waiting for an officer’s decision.
 Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
 For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
 Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose
@@ -195,7 +199,7 @@ instead of waiting forever.
 | # | Check | What it shows |
 |---|---|---|
 | 1 | `service_healthy` | `/healthz` answers. `GET /v1/status` reports the reviewer, Telegram readiness and the live connector state. |
-| 2 | `inbound_first_new_inbound` | An inbound-first chat lands in **New inbound** with `First observed: incoming`. |
+| 2 | `inbound_first_new_inbound` | An inbound-first chat lands in **New messages** with `First observed: incoming`. |
 | 3 | `officer_first_both_directions` | An officer-first chat shows both directions with `First observed: outgoing`. |
 | 4 | `start_marker_contact_started` | A fixture's start assertion, from the trusted fixture connector, gives `Contact started chat`. |
 | 5 | `capture_per_message` | Every received message has a ready capture. The fetched bytes match its SHA-256 and the `X-Mirsad-SHA256` header. |
@@ -425,7 +429,7 @@ for (;;) {
 Status: **Ready for controlled test**. `docs/telegram/readiness.json` records `ready_for_controlled_test`, with all eight
 local checks passed:
 
-- inbound-first chats are flagged New inbound;
+- inbound-first chats are flagged New messages;
 - officer-first chats show both directions;
 - every received message has its own capture;
 - edits and deletions are separate events;

@@ -24,18 +24,27 @@ export function needsOfficerReview(chat) {
   return hold.officerReview !== null || evidenceItemsFor(hold).some(item => reviewWarningLabel(item.reason));
 }
 
+/** A first-time contact: the contact wrote first and neither Ali nor an officer has acted on the chat yet. */
+export function isNewMessage(chat) {
+  return chat.inboxStatus === 'new_inbound';
+}
+
+/** The inbox filters, in the order the officer sees them. */
+export const INBOX_FILTERS = ['all', 'new_messages', 'review', 'lower_concern'];
+
 function visibleInFilter(chat, filter) {
+  if (filter === 'new_messages') return isNewMessage(chat);
   if (filter === 'review') return needsOfficerReview(chat);
   if (filter === 'lower_concern') return Boolean(chat.lowerConcern);
   return true;
 }
 
-/** Splits the visible chats into the New inbound queue and the open list. */
+/** Splits the visible chats into the New messages queue and the open list. */
 export function groupInbox(chats, filter = 'all') {
   const sorted = chats.filter(chat => visibleInFilter(chat, filter)).sort(byRecentActivity);
   return {
-    newInbound: sorted.filter((chat) => chat.inboxStatus === 'new_inbound'),
-    open: sorted.filter((chat) => chat.inboxStatus !== 'new_inbound'),
+    newInbound: sorted.filter(isNewMessage),
+    open: sorted.filter((chat) => !isNewMessage(chat)),
   };
 }
 

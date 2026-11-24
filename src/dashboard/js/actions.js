@@ -6,7 +6,7 @@ import { describeCaseReference, describeDispatch, describeError, telegramDispatc
 import { refreshBatchReceipts } from './loaders.js';
 import { caseReferenceRequest, initialCaseReferenceDraft } from './state/case-reference.js';
 import { updateComposer } from './state/composer.js';
-import { briefingChatId, currentDispatchChatId, DISPATCH_LIMIT, pruneSelection, selectableChatIds, telegramDispatchRequest, toggleSelection } from './state/inbox.js';
+import { briefingChatId, currentDispatchChatId, DISPATCH_LIMIT, INBOX_FILTERS, pruneSelection, selectableChatIds, telegramDispatchRequest, toggleSelection } from './state/inbox.js';
 
 /** Errors that mean the dashboard's copy of the chat is out of date: show the error, then reload. */
 const STALE_VIEW_ERRORS = new Set(['revision_conflict', 'not_controller', 'not_in_takeover', 'invalid_transition', 'capture_not_retryable']);
@@ -273,7 +273,7 @@ export function createActions(ctx) {
   return {
     onInboxFilter: (filter) => {
       const state = getState();
-      if (filter === state.inboxFilter || !['all', 'review', 'lower_concern'].includes(filter)) return;
+      if (filter === state.inboxFilter || !INBOX_FILTERS.includes(filter)) return;
       setSelection(state, pruneSelection(state.selection, state.chats, filter), filter);
     },
     onSelectAll: (selected) => {

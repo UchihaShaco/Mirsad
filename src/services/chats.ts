@@ -12,6 +12,7 @@ import { findChannelAccount, findChannelAccountById, findPrincipalById, grantedA
 import { reviewStatusCounts } from '../storage/repos/reviews.ts';
 import { readLowerConcern, readPreviousLowerConcern } from './lower-concern.ts';
 import type { ChannelAccountRow, ChatRow } from '../storage/rows.ts';
+import { readFirstContact } from './first-contact.ts';
 import { appendStreamEvent } from './stream.ts';
 import { getTelegramReplyHold } from './telegram-reply-holds.ts';
 import * as watchlist from './watchlist.ts';
@@ -59,6 +60,7 @@ function toSummary(tx: Tx, chat: ChatRow, account: ChannelAccountRow, matches: C
     watchlistMatches: matches,
     lowerConcern: readLowerConcern(tx, chat.id),
     previousLowerConcern: readPreviousLowerConcern(tx, chat.id),
+    firstContact: readFirstContact(tx, chat),
     messageCount: countMessages(tx, chat.id),
     lastActivityAt: chat.updated_at,
     createdAt: chat.created_at,

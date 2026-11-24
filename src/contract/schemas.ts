@@ -127,6 +127,19 @@ const LowerConcern = z.object({
   sources: z.object({ agreement: MeetingSource, time: MeetingSource, place: MeetingSource, date: MeetingSource.optional() }),
 });
 
+/**
+ * What a first-time contact wrote, for a chat still under New messages: the first message as a masked one-line preview,
+ * so the officer can choose whom to dispatch without the inbox repeating a link, number or contact detail.
+ */
+const FirstContact = z.object({
+  messageId: id,
+  at: timestamp,
+  preview: z.string().nullable(),
+  notCaptured: z.array(z.string()),
+  deleted: z.boolean(),
+  incomingCount: z.number().int().min(1),
+});
+
 export const ChatSummary = z.object({
   id: z.string(),
   source: Source,
@@ -157,6 +170,7 @@ export const ChatSummary = z.object({
   watchlistMatches: z.array(ChatWatchlistMatch),
   lowerConcern: LowerConcern.nullable(),
   previousLowerConcern: LowerConcern.nullable(),
+  firstContact: FirstContact.nullable(),
   messageCount: z.number().int().min(0),
   lastActivityAt: timestamp,
   createdAt: timestamp,

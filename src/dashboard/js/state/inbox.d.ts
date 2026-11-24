@@ -2,8 +2,11 @@
 import type { ChatSummary, DispatchRequest, TelegramReplies } from '../../../contract/schemas.ts';
 
 export type InboxChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'lastActivityAt' | 'telegramReplyHold' | 'lowerConcern'>;
-type InboxFilter = 'all' | 'review' | 'lower_concern';
-type SelectableChat = Pick<ChatSummary, 'id' | 'telegramReplyHold' | 'lowerConcern'>;
+export type InboxFilter = 'all' | 'new_messages' | 'review' | 'lower_concern';
+type SelectableChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'telegramReplyHold' | 'lowerConcern'>;
+
+export const INBOX_FILTERS: readonly InboxFilter[];
+export function isNewMessage(chat: Pick<ChatSummary, 'inboxStatus'>): boolean;
 
 export const DISPATCH_LIMIT: 100;
 export function telegramDispatchRequest(target?: TelegramReplies['target']): Pick<DispatchRequest,

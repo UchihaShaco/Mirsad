@@ -131,6 +131,7 @@ export function bindWorkspace(ctx) {
   const { refs, handlers } = ctx;
   const options = { signal: ctx.listeners.signal };
   refs.inboxFilterAll.addEventListener('click', () => handlers.onInboxFilter('all'), options);
+  refs.inboxFilterNew.addEventListener('click', () => handlers.onInboxFilter('new_messages'), options);
   refs.inboxFilterReview.addEventListener('click', () => handlers.onInboxFilter('review'), options);
   refs.inboxFilterLowerConcern.addEventListener('click', () => handlers.onInboxFilter('lower_concern'), options);
   refs.openSettings.addEventListener('click', () => {

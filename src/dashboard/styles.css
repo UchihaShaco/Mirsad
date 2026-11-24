@@ -407,8 +407,8 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .inbox-contact-actions button { min-height: 31px; padding-inline: 11px; font-size: 12px; }
 .inbox-contact-actions #open-opener:not(:disabled) { background: transparent; border-color: transparent; color: var(--ink-2); }
 .inbox-contact-actions #open-opener:hover:not(:disabled) { background: var(--sunken); color: var(--ink); }
-/* The three queues as counters: the number first, its name under it. */
-.queue-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
+/* The four queues as counters: the number first, its name under it. */
+.queue-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
 .queue-filters button {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -496,6 +496,12 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .review-note-unavailable { color: var(--attn); font-size: 12px; font-weight: 600; }
 .chat-item-archived { align-items: center; }
 .chat-item-archived .chat-item-body { gap: 2px; }
+/* A first-time contact's first message: at most two quiet lines, so the row stays scannable. */
+.first-contact { display: -webkit-box; margin: 0; overflow: hidden; color: var(--ink-2); font-size: 12.5px; line-height: 1.4;
+  overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.first-contact q { color: var(--ink); quotes: "“" "”" "‘" "’"; unicode-bidi: isolate; }
+.first-contact-note { font-style: italic; }
+.first-contact-more { color: var(--ink-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
 .empty { list-style: none; padding: 8px 14px 10px; color: var(--ink-3); font-size: 13px; }
 
 /* Conversation */

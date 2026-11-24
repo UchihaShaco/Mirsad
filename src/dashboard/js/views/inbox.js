@@ -1,11 +1,12 @@
 /**
- * The inbox: the New inbound queue on top, then the open chats, each with a checkbox for Dispatch. A row says who holds
- * the chat (its mark and mode) and what is waiting for the officer, in the words the conversation header uses.
+ * The inbox: the New messages queue on top, then the open chats, each with a checkbox for Dispatch. A row says who holds
+ * the chat (its mark and mode) and what is waiting for the officer, in the words the conversation header uses. A first-time
+ * contact's row also previews its first message, masked, so the officer can choose whom to dispatch.
  */
 import { bdi, clear, h, withFocus } from '../dom.js';
 import { AI_MODE_LABELS, evidenceCountLabel, formatTime, reviewWarningLabel } from '../format.js';
 import { controlState, reviewQueue } from '../state/attention.js';
-import { briefingChatId, DISPATCH_LIMIT, groupInbox, needsOfficerReview } from '../state/inbox.js';
+import { briefingChatId, DISPATCH_LIMIT, groupInbox, isNewMessage, needsOfficerReview } from '../state/inbox.js';
 import { chatHref } from '../state/route.js';
 
 /** Short channel marks for the dense list; the full channel name stays in the row for assistive tools. */
@@ -56,6 +57,28 @@ function controlChips(chat, control, me) {
   return [mode, h('span', { className: 'chat-controller' }, [mine ? h('span', { text: 'you' }) : bdi(chat.controller.displayName)])];
 }
 
+/** The first strong character is from a right-to-left script (Hebrew, Arabic, Syriac, Thaana and their presentation forms). */
+const RTL_FIRST = /^[^\p{L}]*[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufefc]/u;
+
+/** What a first-time contact wrote first: the masked preview, or what it carried instead. */
+function firstContactLine(first) {
+  if (!first) return null;
+  let content;
+  if (first.deleted) content = h('span', { className: 'first-contact-note', text: 'Deleted by the sender' });
+  else if (first.preview) content = h('q', { dir: 'auto', text: first.preview });
+  else if (first.notCaptured.length) content = h('span', { className: 'first-contact-note', text: `Not captured: ${first.notCaptured.join(', ')}` });
+  else content = h('span', { className: 'first-contact-note', text: 'No text' });
+  // The paragraph follows the message's own direction, so an Arabic preview aligns and clips from the right.
+  const rtl = first.preview !== null && RTL_FIRST.test(first.preview);
+  return h('p', { className: 'first-contact', dir: rtl ? 'rtl' : 'ltr' }, [h('span', { className: 'visually-hidden', text: 'First message: ' }), content]);
+}
+
+/** How many messages the first-time contact has sent, when more than one is waiting. */
+function waitingCount(chat) {
+  const count = isNewMessage(chat) ? chat.firstContact?.incomingCount ?? 0 : 0;
+  return count > 1 ? h('span', { className: 'first-contact-more', text: `${count} messages` }) : null;
+}
+
 function chatItem(chat, state, handlers, today, rowNumber) {
   const current = chat.id === state.selectedChatId;
   const control = controlState(chat, state.me);
@@ -68,6 +91,7 @@ function chatItem(chat, state, handlers, today, rowNumber) {
   const meta = h('p', { className: 'chat-meta' }, [
     channelMark(chat),
     ...controlChips(chat, control, state.me),
+    waitingCount(chat),
     chat.telegramReplyHold.contactOptedOut ? h('span', { className: 'flag', text: 'Contact opted out' }) : null,
     warnings.length ? h('span', { className: 'evidence-warning', text: warnings.length === 1 ? warnings[0] : `${warnings.length} warnings` }) : null,
     items.length > warnings.length
@@ -76,7 +100,7 @@ function chatItem(chat, state, handlers, today, rowNumber) {
     chat.lowerConcern ? h('span', { className: 'lower-concern-badge', text: 'Lower concern' }) : null,
     chat.review.state === 'unavailable' ? h('span', { className: 'review-note-unavailable', text: 'Review unavailable' }) : null,
   ]);
-  const body = h('div', { className: 'chat-item-body' }, [heading, meta]);
+  const body = h('div', { className: 'chat-item-body' }, [heading, meta, isNewMessage(chat) ? firstContactLine(chat.firstContact) : null]);
   return h('li', {
     className: current ? 'chat-item current' : 'chat-item',
     dataset: { chatId: chat.id, control, review: blocking ? 'blocking' : items.length > 0 ? 'captured' : 'none' },
@@ -130,6 +154,9 @@ function fillFilter(button, label, count, { urgent = false, earlier = 0 } = {}) 
 export function renderInbox(refs, state, handlers) {
   const reviewing = state.inboxFilter === 'review';
   const lower = state.inboxFilter === 'lower_concern';
+  const fresh = state.inboxFilter === 'new_messages';
+  const filtered = state.inboxFilter !== 'all';
+  const newCount = state.chats.filter(isNewMessage).length;
   const lowerCount = state.chats.filter(chat => chat.lowerConcern).length;
   const previousCount = state.chats.filter(chat => chat.previousLowerConcern).length;
   const previous = lower ? state.chats.filter(chat => chat.previousLowerConcern)
@@ -138,7 +165,7 @@ export function renderInbox(refs, state, handlers) {
   const reviewCount = state.chats.filter(needsOfficerReview).length;
   const today = new Date().toISOString().slice(0, 10);
   withFocus(refs.inbox, () => {
-    fillList(refs.newInboundList, newInbound, state, handlers, today, 1, state.inboxLoaded ? 'No chats waiting.' : 'Loading…');
+    fillList(refs.newInboundList, newInbound, state, handlers, today, 1, state.inboxLoaded ? 'No new messages.' : 'Loading…');
     fillList(refs.openList, open, state, handlers, today, newInbound.length + 1, state.inboxLoaded ? 'No open chats.' : 'Loading…');
     clear(refs.previousTestList);
     refs.previousTestList.start = newInbound.length + open.length + 1;
@@ -155,23 +182,28 @@ export function renderInbox(refs, state, handlers) {
     }
     const loaded = state.inboxLoaded;
     fillFilter(refs.inboxFilterAll, 'All chats', loaded ? state.chatsTotal : null);
+    fillFilter(refs.inboxFilterNew, 'New messages', loaded ? newCount : null, { urgent: newCount > 0 });
     fillFilter(refs.inboxFilterReview, 'Needs review', loaded ? reviewCount : null, { urgent: reviewCount > 0 });
     fillFilter(refs.inboxFilterLowerConcern, 'Lower concern', loaded ? lowerCount : null, { earlier: previousCount });
     refs.inboxFilterLowerConcern.title = previousCount ? `${lowerCount} current · ${previousCount} in previous tests` : '';
   });
   refs.previousTestQueue.hidden = previous.length === 0;
-  refs.newInboundList.closest('.queue').hidden = (lower || reviewing) && newInbound.length === 0;
-  refs.openList.closest('.queue').hidden = (lower || reviewing) && open.length === 0;
-  refs.inboxFilterAll.setAttribute('aria-pressed', String(!reviewing && !lower));
+  refs.newInboundList.closest('.queue').hidden = filtered && newInbound.length === 0;
+  refs.openList.closest('.queue').hidden = filtered && open.length === 0;
+  refs.inboxFilterAll.setAttribute('aria-pressed', String(!filtered));
+  refs.inboxFilterNew.setAttribute('aria-pressed', String(fresh));
   refs.inboxFilterReview.setAttribute('aria-pressed', String(reviewing));
   refs.inboxFilterLowerConcern.setAttribute('aria-pressed', String(lower));
   refs.inboxFilterLowerConcern.disabled = state.pending !== null;
   refs.inboxFilterAll.disabled = state.pending !== null;
+  refs.inboxFilterNew.disabled = state.pending !== null;
   refs.inboxFilterReview.disabled = state.pending !== null;
   const scope = [];
   if (state.chatsTotal > state.chats.length) scope.push(`Counts cover the ${state.chats.length} listed chats out of ${state.chatsTotal}.`);
   if (lower && state.inboxLoaded) scope.push(`${lowerCount} current · ${previous.length} previous`);
   if (reviewing && reviewCount === 0) scope.push(state.inboxLoaded ? 'No listed chats need officer review.' : 'Loading chats…');
+  if (fresh && newCount === 0) scope.push(state.inboxLoaded ? 'No first-time messages are waiting.' : 'Loading chats…');
+  if (fresh && newCount > 0) scope.push('First-time contacts nobody has answered yet. Select whom to dispatch; one selected chat can take a briefing.');
   refs.queueScope.textContent = scope.join(' ');
   refs.queueScope.hidden = scope.length === 0;
   const selected = state.selection.size;

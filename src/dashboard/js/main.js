@@ -17,7 +17,7 @@ const ELEMENT_IDS = {
   workspace: 'workspace', viewNav: 'view-nav', navInbox: 'nav-inbox', navWatchlist: 'nav-watchlist',
   session: 'session', officerName: 'officer-name', connection: 'connection-status', signOut: 'sign-out',
   notice: 'notice', inboxView: 'inbox-view', inbox: 'inbox', dispatchButton: 'dispatch-button',
-  inboxFilterAll: 'inbox-filter-all', inboxFilterReview: 'inbox-filter-review', selectAllChats: 'select-all-chats', queueScope: 'queue-scope',
+  inboxFilterAll: 'inbox-filter-all', inboxFilterNew: 'inbox-filter-new', inboxFilterReview: 'inbox-filter-review', selectAllChats: 'select-all-chats', queueScope: 'queue-scope',
   inboxFilterLowerConcern: 'inbox-filter-lower-concern', previousTestQueue: 'previous-test-queue', previousTestList: 'previous-test-list',
   archiveNotice: 'archive-notice', currentConversation: 'current-conversation', previousConversation: 'previous-conversation',
   previousConversationSection: 'previous-conversation-section', assessmentPanel: 'assessment-panel', meetingSources: 'meeting-sources',
