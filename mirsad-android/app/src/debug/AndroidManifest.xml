@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application>
+        <!-- Compose tooling ships an exported PreviewActivity in debug builds; the APK in dist/ is a debug build,
+             so drop it. -->
+        <activity
+            android:name="androidx.compose.ui.tooling.PreviewActivity"
+            tools:node="remove" />
+
         <!-- adb shell am broadcast -a app.mirsad.shield.AUTOPILOT -n app.mirsad.shield/.demo.AutopilotReceiver -->
         <!-- Protected by DUMP: the adb shell user holds it, ordinary apps cannot, so no other app on the phone
              can drive the autopilot (it can reset data and change the language). -->

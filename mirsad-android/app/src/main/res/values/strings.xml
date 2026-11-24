@@ -109,6 +109,7 @@
     <string name="artifact_wallet">Crypto wallets</string>
     <string name="artifact_handle">Handles</string>
     <string name="incident_analysed">Analysed on this phone in %1$d ms</string>
+    <string name="incident_analysed_sub_ms">Analysed on this phone in under 1 ms</string>
     <string name="incident_versions">Model %1$s · app %2$s</string>
     <string name="incident_score">Risk score %1$d%%</string>
     <string name="not_a_scam">Not a scam</string>

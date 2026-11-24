@@ -260,7 +260,7 @@ private fun IncidentBody(
 
         // Footer: latency + versions
         Column {
-            Text(stringResource(R.string.incident_analysed, incident.latencyMs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (incident.latencyMs <= 0) stringResource(R.string.incident_analysed_sub_ms) else stringResource(R.string.incident_analysed, incident.latencyMs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(stringResource(R.string.incident_versions, incident.modelVersion, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 

@@ -38,6 +38,7 @@ import app.mirsad.core.contract.Event
 import app.mirsad.core.contract.IncidentSource
 import app.mirsad.shield.AppContainer
 import app.mirsad.shield.R
+import app.mirsad.core.contract.FeedbackVerdict
 import app.mirsad.core.contract.IncidentFilter
 import app.mirsad.core.contract.Level
 import app.mirsad.core.contract.ListKind
@@ -185,7 +186,12 @@ private class RootActions(
             // Report preview for the latest held message (richer than a call: links, domains, fee).
             "report_message" -> scope.launch {
                 val held = container.incidents.observe(IncidentFilter(level = Level.HOLD)).first()
-                (held.firstOrNull { it.channel != Channel.CALL } ?: held.firstOrNull())?.let { openReport(it.id) }
+                val messages = held.filter { it.channel != Channel.CALL }
+                // Prefer a real (non-demo) held message the user has not overruled.
+                val pick = messages.firstOrNull { !it.synthetic && it.feedback == FeedbackVerdict.NONE }
+                    ?: messages.firstOrNull { it.feedback == FeedbackVerdict.NONE }
+                    ?: messages.firstOrNull() ?: held.firstOrNull()
+                pick?.let { openReport(it.id) }
             }
             "skip_onboarding" -> scope.launch {
                 container.settings.update { it.copy(onboardingDone = true) }

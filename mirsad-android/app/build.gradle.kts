@@ -133,3 +133,8 @@ androidComponents {
         }
     }
 }
+
+// The legitimate-message suite and the rest of the core tests gate every app build, not only the documented command.
+tasks.named("preBuild") {
+    dependsOn(":core:test")
+}

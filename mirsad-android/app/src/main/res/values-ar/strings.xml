@@ -102,6 +102,7 @@
     <string name="artifact_wallet">محافظ عملات رقمية</string>
     <string name="artifact_handle">معرّفات</string>
     <string name="incident_analysed">تم التحليل على هذا الهاتف خلال %1$d مللي ثانية</string>
+    <string name="incident_analysed_sub_ms">تم التحليل على هذا الهاتف خلال أقل من مللي ثانية واحدة</string>
     <string name="incident_versions">النموذج %1$s · التطبيق %2$s</string>
     <string name="incident_score">درجة الخطر %1$d%%</string>
     <string name="not_a_scam">ليس احتيالاً</string>
