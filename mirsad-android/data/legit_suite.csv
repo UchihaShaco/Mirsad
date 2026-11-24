@@ -1,0 +1,57 @@
+label,lang,channel,sender,text,synthetic
+legit,en,SMS,ADCB,"Your OTP is 553201 for a login to ADCB Mobile. Do not share this code with anyone. ADCB will never ask you for it.",true
+legit,en,SMS,FAB,"FAB: AED 245.60 was spent at LULU HYPERMARKET on 21 Nov using card ending 0042. Available balance AED 7,312.18.",true
+legit,ar,SMS,ADIB,"مصرف أبوظبي الإسلامي: رمز التحقق الخاص بك هو 918273. لا تشارك هذا الرمز مع أي شخص، حتى لو ادعى أنه موظف المصرف.",true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: your salary of AED 12,500.00 has been credited to account ending 0017 on 25 Nov.",true
+legit,ar,SMS,Mashreq,"بنك المشرق: تم خصم 89.00 درهم من بطاقتك المنتهية بـ 0031 لدى طلبات بتاريخ 22 نوفمبر.",true
+legit,en,SMS,ADCB,"ADCB: your credit card statement for November is ready. Minimum payment AED 350.00 due by 10 Dec. View it at https://www.adcb.com",true
+legit,en,SMS,FAB,"FAB: your new debit card is on its way and should reach you within 5 working days. Activate it in the FAB app once received.",true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: 774120 is your one-time password for a payment of AED 1,499.00 at SHARAF DG. Valid for 3 minutes. Never share it with anyone.",true
+legit,ar,SMS,FAB,"بنك أبوظبي الأول: تم إيداع 3,200.00 درهم في حسابك المنتهي بـ 0017 بتاريخ 24 نوفمبر. شكراً لتعاملك معنا.",true
+legit,en,SMS,Aramex,"Aramex: shipment 0000000042 is out for delivery today. Track it at https://www.aramex.com/track",true
+legit,en,SMS,Aramex,"Aramex: we missed you today. Your shipment 0000000042 will be re-attempted tomorrow between 9 AM and 1 PM.",true
+legit,ar,SMS,EmiratesPost,"بريد الإمارات: طردك رقم 0000000019 جاهز للاستلام من مركز مدينة زايد. يرجى إحضار الهوية الإماراتية. emiratespost.ae",true
+legit,en,SMS,EmiratesPost,"Emirates Post: your parcel 0000000077 was delivered to your PO Box today at 11:42.",true
+legit,en,SMS,noon,"noon: your order N0000000064 is on its way. Our driver will call you before arrival.",true
+legit,en,SMS,DEWA,"DEWA: your bill for October is AED 612.80, due on 20 Nov. Pay in the DEWA app or at https://www.dewa.gov.ae",true
+legit,ar,SMS,DEWA,"هيئة كهرباء ومياه دبي: تم استلام دفعة بقيمة 612.80 درهم بتاريخ 19 نوفمبر. شكراً لك.",true
+legit,ar,SMS,ADDC,"شركة أبوظبي للتوزيع: فاتورتك لشهر أكتوبر بقيمة 398.45 درهم، تاريخ الاستحقاق 18 نوفمبر. يمكنك الدفع عبر التطبيق أو addc.ae",true
+legit,en,SMS,etisalat,"Etisalat by e&: your postpaid bill of AED 299.00 for November is due on 28 Nov. Pay in the app or at https://www.etisalat.ae",true
+legit,ar,SMS,du,"دو: تم شحن رصيدك بمبلغ 50 درهم بنجاح. رصيدك الحالي 73.25 درهم. du.ae",true
+legit,en,SMS,du,"du: you have used 80% of your monthly data. Add a data booster in the du app.",true
+legit,en,SMS,SALIK,"Salik: your balance is AED 14.00. Please recharge at https://www.salik.ae or in the Salik app.",true
+legit,en,SMS,RTA,"RTA: your vehicle registration for plate 00012 expires on 3 Dec. Renew at https://www.rta.ae or in the RTA app.",true
+legit,en,SMS,RTA,"RTA: your nol card ending 0008 was topped up with AED 100. Balance AED 123.50.",true
+legit,ar,SMS,MAWAQIF,"مواقف: ينتهي وقت المواقف في المنطقة 318 الساعة 16:30. يمكنك التمديد عبر تطبيق درب.",true
+legit,en,SMS,DARB,"Darb: a toll of AED 4 was deducted on 24 Nov at 08:12 at Al Maqta bridge. Balance AED 56.00.",true
+legit,en,SMS,SEHA,"SEHA: reminder, your appointment with Dr. Al Hammadi at Al Bateen clinic is on 27 Nov at 10:15. Reply 1 to confirm, 2 to reschedule.",true
+legit,ar,SMS,Mediclinic,"ميديكلينيك: نتائج تحاليلك جاهزة. يمكنك الاطلاع عليها عبر التطبيق أو استلامها من الاستقبال.",true
+legit,en,SMS,+971500000032,"Aster Clinic: your dental cleaning is booked for 2 Dec at 17:00 with Dr. Khan. See you then.",true
+legit,en,SMS,noon,"noon: Yellow Friday is here. Up to 70% off electronics, fashion and beauty. Shop now in the app.",true
+legit,ar,SMS,Carrefour,"كارفور: خصم 25% على البقالة نهاية هذا الأسبوع. تسوق عبر التطبيق أو في أقرب فرع.",true
+legit,en,SMS,Talabat,"Talabat: free delivery on your next 3 orders. Offer valid until 30 Nov. T&Cs apply.",true
+legit,en,SMS,ADCB,"ADCB: earn 3x TouchPoints on dining this December with your ADCB credit card. T&Cs apply.",true
+legit,en,SMS,ICP,"ICP: your Emirates ID is ready for collection at the Al Ain ICP centre. Please bring your passport. More at https://icp.gov.ae",true
+legit,ar,SMS,ICP,"الهيئة الاتحادية للهوية والجنسية: تمت الموافقة على طلب تجديد الهوية رقم REQ-00000042 وستصلك البطاقة عبر بريد الإمارات خلال 5 أيام عمل.",true
+legit,en,SMS,ICP,"ICP: your residency visa renewal application is under process. Expected completion within 3 working days. For details visit https://u.ae",true
+legit,en,SMS,UAEPASS,"UAE Pass: you signed in from a new device on 24 Nov at 09:02. If this was not you, change your password in the UAE Pass app. https://uaepass.ae",true
+legit,en,SMS,TAMM,"TAMM: your request REQ-00000018 has been completed. View the result at https://www.tamm.abudhabi",true
+legit,ar,SMS,ADPolice,"شرطة أبوظبي: لا توجد مخالفات مرورية مسجلة على ملفك. نتمنى لك قيادة آمنة. adpolice.gov.ae",true
+legit,en,SMS,DubaiPolice,"Dubai Police: your lost item report REQ-00000033 has been registered. We will contact you if it is found.",true
+legit,en,SMS,GEMS,"GEMS Wellington: parents are reminded that school closes at 12:30 on 28 Nov for the staff training day. Buses will leave at 12:45.",true
+legit,ar,SMS,AlIttihad,"مدرسة الاتحاد: اجتماع أولياء الأمور يوم 2 ديسمبر من الساعة 16:00. يرجى حجز الموعد عبر بوابة أولياء الأمور.",true
+legit,en,SMS,RahaSchool,"Raha International School: Grade 5 swimming lessons start on 1 Dec. Please send swimwear and a towel with your child.",true
+legit,en,SMS,BrightonCol,"Brighton College: the term 2 fee invoice is now available on the parent portal. Due date 15 Dec.",true
+legit,en,CHAT,Khalid,"Bro are we still on for padel at 8? I booked court 3 at Zayed Sports City.",true
+legit,ar,CHAT,أبو عمر,"السلام عليكم، الاجتماع بكرة الساعة 10 الصبح في المكتب، لا تنسى تجيب اللابتوب.",true
+legit,en,CHAT,Mum,"Dinner is at 7 tonight, your aunt is coming. Don't be late habibi.",true
+legit,ar,CHAT,ماما,"وين وصلت؟ العشا جاهز والكل ينتظرك.",true
+legit,ar-latn,CHAT,Noora,"yalla nel2a 3al 6 fel corniche? el jaw 7elo el yom.",true
+legit,ar-latn,CHAT,Baba,"weselt el bait bel salama? kallemni lama tfdha.",true
+legit,en,CHAT,Fatima,"Can you send me the location of the restaurant? I'm leaving the office now.",true
+legit,en,CHAT,Omar,"Happy birthday! Dinner on me this weekend, pick the place.",true
+legit,ar,CHAT,أم خالد,"كل عام وأنتم بخير، العيد عندنا هالسنة إن شاء الله.",true
+legit,en,CHAT,Sara,"Did you pay the DEWA bill? I think it's due tomorrow, 412 dirhams.",true
+legit,en,CHAT,+971500000035,"Hi, this is Hamad from the garage. Your car is ready, you can collect it any time before 8 PM.",true
+legit,ar,CHAT,+971500000036,"مرحبا، معك المندوب من نون، واقف عند البوابة، لو سمحت انزل.",true
+legit,en,SMS,+971500000037,"Habibi I'm at the gate, come down. Bring the keys.",true

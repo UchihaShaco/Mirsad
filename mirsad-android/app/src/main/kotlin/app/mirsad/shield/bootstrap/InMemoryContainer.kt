@@ -44,7 +44,7 @@ class InMemoryContainer(@Suppress("unused") private val context: Context) : AppC
     override val lists = MemListStore()
     override val feedback = MemFeedbackStore()
     override val settings = MemSettingsStore()
-    override val reports: ReportBuilder = StubReportBuilder()
+    override val reports: ReportBuilder = app.mirsad.core.report.DefaultReportBuilder()
     override val pipeline: IncidentPipeline = MemPipeline(engine, incidents, lists, feedback, settings)
 }
 

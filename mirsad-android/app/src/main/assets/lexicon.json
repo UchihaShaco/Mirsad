@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "note": "UAE entity lexicon for stage 1. Names are matched as whole words on the normalised text (Arabic entries are normalised at load with the same TextNormaliser). brandTokens are looked for in link hosts. Domains are the entity's official registrable domains (starter list, to be verified).",
+  "entities": [
+    {
+      "id": "adpolice", "category": "government",
+      "names": ["abu dhabi police", "abudhabi police", "ad police", "adpolice", "شرطة أبوظبي", "شرطة أبو ظبي", "شرطة ابوظبي", "شرطة ابو ظبي"],
+      "brandTokens": ["adpolice", "abudhabipolice", "abudhabi-police", "ad-police"],
+      "domains": ["adpolice.gov.ae"]
+    },
+    {
+      "id": "dubaipolice", "category": "government",
+      "names": ["dubai police", "dubaipolice", "شرطة دبي"],
+      "brandTokens": ["dubaipolice", "dubai-police", "dxbpolice"],
+      "domains": ["dubaipolice.gov.ae"]
+    },
+    {
+      "id": "moi", "category": "government",
+      "names": ["ministry of interior", "moi uae", "وزارة الداخلية", "الداخلية الاماراتية"],
+      "brandTokens": ["moiuae", "moi-uae", "uaemoi"],
+      "domains": ["moi.gov.ae"]
+    },
+    {
+      "id": "icp", "category": "government",
+      "names": ["icp", "ica", "federal authority for identity", "identity and citizenship", "identity, citizenship", "الهيئة الاتحادية للهوية", "هيئة الهوية", "الهوية والجنسية"],
+      "brandTokens": ["icpuae", "icp-uae", "uaeicp", "icagov", "ica-uae", "uaeica"],
+      "domains": ["icp.gov.ae", "ica.gov.ae"]
+    },
+    {
+      "id": "emiratesid", "category": "government",
+      "names": ["emirates id", "emirates identity", "emiratesid", "الهوية الإماراتية", "هوية إماراتية", "بطاقة الهوية", "الهوية الاماراتية"],
+      "brandTokens": ["emiratesid", "emirates-id", "eid-uae", "uae-eid"],
+      "domains": ["icp.gov.ae"]
+    },
+    {
+      "id": "uaepass", "category": "government",
+      "names": ["uae pass", "uaepass", "الهوية الرقمية", "يو اي اي باس"],
+      "brandTokens": ["uaepass", "uae-pass"],
+      "domains": ["uaepass.ae"]
+    },
+    {
+      "id": "tamm", "category": "government",
+      "names": ["tamm", "tamm abu dhabi", "منصة تم"],
+      "brandTokens": ["tamm", "tammabudhabi", "tamm-abudhabi"],
+      "domains": ["tamm.abudhabi"]
+    },
+    {
+      "id": "darb", "category": "government",
+      "names": ["darb", "darb toll", "درب", "بوابة درب"],
+      "brandTokens": ["darb", "darbtoll", "darb-toll"],
+      "domains": ["itc.gov.ae"]
+    },
+    {
+      "id": "mawaqif", "category": "government",
+      "names": ["mawaqif", "مواقف"],
+      "brandTokens": ["mawaqif"],
+      "domains": ["mawaqif.ae"]
+    },
+    {
+      "id": "salik", "category": "government",
+      "names": ["salik", "سالك"],
+      "brandTokens": ["salik"],
+      "domains": ["salik.ae"]
+    },
+    {
+      "id": "rta", "category": "government",
+      "names": ["rta", "roads and transport", "هيئة الطرق", "الطرق والمواصلات"],
+      "brandTokens": ["rta", "rtadubai", "rta-dubai", "dubairta"],
+      "domains": ["rta.ae"]
+    },
+    {
+      "id": "dewa", "category": "government",
+      "names": ["dewa", "dubai electricity", "هيئة كهرباء ومياه دبي", "كهرباء ومياه دبي", "كهرباء دبي", "ديوا"],
+      "brandTokens": ["dewa"],
+      "domains": ["dewa.gov.ae"]
+    },
+    {
+      "id": "addc", "category": "government",
+      "names": ["addc", "abu dhabi distribution", "شركة أبوظبي للتوزيع", "كهرباء أبوظبي", "كهرباء ابوظبي"],
+      "brandTokens": ["addc"],
+      "domains": ["addc.ae"]
+    },
+    {
+      "id": "mohre", "category": "government",
+      "names": ["mohre", "ministry of human resources", "وزارة الموارد البشرية"],
+      "brandTokens": ["mohre"],
+      "domains": ["mohre.gov.ae"]
+    },
+    {
+      "id": "tdra", "category": "government",
+      "names": ["tdra", "هيئة تنظيم الاتصالات"],
+      "brandTokens": ["tdra"],
+      "domains": ["tdra.gov.ae"]
+    },
+    {
+      "id": "cbuae", "category": "government",
+      "names": ["central bank", "cbuae", "المصرف المركزي", "البنك المركزي"],
+      "brandTokens": ["centralbank", "cbuae"],
+      "domains": ["centralbank.ae"]
+    },
+    {
+      "id": "emiratespost", "category": "courier",
+      "names": ["emirates post", "emiratespost", "بريد الإمارات", "البريد الإماراتي", "بريد الامارات"],
+      "brandTokens": ["emiratespost", "emirates-post", "emiratepost", "uaepost"],
+      "domains": ["emiratespost.ae"]
+    },
+    {
+      "id": "aramex", "category": "courier",
+      "names": ["aramex", "أرامكس", "ارامكس"],
+      "brandTokens": ["aramex"],
+      "domains": ["aramex.com"]
+    },
+    {
+      "id": "dhl", "category": "courier",
+      "names": ["dhl", "دي اتش ال"],
+      "brandTokens": ["dhl"],
+      "domains": ["dhl.com"]
+    },
+    {
+      "id": "fedex", "category": "courier",
+      "names": ["fedex", "فيديكس"],
+      "brandTokens": ["fedex"],
+      "domains": ["fedex.com"]
+    },
+    {
+      "id": "fab", "category": "bank",
+      "names": ["first abu dhabi bank", "fab bank", "bank fab", "بنك أبوظبي الأول", "بنك ابوظبي الاول"],
+      "brandTokens": ["bankfab", "fabbank", "fab-bank", "firstabudhabi"],
+      "domains": ["bankfab.com"]
+    },
+    {
+      "id": "adcb", "category": "bank",
+      "names": ["adcb", "abu dhabi commercial bank", "بنك أبوظبي التجاري", "بنك ابوظبي التجاري"],
+      "brandTokens": ["adcb"],
+      "domains": ["adcb.com"]
+    },
+    {
+      "id": "adib", "category": "bank",
+      "names": ["adib", "abu dhabi islamic bank", "مصرف أبوظبي الإسلامي", "مصرف ابوظبي الاسلامي"],
+      "brandTokens": ["adib"],
+      "domains": ["adib.ae"]
+    },
+    {
+      "id": "enbd", "category": "bank",
+      "names": ["emirates nbd", "emiratesnbd", "enbd", "بنك الإمارات دبي الوطني", "الإمارات دبي الوطني", "الامارات دبي الوطني"],
+      "brandTokens": ["emiratesnbd", "enbd"],
+      "domains": ["emiratesnbd.com"]
+    },
+    {
+      "id": "mashreq", "category": "bank",
+      "names": ["mashreq", "mashreq bank", "بنك المشرق", "المشرق"],
+      "brandTokens": ["mashreq"],
+      "domains": ["mashreq.com", "mashreqbank.com"]
+    },
+    {
+      "id": "dib", "category": "bank",
+      "names": ["dubai islamic bank", "dib", "بنك دبي الإسلامي", "بنك دبي الاسلامي"],
+      "brandTokens": ["dib", "dubaiislamic"],
+      "domains": ["dib.ae"]
+    },
+    {
+      "id": "rakbank", "category": "bank",
+      "names": ["rakbank", "rak bank", "بنك رأس الخيمة", "بنك راس الخيمة"],
+      "brandTokens": ["rakbank"],
+      "domains": ["rakbank.ae"]
+    },
+    {
+      "id": "etisalat", "category": "telecom",
+      "names": ["etisalat", "e&", "eand", "اتصالات"],
+      "brandTokens": ["etisalat", "eand"],
+      "domains": ["etisalat.ae", "eand.com"]
+    },
+    {
+      "id": "du", "category": "telecom",
+      "names": ["du", "du telecom", "دو"],
+      "brandTokens": ["du", "du-telecom", "dutelecom"],
+      "domains": ["du.ae"]
+    },
+    {
+      "id": "generic_bank", "category": "bank",
+      "names": ["your bank", "the bank", "bank security", "bank account", "bank card", "banking details", "البنك", "بنكك", "المصرف", "البنكي", "البنكية", "حسابك البنكي", "بطاقتك البنكية"],
+      "brandTokens": [],
+      "domains": []
+    }
+  ]
+}

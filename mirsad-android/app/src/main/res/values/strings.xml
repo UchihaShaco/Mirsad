@@ -2,6 +2,231 @@
 <resources>
     <string name="app_name">Mirsad (مرصاد)</string>
     <string name="share_target_label">Check with Mirsad</string>
-    <string name="skeleton_title">Mirsad</string>
-    <string name="skeleton_subtitle">On-device scam shield · hackathon prototype</string>
+    <string name="app_tagline">On-device scam shield · hackathon prototype</string>
+
+    <!-- Abu Dhabi Police public guidance; shown with every warning. -->
+    <string name="safety_line">Never share banking details, passwords or one-time codes with anyone.</string>
+
+    <!-- Navigation / common -->
+    <string name="nav_home">Home</string>
+    <string name="nav_demo">Demo</string>
+    <string name="nav_quarantine">Quarantine</string>
+    <string name="nav_settings">Settings</string>
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_add">Add</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_see_all">See all</string>
+
+    <!-- Levels and channels -->
+    <string name="level_allow">Allowed</string>
+    <string name="level_warn">Warning</string>
+    <string name="level_hold">Held</string>
+    <string name="level_allow_long">Looks fine</string>
+    <string name="level_warn_long">Be careful with this one</string>
+    <string name="level_hold_long">Held — very likely a scam</string>
+    <string name="channel_call">Call</string>
+    <string name="channel_sms">SMS</string>
+    <string name="channel_chat">Chat</string>
+    <string name="synthetic_badge">Synthetic · demo</string>
+    <string name="restored_tag">Restored</string>
+    <string name="source_demo">Demo</string>
+    <string name="source_share">Checked by you</string>
+    <string name="source_notification">Notification</string>
+    <string name="source_call_screening">Call screening</string>
+    <string name="source_manual">Manual</string>
+    <string name="unknown_sender">Unknown sender</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Protect this phone</string>
+    <string name="onboarding_intro">Mirsad checks calls and messages on this phone and never uploads anything. Three permissions make the live protection work. You can try the Demo without any of them.</string>
+    <string name="onb_call_title">Screen incoming calls</string>
+    <string name="onb_call_why">Lets Mirsad see the number of an incoming call and reject a known scam number before it rings.</string>
+    <string name="onb_notif_title">Read message notifications</string>
+    <string name="onb_notif_why">Lets Mirsad read the text of new SMS and chat notifications and hide the ones it holds. Messages stay in their own apps.</string>
+    <string name="onb_post_title">Show notices</string>
+    <string name="onb_post_why">Lets Mirsad tell you when it holds or flags something, with a one-tap Not a scam.</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="status_unavailable">Not available on this device</string>
+    <string name="onb_grant">Turn on</string>
+    <string name="onb_open_settings">Open settings</string>
+    <string name="onb_restricted_hint">If notification access is greyed out, open App info → ⋮ → Allow restricted settings.</string>
+    <string name="onb_skip">Skip — use Demo and Check a message without permissions</string>
+    <string name="onb_continue">Continue</string>
+
+    <!-- Home -->
+    <string name="home_protection">Protection</string>
+    <string name="home_protection_full">All three protections are on</string>
+    <string name="home_protection_partial">%1$d of 3 protections on</string>
+    <string name="home_protection_none">Live protection is off. Demo and Check a message still work.</string>
+    <string name="home_setup">Set up</string>
+    <string name="home_today">Flagged today</string>
+    <string name="home_total">Flagged in total</string>
+    <string name="home_recent">Latest incidents</string>
+    <string name="home_no_incidents">No incidents yet. Try the Demo to see Mirsad at work.</string>
+    <string name="quick_demo">Demo</string>
+    <string name="quick_check">Check a message</string>
+    <string name="quick_quarantine">Quarantine</string>
+    <string name="home_how_title">How it works</string>
+    <string name="home_how_body">Every call and message is checked on the phone. Mirsad only holds a message when it finds hard evidence such as a look-alike link or a request for a code, and you can overrule it with one tap.</string>
+
+    <!-- Quarantine -->
+    <string name="quarantine_title">Quarantine &amp; activity</string>
+    <string name="quarantine_banner">Nothing is ever deleted. A held message is still in its own app; Mirsad only removed the notification.</string>
+    <string name="filter_all">All</string>
+    <string name="filter_calls">Calls</string>
+    <string name="filter_sms">SMS</string>
+    <string name="filter_chat">Chat</string>
+    <string name="filter_held">Held</string>
+    <string name="filter_warned">Warned</string>
+    <string name="filter_show_allowed">Show allowed too</string>
+    <string name="quarantine_empty">Nothing here yet. Held and flagged items will appear in this list.</string>
+    <string name="row_call">Incoming call</string>
+    <string name="row_no_text">(no text)</string>
+
+    <!-- Incident -->
+    <string name="incident_title">Incident</string>
+    <string name="incident_not_found">This incident is no longer available.</string>
+    <string name="incident_call_card">Incoming call from %1$s</string>
+    <string name="incident_call_rejected">Mirsad rejected the call before it rang. It is still in your call log.</string>
+    <string name="incident_call_warned">Mirsad let the call ring and showed a caution.</string>
+    <string name="incident_call_allowed">Mirsad let the call through.</string>
+    <string name="incident_from">From %1$s</string>
+    <string name="incident_via">via %1$s</string>
+    <string name="incident_notification_removed">Mirsad removed the notification. The message is still in its app.</string>
+    <string name="incident_why">Why Mirsad decided this</string>
+    <string name="incident_no_reasons">No risk signals were found.</string>
+    <string name="incident_hard">Hard evidence</string>
+    <string name="incident_safe_signal">Safe signal</string>
+    <string name="incident_artifacts">Extracted details</string>
+    <string name="artifact_phone">Phone numbers</string>
+    <string name="artifact_url">Links</string>
+    <string name="artifact_domain">Domains</string>
+    <string name="artifact_iban">IBANs</string>
+    <string name="artifact_email">Email addresses</string>
+    <string name="artifact_wallet">Crypto wallets</string>
+    <string name="artifact_handle">Handles</string>
+    <string name="incident_analysed">Analysed on this phone in %1$d ms</string>
+    <string name="incident_versions">Model %1$s · app %2$s</string>
+    <string name="incident_score">Risk score %1$d%%</string>
+    <string name="not_a_scam">Not a scam</string>
+    <string name="report">Report</string>
+    <string name="restored_snackbar">Restored — sender allowed, template remembered</string>
+    <string name="already_restored">You marked this as not a scam. The sender is on your allow list.</string>
+    <string name="confirmed_scam_tag">Confirmed scam</string>
+
+    <!-- Report preview -->
+    <string name="report_title">Report preview</string>
+    <string name="report_tab_scam">Scam report</string>
+    <string name="report_tab_fp">False-positive report</string>
+    <string name="report_include_text">Include the message text</string>
+    <string name="report_json_label">Exact JSON that will be shared</string>
+    <string name="report_included">What is included</string>
+    <string name="report_excluded">What is never included</string>
+    <string name="report_share">Share report</string>
+    <string name="report_share_failed">Could not open the share sheet on this phone.</string>
+    <string name="report_aman_title">Report to Abu Dhabi Police (Aman)</string>
+    <string name="report_aman_body">These shortcuts only open your phone, SMS or email app with a short summary. Nothing is sent until you do it yourself.</string>
+    <string name="report_aman_call">Call 8002626</string>
+    <string name="report_aman_sms">SMS 2828</string>
+    <string name="report_aman_email">Email</string>
+    <string name="report_aman_disabled">Disabled for demo and test incidents so no test data reaches a real police line.</string>
+    <string name="report_aman_failed">No app on this phone can handle that.</string>
+    <string name="report_email_subject">Scam report from Mirsad</string>
+
+    <!-- Demo -->
+    <string name="demo_title">Demo</string>
+    <string name="demo_intro">Pick a sample or paste a message. Mirsad analyses it on this phone with the real engine and shows what it would do.</string>
+    <string name="demo_scam_samples">Sample scam messages</string>
+    <string name="demo_legit_samples">Sample legitimate messages</string>
+    <string name="demo_paste_title">Paste any message</string>
+    <string name="demo_sender_label">Sender (number or name)</string>
+    <string name="demo_text_label">Message text</string>
+    <string name="demo_analyse">Analyse</string>
+    <string name="demo_call_title">Simulate a call from</string>
+    <string name="demo_call_number">Phone number</string>
+    <string name="demo_call_button">Simulate call</string>
+    <string name="demo_note">Demo incidents are flagged as synthetic. Police shortcuts stay disabled for them.</string>
+    <string name="demo_running">Analysing on this phone…</string>
+    <string name="demo_shared_banner">Checking the message you shared…</string>
+    <string name="demo_contact_tag">saved contact</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="lang_system">System</string>
+    <string name="lang_en">English</string>
+    <string name="lang_ar">العربية</string>
+    <string name="settings_sensitivity">Sensitivity</string>
+    <string name="sens_relaxed">Relaxed</string>
+    <string name="sens_balanced">Balanced</string>
+    <string name="sens_strict">Strict</string>
+    <string name="sens_hint">Strict holds more. Relaxed holds only with strong evidence.</string>
+    <string name="settings_monitored">Monitored apps</string>
+    <string name="settings_monitored_hint">Mirsad only reads notifications from the apps ticked here.</string>
+    <string name="settings_add_package">Add a package name</string>
+    <string name="settings_lists">Lists</string>
+    <string name="list_allow">Allow list (senders)</string>
+    <string name="list_block">Block list (senders)</string>
+    <string name="list_domains">Blocked domains</string>
+    <string name="list_block_fingerprints">Blocked templates (fingerprints)</string>
+    <string name="list_fingerprints">Known-good templates (fingerprints)</string>
+    <string name="list_empty">Empty</string>
+    <string name="list_add_hint">Add a value</string>
+    <string name="list_count">%1$d entries</string>
+    <string name="settings_import">Import blocklist (JSON)</string>
+    <string name="import_result">Imported %1$d numbers, %2$d domains, %3$d fingerprints</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="settings_delete_all">Delete all data</string>
+    <string name="delete_confirm_title">Delete all data?</string>
+    <string name="delete_confirm_body">Incidents, lists and feedback stored on this phone will be removed. This cannot be undone.</string>
+    <string name="delete_confirm_yes">Delete</string>
+    <string name="deleted_toast">All data deleted</string>
+    <string name="settings_permissions">Permissions &amp; setup</string>
+    <string name="settings_about">About</string>
+    <string name="about_body">Mirsad is a hackathon prototype. It decides on the phone whether a call or message looks like a scam. It holds no internet permission and sends nothing anywhere unless you share a report yourself. It is not endorsed by any authority.</string>
+    <string name="about_versions">App %1$s · engine %2$s</string>
+    <string name="about_no_internet">No internet permission</string>
+
+    <!-- Reason codes, plain language (one per ReasonCodes constant) -->
+    <string name="reason_SENDER_BLOCKLISTED">The sender is on your block list.</string>
+    <string name="reason_SENDER_ALLOWLISTED">The sender is on your allow list.</string>
+    <string name="reason_SENDER_LOOKS_LIKE_CONTACT">The sender looks like a saved contact.</string>
+    <string name="reason_SENDER_PLAIN_NUMBER_CLAIMS_ENTITY">A plain phone number claims to be a bank or authority. Real ones use registered sender names.</string>
+    <string name="reason_SENDER_FOREIGN_CODE_UAE_ENTITY">A foreign number claims to be a UAE organisation.</string>
+    <string name="reason_SENDER_ONE_RING_PATTERN">Looks like a one-ring call-back trick.</string>
+    <string name="reason_SENDER_INTERNATIONAL_CALL">Call from an international number.</string>
+    <string name="reason_SENDER_SEEN_IN_HELD_MESSAGE">This number sent a message Mirsad held recently.</string>
+    <string name="reason_SENDER_OTP_FROM_ALPHANUMERIC">A one-time code from a registered sender name. Normal for banks.</string>
+    <string name="reason_LINK_SHORTENER">The link uses a shortener that hides where it goes.</string>
+    <string name="reason_LINK_IP_HOST">The link points to a bare IP address instead of a website name.</string>
+    <string name="reason_LINK_PUNYCODE_OR_MIXED_SCRIPT">The link mixes alphabets or uses look-alike characters.</string>
+    <string name="reason_LINK_PLAIN_HTTP">The link is not encrypted (http, not https).</string>
+    <string name="reason_LINK_HIGH_RISK_TLD">The link uses a domain ending often seen in scams.</string>
+    <string name="reason_LINK_LOOKALIKE_OFFICIAL">The link imitates an official website.</string>
+    <string name="reason_LINK_BRAND_IN_HOST_NOT_OFFICIAL">A brand name is in the link, but it is not the official site.</string>
+    <string name="reason_LINK_BLOCKLISTED_DOMAIN">The link\'s domain is on the blocklist.</string>
+    <string name="reason_LINK_PRESENT">The message contains a link.</string>
+    <string name="reason_CONTENT_URGENCY">Pushes you to act quickly.</string>
+    <string name="reason_CONTENT_THREAT">Threatens a fine, penalty or suspension.</string>
+    <string name="reason_CONTENT_CREDENTIAL_REQUEST">Asks for a password, PIN, card number or code.</string>
+    <string name="reason_CONTENT_SMALL_FEE_LINK">Asks for a small fee through a link, a classic parcel trick.</string>
+    <string name="reason_CONTENT_PRIZE">Promises a prize or a win.</string>
+    <string name="reason_CONTENT_JOB_OFFER">Unsolicited job offer with easy money.</string>
+    <string name="reason_CONTENT_INVESTMENT">Promises investment returns.</string>
+    <string name="reason_CONTENT_REMOTE_ACCESS_APP">Asks you to install a remote-access app such as AnyDesk.</string>
+    <string name="reason_CONTENT_MOVE_TO_MESSENGER">Tries to move the conversation to another messenger.</string>
+    <string name="reason_CONTENT_PAYMENT_REQUEST">Asks for a payment or a transfer.</string>
+    <string name="reason_CONTENT_NEW_NUMBER_RELATIVE">\"Hi Mum, new number\": the relative-in-trouble pattern.</string>
+    <string name="reason_CONTENT_IMPERSONATES_ENTITY">Claims to be a bank, authority or well-known company.</string>
+    <string name="reason_CONTENT_OTP_REQUEST">Asks you to share a one-time code. No real bank does this.</string>
+    <string name="reason_FINGERPRINT_BLOCKLISTED">The wording matches a known scam template.</string>
+    <string name="reason_FINGERPRINT_KNOWN_GOOD">The wording matches a message you marked as not a scam.</string>
+    <string name="reason_MODEL_SCORE">The on-device classifier rates the text as scam-like.</string>
+    <string name="reason_CONTENT_HIDDEN">The system hid the content (for example a protected code), so it was not analysed.</string>
+    <string name="reason_ENGINE_TIMEOUT">Analysis ran out of time; only partial checks were done.</string>
+    <string name="reason_ENGINE_ERROR">Analysis hit an error; treat the result with caution.</string>
+    <string name="reason_unknown">Signal: %1$s</string>
 </resources>

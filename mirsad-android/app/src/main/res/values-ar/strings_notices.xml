@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owned by workstream D: notification channels, notices and plain-language reason texts (Arabic). -->
+<resources>
+    <!-- Notification channels -->
+    <string name="channel_holds_name">الرسائل والمكالمات المحجوزة</string>
+    <string name="channel_holds_description">إشعارات هادئة عندما يحجز مرصاد رسالة مشبوهة أو يرفض مكالمة</string>
+    <string name="channel_warnings_name">تنبيهات</string>
+    <string name="channel_warnings_description">تحذيرات للرسائل المشبوهة والمكالمات الواردة</string>
+    <string name="channel_restored_name">الرسائل المستعادة</string>
+    <string name="channel_restored_description">نسخ من الرسائل التي حددتها بأنها ليست احتيالاً</string>
+
+    <!-- Notices -->
+    <string name="notice_hold_message_title">تم حجز رسالة مشبوهة من %1$s</string>
+    <string name="notice_warn_message_title">تنبيه: هذه الرسالة من %1$s تبدو مشبوهة</string>
+    <string name="notice_hold_call_title">رفض مرصاد مكالمة من %1$s</string>
+    <string name="notice_hold_call_log">لا تزال موجودة في سجل المكالمات.</string>
+    <string name="notice_warn_call_title">تنبيه: مكالمة واردة من %1$s</string>
+    <string name="notice_demo_prefix">تجريبي</string>
+    <string name="notice_unknown_sender">مرسل غير معروف</string>
+    <string name="notice_safety_line">لا تشارك بياناتك البنكية أو كلمات المرور أو رموز التحقق مع أي شخص.</string>
+    <string name="notice_action_not_scam">ليست احتيالاً</string>
+    <string name="notice_action_report">إبلاغ</string>
+    <string name="notice_action_undo">تراجع</string>
+    <string name="notice_restored_subtext">أعادها مرصاد</string>
+    <string name="notice_not_scam_call_title">ليست احتيالاً: %1$s</string>
+    <string name="notice_not_scam_call_text">سيُسمح بالمكالمات من هذا الرقم.</string>
+
+    <!-- Reason codes in plain words -->
+    <string name="reason_generic">نمط مشبوه</string>
+    <string name="reason_sender_blocklisted">المرسل موجود في قائمة الحظر</string>
+    <string name="reason_sender_allowlisted">المرسل موجود في قائمة السماح</string>
+    <string name="reason_sender_looks_like_contact">المرسل يبدو كجهة اتصال محفوظة</string>
+    <string name="reason_sender_plain_number_claims_entity">رقم هاتف عادي يدّعي أنه بنك أو جهة رسمية</string>
+    <string name="reason_sender_foreign_code_uae_entity">رقم أجنبي يدّعي أنه جهة إماراتية</string>
+    <string name="reason_sender_one_ring_pattern">يشبه احتيال الرنة الواحدة لإعادة الاتصال</string>
+    <string name="reason_sender_international_call">رقم دولي</string>
+    <string name="reason_sender_seen_in_held_message">هذا الرقم أرسل رسالة محجوزة مؤخراً</string>
+    <string name="reason_sender_otp_from_alphanumeric">رمز تحقق من مرسل رسمي</string>
+    <string name="reason_link_shortener">رابط مختصر يخفي العنوان الحقيقي</string>
+    <string name="reason_link_ip_host">الرابط يشير إلى عنوان IP مباشر</string>
+    <string name="reason_link_punycode_or_mixed_script">الرابط يستخدم أحرفاً متشابهة مضللة</string>
+    <string name="reason_link_plain_http">الرابط غير آمن (http)</string>
+    <string name="reason_link_high_risk_tld">الرابط ينتهي بنطاق عالي الخطورة</string>
+    <string name="reason_link_lookalike_official">الرابط يقلّد موقعاً رسمياً</string>
+    <string name="reason_link_brand_in_host_not_official">الرابط يستخدم اسم علامة تجارية لكنه ليس الموقع الرسمي</string>
+    <string name="reason_link_blocklisted_domain">نطاق الرابط موجود في قائمة الحظر</string>
+    <string name="reason_link_present">تحتوي على رابط</string>
+    <string name="reason_content_urgency">تضغط عليك للتصرف فوراً</string>
+    <string name="reason_content_threat">تهدد بغرامة أو حظر أو تعليق</string>
+    <string name="reason_content_credential_request">تطلب كلمة مرور أو رمز PIN أو بيانات البطاقة</string>
+    <string name="reason_content_small_fee_link">تطلب رسوماً صغيرة عبر رابط</string>
+    <string name="reason_content_prize">تعد بجائزة أو مكافأة</string>
+    <string name="reason_content_job_offer">عرض عمل غير مطلوب</string>
+    <string name="reason_content_investment">عرض استثمار أو ربح سريع</string>
+    <string name="reason_content_remote_access_app">تطلب تثبيت تطبيق تحكم عن بُعد</string>
+    <string name="reason_content_move_to_messenger">تطلب الانتقال إلى تطبيق مراسلة آخر</string>
+    <string name="reason_content_payment_request">تطلب دفعاً أو تحويلاً</string>
+    <string name="reason_content_new_number_relative">تدّعي أنها قريب لك برقم جديد</string>
+    <string name="reason_content_impersonates_entity">تنتحل صفة بنك أو جهة رسمية أو شركة</string>
+    <string name="reason_content_otp_request">تطلب رمز تحقق لمرة واحدة</string>
+    <string name="reason_fingerprint_blocklisted">تطابق رسالة احتيال معروفة</string>
+    <string name="reason_fingerprint_known_good">تطابق رسالة حددتها بأنها ليست احتيالاً</string>
+    <string name="reason_model_score">الصياغة تشبه رسائل احتيال معروفة</string>
+    <string name="reason_content_hidden">المحتوى مخفي بواسطة النظام</string>
+    <string name="reason_engine_timeout">انتهت مهلة الفحص</string>
+    <string name="reason_engine_error">فشل الفحص</string>
+</resources>

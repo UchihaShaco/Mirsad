@@ -1,0 +1,23 @@
+label,lang,channel,sender,text,synthetic
+scam,en,SMS,+440000000001,"Emirates Post: your parcel is held at customs. Pay AED 3.50 within 24 hours or it will be returned: http://emiratespost-ae.delivery-fee.example/pay",true
+scam,ar,SMS,+920000000002,"عزيزي العميل، تم تعليق بطاقتك البنكية. لتفعيلها حدّث بياناتك خلال 24 ساعة عبر الرابط: http://bank-update.example/ae",true
+scam,en,SMS,+971500000003,"Dear customer, your Emirates ID is not linked to your bank account. Your card will be blocked today. Update your KYC now: https://uae-kyc-verify.example",true
+scam,en,SMS,ABUDHABI-PL,"Abu Dhabi Police: you have an unpaid traffic fine of AED 150. Pay within 12 hours to avoid a surcharge: http://adpolice-fines.example",true
+scam,ar,SMS,+440000000004,"شرطة دبي: لديك مخالفة مرورية غير مدفوعة بقيمة 300 درهم. ادفع الآن لتجنب مضاعفة الغرامة: http://dubaipolice-pay.example",true
+scam,en,CHAT,+920000000005,"Hello, this is the Central Bank security team. Your account was used in a suspicious transfer. Share the OTP sent to your phone so we can stop it.",true
+scam,ar,CHAT,+971500000006,"مبروك! ربحت جائزة 50,000 درهم من سحب اتصالات. أرسل رقم بطاقتك ورمز التحقق لاستلام الجائزة.",true
+scam,en,CHAT,+630000000007,"Part-time job from home, AED 800 per day, just like videos. Message our HR on Telegram: t.me/hr_uae_jobs_example",true
+scam,en,SMS,SALIK-INFO,"SALIK: your balance is low and your tag will be suspended. Recharge now: http://salik-recharge.example",true
+scam,ar,SMS,+971500000008,"هيئة كهرباء ومياه دبي: فاتورتك متأخرة وسيتم قطع الخدمة اليوم. سدد فوراً عبر الرابط http://dewa-bill.example",true
+scam,en,CHAT,+440000000009,"Hi Mum, I dropped my phone, this is my new number. Can you send AED 2,000 today? IBAN AE070331234567890123456",true
+scam,en,SMS,+971500000010,"Your UAE Pass login request is pending. If this was not you, cancel it here: http://uaepass-cancel.example",true
+scam,en,CHAT,+100000000011,"Guaranteed 30% monthly profit trading gold and crypto, licensed in Dubai. Join our group: wa.me/0000000000",true
+scam,en,CHAT,+910000000012,"Sir, this is technical support from your bank. Please install AnyDesk so I can fix your blocked card.",true
+legit,en,SMS,ADCB,"Your OTP is 482913 for a purchase of AED 120.00 at CARREFOUR. Do not share this code with anyone.",true
+legit,ar,SMS,FAB,"رمز التحقق الخاص بك هو 771204. لا تشارك هذا الرمز مع أي شخص.",true
+legit,en,SMS,Aramex,"Your shipment 4521 is out for delivery today between 2 PM and 6 PM.",true
+legit,en,SMS,DEWA,"Your bill for October is AED 412.35, due on 15 Nov. You can pay in the DEWA app.",true
+legit,en,SMS,NOON,"Yellow Friday sale: up to 70% off, today only. Shop in the app.",true
+legit,en,SMS,SEHA,"Reminder: your appointment is on 26 Nov at 09:30. Reply 1 to confirm.",true
+legit,en,CHAT,Khalid,"Are we still on for padel at 8? I booked court 3.",true
+legit,ar,CHAT,Abu Omar,"السلام عليكم، الاجتماع بكرة الساعة 10 الصبح في المكتب.",true

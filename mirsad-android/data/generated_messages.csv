@@ -1,0 +1,1379 @@
+label,lang,channel,sender,text,synthetic
+scam,en,SMS,+920000000087,Emirates Post delivery notice: we could not deliver your package due to an unpaid customs fee of AED 4.90. Confirm and pay here: http://emiratespost-support.example/ae,true
+scam,en,SMS,+440000000026,Your Aramex shipment is on hold. A small clearance fee of AED 2.75 is required to release it: http://aramex-fee.example/update,true
+scam,en,SMS,EMIRATES-PL,[Emirates Post] Your package is waiting for delivery. Update your address and pay the AED 2.75 redelivery fee within 48 hours: http://emiratespost.unlock.example/login,true
+scam,en,SMS,+920000000006,Parcel 0000000016 could not be delivered because of incomplete address details. Reschedule and pay AED 9.99: http://emiratespost-refund.example,true
+scam,en,SMS,ADPOLICE-UAE,Abu Dhabi Police: you have an unpaid parking fine of AED 300. Pay within 24 hours to avoid a surcharge: http://adpolice-ae.update.example/login,true
+scam,en,SMS,DUBAIPOL-SEC,Final notice from Dubai Police. Your traffic fine of AED 600 is overdue and your licence will be blocked. Settle now: http://support-dubaipolice-ae.example/track,true
+scam,en,SMS,+100000000077,Abu Dhabi Police reminder: a traffic violation of AED 400 is registered against your vehicle. Pay today or face late fee: http://adpolice-kyc.example/confirm,true
+scam,en,SMS,+920000000031,Mawaqif: unpaid parking violation of AED 500. Your vehicle will be impounded unless paid today: http://dubaipolice-ae.delivery.example/confirm,true
+scam,en,SMS,+910000000022,RTA: your speeding fine of AED 150 has not been paid. Last chance before licence block: http://adpolice-ae.renew.example/pay,true
+scam,en,SMS,+100000000071,FAB: your card has been temporarily suspended due to unusual activity. Verify your details within 24 hours to restore access: http://fab-ae.claim.example/update,true
+scam,en,SMS,+910000000092,"Dear ADCB customer, your account will be deactivated today. Update your information to keep your account active: http://adcb.update.example/pay",true
+scam,en,SMS,+100000000054,FAB alert: the Emirates ID linked to your account has expired. Update now or your card will be blocked: http://fab.fee.example,true
+scam,en,SMS,+971500000059,Your FAB online banking has been locked after 5 failed attempts. Unlock here: http://fab-ae.verify.example/login,true
+scam,en,SMS,ADCB-PL,ADCB: your KYC is incomplete and your account will be frozen in 48 hours. Complete it now: https://pay-adcb-ae.example/update,true
+scam,en,CHAT,EMIRATES-UAE,"This is the Emirates NBD fraud department. A transaction of AED 15,000 was attempted on your card. To cancel it, reply with the OTP we just sent you.",true
+scam,en,CHAT,+630000000011,"Hello, I am calling from Mashreq security. Please read me the verification code you received so we can block the suspicious transfer.",true
+scam,en,CHAT,+910000000088,Your Emirates NBD account is under attack. Share the one-time password sent to your phone immediately so we can secure it.,true
+scam,en,CHAT,+920000000065,"Mashreq officer here. We are reversing a wrong debit of AED 3,500. Tell me the 6-digit code on your screen to confirm.",true
+scam,en,CHAT,+971500000072,Central Bank security team: your Emirates NBD account was used in a suspicious transfer. Send us the OTP to stop it.,true
+scam,en,SMS,+971500000070,UAE Pass: your Emirates ID is about to be cancelled. Update your details within 12 hours: http://uaepass-update.example/ae,true
+scam,en,SMS,+920000000082,ICP: your account has been locked. Verify your identity to unlock it: http://icp-kyc.example/ae,true
+scam,en,SMS,+971500000019,Your Emirates ID renewal was rejected. Re-submit your documents and pay the AED 4.90 fee: http://unlock-icp-ae.example/login,true
+scam,en,SMS,+920000000045,"ICP: a login request from a new device is pending. If this was not you, cancel it here: http://icp.pay.example",true
+scam,en,SMS,+620000000047,"Dear resident, your Emirates ID is not linked to your mobile number. Link it within 48 hours to avoid a fine: http://support-icp-ae.example/claim",true
+scam,en,SMS,+971500000088,"Congratulations! Your number has won AED 10,000 in the Etisalat by e& lucky draw. Send your card number and expiry date to claim.",true
+scam,en,CHAT,+234000000064,You have been selected as the winner of a gold bar. Pay the AED 15 delivery charge to receive it: http://etisalat.claim.example/verify,true
+scam,en,CHAT,+440000000055,"du anniversary giveaway: you won a voucher of AED 1,000,000. Claim within 48 hours: https://du.customs.example/pay",true
+scam,en,SMS,+200000000055,"WINNER! Your mobile number was chosen in the du mega draw for AED 100,000. Call +200000000055 to claim your prize.",true
+scam,en,SMS,DU-AE,"Dear customer, your loyalty points worth AED 50,000 expire today. Redeem now: https://du.refund.example/pay",true
+scam,en,CHAT,+200000000056,"Work from home, AED 300 per day, reviewing hotels. No experience needed. Message HR on Telegram: t.me/parttime_dxb_example",true
+scam,en,CHAT,+630000000071,Hiring now! Earn AED 800 daily for liking videos. Limited slots. WhatsApp +630000000071,true
+scam,en,CHAT,+620000000051,"Part-time online job, 300 AED/day, paid every evening. Contact t.me/parttime_dxb_example",true
+scam,en,CHAT,+920000000038,"Hi, I am Sara from a recruitment agency in Dubai. We pay AED 650 per day for sharing posts from your phone. Interested? Reply YES.",true
+scam,en,CHAT,+920000000027,Amazon-style tasks: reviewing hotels and earn AED 650 daily. Join our team: t.me/crypto_club_uae_example,true
+scam,en,CHAT,+234000000069,Guaranteed 30% monthly profit trading forex. Licensed in Dubai. Minimum deposit AED 120.00. Join: wa.me/234000000069,true
+scam,en,CHAT,+630000000072,"Our forex signals never lose. 70% weekly return guaranteed, withdraw anytime. Join the VIP group: t.me/bank_support_ae_example",true
+scam,en,CHAT,+620000000036,Double your money in 14 days with our oil futures platform. Government approved. Register: https://addc.delivery.example/claim,true
+scam,en,CHAT,+920000000092,"I made AED 100,000 last month trading USDT with this mentor. Zero risk, 25% guaranteed. DM me or join t.me/parttime_dxb_example",true
+scam,en,CHAT,+100000000054,"Exclusive crypto investment: fixed 20% return every month, capital protected. Start with AED 760: https://pay-emiratesnbd-ae.example/pay",true
+scam,en,SMS,+920000000021,This is ADCB technical support. Your service will be disconnected. Install AirDroid so our engineer can fix it.,true
+scam,en,SMS,+971500000062,"Sir/Madam, we detected a virus on your phone. Download QuickSupport from this link so we can clean it: https://mashreq-ae.customs.example/pay",true
+scam,en,SMS,+440000000007,du support: to reverse the wrong transaction please install AnyDesk and share the ID code with me.,true
+scam,en,CHAT,+971500000008,Your FAB app needs an urgent security patch. Install QuickSupport and give us the access code to complete the update.,true
+scam,en,CHAT,+200000000090,"Hi Mom, this is my new number, my old phone is broken. I need AED 1,250.00 urgently, can you transfer to this IBAN AE070000000000000000090?",true
+scam,en,CHAT,+440000000021,"Mama it's me, I lost my phone. Save this number. Can you send 250 dirhams today? I'll explain later.",true
+scam,en,CHAT,+100000000079,"Hey, I changed my number. I'm stuck and need 3,500 AED for the hospital bill, please transfer now.",true
+scam,en,CHAT,+910000000022,"Mum, my phone fell in water so I'm using a friend's number. Please send AED 120.00 to AE070000000000000000034 before 5 PM, urgent.",true
+scam,en,CHAT,+620000000046,"Hi Dad it's your son, new number. Can't talk now. Transfer AED 3,500 to this account please, I'll pay you back tomorrow.",true
+scam,en,CHAT,+971500000028,"Your refund of AED 3,500 from Aramex is ready. To receive it, contact our agent on WhatsApp: wa.me/910000000040",true
+scam,en,SMS,+971500000094,We have an urgent update about your Mashreq account. Chat with our officer on Telegram: t.me/parttime_dxb_example,true
+scam,en,SMS,+234000000045,Your job application was approved. Continue the interview on WhatsApp +234000000045.,true
+scam,en,CHAT,EMIRATES-ALERT,Emirates Post: your complaint is being handled by our senior agent. Continue on WhatsApp for a faster response: wa.me/440000000099,true
+scam,en,SMS,EMIRATES-ALERT,Your Emirates Post delivery needs confirmation. Message our courier on Telegram to arrange a time: t.me/parttime_dxb_example,true
+scam,en,SMS,+910000000039,ADDC: your bill is overdue and service will be disconnected today. Pay immediately: http://verify-addc-ae.example/pay,true
+scam,en,SMS,+234000000039,RTA: your balance is low and your tag will be suspended. Recharge now: http://delivery-rta-ae.example/verify,true
+scam,en,SMS,+971500000000,"Salik: final warning, AED 15,000 outstanding. Disconnection scheduled in 48 hours. Pay here: http://salik-ae.login.example/claim",true
+scam,en,SMS,DEWA-PL,"DEWA notice: your account has an unpaid amount of AED 5,000. Avoid a late fee by paying now: https://dewa-claim.example/login",true
+scam,en,SMS,+971500000026,Aramex: your parcel 0000000093 is held at customs. Pay AED 3.50 within 24 hours or it will be returned: http://aramex-ae.secure.example/verify,true
+scam,en,SMS,+971500000023,Emirates Post delivery notice: we could not deliver your package due to an unpaid customs fee of AED 9.99. Confirm and pay here: https://emiratespost.kyc.example,true
+scam,en,SMS,EMIRATES-INFO,Your Emirates Post shipment is on hold. A small clearance fee of AED 2.75 is required to release it: http://emiratespost.unlock.example/ae,true
+scam,en,SMS,+971500000046,[Aramex] Your package is waiting for delivery. Update your address and pay the AED 12 redelivery fee within 12 hours: http://aramex-ae.update.example,true
+scam,en,SMS,+200000000084,Parcel 0000000069 could not be delivered because of incomplete address details. Reschedule and pay AED 15: http://aramex-ae.kyc.example/confirm,true
+scam,en,SMS,+200000000029,Abu Dhabi Police: you have an unpaid speeding fine of AED 400. Pay within 48 hours to avoid a licence block: http://login-adpolice-ae.example/confirm,true
+scam,en,SMS,+200000000010,Final notice from Dubai Police. Your traffic fine of AED 500 is overdue and your licence will be blocked. Settle now: http://dubaipolice-ae.login.example/login,true
+scam,en,SMS,+620000000023,Dubai Police reminder: a Salik toll violation of AED 400 is registered against your vehicle. Pay today or face surcharge: http://unlock-dubaipolice-ae.example/track,true
+scam,en,SMS,ADPOLICE-PL,Mawaqif: unpaid parking violation of AED 500. Your vehicle will be impounded unless paid today: https://adpolice.renew.example,true
+scam,en,SMS,+971500000034,RTA: your Salik toll fine of AED 600 has not been paid. Last chance before surcharge: https://dubaipolice-ae.fee.example/update,true
+scam,en,SMS,+971500000055,Mashreq: your card has been temporarily suspended due to unusual activity. Verify your details within 6 hours to restore access: http://customs-mashreq-ae.example/ae,true
+scam,en,SMS,ADIB-PL,"Dear ADIB customer, your account will be deactivated today. Update your information to keep your account active: http://adib-track.example/login",true
+scam,en,SMS,+971500000074,Mashreq alert: the Emirates ID linked to your account has expired. Update now or your card will be blocked: http://mashreq-ae.unlock.example/confirm,true
+scam,en,SMS,+971500000091,Your ADIB online banking has been locked after 14 failed attempts. Unlock here: http://adib.update.example/update,true
+scam,en,SMS,+910000000008,ADIB: your KYC is incomplete and your account will be frozen in 6 hours. Complete it now: http://fines-adib-ae.example/track,true
+scam,en,CHAT,+971500000054,"This is the Emirates NBD fraud department. A transaction of AED 1,250.00 was attempted on your card. To cancel it, reply with the OTP we just sent you.",true
+scam,en,CHAT,+630000000085,"Hello, I am calling from Emirates NBD security. Please read me the verification code you received so we can block the suspicious transfer.",true
+scam,en,CHAT,MASHREQ-UAE,Your Mashreq account is under attack. Share the one-time password sent to your phone immediately so we can secure it.,true
+scam,en,CHAT,MASHREQ-UAE,"Mashreq officer here. We are reversing a wrong debit of AED 1,250.00. Tell me the 6-digit code on your screen to confirm.",true
+scam,en,SMS,+100000000003,UAE Pass: your Emirates ID is about to be cancelled. Update your details within 6 hours: http://uaepass-ae.kyc.example/track,true
+scam,en,SMS,+630000000067,UAE Pass: your account has been locked. Verify your identity to unlock it: http://uaepass-ae.update.example/confirm,true
+scam,en,SMS,+971500000010,Your Emirates ID renewal was rejected. Re-submit your documents and pay the AED 12 fee: http://icp-secure.example/claim,true
+scam,en,SMS,+620000000047,"ICP: a login request from a new device is pending. If this was not you, cancel it here: http://icp-support.example/ae",true
+scam,en,SMS,+100000000087,"Dear resident, your Emirates ID is not linked to your mobile number. Link it within 48 hours to avoid a fine: http://icp.verify.example/pay",true
+scam,en,SMS,+920000000090,"Congratulations! Your number has won AED 1,000,000 in the Etisalat by e& lucky draw. Send your card number and expiry date to claim.",true
+scam,en,SMS,DU-AE,You have been selected as the winner of a brand-new iPhone. Pay the AED 2.75 delivery charge to receive it: https://secure-du-ae.example/pay,true
+scam,en,SMS,DU-UAE,"du anniversary giveaway: you won a voucher of AED 100,000. Claim within 6 hours: http://du-kyc.example/pay",true
+scam,en,CHAT,+920000000094,"WINNER! Your mobile number was chosen in the du mega draw for AED 25,000. Call +920000000094 to claim your prize.",true
+scam,en,CHAT,DU-PL,"Dear customer, your loyalty points worth AED 10,000 expire today. Redeem now: http://du-ae.delivery.example",true
+scam,en,CHAT,+910000000072,"Work from home, AED 800 per day, rating products. No experience needed. Message HR on Telegram: t.me/vip_signals_ae_example",true
+scam,en,CHAT,+234000000099,"Hiring now! Earn AED 1,200 daily for simple data entry. Limited slots. WhatsApp +234000000099",true
+scam,en,CHAT,+920000000032,"Part-time online job, 1,200 AED/day, paid every evening. Contact t.me/vip_signals_ae_example",true
+scam,en,CHAT,+100000000034,"Hi, I am Sara from a recruitment agency in Dubai. We pay AED 800 per day for rating products from your phone. Interested? Reply YES.",true
+scam,en,CHAT,+440000000004,Amazon-style tasks: reviewing hotels and earn AED 650 daily. Join our team: t.me/parttime_dxb_example,true
+scam,en,CHAT,+630000000040,"Guaranteed 50% monthly profit trading forex. Licensed in Dubai. Minimum deposit AED 1,250.00. Join: wa.me/630000000040",true
+scam,en,CHAT,+200000000042,"Our forex signals never lose. 15% weekly return guaranteed, withdraw anytime. Join the VIP group: t.me/vip_signals_ae_example",true
+scam,en,CHAT,+910000000062,Double your money in 10 days with our oil futures platform. Government approved. Register: http://dubaipolice.login.example,true
+scam,en,CHAT,+200000000063,"I made AED 100,000 last month trading forex with this mentor. Zero risk, 15% guaranteed. DM me or join t.me/gold_profit_uae_example",true
+scam,en,CHAT,+234000000054,"Exclusive forex investment: fixed 50% return every month, capital protected. Start with AED 1,250.00: http://dewa.track.example/verify",true
+scam,en,CHAT,EMIRATES-INFO,This is Emirates NBD technical support. Your service will be disconnected. Install AirDroid so our engineer can fix it.,true
+scam,en,SMS,+620000000087,"Sir/Madam, we detected a virus on your phone. Download TeamViewer from this link so we can clean it: http://update-emiratesnbd-ae.example/confirm",true
+scam,en,CHAT,+920000000089,ADCB support: to reverse the wrong transaction please install AnyDesk and share the ID code with me.,true
+scam,en,SMS,EMIRATES-UAE,Your Emirates NBD app needs an urgent security patch. Install AirDroid and give us the access code to complete the update.,true
+scam,en,CHAT,+234000000033,"Hi Mom, this is my new number, my old phone is broken. I need AED 250 urgently, can you transfer to this IBAN AE070000000000000000024?",true
+scam,en,CHAT,+620000000027,"Baba it's me, I lost my phone. Save this number. Can you send 2,000 dirhams today? I'll explain later.",true
+scam,en,CHAT,+620000000058,"Hey, I changed my number. I'm stuck and need 2,000 AED for the hospital bill, please transfer now.",true
+scam,en,CHAT,+200000000001,"Mom, my phone fell in water so I'm using a friend's number. Please send AED 5,000 to AE070000000000000000020 before 5 PM, urgent.",true
+scam,en,CHAT,+440000000006,"Hi Mama it's your son, new number. Can't talk now. Transfer AED 760 to this account please, I'll pay you back tomorrow.",true
+scam,en,CHAT,+971500000073,"Your refund of AED 15,000 from FAB is ready. To receive it, contact our agent on WhatsApp: wa.me/200000000046",true
+scam,en,SMS,FAB-SEC,We have an urgent update about your FAB account. Chat with our officer on Telegram: t.me/gold_profit_uae_example,true
+scam,en,CHAT,+920000000076,Your job application was approved. Continue the interview on WhatsApp +920000000076.,true
+scam,en,SMS,ADIB-ALERT,ADIB: your complaint is being handled by our senior agent. Continue on WhatsApp for a faster response: wa.me/630000000070,true
+scam,en,CHAT,+971500000070,Your Aramex delivery needs confirmation. Message our courier on Telegram to arrange a time: t.me/bank_support_ae_example,true
+scam,en,SMS,+200000000030,Salik: your bill is overdue and service will be disconnected today. Pay immediately: http://salik-delivery.example/login,true
+scam,en,SMS,+971500000056,DEWA: your balance is low and your tag will be suspended. Recharge now: https://dewa-support.example/verify,true
+scam,en,SMS,RTA-AE,"RTA: final warning, AED 99.00 outstanding. Disconnection scheduled in 2 hours. Pay here: https://rta-ae.renew.example/track",true
+scam,en,SMS,SALIK-INFO,"Salik notice: your account has an unpaid amount of AED 3,500. Avoid a late fee by paying now: http://salik-unlock.example/track",true
+scam,en,SMS,+920000000040,Emirates Post: your parcel 0000000084 is held at customs. Pay AED 4.90 within 12 hours or it will be returned: http://emiratespost-ae.renew.example/track,true
+scam,en,SMS,+971500000095,Aramex delivery notice: we could not deliver your package due to an unpaid customs fee of AED 4.90. Confirm and pay here: https://aramex-delivery.example/login,true
+scam,en,SMS,+971500000046,Your Emirates Post shipment is on hold. A small clearance fee of AED 12 is required to release it: http://emiratespost-ae.update.example/confirm,true
+scam,en,SMS,+971500000023,[Emirates Post] Your package is waiting for delivery. Update your address and pay the AED 15 redelivery fee within 48 hours: https://claim-emiratespost-ae.example,true
+scam,en,SMS,+910000000063,Parcel 0000000043 could not be delivered because of incomplete address details. Reschedule and pay AED 15: http://pay-aramex-ae.example/track,true
+scam,en,SMS,+971500000068,Dubai Police: you have an unpaid Salik toll fine of AED 800. Pay within 12 hours to avoid a black points: http://dubaipolice-secure.example/claim,true
+scam,en,SMS,+234000000053,Final notice from Dubai Police. Your traffic fine of AED 150 is overdue and your licence will be blocked. Settle now: https://dubaipolice-ae.login.example/update,true
+scam,en,SMS,+920000000089,Dubai Police reminder: a speeding violation of AED 600 is registered against your vehicle. Pay today or face black points: http://track-dubaipolice-ae.example/confirm,true
+scam,en,SMS,+971500000075,Mawaqif: unpaid parking violation of AED 300. Your vehicle will be impounded unless paid today: https://support-dubaipolice-ae.example/update,true
+scam,en,SMS,+971500000076,RTA: your Salik toll fine of AED 500 has not been paid. Last chance before black points: http://adpolice-support.example/track,true
+scam,en,SMS,+630000000038,ADIB: your card has been temporarily suspended due to unusual activity. Verify your details within 12 hours to restore access: http://adib.pay.example/ae,true
+scam,en,SMS,+971500000099,"Dear FAB customer, your account will be deactivated today. Update your information to keep your account active: http://customs-fab-ae.example/claim",true
+scam,en,SMS,+630000000040,Emirates NBD alert: the Emirates ID linked to your account has expired. Update now or your card will be blocked: http://secure-emiratesnbd-ae.example/ae,true
+scam,en,SMS,+910000000098,Your Emirates NBD online banking has been locked after 3 failed attempts. Unlock here: https://delivery-emiratesnbd-ae.example/track,true
+scam,en,SMS,EMIRATES-PL,Emirates NBD: your KYC is incomplete and your account will be frozen in 12 hours. Complete it now: http://emiratesnbd.kyc.example/update,true
+scam,en,CHAT,ADIB-INFO,"This is the ADIB fraud department. A transaction of AED 120.00 was attempted on your card. To cancel it, reply with the OTP we just sent you.",true
+scam,en,CHAT,+971500000006,"Hello, I am calling from ADIB security. Please read me the verification code you received so we can block the suspicious transfer.",true
+scam,en,CHAT,FAB-SEC,"FAB officer here. We are reversing a wrong debit of AED 1,250.00. Tell me the 6-digit code on your screen to confirm.",true
+scam,en,CHAT,ADCB-UAE,Central Bank security team: your ADCB account was used in a suspicious transfer. Send us the OTP to stop it.,true
+scam,en,SMS,+971500000043,ICP: your Emirates ID is about to be cancelled. Update your details within 48 hours: https://delivery-icp-ae.example/pay,true
+scam,en,SMS,+200000000081,UAE Pass: your account has been locked. Verify your identity to unlock it: https://uaepass-ae.renew.example,true
+scam,en,SMS,+234000000009,Your Emirates ID renewal was rejected. Re-submit your documents and pay the AED 15 fee: http://icp-ae.claim.example/login,true
+scam,en,SMS,+910000000064,"ICP: a login request from a new device is pending. If this was not you, cancel it here: https://icp-ae.secure.example/claim",true
+scam,en,SMS,+234000000032,"Dear resident, your Emirates ID is not linked to your mobile number. Link it within 2 hours to avoid a fine: http://claim-icp-ae.example/confirm",true
+scam,en,SMS,+100000000038,"Congratulations! Your number has won AED 25,000 in the Etisalat by e& lucky draw. Send your card number and expiry date to claim.",true
+scam,en,SMS,ETISALAT-UAE,You have been selected as the winner of a Toyota Land Cruiser. Pay the AED 3.50 delivery charge to receive it: http://etisalat-ae.delivery.example/track,true
+scam,en,CHAT,+234000000055,"Etisalat by e& anniversary giveaway: you won a voucher of AED 100,000. Claim within 12 hours: http://etisalat-ae.claim.example/pay",true
+scam,en,SMS,ETISALAT-ALERT,"WINNER! Your mobile number was chosen in the Etisalat by e& mega draw for AED 1,000,000. Call +200000000078 to claim your prize.",true
+scam,en,CHAT,+100000000075,"Dear customer, your loyalty points worth AED 10,000 expire today. Redeem now: https://refund-du-ae.example/track",true
+scam,en,CHAT,+910000000098,"Work from home, AED 500 per day, watching ads. No experience needed. Message HR on Telegram: t.me/parttime_dxb_example",true
+scam,en,CHAT,+234000000019,"Hiring now! Earn AED 1,000 daily for sharing posts. Limited slots. WhatsApp +234000000019",true
+scam,en,CHAT,+630000000085,"Part-time online job, 300 AED/day, paid every evening. Contact t.me/bank_support_ae_example",true
+scam,en,CHAT,+200000000096,"Hi, I am Sara from a recruitment agency in Dubai. We pay AED 300 per day for liking videos from your phone. Interested? Reply YES.",true
+scam,en,CHAT,+440000000022,Amazon-style tasks: simple data entry and earn AED 500 daily. Join our team: t.me/bank_support_ae_example,true
+scam,en,CHAT,+234000000066,"Guaranteed 70% monthly profit trading gold. Licensed in Dubai. Minimum deposit AED 3,500. Join: wa.me/234000000066",true
+scam,en,CHAT,+630000000028,"Our forex signals never lose. 40% weekly return guaranteed, withdraw anytime. Join the VIP group: t.me/crypto_club_uae_example",true
+scam,en,CHAT,+920000000076,Double your money in 3 days with our crypto platform. Government approved. Register: http://uae-gov.track.example/track,true
+scam,en,CHAT,+630000000039,"I made AED 100,000 last month trading crypto with this mentor. Zero risk, 15% guaranteed. DM me or join t.me/parttime_dxb_example",true
+scam,en,CHAT,+440000000012,"Exclusive gold investment: fixed 70% return every month, capital protected. Start with AED 250: http://fines-adib-ae.example/update",true
+scam,en,SMS,+971500000083,This is Emirates NBD technical support. Your service will be disconnected. Install AnyDesk so our engineer can fix it.,true
+scam,en,CHAT,+620000000032,"Sir/Madam, we detected a virus on your phone. Download AirDroid from this link so we can clean it: https://adcb-ae.login.example",true
+scam,en,SMS,+620000000027,Mashreq support: to reverse the wrong transaction please install QuickSupport and share the ID code with me.,true
+scam,en,SMS,+971500000069,Your ADIB app needs an urgent security patch. Install TeamViewer and give us the access code to complete the update.,true
+scam,en,CHAT,+920000000055,"Hi Dad, this is my new number, my old phone is broken. I need AED 1,250.00 urgently, can you transfer to this IBAN AE070000000000000000038?",true
+scam,en,CHAT,+200000000037,"Baba it's me, I lost my phone. Save this number. Can you send 760 dirhams today? I'll explain later.",true
+scam,en,CHAT,+200000000051,"Dad, my phone fell in water so I'm using a friend's number. Please send AED 120.00 to AE070000000000000000092 before 5 PM, urgent.",true
+scam,en,CHAT,+100000000048,"Hi Dad it's your son, new number. Can't talk now. Transfer AED 120.00 to this account please, I'll pay you back tomorrow.",true
+scam,en,CHAT,+630000000001,"Your refund of AED 120.00 from Emirates Post is ready. To receive it, contact our agent on WhatsApp: wa.me/630000000001",true
+scam,en,SMS,ARAMEX-PL,We have an urgent update about your Aramex account. Chat with our officer on Telegram: t.me/hr_uae_jobs_example,true
+scam,en,CHAT,FAB-AE,Your job application was approved. Continue the interview on WhatsApp +234000000090.,true
+scam,en,SMS,EMIRATES-UAE,Emirates NBD: your complaint is being handled by our senior agent. Continue on WhatsApp for a faster response: wa.me/234000000031,true
+scam,en,SMS,+620000000010,Your Emirates NBD delivery needs confirmation. Message our courier on Telegram to arrange a time: t.me/crypto_club_uae_example,true
+scam,en,SMS,SALIK-ALERT,Salik: your bill is overdue and service will be disconnected today. Pay immediately: https://salik-ae.track.example/verify,true
+scam,en,SMS,+971500000045,DEWA: your balance is low and your tag will be suspended. Recharge now: http://dewa-customs.example/track,true
+scam,en,SMS,+440000000011,"Salik: final warning, AED 99.00 outstanding. Disconnection scheduled in 24 hours. Pay here: http://unlock-salik-ae.example/pay",true
+scam,en,SMS,+971500000087,"DEWA notice: your account has an unpaid amount of AED 2,000. Avoid a surcharge by paying now: http://dewa-delivery.example/login",true
+scam,en,SMS,+910000000074,Aramex: your parcel 0000000004 is held at customs. Pay AED 2.75 within 2 hours or it will be returned: http://aramex-track.example/confirm,true
+scam,en,SMS,EMIRATES-PL,Emirates Post delivery notice: we could not deliver your package due to an unpaid customs fee of AED 5. Confirm and pay here: https://secure-emiratespost-ae.example/update,true
+scam,en,SMS,+234000000026,Your Aramex shipment is on hold. A small clearance fee of AED 7.25 is required to release it: http://aramex-secure.example/update,true
+scam,en,SMS,+620000000005,[Aramex] Your package is waiting for delivery. Update your address and pay the AED 15 redelivery fee within 6 hours: http://aramex-fines.example/update,true
+scam,en,SMS,+234000000089,Parcel 0000000049 could not be delivered because of incomplete address details. Reschedule and pay AED 7.25: http://aramex-ae.secure.example/login,true
+scam,en,SMS,+920000000042,Abu Dhabi Police: you have an unpaid traffic fine of AED 500. Pay within 6 hours to avoid a vehicle impound: http://adpolice.fines.example/confirm,true
+scam,en,SMS,ADPOLICE-INFO,Final notice from Abu Dhabi Police. Your traffic fine of AED 300 is overdue and your licence will be blocked. Settle now: https://adpolice-refund.example/pay,true
+scam,en,SMS,+971500000006,Dubai Police reminder: a traffic violation of AED 400 is registered against your vehicle. Pay today or face surcharge: http://dubaipolice.claim.example,true
+scam,en,SMS,ADPOLICE-PL,Mawaqif: unpaid parking violation of AED 150. Your vehicle will be impounded unless paid today: https://adpolice.customs.example/update,true
+scam,en,SMS,+620000000049,RTA: your parking fine of AED 150 has not been paid. Last chance before surcharge: http://dubaipolice-kyc.example/ae,true
+scam,en,SMS,+200000000015,Mashreq: your card has been temporarily suspended due to unusual activity. Verify your details within 12 hours to restore access: http://mashreq-ae.fines.example/login,true
+scam,en,SMS,+971500000094,"Dear FAB customer, your account will be deactivated today. Update your information to keep your account active: https://fab-delivery.example/update",true
+scam,en,SMS,+630000000080,FAB alert: the Emirates ID linked to your account has expired. Update now or your card will be blocked: http://fab.kyc.example,true
+scam,en,SMS,+100000000084,Your ADIB online banking has been locked after 14 failed attempts. Unlock here: http://adib-ae.renew.example/update,true
+scam,en,SMS,+920000000046,ADCB: your KYC is incomplete and your account will be frozen in 2 hours. Complete it now: http://adcb-ae.refund.example/ae,true
+scam,en,CHAT,+971500000066,"This is the ADCB fraud department. A transaction of AED 1,250.00 was attempted on your card. To cancel it, reply with the OTP we just sent you.",true
+scam,en,CHAT,+100000000019,Your ADIB account is under attack. Share the one-time password sent to your phone immediately so we can secure it.,true
+scam,en,CHAT,+971500000073,Mashreq officer here. We are reversing a wrong debit of AED 250. Tell me the 6-digit code on your screen to confirm.,true
+scam,en,CHAT,+630000000048,Central Bank security team: your ADIB account was used in a suspicious transfer. Send us the OTP to stop it.,true
+scam,en,SMS,+971500000062,ICP: your Emirates ID is about to be cancelled. Update your details within 2 hours: https://icp-update.example/track,true
+scam,en,SMS,+440000000089,ICP: your account has been locked. Verify your identity to unlock it: http://update-icp-ae.example/ae,true
+scam,en,SMS,+910000000034,Your Emirates ID renewal was rejected. Re-submit your documents and pay the AED 5 fee: http://icp-update.example/update,true
+scam,en,SMS,+100000000019,"ICP: a login request from a new device is pending. If this was not you, cancel it here: http://icp.pay.example/pay",true
+scam,en,SMS,+971500000049,"Dear resident, your Emirates ID is not linked to your mobile number. Link it within 48 hours to avoid a fine: http://icp-login.example/pay",true
+scam,en,SMS,+630000000063,"Congratulations! Your number has won AED 100,000 in the du lucky draw. Send your card number and expiry date to claim.",true
+scam,en,CHAT,+920000000072,You have been selected as the winner of a gold bar. Pay the AED 3.50 delivery charge to receive it: http://etisalat.support.example/confirm,true
+scam,en,CHAT,+971500000032,"du anniversary giveaway: you won a voucher of AED 500,000. Claim within 6 hours: https://du-track.example/confirm",true
+scam,en,SMS,DU-ALERT,"WINNER! Your mobile number was chosen in the du mega draw for AED 100,000. Call +100000000062 to claim your prize.",true
+scam,en,CHAT,+971500000072,"Dear customer, your loyalty points worth AED 1,000,000 expire today. Redeem now: http://fee-du-ae.example/ae",true
+scam,en,CHAT,+910000000067,"Hiring now! Earn AED 1,200 daily for rating products. Limited slots. WhatsApp +910000000067",true
+scam,en,CHAT,+910000000073,"Part-time online job, 800 AED/day, paid every evening. Contact t.me/vip_signals_ae_example",true
+scam,en,CHAT,+920000000003,"Hi, I am Sara from a recruitment agency in Dubai. We pay AED 800 per day for watching ads from your phone. Interested? Reply YES.",true
+scam,en,CHAT,+100000000076,Amazon-style tasks: sharing posts and earn AED 800 daily. Join our team: t.me/hr_uae_jobs_example,true
+scam,en,CHAT,+910000000059,Guaranteed 50% monthly profit trading oil futures. Licensed in Dubai. Minimum deposit AED 480.50. Join: wa.me/910000000059,true
+scam,en,CHAT,+100000000032,"Our forex signals never lose. 50% weekly return guaranteed, withdraw anytime. Join the VIP group: t.me/crypto_club_uae_example",true
+scam,en,CHAT,+620000000041,Double your money in 7 days with our gold platform. Government approved. Register: http://addc.verify.example/ae,true
+scam,en,CHAT,+440000000013,"I made AED 500,000 last month trading forex with this mentor. Zero risk, 25% guaranteed. DM me or join t.me/parttime_dxb_example",true
+scam,en,CHAT,+630000000033,"Exclusive crypto investment: fixed 15% return every month, capital protected. Start with AED 15,000: http://adcb-ae.claim.example/pay",true
+scam,en,SMS,+100000000010,This is ADIB technical support. Your service will be disconnected. Install AnyDesk so our engineer can fix it.,true
+scam,en,SMS,+440000000059,"Sir/Madam, we detected a virus on your phone. Download AnyDesk from this link so we can clean it: http://support-etisalat-ae.example/ae",true
+scam,en,SMS,MASHREQ-PL,Your Mashreq app needs an urgent security patch. Install QuickSupport and give us the access code to complete the update.,true
+scam,en,CHAT,+100000000003,"Hi Mom, this is my new number, my old phone is broken. I need AED 2,000 urgently, can you transfer to this IBAN AE070000000000000000092?",true
+scam,en,CHAT,+620000000079,"Mum it's me, I lost my phone. Save this number. Can you send 3,500 dirhams today? I'll explain later.",true
+scam,en,CHAT,+100000000071,"Hey, I changed my number. I'm stuck and need 250 AED for the hospital bill, please transfer now.",true
+scam,en,CHAT,+920000000078,"Baba, my phone fell in water so I'm using a friend's number. Please send AED 480.50 to AE070000000000000000010 before 5 PM, urgent.",true
+scam,en,CHAT,+620000000041,"Hi Mum it's your son, new number. Can't talk now. Transfer AED 99.00 to this account please, I'll pay you back tomorrow.",true
+scam,en,CHAT,+234000000029,"Your refund of AED 760 from Emirates NBD is ready. To receive it, contact our agent on WhatsApp: wa.me/234000000029",true
+scam,en,SMS,+100000000066,We have an urgent update about your ADCB account. Chat with our officer on Telegram: t.me/parttime_dxb_example,true
+scam,en,CHAT,+971500000076,Your job application was approved. Continue the interview on WhatsApp +234000000094.,true
+scam,en,SMS,ARAMEX-INFO,Aramex: your complaint is being handled by our senior agent. Continue on WhatsApp for a faster response: wa.me/630000000012,true
+scam,en,CHAT,+971500000095,Your ADCB delivery needs confirmation. Message our courier on Telegram to arrange a time: t.me/parttime_dxb_example,true
+scam,en,SMS,+971500000051,DEWA: your bill is overdue and service will be disconnected today. Pay immediately: http://dewa-ae.kyc.example/pay,true
+scam,en,SMS,DEWA-SEC,DEWA: your balance is low and your tag will be suspended. Recharge now: http://dewa-ae.fines.example/pay,true
+scam,en,SMS,+440000000088,"ADDC: final warning, AED 250 outstanding. Disconnection scheduled in 2 hours. Pay here: https://addc.claim.example/ae",true
+scam,en,SMS,+200000000057,"ADDC notice: your account has an unpaid amount of AED 15,000. Avoid a vehicle impound by paying now: https://addc-support.example/track",true
+scam,en,SMS,+234000000011,Emirates Post: your parcel 0000000058 is held at customs. Pay AED 15 within 2 hours or it will be returned: http://emiratespost-ae.delivery.example/ae,true
+scam,en,SMS,+440000000077,Emirates Post delivery notice: we could not deliver your package due to an unpaid customs fee of AED 7.25. Confirm and pay here: https://fines-emiratespost-ae.example/pay,true
+scam,en,SMS,ARAMEX-INFO,Your Aramex shipment is on hold. A small clearance fee of AED 2.75 is required to release it: http://aramex.unlock.example/track,true
+scam,en,SMS,+200000000065,[Emirates Post] Your package is waiting for delivery. Update your address and pay the AED 9.99 redelivery fee within 6 hours: http://emiratespost-verify.example/verify,true
+scam,en,SMS,EMIRATES-UAE,Parcel 0000000012 could not be delivered because of incomplete address details. Reschedule and pay AED 4.90: http://update-emiratespost-ae.example/track,true
+scam,en,SMS,+620000000077,"Abu Dhabi Police: you have an unpaid parking fine of AED 1,000. Pay within 48 hours to avoid a vehicle impound: http://adpolice-secure.example/pay",true
+scam,en,SMS,+630000000042,"Final notice from Dubai Police. Your traffic fine of AED 1,000 is overdue and your licence will be blocked. Settle now: http://renew-dubaipolice-ae.example/confirm",true
+scam,en,SMS,+971500000001,Abu Dhabi Police reminder: a traffic violation of AED 600 is registered against your vehicle. Pay today or face late fee: http://adpolice-track.example/ae,true
+scam,en,SMS,+440000000087,Mawaqif: unpaid parking violation of AED 600. Your vehicle will be impounded unless paid today: http://dubaipolice.claim.example/update,true
+scam,en,SMS,+630000000008,"RTA: your Salik toll fine of AED 1,000 has not been paid. Last chance before surcharge: http://dubaipolice.pay.example/login",true
+scam,en,SMS,ADCB-SEC,ADCB: your card has been temporarily suspended due to unusual activity. Verify your details within 6 hours to restore access: http://adcb-ae.delivery.example/ae,true
+scam,en,SMS,+971500000088,"Dear ADIB customer, your account will be deactivated today. Update your information to keep your account active: http://adib-ae.secure.example",true
+scam,en,SMS,ADIB-PL,ADIB alert: the Emirates ID linked to your account has expired. Update now or your card will be blocked: https://adib.refund.example/ae,true
+scam,en,SMS,ADIB-PL,Your ADIB online banking has been locked after 10 failed attempts. Unlock here: http://adib.fee.example/update,true
+scam,en,SMS,+620000000051,Emirates NBD: your KYC is incomplete and your account will be frozen in 6 hours. Complete it now: https://customs-emiratesnbd-ae.example,true
+scam,en,CHAT,FAB-AE,"This is the FAB fraud department. A transaction of AED 120.00 was attempted on your card. To cancel it, reply with the OTP we just sent you.",true
+scam,en,CHAT,EMIRATES-SEC,"Emirates NBD officer here. We are reversing a wrong debit of AED 5,000. Tell me the 6-digit code on your screen to confirm.",true
+scam,en,SMS,+971500000022,ICP: your Emirates ID is about to be cancelled. Update your details within 24 hours: http://icp.login.example/track,true
+scam,en,SMS,UAEPASS-INFO,UAE Pass: your account has been locked. Verify your identity to unlock it: https://uaepass.delivery.example/login,true
+scam,en,SMS,+971500000050,Your Emirates ID renewal was rejected. Re-submit your documents and pay the AED 4.90 fee: http://customs-icp-ae.example/claim,true
+scam,en,SMS,+971500000057,"UAE Pass: a login request from a new device is pending. If this was not you, cancel it here: http://uaepass-ae.fines.example/pay",true
+scam,en,SMS,+100000000005,"Dear resident, your Emirates ID is not linked to your mobile number. Link it within 2 hours to avoid a fine: http://login-uaepass-ae.example/login",true
+scam,en,CHAT,+620000000042,You have been selected as the winner of a Toyota Land Cruiser. Pay the AED 15 delivery charge to receive it: http://etisalat-ae.verify.example/update,true
+scam,en,CHAT,+234000000022,"Etisalat by e& anniversary giveaway: you won a voucher of AED 500,000. Claim within 48 hours: http://pay-etisalat-ae.example/confirm",true
+scam,en,SMS,+630000000021,"WINNER! Your mobile number was chosen in the Etisalat by e& mega draw for AED 100,000. Call +630000000021 to claim your prize.",true
+scam,en,CHAT,+971500000087,"Dear customer, your loyalty points worth AED 100,000 expire today. Redeem now: http://etisalat-ae.update.example/verify",true
+scam,en,CHAT,+100000000064,"Work from home, AED 1,000 per day, watching ads. No experience needed. Message HR on Telegram: t.me/hr_uae_jobs_example",true
+scam,en,CHAT,+200000000051,Hiring now! Earn AED 500 daily for rating products. Limited slots. WhatsApp +200000000051,true
+scam,en,CHAT,+100000000036,"Part-time online job, 650 AED/day, paid every evening. Contact t.me/crypto_club_uae_example",true
+scam,en,CHAT,+100000000030,"Hi, I am Sara from a recruitment agency in Dubai. We pay AED 500 per day for sharing posts from your phone. Interested? Reply YES.",true
+scam,en,CHAT,+100000000027,Amazon-style tasks: reviewing hotels and earn AED 800 daily. Join our team: t.me/gold_profit_uae_example,true
+scam,en,CHAT,+440000000050,"Guaranteed 40% monthly profit trading Bitcoin. Licensed in Dubai. Minimum deposit AED 15,000. Join: wa.me/440000000050",true
+scam,en,CHAT,+100000000062,"Our forex signals never lose. 20% weekly return guaranteed, withdraw anytime. Join the VIP group: t.me/bank_support_ae_example",true
+scam,en,CHAT,+920000000092,Double your money in 10 days with our USDT platform. Government approved. Register: https://mashreq-ae.refund.example,true
+scam,en,CHAT,+910000000015,"I made AED 100,000 last month trading forex with this mentor. Zero risk, 50% guaranteed. DM me or join t.me/parttime_dxb_example",true
+scam,en,CHAT,+100000000041,"Exclusive gold investment: fixed 25% return every month, capital protected. Start with AED 2,000: http://uaepass-ae.pay.example/pay",true
+scam,en,SMS,+440000000006,This is Emirates NBD technical support. Your service will be disconnected. Install TeamViewer so our engineer can fix it.,true
+scam,en,CHAT,+971500000011,"Sir/Madam, we detected a virus on your phone. Download AnyDesk from this link so we can clean it: http://fab-ae.verify.example/track",true
+scam,en,CHAT,FAB-AE,FAB support: to reverse the wrong transaction please install TeamViewer and share the ID code with me.,true
+scam,en,CHAT,ADCB-ALERT,Your ADCB app needs an urgent security patch. Install TeamViewer and give us the access code to complete the update.,true
+scam,en,CHAT,+910000000005,"Hi Dad, this is my new number, my old phone is broken. I need AED 3,500 urgently, can you transfer to this IBAN AE070000000000000000085?",true
+scam,en,CHAT,+620000000040,"Mum it's me, I lost my phone. Save this number. Can you send 760 dirhams today? I'll explain later.",true
+scam,en,CHAT,+920000000081,"Dad, my phone fell in water so I'm using a friend's number. Please send AED 5,000 to AE070000000000000000086 before 5 PM, urgent.",true
+scam,en,SMS,+630000000033,"Your refund of AED 1,250.00 from Mashreq is ready. To receive it, contact our agent on WhatsApp: wa.me/630000000033",true
+scam,en,SMS,+100000000043,Your job application was approved. Continue the interview on WhatsApp +100000000043.,true
+scam,en,SMS,+971500000068,FAB: your complaint is being handled by our senior agent. Continue on WhatsApp for a faster response: wa.me/440000000080,true
+scam,en,SMS,+440000000075,Your Aramex delivery needs confirmation. Message our courier on Telegram to arrange a time: t.me/vip_signals_ae_example,true
+scam,en,SMS,+200000000073,RTA: your bill is overdue and service will be disconnected today. Pay immediately: https://verify-rta-ae.example/verify,true
+scam,en,SMS,+620000000015,DEWA: your balance is low and your tag will be suspended. Recharge now: https://dewa-ae.customs.example,true
+scam,ar,SMS,+234000000068,"مبروك! رقمك فاز بـ 50,000 درهم في سحب اتصالات من e&. أرسل رقم بطاقتك وتاريخ الانتهاء لاستلام الجائزة.",true
+scam,ar,CHAT,ETISALAT-ALERT,تم اختيارك للفوز بـ قسيمة تسوق. ادفع رسوم التوصيل 15 درهم لاستلامها: https://etisalat.track.example/pay,true
+scam,ar,CHAT,+971500000051,"هدية بمناسبة ذكرى تأسيس دو: ربحت قسيمة بقيمة 50,000 درهم. استلمها خلال 6 ساعة: http://du.track.example",true
+scam,ar,SMS,ETISALAT-AE,"فائز! تم اختيار رقمك في السحب الكبير من اتصالات من e& على 1,000,000 درهم. اتصل على +100000000093 لاستلام جائزتك.",true
+scam,ar,CHAT,+971500000008,"عزيزي العميل، نقاط الولاء الخاصة بك بقيمة 1,000,000 درهم تنتهي اليوم. استبدلها الآن: http://du-ae.verify.example/claim",true
+scam,ar,CHAT,+620000000051,"عمل من المنزل، 1,200 درهم يومياً، مشاهدة الإعلانات. لا تحتاج خبرة. تواصل مع الموارد البشرية على تيليجرام: t.me/bank_support_ae_example",true
+scam,ar,CHAT,+440000000025,"مطلوب موظفين فوراً! اربح 1,000 درهم يومياً مقابل مشاركة المنشورات. الأماكن محدودة. واتساب +440000000025",true
+scam,ar,CHAT,+200000000025,وظيفة جزئية عبر الإنترنت، 300 درهم في اليوم، الدفع كل مساء. تواصل t.me/crypto_club_uae_example,true
+scam,ar,CHAT,+200000000022,مرحباً، أنا سارة من وكالة توظيف في دبي. ندفع 300 درهم يومياً مقابل الإعجاب بالفيديوهات من هاتفك. مهتم؟ أرسل نعم.,true
+scam,ar,CHAT,+910000000050,"مهام بسيطة: مشاهدة الإعلانات واربح 1,200 درهم يومياً. انضم لفريقنا: t.me/crypto_club_uae_example",true
+scam,ar,CHAT,+100000000086,أرباح مضمونة 50% شهرياً من تداول USDT. مرخص في دبي. الحد الأدنى 120.00 درهم. انضم: wa.me/100000000086,true
+scam,ar,CHAT,+910000000031,توصياتنا لا تخسر أبداً. عائد 40% أسبوعياً مضمون، اسحب أرباحك في أي وقت. انضم لمجموعة VIP: t.me/bank_support_ae_example,true
+scam,ar,CHAT,+630000000059,ضاعف أموالك خلال 7 أيام مع منصة الذهب. معتمدة حكومياً. سجّل الآن: http://icp-support.example/ae,true
+scam,ar,CHAT,+234000000004,"ربحت 500,000 درهم الشهر الماضي من تداول الفوركس مع هذا المدرب. بدون مخاطر، 25% مضمونة. راسلني أو انضم t.me/crypto_club_uae_example",true
+scam,ar,CHAT,+910000000097,"استثمار حصري في العملات الرقمية: عائد ثابت 50% كل شهر ورأس المال محمي. ابدأ بـ 2,000 درهم: https://etisalat.unlock.example/ae",true
+scam,ar,CHAT,+910000000061,معك الدعم الفني من بنك أبوظبي التجاري. سيتم فصل خدمتك. حمّل تطبيق AnyDesk ليتمكن المهندس من إصلاحها.,true
+scam,ar,CHAT,+910000000048,تم اكتشاف فيروس في هاتفك. نزّل TeamViewer من هذا الرابط لنقوم بتنظيفه: https://adib-ae.customs.example/update,true
+scam,ar,SMS,ADCB-ALERT,دعم بنك أبوظبي التجاري: لإلغاء العملية الخاطئة الرجاء تحميل AirDroid ومشاركة رمز الجهاز معي.,true
+scam,ar,CHAT,ADIB-SEC,تطبيق مصرف أبوظبي الإسلامي يحتاج تحديثاً أمنياً عاجلاً. ثبّت TeamViewer وأعطنا رمز الوصول لإكمال التحديث.,true
+scam,ar,CHAT,+920000000007,"ماما، هذا رقمي الجديد، هاتفي القديم خربان. أحتاج 15,000 درهم بشكل عاجل، ممكن تحوّل على هذا الآيبان AE070000000000000000053؟",true
+scam,ar,CHAT,+620000000011,"بابا أنا، ضيّعت هاتفي. احفظ هذا الرقم. ممكن ترسل 1,250.00 درهم اليوم؟ بشرح لك بعدين.",true
+scam,ar,CHAT,+630000000090,"غيّرت رقمي. أنا متعلق وأحتاج 5,000 درهم لفاتورة المستشفى، حوّل الآن لو سمحت.",true
+scam,ar,CHAT,+910000000065,"بابا، هاتفي وقع في الماء وأستخدم رقم صديقي. أرسل 2,000 درهم على AE070000000000000000052 قبل الساعة 5، ضروري.",true
+scam,ar,CHAT,+910000000058,"أبي أنا ولدك، رقم جديد. ما أقدر أتكلم الحين. حوّل 2,000 درهم على هذا الحساب لو سمحت وبرجّعها بكرة.",true
+scam,ar,SMS,+200000000055,استرداد مبلغ 760 درهم من بنك المشرق جاهز لك. لاستلامه تواصل مع موظفنا على واتساب: wa.me/200000000055,true
+scam,ar,SMS,+971500000045,لدينا تحديث عاجل بخصوص حسابك في بنك الإمارات دبي الوطني. تحدث مع الموظف على تيليجرام: t.me/vip_signals_ae_example,true
+scam,ar,CHAT,+630000000098,تمت الموافقة على طلب التوظيف. أكمل المقابلة على واتساب +630000000098.,true
+scam,ar,SMS,+440000000039,بريد الإمارات: شكواك قيد المعالجة لدى موظف أول. تابع على واتساب للرد الأسرع: wa.me/440000000039,true
+scam,ar,SMS,EMIRATES-ALERT,شحنتك من بنك الإمارات دبي الوطني تحتاج تأكيداً. راسل المندوب على تيليجرام لتحديد الوقت: t.me/bank_support_ae_example,true
+scam,ar,SMS,RTA-ALERT,هيئة الطرق والمواصلات: فاتورتك متأخرة وسيتم قطع الخدمة اليوم. سدد فوراً عبر الرابط https://track-rta-ae.example/login,true
+scam,ar,SMS,+971500000088,هيئة كهرباء ومياه دبي: رصيدك منخفض وسيتم تعليق البطاقة. أعد الشحن الآن: http://dewa.fee.example/claim,true
+scam,ar,SMS,+620000000010,هيئة الطرق والمواصلات: تحذير أخير، مبلغ 760 درهم مستحق. سيتم قطع الخدمة خلال 12 ساعة. ادفع هنا: http://rta-ae.refund.example/claim,true
+scam,ar,SMS,+440000000096,"إشعار من هيئة كهرباء ومياه دبي: على حسابك مبلغ غير مدفوع 5,000 درهم. تجنب رسوم تأخير بالدفع الآن: https://refund-dewa-ae.example/ae",true
+scam,ar,SMS,EMIRATES-PL,بريد الإمارات: شحنتك 0000000055 محتجزة في الجمارك. ادفع 2.75 درهم خلال 12 ساعة وإلا سيتم إرجاعها: https://fee-emiratespost-ae.example/claim,true
+scam,ar,SMS,+234000000071,لم نتمكن من توصيل طردك بسبب رسوم جمركية غير مدفوعة بقيمة 2.75 درهم. أكّد عنوانك وادفع عبر الرابط: https://unlock-aramex-ae.example,true
+scam,ar,SMS,ARAMEX-SEC,أرامكس: طردك في انتظار التسليم. يرجى تحديث عنوانك ودفع رسوم إعادة التوصيل 7.25 درهم: http://aramex-ae.support.example/update,true
+scam,ar,SMS,+910000000089,تعذّر تسليم الشحنة 0000000018 بسبب نقص في بيانات العنوان. أعد الجدولة وادفع 4.90 درهم: http://aramex-ae.claim.example/update,true
+scam,ar,SMS,+620000000064,شرطة أبوظبي: لديك مخالفة وقوف غير مدفوعة بقيمة 400 درهم. ادفع خلال 2 ساعة لتجنب النقاط السوداء: http://adpolice-ae.claim.example/update,true
+scam,ar,SMS,+200000000025,إشعار أخير من شرطة دبي. غرامتك المرورية بقيمة 150 درهم متأخرة وسيتم حجب رخصتك. سدد الآن: http://dubaipolice-ae.support.example/verify,true
+scam,ar,SMS,+971500000026,تذكير من شرطة دبي: مخالفة سالك بقيمة 800 درهم مسجلة على مركبتك. ادفع اليوم لتجنب حجب الرخصة: http://dubaipolice-delivery.example/update,true
+scam,ar,SMS,+234000000036,مواقف: مخالفة وقوف غير مدفوعة بقيمة 400 درهم. سيتم حجز المركبة إذا لم تدفع اليوم: http://adpolice-unlock.example/verify,true
+scam,ar,SMS,+440000000066,هيئة الطرق والمواصلات: مخالفة مرورية بقيمة 150 درهم لم تُدفع. الفرصة الأخيرة قبل حجب الرخصة: http://dubaipolice-refund.example/verify,true
+scam,ar,SMS,+910000000060,مصرف أبوظبي الإسلامي: تم تعليق بطاقتك بسبب نشاط غير معتاد. حدّث بياناتك خلال 48 ساعة لاستعادة الخدمة: https://adib-support.example/ae,true
+scam,ar,SMS,+100000000058,عزيزي عميل مصرف أبوظبي الإسلامي، سيتم إيقاف حسابك اليوم. حدّث معلوماتك للإبقاء على حسابك نشطاً: https://adib-ae.login.example/verify,true
+scam,ar,SMS,+630000000096,تنبيه من بنك الإمارات دبي الوطني: انتهت صلاحية الهوية الإماراتية المرتبطة بحسابك. حدّثها الآن وإلا سيتم حظر بطاقتك: https://login-emiratesnbd-ae.example/update,true
+scam,ar,SMS,+910000000023,تم قفل خدمة بنك أبوظبي الأول أون لاين بعد 3 محاولات فاشلة. لفك القفل اضغط هنا: http://fab-kyc.example,true
+scam,ar,SMS,+971500000087,مصرف أبوظبي الإسلامي: بيانات اعرف عميلك غير مكتملة وسيتم تجميد حسابك خلال 2 ساعة. أكملها الآن: http://adib-ae.login.example/ae,true
+scam,ar,CHAT,+620000000056,نحن من قسم مكافحة الاحتيال في مصرف أبوظبي الإسلامي. تم رصد عملية بقيمة 120.00 درهم على بطاقتك. لإلغائها أرسل رمز التحقق الذي وصلك الآن.,true
+scam,ar,CHAT,+971500000011,معك موظف الأمان من بنك الإمارات دبي الوطني. اقرأ لي رمز التحقق الذي استلمته حتى نوقف التحويل المشبوه.,true
+scam,ar,CHAT,+971500000029,حسابك في بنك أبوظبي التجاري معرّض للخطر. شارك رمز المرور لمرة واحدة فوراً لتأمينه.,true
+scam,ar,CHAT,+920000000070,موظف بنك أبوظبي الأول معك. نقوم بإرجاع خصم خاطئ بقيمة 480.50 درهم. أعطني الرمز المكوّن من 6 أرقام الظاهر على شاشتك للتأكيد.,true
+scam,ar,CHAT,+971500000080,فريق أمن المصرف المركزي: تم استخدام حسابك في بنك المشرق في تحويل مشبوه. أرسل لنا رمز التحقق لإيقافه.,true
+scam,ar,SMS,+100000000061,الهوية الرقمية UAE Pass: سيتم إلغاء هويتك الإماراتية. حدّث بياناتك خلال 12 ساعة: http://verify-uaepass-ae.example/claim,true
+scam,ar,SMS,+234000000039,الهوية الرقمية UAE Pass: تم قفل حسابك. أكّد هويتك لفك الحظر: https://uaepass-ae.delivery.example/ae,true
+scam,ar,SMS,+971500000024,تم رفض طلب تجديد هويتك الإماراتية. أعد إرسال المستندات وادفع رسوم 3.50 درهم: https://uaepass-ae.update.example/update,true
+scam,ar,SMS,+630000000011,الهيئة الاتحادية للهوية والجنسية: هناك طلب تسجيل دخول من جهاز جديد قيد الانتظار. إذا لم تكن أنت، ألغِه من هنا: http://icp-ae.verify.example/track,true
+scam,ar,SMS,+234000000031,عزيزي المقيم، هويتك الإماراتية غير مرتبطة برقم هاتفك. اربطها خلال 24 ساعة لتجنب الغرامة: http://icp-ae.track.example/track,true
+scam,ar,CHAT,ETISALAT-PL,"مبروك! رقمك فاز بـ 500,000 درهم في سحب اتصالات من e&. أرسل رقم بطاقتك وتاريخ الانتهاء لاستلام الجائزة.",true
+scam,ar,CHAT,ETISALAT-INFO,تم اختيارك للفوز بـ هاتف آيفون جديد. ادفع رسوم التوصيل 7.25 درهم لاستلامها: https://etisalat-ae.kyc.example/claim,true
+scam,ar,CHAT,+971500000085,"هدية بمناسبة ذكرى تأسيس اتصالات من e&: ربحت قسيمة بقيمة 10,000 درهم. استلمها خلال 24 ساعة: https://claim-etisalat-ae.example/track",true
+scam,ar,SMS,+971500000054,"فائز! تم اختيار رقمك في السحب الكبير من اتصالات من e& على 500,000 درهم. اتصل على +100000000089 لاستلام جائزتك.",true
+scam,ar,SMS,+910000000042,"عزيزي العميل، نقاط الولاء الخاصة بك بقيمة 500,000 درهم تنتهي اليوم. استبدلها الآن: http://etisalat.delivery.example/login",true
+scam,ar,CHAT,+100000000029,عمل من المنزل، 650 درهم يومياً، تقييم المنتجات. لا تحتاج خبرة. تواصل مع الموارد البشرية على تيليجرام: t.me/vip_signals_ae_example,true
+scam,ar,CHAT,+440000000014,مطلوب موظفين فوراً! اربح 650 درهم يومياً مقابل تقييم المنتجات. الأماكن محدودة. واتساب +440000000014,true
+scam,ar,CHAT,+234000000018,"وظيفة جزئية عبر الإنترنت، 1,200 درهم في اليوم، الدفع كل مساء. تواصل t.me/gold_profit_uae_example",true
+scam,ar,CHAT,+630000000027,مرحباً، أنا سارة من وكالة توظيف في دبي. ندفع 800 درهم يومياً مقابل تقييم المنتجات من هاتفك. مهتم؟ أرسل نعم.,true
+scam,ar,CHAT,+234000000057,مهام بسيطة: إدخال بيانات بسيط واربح 500 درهم يومياً. انضم لفريقنا: t.me/parttime_dxb_example,true
+scam,ar,CHAT,+200000000083,"أرباح مضمونة 40% شهرياً من تداول الذهب. مرخص في دبي. الحد الأدنى 15,000 درهم. انضم: wa.me/200000000083",true
+scam,ar,CHAT,+440000000093,توصياتنا لا تخسر أبداً. عائد 40% أسبوعياً مضمون، اسحب أرباحك في أي وقت. انضم لمجموعة VIP: t.me/crypto_club_uae_example,true
+scam,ar,CHAT,+100000000074,ضاعف أموالك خلال 5 أيام مع منصة عقود النفط. معتمدة حكومياً. سجّل الآن: http://adib.fines.example/track,true
+scam,ar,CHAT,+440000000080,"ربحت 500,000 درهم الشهر الماضي من تداول عقود النفط مع هذا المدرب. بدون مخاطر، 20% مضمونة. راسلني أو انضم t.me/crypto_club_uae_example",true
+scam,ar,CHAT,+234000000045,استثمار حصري في عقود النفط: عائد ثابت 30% كل شهر ورأس المال محمي. ابدأ بـ 99.00 درهم: http://salik.customs.example/update,true
+scam,ar,SMS,+100000000071,معك الدعم الفني من بنك أبوظبي التجاري. سيتم فصل خدمتك. حمّل تطبيق AirDroid ليتمكن المهندس من إصلاحها.,true
+scam,ar,CHAT,+971500000082,تم اكتشاف فيروس في هاتفك. نزّل AirDroid من هذا الرابط لنقوم بتنظيفه: https://mashreq-ae.pay.example/login,true
+scam,ar,CHAT,EMIRATES-INFO,دعم بنك الإمارات دبي الوطني: لإلغاء العملية الخاطئة الرجاء تحميل TeamViewer ومشاركة رمز الجهاز معي.,true
+scam,ar,CHAT,+971500000001,تطبيق بنك المشرق يحتاج تحديثاً أمنياً عاجلاً. ثبّت TeamViewer وأعطنا رمز الوصول لإكمال التحديث.,true
+scam,ar,CHAT,+440000000007,أمي، هذا رقمي الجديد، هاتفي القديم خربان. أحتاج 480.50 درهم بشكل عاجل، ممكن تحوّل على هذا الآيبان AE070000000000000000068؟,true
+scam,ar,CHAT,+440000000086,"غيّرت رقمي. أنا متعلق وأحتاج 1,250.00 درهم لفاتورة المستشفى، حوّل الآن لو سمحت.",true
+scam,ar,CHAT,+234000000015,أبي، هاتفي وقع في الماء وأستخدم رقم صديقي. أرسل 760 درهم على AE070000000000000000097 قبل الساعة 5، ضروري.,true
+scam,ar,CHAT,+234000000000,"ماما أنا ولدك، رقم جديد. ما أقدر أتكلم الحين. حوّل 2,000 درهم على هذا الحساب لو سمحت وبرجّعها بكرة.",true
+scam,ar,CHAT,+971500000029,"استرداد مبلغ 3,500 درهم من مصرف أبوظبي الإسلامي جاهز لك. لاستلامه تواصل مع موظفنا على واتساب: wa.me/440000000033",true
+scam,ar,CHAT,MASHREQ-UAE,لدينا تحديث عاجل بخصوص حسابك في بنك المشرق. تحدث مع الموظف على تيليجرام: t.me/hr_uae_jobs_example,true
+scam,ar,SMS,ADCB-SEC,تمت الموافقة على طلب التوظيف. أكمل المقابلة على واتساب +630000000017.,true
+scam,ar,SMS,+971500000060,بنك المشرق: شكواك قيد المعالجة لدى موظف أول. تابع على واتساب للرد الأسرع: wa.me/910000000031,true
+scam,ar,CHAT,+440000000075,شحنتك من أرامكس تحتاج تأكيداً. راسل المندوب على تيليجرام لتحديد الوقت: t.me/gold_profit_uae_example,true
+scam,ar,SMS,+100000000082,هيئة الطرق والمواصلات: فاتورتك متأخرة وسيتم قطع الخدمة اليوم. سدد فوراً عبر الرابط http://rta-verify.example/verify,true
+scam,ar,SMS,+971500000040,هيئة كهرباء ومياه دبي: رصيدك منخفض وسيتم تعليق البطاقة. أعد الشحن الآن: http://dewa.pay.example/track,true
+scam,ar,SMS,+920000000045,هيئة الطرق والمواصلات: تحذير أخير، مبلغ 250 درهم مستحق. سيتم قطع الخدمة خلال 24 ساعة. ادفع هنا: https://rta-ae.kyc.example,true
+scam,ar,SMS,+200000000069,"إشعار من شركة أبوظبي للتوزيع: على حسابك مبلغ غير مدفوع 5,000 درهم. تجنب رسوم تأخير بالدفع الآن: http://addc-track.example",true
+scam,ar,SMS,+971500000050,أرامكس: شحنتك 0000000016 محتجزة في الجمارك. ادفع 15 درهم خلال 2 ساعة وإلا سيتم إرجاعها: http://aramex-ae.customs.example/verify,true
+scam,ar,SMS,+620000000032,لم نتمكن من توصيل طردك بسبب رسوم جمركية غير مدفوعة بقيمة 12 درهم. أكّد عنوانك وادفع عبر الرابط: http://verify-aramex-ae.example/pay,true
+scam,ar,SMS,+971500000080,أرامكس: طردك في انتظار التسليم. يرجى تحديث عنوانك ودفع رسوم إعادة التوصيل 4.90 درهم: https://aramex.login.example/ae,true
+scam,ar,SMS,+630000000038,تعذّر تسليم الشحنة 0000000024 بسبب نقص في بيانات العنوان. أعد الجدولة وادفع 12 درهم: http://aramex-refund.example/ae,true
+scam,ar,SMS,ADPOLICE-PL,شرطة أبوظبي: لديك مخالفة مرورية غير مدفوعة بقيمة 600 درهم. ادفع خلال 48 ساعة لتجنب حجب الرخصة: http://adpolice.track.example/claim,true
+scam,ar,SMS,+200000000042,إشعار أخير من شرطة أبوظبي. غرامتك المرورية بقيمة 800 درهم متأخرة وسيتم حجب رخصتك. سدد الآن: http://adpolice-track.example/claim,true
+scam,ar,SMS,ADPOLICE-PL,"تذكير من شرطة أبوظبي: مخالفة سالك بقيمة 1,000 درهم مسجلة على مركبتك. ادفع اليوم لتجنب مضاعفة الغرامة: http://adpolice-login.example/pay",true
+scam,ar,SMS,+910000000055,مواقف: مخالفة وقوف غير مدفوعة بقيمة 800 درهم. سيتم حجز المركبة إذا لم تدفع اليوم: http://dubaipolice.support.example/claim,true
+scam,ar,SMS,+971500000094,هيئة الطرق والمواصلات: مخالفة سالك بقيمة 800 درهم لم تُدفع. الفرصة الأخيرة قبل النقاط السوداء: http://renew-adpolice-ae.example/track,true
+scam,ar,SMS,ADIB-ALERT,مصرف أبوظبي الإسلامي: تم تعليق بطاقتك بسبب نشاط غير معتاد. حدّث بياناتك خلال 48 ساعة لاستعادة الخدمة: http://adib-ae.login.example/ae,true
+scam,ar,SMS,+620000000017,عزيزي عميل بنك المشرق، سيتم إيقاف حسابك اليوم. حدّث معلوماتك للإبقاء على حسابك نشطاً: https://mashreq-ae.delivery.example/verify,true
+scam,ar,SMS,+200000000075,تنبيه من بنك المشرق: انتهت صلاحية الهوية الإماراتية المرتبطة بحسابك. حدّثها الآن وإلا سيتم حظر بطاقتك: https://mashreq.customs.example/update,true
+scam,ar,SMS,+971500000099,تم قفل خدمة مصرف أبوظبي الإسلامي أون لاين بعد 14 محاولات فاشلة. لفك القفل اضغط هنا: https://adib-update.example/claim,true
+scam,ar,SMS,+971500000000,بنك أبوظبي التجاري: بيانات اعرف عميلك غير مكتملة وسيتم تجميد حسابك خلال 48 ساعة. أكملها الآن: https://adcb.customs.example/update,true
+scam,ar,CHAT,EMIRATES-UAE,"نحن من قسم مكافحة الاحتيال في بنك الإمارات دبي الوطني. تم رصد عملية بقيمة 1,250.00 درهم على بطاقتك. لإلغائها أرسل رمز التحقق الذي وصلك الآن.",true
+scam,ar,CHAT,ADIB-SEC,معك موظف الأمان من مصرف أبوظبي الإسلامي. اقرأ لي رمز التحقق الذي استلمته حتى نوقف التحويل المشبوه.,true
+scam,ar,CHAT,+971500000086,حسابك في مصرف أبوظبي الإسلامي معرّض للخطر. شارك رمز المرور لمرة واحدة فوراً لتأمينه.,true
+scam,ar,CHAT,EMIRATES-AE,فريق أمن المصرف المركزي: تم استخدام حسابك في بنك الإمارات دبي الوطني في تحويل مشبوه. أرسل لنا رمز التحقق لإيقافه.,true
+scam,ar,SMS,+440000000033,الهيئة الاتحادية للهوية والجنسية: سيتم إلغاء هويتك الإماراتية. حدّث بياناتك خلال 48 ساعة: http://icp-unlock.example/claim,true
+scam,ar,SMS,+971500000008,الهوية الرقمية UAE Pass: تم قفل حسابك. أكّد هويتك لفك الحظر: https://uaepass-refund.example/login,true
+scam,ar,SMS,+440000000051,تم رفض طلب تجديد هويتك الإماراتية. أعد إرسال المستندات وادفع رسوم 7.25 درهم: http://icp-customs.example,true
+scam,ar,SMS,+971500000056,الهوية الرقمية UAE Pass: هناك طلب تسجيل دخول من جهاز جديد قيد الانتظار. إذا لم تكن أنت، ألغِه من هنا: https://unlock-uaepass-ae.example/login,true
+scam,ar,SMS,+910000000048,عزيزي المقيم، هويتك الإماراتية غير مرتبطة برقم هاتفك. اربطها خلال 48 ساعة لتجنب الغرامة: http://uaepass-claim.example/claim,true
+scam,ar,SMS,+200000000092,"مبروك! رقمك فاز بـ 100,000 درهم في سحب دو. أرسل رقم بطاقتك وتاريخ الانتهاء لاستلام الجائزة.",true
+scam,ar,CHAT,+100000000030,تم اختيارك للفوز بـ هاتف آيفون جديد. ادفع رسوم التوصيل 3.50 درهم لاستلامها: http://du.pay.example/pay,true
+scam,ar,SMS,+971500000055,"هدية بمناسبة ذكرى تأسيس اتصالات من e&: ربحت قسيمة بقيمة 50,000 درهم. استلمها خلال 2 ساعة: http://etisalat-ae.kyc.example/confirm",true
+scam,ar,CHAT,+100000000025,"فائز! تم اختيار رقمك في السحب الكبير من اتصالات من e& على 50,000 درهم. اتصل على +100000000025 لاستلام جائزتك.",true
+scam,ar,CHAT,ETISALAT-PL,"عزيزي العميل، نقاط الولاء الخاصة بك بقيمة 50,000 درهم تنتهي اليوم. استبدلها الآن: http://etisalat-renew.example/login",true
+scam,ar,CHAT,+440000000057,عمل من المنزل، 650 درهم يومياً، تقييم المنتجات. لا تحتاج خبرة. تواصل مع الموارد البشرية على تيليجرام: t.me/bank_support_ae_example,true
+scam,ar,CHAT,+100000000049,مطلوب موظفين فوراً! اربح 800 درهم يومياً مقابل مشاهدة الإعلانات. الأماكن محدودة. واتساب +100000000049,true
+scam,ar,CHAT,+200000000001,"وظيفة جزئية عبر الإنترنت، 1,000 درهم في اليوم، الدفع كل مساء. تواصل t.me/bank_support_ae_example",true
+scam,ar,CHAT,+200000000060,مرحباً، أنا سارة من وكالة توظيف في دبي. ندفع 500 درهم يومياً مقابل إدخال بيانات بسيط من هاتفك. مهتم؟ أرسل نعم.,true
+scam,ar,CHAT,+910000000070,مهام بسيطة: تقييم الفنادق واربح 300 درهم يومياً. انضم لفريقنا: t.me/parttime_dxb_example,true
+scam,ar,CHAT,+630000000095,أرباح مضمونة 50% شهرياً من تداول الفوركس. مرخص في دبي. الحد الأدنى 480.50 درهم. انضم: wa.me/630000000095,true
+scam,ar,CHAT,+910000000099,توصياتنا لا تخسر أبداً. عائد 20% أسبوعياً مضمون، اسحب أرباحك في أي وقت. انضم لمجموعة VIP: t.me/hr_uae_jobs_example,true
+scam,ar,CHAT,+920000000025,ضاعف أموالك خلال 5 أيام مع منصة الفوركس. معتمدة حكومياً. سجّل الآن: https://mashreq-update.example,true
+scam,ar,CHAT,+100000000041,"ربحت 25,000 درهم الشهر الماضي من تداول الفوركس مع هذا المدرب. بدون مخاطر، 50% مضمونة. راسلني أو انضم t.me/hr_uae_jobs_example",true
+scam,ar,CHAT,+910000000020,استثمار حصري في البيتكوين: عائد ثابت 40% كل شهر ورأس المال محمي. ابدأ بـ 250 درهم: http://uae-gov-fee.example/pay,true
+scam,ar,SMS,FAB-INFO,تم اكتشاف فيروس في هاتفك. نزّل AirDroid من هذا الرابط لنقوم بتنظيفه: http://fab-customs.example/verify,true
+scam,ar,SMS,ETISALAT-ALERT,دعم اتصالات من e&: لإلغاء العملية الخاطئة الرجاء تحميل QuickSupport ومشاركة رمز الجهاز معي.,true
+scam,ar,SMS,+971500000058,تطبيق بنك أبوظبي الأول يحتاج تحديثاً أمنياً عاجلاً. ثبّت QuickSupport وأعطنا رمز الوصول لإكمال التحديث.,true
+scam,ar,CHAT,+234000000094,أبي، هذا رقمي الجديد، هاتفي القديم خربان. أحتاج 250 درهم بشكل عاجل، ممكن تحوّل على هذا الآيبان AE070000000000000000056؟,true
+scam,ar,CHAT,+100000000081,يمه أنا، ضيّعت هاتفي. احفظ هذا الرقم. ممكن ترسل 250 درهم اليوم؟ بشرح لك بعدين.,true
+scam,ar,CHAT,+440000000094,"أبي، هاتفي وقع في الماء وأستخدم رقم صديقي. أرسل 1,250.00 درهم على AE070000000000000000053 قبل الساعة 5، ضروري.",true
+scam,ar,CHAT,+971500000073,"استرداد مبلغ 15,000 درهم من أرامكس جاهز لك. لاستلامه تواصل مع موظفنا على واتساب: wa.me/920000000001",true
+scam,ar,SMS,+100000000048,لدينا تحديث عاجل بخصوص حسابك في بنك أبوظبي التجاري. تحدث مع الموظف على تيليجرام: t.me/gold_profit_uae_example,true
+scam,ar,CHAT,EMIRATES-ALERT,تمت الموافقة على طلب التوظيف. أكمل المقابلة على واتساب +234000000029.,true
+scam,ar,CHAT,+620000000076,بنك الإمارات دبي الوطني: شكواك قيد المعالجة لدى موظف أول. تابع على واتساب للرد الأسرع: wa.me/620000000076,true
+scam,ar,SMS,+620000000079,هيئة الطرق والمواصلات: فاتورتك متأخرة وسيتم قطع الخدمة اليوم. سدد فوراً عبر الرابط http://rta.kyc.example/ae,true
+scam,ar,SMS,ADDC-UAE,شركة أبوظبي للتوزيع: رصيدك منخفض وسيتم تعليق البطاقة. أعد الشحن الآن: http://addc-delivery.example/confirm,true
+scam,ar,SMS,+234000000069,هيئة كهرباء ومياه دبي: تحذير أخير، مبلغ 250 درهم مستحق. سيتم قطع الخدمة خلال 12 ساعة. ادفع هنا: http://dewa-ae.fines.example/ae,true
+scam,ar,SMS,+620000000038,إشعار من سالك: على حسابك مبلغ غير مدفوع 760 درهم. تجنب رسوم تأخير بالدفع الآن: http://salik-ae.delivery.example/pay,true
+scam,ar,SMS,+971500000039,أرامكس: شحنتك 0000000093 محتجزة في الجمارك. ادفع 15 درهم خلال 24 ساعة وإلا سيتم إرجاعها: http://support-aramex-ae.example/track,true
+scam,ar,SMS,ARAMEX-PL,لم نتمكن من توصيل طردك بسبب رسوم جمركية غير مدفوعة بقيمة 5 درهم. أكّد عنوانك وادفع عبر الرابط: http://aramex-ae.verify.example/pay,true
+scam,ar,SMS,+234000000026,أرامكس: طردك في انتظار التسليم. يرجى تحديث عنوانك ودفع رسوم إعادة التوصيل 7.25 درهم: http://delivery-aramex-ae.example/confirm,true
+scam,ar,SMS,+630000000026,تعذّر تسليم الشحنة 0000000074 بسبب نقص في بيانات العنوان. أعد الجدولة وادفع 4.90 درهم: http://aramex-fee.example/ae,true
+scam,ar,SMS,+620000000048,شرطة دبي: لديك مخالفة سالك غير مدفوعة بقيمة 300 درهم. ادفع خلال 12 ساعة لتجنب رسوم تأخير: http://dubaipolice-unlock.example/pay,true
+scam,ar,SMS,+630000000092,إشعار أخير من شرطة دبي. غرامتك المرورية بقيمة 300 درهم متأخرة وسيتم حجب رخصتك. سدد الآن: http://dubaipolice-secure.example/update,true
+scam,ar,SMS,+910000000028,تذكير من شرطة أبوظبي: مخالفة سرعة بقيمة 600 درهم مسجلة على مركبتك. ادفع اليوم لتجنب رسوم تأخير: http://adpolice-refund.example/ae,true
+scam,ar,SMS,DUBAIPOL-AE,مواقف: مخالفة وقوف غير مدفوعة بقيمة 300 درهم. سيتم حجز المركبة إذا لم تدفع اليوم: https://dubaipolice.verify.example/track,true
+scam,ar,SMS,+971500000086,هيئة الطرق والمواصلات: مخالفة وقوف بقيمة 300 درهم لم تُدفع. الفرصة الأخيرة قبل حجب الرخصة: https://fines-dubaipolice-ae.example/pay,true
+scam,ar,SMS,MASHREQ-ALERT,بنك المشرق: تم تعليق بطاقتك بسبب نشاط غير معتاد. حدّث بياناتك خلال 48 ساعة لاستعادة الخدمة: http://mashreq.secure.example/update,true
+scam,ar,SMS,+620000000030,عزيزي عميل بنك المشرق، سيتم إيقاف حسابك اليوم. حدّث معلوماتك للإبقاء على حسابك نشطاً: http://mashreq.fee.example/login,true
+scam,ar,SMS,ADCB-SEC,تنبيه من بنك أبوظبي التجاري: انتهت صلاحية الهوية الإماراتية المرتبطة بحسابك. حدّثها الآن وإلا سيتم حظر بطاقتك: https://adcb-verify.example/pay,true
+scam,ar,SMS,EMIRATES-INFO,تم قفل خدمة بنك الإمارات دبي الوطني أون لاين بعد 14 محاولات فاشلة. لفك القفل اضغط هنا: http://emiratesnbd-ae.secure.example/track,true
+scam,ar,SMS,+440000000079,بنك أبوظبي التجاري: بيانات اعرف عميلك غير مكتملة وسيتم تجميد حسابك خلال 12 ساعة. أكملها الآن: https://adcb-ae.verify.example/confirm,true
+scam,ar,CHAT,+234000000014,نحن من قسم مكافحة الاحتيال في بنك أبوظبي الأول. تم رصد عملية بقيمة 99.00 درهم على بطاقتك. لإلغائها أرسل رمز التحقق الذي وصلك الآن.,true
+scam,ar,CHAT,MASHREQ-AE,معك موظف الأمان من بنك المشرق. اقرأ لي رمز التحقق الذي استلمته حتى نوقف التحويل المشبوه.,true
+scam,ar,CHAT,+620000000062,حسابك في بنك المشرق معرّض للخطر. شارك رمز المرور لمرة واحدة فوراً لتأمينه.,true
+scam,ar,CHAT,EMIRATES-INFO,"موظف بنك الإمارات دبي الوطني معك. نقوم بإرجاع خصم خاطئ بقيمة 1,250.00 درهم. أعطني الرمز المكوّن من 6 أرقام الظاهر على شاشتك للتأكيد.",true
+scam,ar,CHAT,+234000000039,فريق أمن المصرف المركزي: تم استخدام حسابك في بنك أبوظبي الأول في تحويل مشبوه. أرسل لنا رمز التحقق لإيقافه.,true
+scam,ar,SMS,+971500000087,الهيئة الاتحادية للهوية والجنسية: سيتم إلغاء هويتك الإماراتية. حدّث بياناتك خلال 48 ساعة: http://icp.secure.example/claim,true
+scam,ar,SMS,UAEPASS-SEC,الهوية الرقمية UAE Pass: تم قفل حسابك. أكّد هويتك لفك الحظر: http://uaepass-ae.fee.example/ae,true
+scam,ar,SMS,+971500000061,تم رفض طلب تجديد هويتك الإماراتية. أعد إرسال المستندات وادفع رسوم 7.25 درهم: https://uaepass-pay.example/claim,true
+scam,ar,SMS,+234000000081,الهيئة الاتحادية للهوية والجنسية: هناك طلب تسجيل دخول من جهاز جديد قيد الانتظار. إذا لم تكن أنت، ألغِه من هنا: http://icp-fee.example/ae,true
+scam,ar,SMS,UAEPASS-INFO,عزيزي المقيم، هويتك الإماراتية غير مرتبطة برقم هاتفك. اربطها خلال 6 ساعة لتجنب الغرامة: http://uaepass-track.example/ae,true
+scam,ar,CHAT,+971500000019,"مبروك! رقمك فاز بـ 25,000 درهم في سحب اتصالات من e&. أرسل رقم بطاقتك وتاريخ الانتهاء لاستلام الجائزة.",true
+scam,ar,SMS,ETISALAT-AE,تم اختيارك للفوز بـ قسيمة تسوق. ادفع رسوم التوصيل 2.75 درهم لاستلامها: https://etisalat.delivery.example,true
+scam,ar,CHAT,+971500000061,"هدية بمناسبة ذكرى تأسيس اتصالات من e&: ربحت قسيمة بقيمة 50,000 درهم. استلمها خلال 12 ساعة: http://etisalat-refund.example/pay",true
+scam,ar,SMS,+200000000049,"فائز! تم اختيار رقمك في السحب الكبير من اتصالات من e& على 25,000 درهم. اتصل على +200000000049 لاستلام جائزتك.",true
+scam,ar,SMS,+620000000045,"عزيزي العميل، نقاط الولاء الخاصة بك بقيمة 50,000 درهم تنتهي اليوم. استبدلها الآن: https://unlock-du-ae.example/verify",true
+scam,ar,CHAT,+910000000062,مطلوب موظفين فوراً! اربح 650 درهم يومياً مقابل مشاهدة الإعلانات. الأماكن محدودة. واتساب +910000000062,true
+scam,ar,CHAT,+100000000038,مرحباً، أنا سارة من وكالة توظيف في دبي. ندفع 650 درهم يومياً مقابل تقييم المنتجات من هاتفك. مهتم؟ أرسل نعم.,true
+scam,ar,CHAT,+630000000029,"مهام بسيطة: تقييم المنتجات واربح 1,000 درهم يومياً. انضم لفريقنا: t.me/vip_signals_ae_example",true
+scam,ar,CHAT,+910000000028,أرباح مضمونة 50% شهرياً من تداول العملات الرقمية. مرخص في دبي. الحد الأدنى 480.50 درهم. انضم: wa.me/910000000028,true
+scam,ar,CHAT,+234000000029,توصياتنا لا تخسر أبداً. عائد 40% أسبوعياً مضمون، اسحب أرباحك في أي وقت. انضم لمجموعة VIP: t.me/hr_uae_jobs_example,true
+scam,ar,CHAT,+920000000053,ضاعف أموالك خلال 10 أيام مع منصة البيتكوين. معتمدة حكومياً. سجّل الآن: http://addc.fines.example/confirm,true
+scam,ar,CHAT,+100000000084,"ربحت 25,000 درهم الشهر الماضي من تداول البيتكوين مع هذا المدرب. بدون مخاطر، 40% مضمونة. راسلني أو انضم t.me/vip_signals_ae_example",true
+scam,ar,CHAT,+234000000058,"استثمار حصري في العملات الرقمية: عائد ثابت 25% كل شهر ورأس المال محمي. ابدأ بـ 3,500 درهم: https://mawaqif-ae.track.example/ae",true
+scam,ar,CHAT,ETISALAT-SEC,معك الدعم الفني من اتصالات من e&. سيتم فصل خدمتك. حمّل تطبيق TeamViewer ليتمكن المهندس من إصلاحها.,true
+scam,ar,CHAT,+440000000054,تم اكتشاف فيروس في هاتفك. نزّل AnyDesk من هذا الرابط لنقوم بتنظيفه: http://etisalat.customs.example/confirm,true
+scam,ar,SMS,DU-SEC,دعم دو: لإلغاء العملية الخاطئة الرجاء تحميل TeamViewer ومشاركة رمز الجهاز معي.,true
+scam,ar,CHAT,+440000000069,"ماما، هذا رقمي الجديد، هاتفي القديم خربان. أحتاج 3,500 درهم بشكل عاجل، ممكن تحوّل على هذا الآيبان AE070000000000000000073؟",true
+scam,ar,CHAT,+630000000018,أبي أنا، ضيّعت هاتفي. احفظ هذا الرقم. ممكن ترسل 120.00 درهم اليوم؟ بشرح لك بعدين.,true
+scam,ar,CHAT,+100000000023,غيّرت رقمي. أنا متعلق وأحتاج 250 درهم لفاتورة المستشفى، حوّل الآن لو سمحت.,true
+scam,ar,CHAT,+620000000050,أبي، هاتفي وقع في الماء وأستخدم رقم صديقي. أرسل 250 درهم على AE070000000000000000088 قبل الساعة 5، ضروري.,true
+scam,ar,CHAT,+910000000039,أبي أنا ولدك، رقم جديد. ما أقدر أتكلم الحين. حوّل 120.00 درهم على هذا الحساب لو سمحت وبرجّعها بكرة.,true
+scam,ar,CHAT,+920000000050,استرداد مبلغ 480.50 درهم من بنك الإمارات دبي الوطني جاهز لك. لاستلامه تواصل مع موظفنا على واتساب: wa.me/920000000050,true
+scam,ar,CHAT,+971500000069,لدينا تحديث عاجل بخصوص حسابك في مصرف أبوظبي الإسلامي. تحدث مع الموظف على تيليجرام: t.me/bank_support_ae_example,true
+scam,ar,SMS,+234000000074,تمت الموافقة على طلب التوظيف. أكمل المقابلة على واتساب +234000000074.,true
+scam,ar,CHAT,+920000000078,بنك الإمارات دبي الوطني: شكواك قيد المعالجة لدى موظف أول. تابع على واتساب للرد الأسرع: wa.me/920000000078,true
+scam,ar,CHAT,+234000000011,شحنتك من بريد الإمارات تحتاج تأكيداً. راسل المندوب على تيليجرام لتحديد الوقت: t.me/vip_signals_ae_example,true
+scam,ar,SMS,SALIK-ALERT,سالك: فاتورتك متأخرة وسيتم قطع الخدمة اليوم. سدد فوراً عبر الرابط http://salik.refund.example/confirm,true
+scam,ar,SMS,SALIK-SEC,سالك: رصيدك منخفض وسيتم تعليق البطاقة. أعد الشحن الآن: http://salik.pay.example/login,true
+scam,ar,SMS,ADDC-PL,شركة أبوظبي للتوزيع: تحذير أخير، مبلغ 250 درهم مستحق. سيتم قطع الخدمة خلال 48 ساعة. ادفع هنا: https://addc-secure.example/track,true
+scam,ar,SMS,RTA-ALERT,إشعار من هيئة الطرق والمواصلات: على حسابك مبلغ غير مدفوع 760 درهم. تجنب رسوم تأخير بالدفع الآن: http://rta-delivery.example/claim,true
+scam,ar,SMS,+440000000096,أرامكس: شحنتك 0000000041 محتجزة في الجمارك. ادفع 4.90 درهم خلال 24 ساعة وإلا سيتم إرجاعها: http://fee-aramex-ae.example/verify,true
+scam,ar,SMS,+100000000006,لم نتمكن من توصيل طردك بسبب رسوم جمركية غير مدفوعة بقيمة 3.50 درهم. أكّد عنوانك وادفع عبر الرابط: http://emiratespost.refund.example/confirm,true
+scam,ar,SMS,ARAMEX-PL,أرامكس: طردك في انتظار التسليم. يرجى تحديث عنوانك ودفع رسوم إعادة التوصيل 4.90 درهم: http://customs-aramex-ae.example/claim,true
+scam,ar,SMS,EMIRATES-UAE,تعذّر تسليم الشحنة 0000000089 بسبب نقص في بيانات العنوان. أعد الجدولة وادفع 5 درهم: http://emiratespost-ae.verify.example/track,true
+scam,ar,SMS,+200000000026,"شرطة دبي: لديك مخالفة سرعة غير مدفوعة بقيمة 1,000 درهم. ادفع خلال 12 ساعة لتجنب رسوم تأخير: http://dubaipolice-login.example/update",true
+scam,ar,SMS,+971500000009,إشعار أخير من شرطة دبي. غرامتك المرورية بقيمة 150 درهم متأخرة وسيتم حجب رخصتك. سدد الآن: http://dubaipolice-secure.example/track,true
+scam,ar,SMS,+620000000035,تذكير من شرطة أبوظبي: مخالفة وقوف بقيمة 500 درهم مسجلة على مركبتك. ادفع اليوم لتجنب النقاط السوداء: http://adpolice.renew.example/track,true
+scam,ar,SMS,DUBAIPOL-SEC,مواقف: مخالفة وقوف غير مدفوعة بقيمة 400 درهم. سيتم حجز المركبة إذا لم تدفع اليوم: https://dubaipolice.fee.example/pay,true
+scam,ar,SMS,+630000000025,هيئة الطرق والمواصلات: مخالفة سرعة بقيمة 150 درهم لم تُدفع. الفرصة الأخيرة قبل حجب الرخصة: https://adpolice.secure.example/claim,true
+scam,ar,SMS,+200000000010,بنك أبوظبي الأول: تم تعليق بطاقتك بسبب نشاط غير معتاد. حدّث بياناتك خلال 2 ساعة لاستعادة الخدمة: https://fab.support.example/update,true
+scam,ar,SMS,FAB-UAE,عزيزي عميل بنك أبوظبي الأول، سيتم إيقاف حسابك اليوم. حدّث معلوماتك للإبقاء على حسابك نشطاً: https://fab-secure.example/ae,true
+scam,ar,SMS,+971500000050,تنبيه من بنك أبوظبي الأول: انتهت صلاحية الهوية الإماراتية المرتبطة بحسابك. حدّثها الآن وإلا سيتم حظر بطاقتك: http://fab-ae.fines.example,true
+scam,ar,SMS,EMIRATES-UAE,تم قفل خدمة بنك الإمارات دبي الوطني أون لاين بعد 5 محاولات فاشلة. لفك القفل اضغط هنا: https://emiratesnbd.claim.example/login,true
+scam,ar,SMS,+440000000066,بنك أبوظبي الأول: بيانات اعرف عميلك غير مكتملة وسيتم تجميد حسابك خلال 48 ساعة. أكملها الآن: https://fab-ae.fines.example/track,true
+scam,ar,CHAT,+440000000090,نحن من قسم مكافحة الاحتيال في بنك أبوظبي التجاري. تم رصد عملية بقيمة 760 درهم على بطاقتك. لإلغائها أرسل رمز التحقق الذي وصلك الآن.,true
+scam,ar,CHAT,+971500000038,معك موظف الأمان من بنك أبوظبي الأول. اقرأ لي رمز التحقق الذي استلمته حتى نوقف التحويل المشبوه.,true
+scam,ar,CHAT,+971500000060,"موظف بنك أبوظبي الأول معك. نقوم بإرجاع خصم خاطئ بقيمة 3,500 درهم. أعطني الرمز المكوّن من 6 أرقام الظاهر على شاشتك للتأكيد.",true
+scam,ar,SMS,+200000000066,الهيئة الاتحادية للهوية والجنسية: سيتم إلغاء هويتك الإماراتية. حدّث بياناتك خلال 24 ساعة: http://icp-ae.customs.example/confirm,true
+scam,ar,SMS,+971500000036,الهوية الرقمية UAE Pass: تم قفل حسابك. أكّد هويتك لفك الحظر: http://uaepass.verify.example,true
+scam,ar,SMS,UAEPASS-SEC,تم رفض طلب تجديد هويتك الإماراتية. أعد إرسال المستندات وادفع رسوم 7.25 درهم: http://uaepass-ae.unlock.example/pay,true
+scam,ar,SMS,+971500000020,الهوية الرقمية UAE Pass: هناك طلب تسجيل دخول من جهاز جديد قيد الانتظار. إذا لم تكن أنت، ألغِه من هنا: http://uaepass-update.example/login,true
+scam,ar,SMS,+971500000098,عزيزي المقيم، هويتك الإماراتية غير مرتبطة برقم هاتفك. اربطها خلال 6 ساعة لتجنب الغرامة: http://verify-uaepass-ae.example/verify,true
+scam,ar,CHAT,+910000000087,تم اختيارك للفوز بـ قسيمة تسوق. ادفع رسوم التوصيل 3.50 درهم لاستلامها: http://etisalat-unlock.example/claim,true
+scam,ar,CHAT,+971500000050,"هدية بمناسبة ذكرى تأسيس اتصالات من e&: ربحت قسيمة بقيمة 50,000 درهم. استلمها خلال 6 ساعة: http://etisalat.unlock.example/verify",true
+scam,ar,CHAT,+971500000023,"فائز! تم اختيار رقمك في السحب الكبير من دو على 25,000 درهم. اتصل على +630000000011 لاستلام جائزتك.",true
+scam,ar,CHAT,ETISALAT-SEC,"عزيزي العميل، نقاط الولاء الخاصة بك بقيمة 100,000 درهم تنتهي اليوم. استبدلها الآن: http://etisalat.support.example/pay",true
+scam,ar,CHAT,+100000000001,عمل من المنزل، 300 درهم يومياً، تقييم المنتجات. لا تحتاج خبرة. تواصل مع الموارد البشرية على تيليجرام: t.me/bank_support_ae_example,true
+scam,ar,CHAT,+440000000014,مطلوب موظفين فوراً! اربح 300 درهم يومياً مقابل الإعجاب بالفيديوهات. الأماكن محدودة. واتساب +440000000014,true
+scam,ar,CHAT,+200000000058,وظيفة جزئية عبر الإنترنت، 300 درهم في اليوم، الدفع كل مساء. تواصل t.me/hr_uae_jobs_example,true
+scam,ar,CHAT,+620000000064,مهام بسيطة: مشاركة المنشورات واربح 800 درهم يومياً. انضم لفريقنا: t.me/vip_signals_ae_example,true
+scam,ar,CHAT,+620000000030,أرباح مضمونة 25% شهرياً من تداول عقود النفط. مرخص في دبي. الحد الأدنى 760 درهم. انضم: wa.me/620000000030,true
+scam,ar,CHAT,+920000000014,توصياتنا لا تخسر أبداً. عائد 25% أسبوعياً مضمون، اسحب أرباحك في أي وقت. انضم لمجموعة VIP: t.me/hr_uae_jobs_example,true
+scam,ar,CHAT,+920000000097,ضاعف أموالك خلال 5 أيام مع منصة عقود النفط. معتمدة حكومياً. سجّل الآن: https://dewa-delivery.example/confirm,true
+scam,ar,CHAT,+440000000003,"ربحت 10,000 درهم الشهر الماضي من تداول الذهب مع هذا المدرب. بدون مخاطر، 15% مضمونة. راسلني أو انضم t.me/crypto_club_uae_example",true
+scam,ar,CHAT,+234000000050,استثمار حصري في العملات الرقمية: عائد ثابت 20% كل شهر ورأس المال محمي. ابدأ بـ 760 درهم: http://adib.secure.example/update,true
+scam,ar,SMS,ADCB-UAE,معك الدعم الفني من بنك أبوظبي التجاري. سيتم فصل خدمتك. حمّل تطبيق TeamViewer ليتمكن المهندس من إصلاحها.,true
+scam,ar,CHAT,+630000000099,تم اكتشاف فيروس في هاتفك. نزّل AnyDesk من هذا الرابط لنقوم بتنظيفه: http://emiratesnbd-ae.kyc.example/claim,true
+scam,ar,CHAT,+971500000041,دعم مصرف أبوظبي الإسلامي: لإلغاء العملية الخاطئة الرجاء تحميل QuickSupport ومشاركة رمز الجهاز معي.,true
+scam,ar,CHAT,+100000000031,تطبيق دو يحتاج تحديثاً أمنياً عاجلاً. ثبّت TeamViewer وأعطنا رمز الوصول لإكمال التحديث.,true
+scam,ar,CHAT,+200000000034,أبي، هذا رقمي الجديد، هاتفي القديم خربان. أحتاج 480.50 درهم بشكل عاجل، ممكن تحوّل على هذا الآيبان AE070000000000000000002؟,true
+scam,ar,CHAT,+200000000074,أبي أنا، ضيّعت هاتفي. احفظ هذا الرقم. ممكن ترسل 99.00 درهم اليوم؟ بشرح لك بعدين.,true
+scam,ar,CHAT,+200000000028,غيّرت رقمي. أنا متعلق وأحتاج 480.50 درهم لفاتورة المستشفى، حوّل الآن لو سمحت.,true
+scam,ar,CHAT,+100000000091,ماما، هاتفي وقع في الماء وأستخدم رقم صديقي. أرسل 480.50 درهم على AE070000000000000000010 قبل الساعة 5، ضروري.,true
+scam,ar,CHAT,+910000000062,"ماما أنا ولدك، رقم جديد. ما أقدر أتكلم الحين. حوّل 5,000 درهم على هذا الحساب لو سمحت وبرجّعها بكرة.",true
+scam,ar,SMS,+920000000083,استرداد مبلغ 250 درهم من أرامكس جاهز لك. لاستلامه تواصل مع موظفنا على واتساب: wa.me/920000000083,true
+scam,ar-latn,SMS,+920000000067,fi ta7deeth 3ajel 3ala 7esabak fi ADCB. kallem el mowazzaf 3ala Telegram: t.me/crypto_club_uae_example,true
+scam,ar-latn,SMS,+100000000011,talab el wazeefa taba3ak etwafa2 3aleh. kammel el interview 3ala WhatsApp +100000000011.,true
+scam,ar-latn,CHAT,ADCB-PL,ADCB: el shakwa taba3atak 3end mowazzaf awwal. kammel 3ala WhatsApp 3ashan radd asra3: wa.me/910000000084,true
+scam,ar-latn,SMS,+234000000067,Salik: el fatoora mota2akhera w el khedma ra7 ten2ate3 el yom. seddid fawran men el link http://fines-salik-ae.example/verify,true
+scam,ar-latn,SMS,+234000000066,Salik: el raseed 2aleel w el tag ra7 yet3alla2. e3ed el sha7n hala2: https://secure-salik-ae.example/ae,true
+scam,ar-latn,SMS,+440000000054,"RTA: akher tanbeeh, 250 dirham mosta7a22a. el 2at3 khilal 24 sa3a. edfa3 hon: http://rta.verify.example/claim",true
+scam,ar-latn,SMS,+971500000000,"ya akhi el parcel mawjood 3ind el customs, edfa3 2.75 dirham khilal 2 sa3a wala yerja3: https://emiratespost.verify.example/verify",true
+scam,ar-latn,SMS,+200000000005,Aramex: el tard taba3ak ma7jooz. lazem tedfa3 rosoom 2.75 dirham 3ashan yetwassal: https://aramex-ae.login.example/update,true
+scam,ar-latn,SMS,+971500000064,ma 2derna nwassel el shi7na 0000000078. 7adeth el 3enwan w edfa3 4.90 dirham men hon: http://aramex-refund.example,true
+scam,ar-latn,SMS,+200000000080,Aramex: fi rosoom customs 9.99 dirham 3ala el parcel taba3ak. edfa3 el yom wala yerja3 lel mursil: https://aramex.login.example/confirm,true
+scam,ar-latn,SMS,+920000000054,Abu Dhabi Police: 3endak mokhalafa salik ma madfoo3a 500 dirham. edfa3 khilal 2 sa3a 3ashan ma tseer 7ajeb el license: https://adpolice.support.example/ae,true
+scam,ar-latn,SMS,+971500000088,"akher tanbeeh men Dubai Police: el gharama taba3atak 1,000 dirham mota2akhera w ra7 yet7ajez el license. seddid hala2: http://refund-dubaipolice-ae.example/login",true
+scam,ar-latn,SMS,DUBAIPOL-PL,mawaqif: mokhalafat wo2oof 600 dirham ma madfoo3a. el sayara ra7 tet7ajez eza ma dafa3t el yom: https://dubaipolice.renew.example/verify,true
+scam,ar-latn,SMS,+620000000040,RTA: 3endak gharama muroriya 600 dirham. akher forsa abl 7ajeb el license: http://dubaipolice.fee.example/pay,true
+scam,ar-latn,SMS,+910000000023,Mashreq: el card taba3ak met3alla2 bsabab 7araka ghareeba. 7adeth bayanatak khilal 2 sa3a wala ra7 yen2afel: https://mashreq.login.example/track,true
+scam,ar-latn,SMS,+971500000025,"3azizi 3ameel Mashreq, 7esabak ra7 yetwa22af el yom. 7adeth ma3loomatak men hon: https://mashreq-ae.delivery.example/track",true
+scam,ar-latn,SMS,+971500000030,FAB: el Emirates ID el marboota bi 7esabak khalset. 7adethha hala2 wala el card ra7 yet7ajeb: http://fab-ae.customs.example/claim,true
+scam,ar-latn,SMS,+971500000097,Emirates NBD: el KYC taba3ak mesh kamel w el 7esab ra7 yetjammad khilal 48 sa3a. kammelo hon: http://emiratesnbd-ae.verify.example/track,true
+scam,ar-latn,CHAT,+971500000062,"ma3ak mowazzaf el aman men FAB. fi 7araka mashbooha bi 3,500 dirham 3ala el card. 2oul li el code elli wasalak 3ashan nwa22efha.",true
+scam,ar-latn,CHAT,FAB-INFO,"7esabak fi FAB fi khatar, shareek el OTP elli wasalak hala2 3ashan n2affel el 7awala.",true
+scam,ar-latn,CHAT,+630000000077,"ana men 2esm el e7tiyal fi ADIB. 3ashan nerja3 el khasm el ghalat 1,250.00 dirham, 3teeni el ramz elli 3ala shashtak.",true
+scam,ar-latn,CHAT,ADIB-ALERT,el bank el markazi: 7esabak fi ADIB enesta3mal fi ta7weel mashbooh. ersel lna el OTP 3ashan nwa22efo.,true
+scam,ar-latn,SMS,+920000000099,ICP: el Emirates ID taba3ak ra7 yetlagha. 7adeth bayanatak khilal 12 sa3a: http://icp-secure.example/ae,true
+scam,ar-latn,SMS,+920000000042,UAE Pass: 7esabak ma2fool. akked howiyatak men hon 3ashan yenfata7: http://refund-uaepass-ae.example/verify,true
+scam,ar-latn,SMS,+971500000034,talab tajdeed el howiya enrafad. ersel el mostanadat marra tanya w edfa3 15 dirham: https://uaepass.login.example/pay,true
+scam,ar-latn,SMS,+630000000083,"UAE Pass: fi talab login men jihaz jdeed. eza mesh enta, elghih men hon: https://uaepass-ae.update.example/verify",true
+scam,ar-latn,CHAT,+440000000012,"mabrook! ra9mak rebe7 100,000 dirham fi sa7b du. ersel ra9m el card w tareekh el entiha 3ashan testelem el jayza.",true
+scam,ar-latn,CHAT,+971500000045,enta el fayez bi voucher! edfa3 rosoom el tawseel 5 dirham w testelemha: http://etisalat.renew.example/track,true
+scam,ar-latn,SMS,+971500000080,"hadiya men Etisalat by e&: rbe7t voucher 50,000 dirham. estelmo khilal 48 sa3a: https://etisalat-unlock.example/login",true
+scam,ar-latn,SMS,+971500000061,"fayez! ra9mak enkhtar fi el sa7b el kbeer men du 3ala 1,000,000 dirham. ettasel 3ala +100000000039.",true
+scam,ar-latn,CHAT,+440000000085,"shoghol men el bait, 300 dirham bel yom, data entry. ma te7taj khebra. kallem HR 3ala Telegram: t.me/crypto_club_uae_example",true
+scam,ar-latn,CHAT,+234000000061,"wazeefa online, 300 AED yawmi, el daf3 kol masa. tawasal t.me/crypto_club_uae_example",true
+scam,ar-latn,CHAT,+440000000071,matloob mowazzafeen! erba7 800 dirham yawmi mo2abel ta2yeem hotels. el amaken ma7dooda. WhatsApp +440000000071,true
+scam,ar-latn,CHAT,+200000000002,"hala, ana Sara men sharikat tawzeef fi Dubai. nedfa3 650 dirham bel yom 3ala ta2yeem hotels men telephonak. mohtam? ektob na3am.",true
+scam,ar-latn,CHAT,+920000000080,"arba7 madmoona 20% shahri men tadawol crypto. morakhas fi Dubai. el 7ad el adna 5,000 dirham. enzam: wa.me/920000000080",true
+scam,ar-latn,CHAT,+234000000067,da3ef masarik fi 10 ayam ma3 mansat gold. mo3tamada 7okoomiyan. sajjel: http://dewa-ae.support.example/track,true
+scam,ar-latn,CHAT,+920000000018,"tawsiyatna ma tekhsar abadan. 70% kol esboo3 madmoon, es7ab wa2t ma tebgha. enzam lel VIP group: t.me/hr_uae_jobs_example",true
+scam,ar-latn,CHAT,+630000000040,"rbe7t 50,000 dirham el shahr elli fat men gold ma3 hal coach. bidoon khatar, 70% madmoona. kallemni aw enzam t.me/bank_support_ae_example",true
+scam,ar-latn,CHAT,ADCB-INFO,ma3ak el support men ADCB. el khedma ra7 tenfasel. nazzel TeamViewer 3ashan el mohandes ysalle7 el moshkela.,true
+scam,ar-latn,CHAT,+630000000093,fi virus 3ala telephonak. 7ammel TeamViewer men hon 3ashan nnazfo: http://adib-ae.claim.example/login,true
+scam,ar-latn,CHAT,+630000000037,"da3m Etisalat by e&: 3ashan nerja3 el 3amaliya el ghalat, nazzel QuickSupport w 3teeni el code taba3 el jihaz.",true
+scam,ar-latn,CHAT,+234000000011,"yumma, hatha ra9mi el jdeed, telephoni el 2adeem kharban. a7taj 120.00 dirham bsor3a, momken t7awel 3ala hal IBAN AE070000000000000000046?",true
+scam,ar-latn,CHAT,+630000000015,"baba ana, daya3t telephoni. e7faz hal ra9m. momken tersel 480.50 dirham el yom? bashra7 lak ba3dein.",true
+scam,ar-latn,CHAT,+620000000098,"ghayart ra9mi. ana m3alla2 w a7taj 99.00 dirham la fatoorat el mostashfa, 7awwel hala2 law sama7t.",true
+scam,ar-latn,CHAT,+440000000062,"yuba, telephoni wa2a3 fel may w ana mesta3mel ra9m sa7bi. ersel 120.00 dirham 3ala AE070000000000000000085 abl el 5, daroori.",true
+scam,ar-latn,SMS,EMIRATES-AE,"el refund taba3ak 1,250.00 dirham men Emirates NBD jahez. 3ashan testelmo kallem el mowazzaf 3ala WhatsApp: wa.me/440000000063",true
+scam,ar-latn,SMS,+920000000028,fi ta7deeth 3ajel 3ala 7esabak fi Emirates NBD. kallem el mowazzaf 3ala Telegram: t.me/vip_signals_ae_example,true
+scam,ar-latn,CHAT,ADIB-INFO,talab el wazeefa taba3ak etwafa2 3aleh. kammel el interview 3ala WhatsApp +200000000065.,true
+scam,ar-latn,SMS,EMIRATES-PL,Emirates Post: el shakwa taba3atak 3end mowazzaf awwal. kammel 3ala WhatsApp 3ashan radd asra3: wa.me/920000000080,true
+scam,ar-latn,SMS,+620000000069,ADDC: el fatoora mota2akhera w el khedma ra7 ten2ate3 el yom. seddid fawran men el link https://addc-update.example/track,true
+scam,ar-latn,SMS,+100000000008,DEWA: el raseed 2aleel w el tag ra7 yet3alla2. e3ed el sha7n hala2: http://dewa.track.example,true
+scam,ar-latn,SMS,+234000000052,"RTA: akher tanbeeh, 480.50 dirham mosta7a22a. el 2at3 khilal 24 sa3a. edfa3 hon: https://rta.support.example/ae",true
+scam,ar-latn,SMS,+630000000084,"ya akhi el parcel mawjood 3ind el customs, edfa3 3.50 dirham khilal 48 sa3a wala yerja3: http://aramex-verify.example/verify",true
+scam,ar-latn,SMS,+630000000095,Aramex: el tard taba3ak ma7jooz. lazem tedfa3 rosoom 2.75 dirham 3ashan yetwassal: http://update-aramex-ae.example/ae,true
+scam,ar-latn,SMS,+440000000066,ma 2derna nwassel el shi7na 0000000056. 7adeth el 3enwan w edfa3 7.25 dirham men hon: http://emiratespost-ae.unlock.example/login,true
+scam,ar-latn,SMS,+200000000042,Aramex: fi rosoom customs 9.99 dirham 3ala el parcel taba3ak. edfa3 el yom wala yerja3 lel mursil: https://aramex.track.example/verify,true
+scam,ar-latn,SMS,+440000000020,Dubai Police: 3endak mokhalafa parking ma madfoo3a 150 dirham. edfa3 khilal 12 sa3a 3ashan ma tseer 7ajeb el license: http://dubaipolice-ae.update.example/login,true
+scam,ar-latn,SMS,+440000000039,akher tanbeeh men Dubai Police: el gharama taba3atak 600 dirham mota2akhera w ra7 yet7ajez el license. seddid hala2: http://delivery-dubaipolice-ae.example/ae,true
+scam,ar-latn,SMS,ADPOLICE-AE,mawaqif: mokhalafat wo2oof 150 dirham ma madfoo3a. el sayara ra7 tet7ajez eza ma dafa3t el yom: http://adpolice-ae.refund.example/update,true
+scam,ar-latn,SMS,+234000000028,RTA: 3endak gharama sor3a 400 dirham. akher forsa abl gharama mod3afa: http://dubaipolice.claim.example/claim,true
+scam,ar-latn,SMS,+630000000012,ADIB: el card taba3ak met3alla2 bsabab 7araka ghareeba. 7adeth bayanatak khilal 24 sa3a wala ra7 yen2afel: https://adib-login.example/confirm,true
+scam,ar-latn,SMS,+630000000009,"3azizi 3ameel ADIB, 7esabak ra7 yetwa22af el yom. 7adeth ma3loomatak men hon: https://adib.customs.example/pay",true
+scam,ar-latn,SMS,+630000000070,FAB: el Emirates ID el marboota bi 7esabak khalset. 7adethha hala2 wala el card ra7 yet7ajeb: http://fab-renew.example/pay,true
+scam,ar-latn,SMS,+910000000084,ADIB: el KYC taba3ak mesh kamel w el 7esab ra7 yetjammad khilal 48 sa3a. kammelo hon: http://adib-unlock.example/claim,true
+scam,ar-latn,CHAT,+971500000010,ma3ak mowazzaf el aman men Emirates NBD. fi 7araka mashbooha bi 120.00 dirham 3ala el card. 2oul li el code elli wasalak 3ashan nwa22efha.,true
+scam,ar-latn,CHAT,+971500000038,"7esabak fi ADCB fi khatar, shareek el OTP elli wasalak hala2 3ashan n2affel el 7awala.",true
+scam,ar-latn,CHAT,+100000000041,"ana men 2esm el e7tiyal fi ADIB. 3ashan nerja3 el khasm el ghalat 250 dirham, 3teeni el ramz elli 3ala shashtak.",true
+scam,ar-latn,SMS,ICP-ALERT,ICP: el Emirates ID taba3ak ra7 yetlagha. 7adeth bayanatak khilal 2 sa3a: http://icp-ae.claim.example/login,true
+scam,ar-latn,SMS,UAEPASS-SEC,UAE Pass: 7esabak ma2fool. akked howiyatak men hon 3ashan yenfata7: http://uaepass-refund.example/claim,true
+scam,ar-latn,SMS,UAEPASS-SEC,talab tajdeed el howiya enrafad. ersel el mostanadat marra tanya w edfa3 9.99 dirham: http://uaepass-kyc.example/login,true
+scam,ar-latn,SMS,+234000000077,"UAE Pass: fi talab login men jihaz jdeed. eza mesh enta, elghih men hon: https://uaepass-unlock.example/verify",true
+scam,ar-latn,CHAT,DU-UAE,"mabrook! ra9mak rebe7 50,000 dirham fi sa7b du. ersel ra9m el card w tareekh el entiha 3ashan testelem el jayza.",true
+scam,ar-latn,SMS,+971500000016,enta el fayez bi Land Cruiser! edfa3 rosoom el tawseel 12 dirham w testelemha: http://etisalat-ae.update.example/track,true
+scam,ar-latn,SMS,+200000000007,"hadiya men du: rbe7t voucher 50,000 dirham. estelmo khilal 48 sa3a: http://du-ae.claim.example/track",true
+scam,ar-latn,SMS,+234000000066,"fayez! ra9mak enkhtar fi el sa7b el kbeer men Etisalat by e& 3ala 500,000 dirham. ettasel 3ala +234000000066.",true
+scam,ar-latn,CHAT,+620000000038,"shoghol men el bait, 500 dirham bel yom, ta2yeem hotels. ma te7taj khebra. kallem HR 3ala Telegram: t.me/hr_uae_jobs_example",true
+scam,ar-latn,CHAT,+620000000021,"wazeefa online, 500 AED yawmi, el daf3 kol masa. tawasal t.me/crypto_club_uae_example",true
+scam,ar-latn,CHAT,+920000000064,matloob mowazzafeen! erba7 500 dirham yawmi mo2abel like videos. el amaken ma7dooda. WhatsApp +920000000064,true
+scam,ar-latn,CHAT,+100000000082,"hala, ana Sara men sharikat tawzeef fi Dubai. nedfa3 300 dirham bel yom 3ala ta2yeem hotels men telephonak. mohtam? ektob na3am.",true
+scam,ar-latn,CHAT,+920000000065,"arba7 madmoona 50% shahri men tadawol USDT. morakhas fi Dubai. el 7ad el adna 5,000 dirham. enzam: wa.me/920000000065",true
+scam,ar-latn,CHAT,+620000000024,da3ef masarik fi 7 ayam ma3 mansat Bitcoin. mo3tamada 7okoomiyan. sajjel: http://rta-refund.example/pay,true
+scam,ar-latn,CHAT,+234000000077,"tawsiyatna ma tekhsar abadan. 40% kol esboo3 madmoon, es7ab wa2t ma tebgha. enzam lel VIP group: t.me/parttime_dxb_example",true
+scam,ar-latn,CHAT,+620000000006,"rbe7t 50,000 dirham el shahr elli fat men gold ma3 hal coach. bidoon khatar, 20% madmoona. kallemni aw enzam t.me/bank_support_ae_example",true
+scam,ar-latn,CHAT,+620000000032,ma3ak el support men ADCB. el khedma ra7 tenfasel. nazzel AirDroid 3ashan el mohandes ysalle7 el moshkela.,true
+scam,ar-latn,SMS,+971500000086,fi virus 3ala telephonak. 7ammel TeamViewer men hon 3ashan nnazfo: https://emiratesnbd-claim.example/claim,true
+scam,ar-latn,CHAT,+100000000012,"mama, hatha ra9mi el jdeed, telephoni el 2adeem kharban. a7taj 760 dirham bsor3a, momken t7awel 3ala hal IBAN AE070000000000000000049?",true
+scam,ar-latn,CHAT,+630000000018,"yumma ana, daya3t telephoni. e7faz hal ra9m. momken tersel 5,000 dirham el yom? bashra7 lak ba3dein.",true
+scam,ar-latn,CHAT,+200000000040,"ghayart ra9mi. ana m3alla2 w a7taj 3,500 dirham la fatoorat el mostashfa, 7awwel hala2 law sama7t.",true
+scam,ar-latn,CHAT,+100000000038,"yumma, telephoni wa2a3 fel may w ana mesta3mel ra9m sa7bi. ersel 15,000 dirham 3ala AE070000000000000000003 abl el 5, daroori.",true
+scam,ar-latn,CHAT,+971500000097,el refund taba3ak 120.00 dirham men ADIB jahez. 3ashan testelmo kallem el mowazzaf 3ala WhatsApp: wa.me/200000000047,true
+scam,ar-latn,CHAT,+100000000067,fi ta7deeth 3ajel 3ala 7esabak fi FAB. kallem el mowazzaf 3ala Telegram: t.me/crypto_club_uae_example,true
+scam,ar-latn,SMS,+920000000016,talab el wazeefa taba3ak etwafa2 3aleh. kammel el interview 3ala WhatsApp +920000000016.,true
+scam,ar-latn,CHAT,+100000000063,FAB: el shakwa taba3atak 3end mowazzaf awwal. kammel 3ala WhatsApp 3ashan radd asra3: wa.me/100000000063,true
+scam,ar-latn,SMS,SALIK-AE,Salik: el fatoora mota2akhera w el khedma ra7 ten2ate3 el yom. seddid fawran men el link https://salik.refund.example/update,true
+scam,ar-latn,SMS,DEWA-PL,DEWA: el raseed 2aleel w el tag ra7 yet3alla2. e3ed el sha7n hala2: https://claim-dewa-ae.example/update,true
+scam,ar-latn,SMS,+971500000059,"DEWA: akher tanbeeh, 760 dirham mosta7a22a. el 2at3 khilal 6 sa3a. edfa3 hon: http://dewa-ae.claim.example/ae",true
+scam,ar-latn,SMS,+971500000028,"ya akhi el parcel mawjood 3ind el customs, edfa3 7.25 dirham khilal 6 sa3a wala yerja3: http://customs-emiratespost-ae.example/ae",true
+scam,ar-latn,SMS,EMIRATES-AE,Emirates Post: el tard taba3ak ma7jooz. lazem tedfa3 rosoom 2.75 dirham 3ashan yetwassal: http://customs-emiratespost-ae.example/track,true
+scam,ar-latn,SMS,+910000000053,ma 2derna nwassel el shi7na 0000000014. 7adeth el 3enwan w edfa3 12 dirham men hon: http://pay-emiratespost-ae.example/claim,true
+scam,ar-latn,SMS,+971500000022,Aramex: fi rosoom customs 7.25 dirham 3ala el parcel taba3ak. edfa3 el yom wala yerja3 lel mursil: https://aramex-login.example/ae,true
+scam,ar-latn,SMS,+440000000098,Abu Dhabi Police: 3endak mokhalafa parking ma madfoo3a 400 dirham. edfa3 khilal 24 sa3a 3ashan ma tseer gharama mod3afa: http://adpolice-ae.kyc.example/verify,true
+scam,ar-latn,SMS,+910000000041,"akher tanbeeh men Dubai Police: el gharama taba3atak 1,000 dirham mota2akhera w ra7 yet7ajez el license. seddid hala2: http://dubaipolice-ae.update.example/verify",true
+scam,ar-latn,SMS,+910000000099,mawaqif: mokhalafat wo2oof 800 dirham ma madfoo3a. el sayara ra7 tet7ajez eza ma dafa3t el yom: http://adpolice-ae.claim.example/pay,true
+scam,ar-latn,SMS,+971500000093,RTA: 3endak gharama muroriya 300 dirham. akher forsa abl 7ajeb el license: https://track-dubaipolice-ae.example/login,true
+scam,ar-latn,SMS,+200000000066,ADIB: el card taba3ak met3alla2 bsabab 7araka ghareeba. 7adeth bayanatak khilal 12 sa3a wala ra7 yen2afel: http://adib.fines.example,true
+scam,ar-latn,SMS,+971500000047,"3azizi 3ameel ADCB, 7esabak ra7 yetwa22af el yom. 7adeth ma3loomatak men hon: http://adcb-verify.example",true
+scam,ar-latn,SMS,+910000000006,Mashreq: el Emirates ID el marboota bi 7esabak khalset. 7adethha hala2 wala el card ra7 yet7ajeb: http://mashreq.renew.example/verify,true
+scam,ar-latn,SMS,+620000000037,Emirates NBD: el KYC taba3ak mesh kamel w el 7esab ra7 yetjammad khilal 48 sa3a. kammelo hon: http://emiratesnbd.renew.example/track,true
+scam,ar-latn,CHAT,ADIB-AE,"ma3ak mowazzaf el aman men ADIB. fi 7araka mashbooha bi 3,500 dirham 3ala el card. 2oul li el code elli wasalak 3ashan nwa22efha.",true
+scam,ar-latn,CHAT,+920000000033,"ana men 2esm el e7tiyal fi ADCB. 3ashan nerja3 el khasm el ghalat 480.50 dirham, 3teeni el ramz elli 3ala shashtak.",true
+scam,ar-latn,CHAT,+910000000070,el bank el markazi: 7esabak fi ADCB enesta3mal fi ta7weel mashbooh. ersel lna el OTP 3ashan nwa22efo.,true
+scam,ar-latn,SMS,UAEPASS-PL,UAE Pass: el Emirates ID taba3ak ra7 yetlagha. 7adeth bayanatak khilal 2 sa3a: http://uaepass.refund.example/verify,true
+scam,ar-latn,SMS,+100000000048,ICP: 7esabak ma2fool. akked howiyatak men hon 3ashan yenfata7: https://update-icp-ae.example/verify,true
+scam,ar-latn,SMS,ICP-UAE,talab tajdeed el howiya enrafad. ersel el mostanadat marra tanya w edfa3 5 dirham: https://icp.track.example/claim,true
+scam,ar-latn,SMS,+971500000082,"ICP: fi talab login men jihaz jdeed. eza mesh enta, elghih men hon: http://icp.renew.example",true
+scam,ar-latn,SMS,+971500000067,"mabrook! ra9mak rebe7 1,000,000 dirham fi sa7b du. ersel ra9m el card w tareekh el entiha 3ashan testelem el jayza.",true
+scam,ar-latn,CHAT,ETISALAT-ALERT,enta el fayez bi Patrol! edfa3 rosoom el tawseel 4.90 dirham w testelemha: https://etisalat-ae.track.example/login,true
+scam,ar-latn,SMS,ETISALAT-SEC,"hadiya men Etisalat by e&: rbe7t voucher 10,000 dirham. estelmo khilal 6 sa3a: http://etisalat.verify.example/ae",true
+scam,ar-latn,SMS,+971500000005,"fayez! ra9mak enkhtar fi el sa7b el kbeer men Etisalat by e& 3ala 500,000 dirham. ettasel 3ala +100000000079.",true
+scam,ar-latn,CHAT,+910000000019,"shoghol men el bait, 650 dirham bel yom, shoof e3lanat. ma te7taj khebra. kallem HR 3ala Telegram: t.me/hr_uae_jobs_example",true
+scam,ar-latn,CHAT,+910000000032,"wazeefa online, 800 AED yawmi, el daf3 kol masa. tawasal t.me/hr_uae_jobs_example",true
+scam,ar-latn,CHAT,+920000000012,matloob mowazzafeen! erba7 300 dirham yawmi mo2abel ta2yeem hotels. el amaken ma7dooda. WhatsApp +920000000012,true
+scam,ar-latn,CHAT,+100000000044,"hala, ana Sara men sharikat tawzeef fi Dubai. nedfa3 1,200 dirham bel yom 3ala ta2yeem products men telephonak. mohtam? ektob na3am.",true
+scam,ar-latn,CHAT,+910000000086,arba7 madmoona 30% shahri men tadawol Bitcoin. morakhas fi Dubai. el 7ad el adna 480.50 dirham. enzam: wa.me/910000000086,true
+scam,ar-latn,CHAT,+234000000086,da3ef masarik fi 14 ayam ma3 mansat crypto. mo3tamada 7okoomiyan. sajjel: http://verify-uaepass-ae.example/pay,true
+scam,ar-latn,CHAT,+920000000018,"tawsiyatna ma tekhsar abadan. 70% kol esboo3 madmoon, es7ab wa2t ma tebgha. enzam lel VIP group: t.me/bank_support_ae_example",true
+scam,ar-latn,CHAT,+620000000040,"rbe7t 10,000 dirham el shahr elli fat men forex ma3 hal coach. bidoon khatar, 20% madmoona. kallemni aw enzam t.me/crypto_club_uae_example",true
+scam,ar-latn,SMS,+910000000010,ma3ak el support men ADIB. el khedma ra7 tenfasel. nazzel AnyDesk 3ashan el mohandes ysalle7 el moshkela.,true
+scam,ar-latn,SMS,+971500000000,fi virus 3ala telephonak. 7ammel QuickSupport men hon 3ashan nnazfo: http://mashreq-ae.delivery.example/pay,true
+scam,ar-latn,CHAT,+971500000075,"da3m Mashreq: 3ashan nerja3 el 3amaliya el ghalat, nazzel QuickSupport w 3teeni el code taba3 el jihaz.",true
+scam,ar-latn,CHAT,+234000000022,"yuba, hatha ra9mi el jdeed, telephoni el 2adeem kharban. a7taj 15,000 dirham bsor3a, momken t7awel 3ala hal IBAN AE070000000000000000025?",true
+scam,ar-latn,CHAT,+920000000070,"yumma ana, daya3t telephoni. e7faz hal ra9m. momken tersel 250 dirham el yom? bashra7 lak ba3dein.",true
+scam,ar-latn,CHAT,+234000000001,"ghayart ra9mi. ana m3alla2 w a7taj 120.00 dirham la fatoorat el mostashfa, 7awwel hala2 law sama7t.",true
+scam,ar-latn,CHAT,+100000000024,"baba, telephoni wa2a3 fel may w ana mesta3mel ra9m sa7bi. ersel 99.00 dirham 3ala AE070000000000000000096 abl el 5, daroori.",true
+scam,ar-latn,CHAT,+971500000015,"el refund taba3ak 2,000 dirham men Aramex jahez. 3ashan testelmo kallem el mowazzaf 3ala WhatsApp: wa.me/234000000086",true
+scam,ar-latn,CHAT,ADCB-PL,fi ta7deeth 3ajel 3ala 7esabak fi ADCB. kallem el mowazzaf 3ala Telegram: t.me/hr_uae_jobs_example,true
+scam,ar-latn,CHAT,+630000000069,talab el wazeefa taba3ak etwafa2 3aleh. kammel el interview 3ala WhatsApp +630000000069.,true
+scam,ar-latn,CHAT,+971500000094,ADIB: el shakwa taba3atak 3end mowazzaf awwal. kammel 3ala WhatsApp 3ashan radd asra3: wa.me/620000000023,true
+scam,ar-latn,SMS,+234000000099,ADDC: el fatoora mota2akhera w el khedma ra7 ten2ate3 el yom. seddid fawran men el link https://addc-unlock.example/confirm,true
+scam,ar-latn,SMS,+440000000026,DEWA: el raseed 2aleel w el tag ra7 yet3alla2. e3ed el sha7n hala2: http://track-dewa-ae.example/track,true
+scam,ar-latn,SMS,DEWA-AE,"DEWA: akher tanbeeh, 5,000 dirham mosta7a22a. el 2at3 khilal 48 sa3a. edfa3 hon: http://dewa.verify.example/ae",true
+scam,ar-latn,SMS,+971500000049,"ya akhi el parcel mawjood 3ind el customs, edfa3 12 dirham khilal 12 sa3a wala yerja3: http://aramex.verify.example",true
+scam,ar-latn,SMS,+234000000005,Emirates Post: el tard taba3ak ma7jooz. lazem tedfa3 rosoom 4.90 dirham 3ashan yetwassal: https://unlock-emiratespost-ae.example/track,true
+scam,ar-latn,SMS,ARAMEX-AE,ma 2derna nwassel el shi7na 0000000016. 7adeth el 3enwan w edfa3 15 dirham men hon: http://aramex-ae.refund.example/ae,true
+scam,ar-latn,SMS,+100000000033,Emirates Post: fi rosoom customs 7.25 dirham 3ala el parcel taba3ak. edfa3 el yom wala yerja3 lel mursil: http://emiratespost.secure.example/pay,true
+scam,ar-latn,SMS,+630000000082,"Dubai Police: 3endak mokhalafa sor3a ma madfoo3a 1,000 dirham. edfa3 khilal 2 sa3a 3ashan ma tseer 7ajez el sayara: http://dubaipolice.kyc.example/claim",true
+scam,ar-latn,SMS,+630000000001,akher tanbeeh men Abu Dhabi Police: el gharama taba3atak 800 dirham mota2akhera w ra7 yet7ajez el license. seddid hala2: https://adpolice.secure.example/pay,true
+scam,ar-latn,SMS,+620000000058,mawaqif: mokhalafat wo2oof 500 dirham ma madfoo3a. el sayara ra7 tet7ajez eza ma dafa3t el yom: https://dubaipolice-ae.renew.example/pay,true
+scam,ar-latn,SMS,+630000000067,RTA: 3endak gharama sor3a 300 dirham. akher forsa abl 7ajeb el license: http://delivery-adpolice-ae.example/claim,true
+scam,ar-latn,SMS,ADCB-SEC,ADCB: el card taba3ak met3alla2 bsabab 7araka ghareeba. 7adeth bayanatak khilal 48 sa3a wala ra7 yen2afel: http://adcb.login.example/claim,true
+scam,ar-latn,SMS,+200000000025,"3azizi 3ameel Mashreq, 7esabak ra7 yetwa22af el yom. 7adeth ma3loomatak men hon: http://mashreq-secure.example/track",true
+scam,ar-latn,SMS,+630000000027,ADIB: el Emirates ID el marboota bi 7esabak khalset. 7adethha hala2 wala el card ra7 yet7ajeb: http://adib-secure.example,true
+scam,ar-latn,SMS,+234000000075,Mashreq: el KYC taba3ak mesh kamel w el 7esab ra7 yetjammad khilal 2 sa3a. kammelo hon: http://mashreq-ae.delivery.example,true
+scam,ar-latn,CHAT,+200000000010,ma3ak mowazzaf el aman men Mashreq. fi 7araka mashbooha bi 120.00 dirham 3ala el card. 2oul li el code elli wasalak 3ashan nwa22efha.,true
+scam,ar-latn,CHAT,+620000000019,"ana men 2esm el e7tiyal fi Mashreq. 3ashan nerja3 el khasm el ghalat 5,000 dirham, 3teeni el ramz elli 3ala shashtak.",true
+scam,ar-latn,CHAT,FAB-INFO,el bank el markazi: 7esabak fi FAB enesta3mal fi ta7weel mashbooh. ersel lna el OTP 3ashan nwa22efo.,true
+scam,ar-latn,SMS,ICP-AE,ICP: el Emirates ID taba3ak ra7 yetlagha. 7adeth bayanatak khilal 48 sa3a: http://icp-verify.example/ae,true
+scam,ar-latn,SMS,+920000000017,UAE Pass: 7esabak ma2fool. akked howiyatak men hon 3ashan yenfata7: https://uaepass-fee.example/verify,true
+scam,ar-latn,SMS,+971500000062,talab tajdeed el howiya enrafad. ersel el mostanadat marra tanya w edfa3 3.50 dirham: http://icp-unlock.example/verify,true
+scam,ar-latn,SMS,+971500000029,"UAE Pass: fi talab login men jihaz jdeed. eza mesh enta, elghih men hon: http://pay-uaepass-ae.example",true
+scam,ar-latn,SMS,ETISALAT-ALERT,"mabrook! ra9mak rebe7 25,000 dirham fi sa7b Etisalat by e&. ersel ra9m el card w tareekh el entiha 3ashan testelem el jayza.",true
+scam,ar-latn,SMS,+200000000082,enta el fayez bi Land Cruiser! edfa3 rosoom el tawseel 4.90 dirham w testelemha: https://du-fines.example,true
+scam,ar-latn,CHAT,+200000000036,"hadiya men Etisalat by e&: rbe7t voucher 25,000 dirham. estelmo khilal 48 sa3a: https://renew-etisalat-ae.example/track",true
+scam,ar-latn,SMS,ETISALAT-AE,"fayez! ra9mak enkhtar fi el sa7b el kbeer men Etisalat by e& 3ala 500,000 dirham. ettasel 3ala +620000000052.",true
+scam,ar-latn,CHAT,+100000000023,"shoghol men el bait, 300 dirham bel yom, shoof e3lanat. ma te7taj khebra. kallem HR 3ala Telegram: t.me/gold_profit_uae_example",true
+scam,ar-latn,CHAT,+100000000077,"wazeefa online, 1,000 AED yawmi, el daf3 kol masa. tawasal t.me/parttime_dxb_example",true
+scam,ar-latn,CHAT,+440000000052,matloob mowazzafeen! erba7 300 dirham yawmi mo2abel data entry. el amaken ma7dooda. WhatsApp +440000000052,true
+scam,ar-latn,CHAT,+630000000023,"hala, ana Sara men sharikat tawzeef fi Dubai. nedfa3 1,200 dirham bel yom 3ala shoof e3lanat men telephonak. mohtam? ektob na3am.",true
+scam,ar-latn,CHAT,+910000000014,arba7 madmoona 25% shahri men tadawol forex. morakhas fi Dubai. el 7ad el adna 480.50 dirham. enzam: wa.me/910000000014,true
+scam,ar-latn,CHAT,+100000000063,da3ef masarik fi 10 ayam ma3 mansat Bitcoin. mo3tamada 7okoomiyan. sajjel: http://pay-aramex-ae.example/claim,true
+scam,ar-latn,CHAT,+100000000024,"tawsiyatna ma tekhsar abadan. 50% kol esboo3 madmoon, es7ab wa2t ma tebgha. enzam lel VIP group: t.me/vip_signals_ae_example",true
+scam,ar-latn,CHAT,+440000000012,"rbe7t 10,000 dirham el shahr elli fat men crypto ma3 hal coach. bidoon khatar, 30% madmoona. kallemni aw enzam t.me/hr_uae_jobs_example",true
+legit,en,SMS,UAEPASS,"UAE Pass: you signed in on a new device on 28 Oct at 17:00. If this was not you, change your password in the app.",true
+legit,en,SMS,UAEPASS,UAE Pass: your digital signature was used to sign a document on 3 Dec at 11:00.,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000046 has been completed. View the result at tamm.abudhabi,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000087 has been received. Expected processing time 7 working days.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your traffic file has no outstanding fines. Drive safely.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your request REQ-00000099 has been received and is under process.,true
+legit,en,SMS,DubaiPolice,Dubai Police: speed limits on Sheikh Zayed Road change on 5 Nov. Drive safely.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your lost item report REQ-00000086 has been registered. We will contact you if it is found.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your payment of AED 500 for violation REQ-00000005 was received. Thank you.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your driving licence expires on 15 Nov. Renew it through the Dubai Police app or UAE Pass.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your driving licence has been renewed. The digital copy is available in the app.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: no fines are registered on your traffic file as of 12 Dec. Thank you for driving safely.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: no traffic fines are registered against your vehicle. Drive safely.,true
+legit,en,SMS,ADPolice,"Abu Dhabi Police: all traffic fines on your file have been settled. Thank you, and drive safely.",true
+legit,en,SMS,ADPolice,Abu Dhabi Police: you can check and pay traffic fines in the official app or through UAE Pass.,true
+legit,en,SMS,DubaiPolice,Dubai Police: no traffic fines are registered on your file. Drive safely. u.ae,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your traffic file was checked on 12 Dec: no fines. More services at https://adpolice.gov.ae,true
+legit,en,SMS,DubaiPolice,Dubai Police: your payment for violation REQ-00000029 was received. Receipt available at https://u.ae,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your request REQ-00000086 has been completed. Details at https://adpolice.gov.ae,true
+legit,en,SMS,MAWAQIF,Mawaqif: your parking in zone 405 expires at 13:30. Extend via the Darb app.,true
+legit,en,SMS,DARB,Darb: parking paid for zone 318 until 08:00. AED 2 deducted. Balance AED 47.25.,true
+legit,en,SMS,MAWAQIF,Mawaqif: your monthly parking permit expires on 3 Dec. Renew in the app.,true
+legit,en,SMS,+971500000033,Raha International School: parents are reminded that school closes at 08:00 on 20 Jan for the staff meeting.,true
+legit,en,SMS,+971500000048,Al Ittihad School: the term 2 fee invoice is available on the parent portal. Due date 15 Nov.,true
+legit,en,SMS,+971500000057,Al Ittihad School: Grade 3 swimming lessons start 5 Nov. Please send swimwear with your child.,true
+legit,en,SMS,+971500000036,Raha International School: tomorrow is a national dress day for Grade 5. School buses run as normal.,true
+legit,en,SMS,+971500000034,Al Ittihad School: parent-teacher meetings are on 3 Dec from 11:00. Book your slot on the portal.,true
+legit,en,SMS,+971500000007,Al Ittihad School: the school bus for Hamdan will arrive about 10 minutes late this morning due to traffic.,true
+legit,en,CHAT,Dad,Are we still on for padel at 11? I booked court 4.,true
+legit,en,CHAT,Omar,Can you pick up the kids at 8? I'm stuck in traffic on Sheikh Zayed Road.,true
+legit,en,CHAT,Noora,"Landed in Abu Dhabi, see you at the gate in 20 minutes.",true
+legit,en,CHAT,Ahmed,"Mum says dinner is at 11, don't be late habibi.",true
+legit,en,CHAT,Fatima,Did you pay the DEWA bill? I think it's due tomorrow.,true
+legit,en,CHAT,Ahmed,Happy birthday! Hope you have a great day. Dinner on me this weekend.,true
+legit,en,CHAT,Ahmed,Send me the location of the restaurant please.,true
+legit,en,CHAT,Fatima,"Meeting moved to 10:30, same room. Bring the printed report.",true
+legit,en,CHAT,Omar,"I'm at Carrefour, do we need anything for the house?",true
+legit,en,CHAT,Dad,"Jumma prayer at the big mosque at 1, coming?",true
+legit,en,CHAT,Reem,Can you share Reem's number? I lost my contacts.,true
+legit,en,CHAT,Ahmed,"The plumber is coming at 7 tomorrow, can you be home?",true
+legit,en,CHAT,Abu Omar,"Good luck with the exam today, you've got this.",true
+legit,en,CHAT,Mum,"Traffic is bad on Al Khaleej Al Arabi street, take the other road.",true
+legit,en,CHAT,Khalid,"Baba, I reached the university safely, will call you tonight.",true
+legit,en,CHAT,Fatima,"Reminder: Omar's wedding is on 26 Nov, we should buy the gift this week.",true
+legit,en,CHAT,+971500000053,"Hi, this is Ahmed from the gym. Your session tomorrow is at 6 AM, see you then.",true
+legit,en,CHAT,+971500000089,"Your car is ready at the garage, you can collect it any time before 5 PM.",true
+legit,en,CHAT,+971500000033,"Hello, this is the tailor. Your kandura is ready for pickup.",true
+legit,en,CHAT,+971500000059,"Hi, I'm the driver from Centrepoint, I'm at the gate, please come down.",true
+legit,en,CHAT,+971500000072,"This is Noor from the salon, confirming your appointment on 20 Jan at 11:00.",true
+legit,en,SMS,ADCB,ADCB: 331852 is your OTP for a purchase of AED 480.50 at ADNOC. Do not share this code with anyone.,true
+legit,en,SMS,ADIB,"Your ADIB verification code is 219607. It expires in 3 minutes. Never share it, even with bank staff.",true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: use 888361 to confirm your online banking login. If you did not request this, call the number on the back of your card.",true
+legit,en,SMS,ADCB,"ADCB: AED 5,000 was debited from your account ending 0060 at ADNOC on 20 Jan. Available balance AED 25,900.10.",true
+legit,en,SMS,ADCB,ADCB: a salary credit of AED 99.00 has been received in your account ending 0037.,true
+legit,en,SMS,ADCB,"ADCB: your credit card statement is ready. Minimum due AED 3,500 by 28 Oct. View it in the ADCB app.",true
+legit,en,SMS,FAB,FAB: your new debit card has been dispatched and will arrive within 7 working days.,true
+legit,en,SMS,Mashreq,Mashreq: AED 120.00 was credited to your account ending 0030 on 12 Dec. Thank you for banking with us.,true
+legit,en,SMS,Mashreq,Mashreq: your cheque book request has been processed. Collect it from your branch after 12 Dec.,true
+legit,en,SMS,Mashreq,"Mashreq: card ending 0034 was used for AED 250 at SPINNEYS. If this was not you, call us on the number on your card.",true
+legit,en,SMS,Aramex,Aramex: your shipment 0000000053 is out for delivery today between 10 AM and 2 PM.,true
+legit,en,SMS,EmiratesPost,Emirates Post: your parcel 0000000016 has been delivered. Thank you for choosing Emirates Post.,true
+legit,en,SMS,Aramex,Aramex: we missed you today. Your parcel 0000000049 will be re-attempted tomorrow. Track at https://aramex.com,true
+legit,en,SMS,Aramex,Aramex: your shipment 0000000091 has arrived at our Al Ain facility and will be delivered on 12 Dec.,true
+legit,en,SMS,Aramex,Aramex: your driver is nearby. Please keep your phone reachable for the next 30 minutes.,true
+legit,en,SMS,Aramex,Aramex: parcel 0000000064 is ready for pickup at the Dubai branch. Bring your Emirates ID.,true
+legit,en,SMS,EmiratesPost,Emirates Post: shipment 0000000096 is out for delivery today. Track it at https://emiratespost.ae,true
+legit,en,SMS,EmiratesPost,Emirates Post: your shipment 0000000096 was delivered on 28 Oct at 17:00. Track your deliveries at https://emiratespost.ae,true
+legit,en,SMS,Aramex,Aramex: shipment 0000000031 has left our Sharjah hub. Expected delivery 12 Dec. Details at https://aramex.com,true
+legit,en,SMS,Aramex,Aramex: your parcel 0000000060 is scheduled for delivery on 26 Nov. No action is needed.,true
+legit,en,SMS,+971500000037,Your Sharaf DG order N0000000005 has been shipped and will arrive on 5 Nov.,true
+legit,en,SMS,+971500000072,Namshi: your order N0000000075 is out for delivery. The driver will call you before arrival.,true
+legit,en,SMS,+971500000091,Sharaf DG: your order N0000000008 has been delivered. Rate your experience in the app.,true
+legit,en,SMS,+971500000013,Sharaf DG: your return for order N0000000009 was received. The refund will reach your card within 3 working days.,true
+legit,en,SMS,DEWA,"DEWA: your bill for November is AED 760, due on 1 Jan. Pay through the DEWA app or https://dewa.gov.ae",true
+legit,en,SMS,DEWA,DEWA: payment of AED 760 received on 20 Jan. Thank you.,true
+legit,en,SMS,ADDC,ADDC: your November consumption was 5% lower than last month. Keep it up.,true
+legit,en,SMS,DEWA,DEWA: scheduled maintenance in your area on 15 Nov from 13:30 for about two hours. We apologise for the inconvenience.,true
+legit,en,SMS,ADDC,"ADDC: your bill of AED 2,000 is now available. Due date 5 Nov. View details at https://addc.ae",true
+legit,en,SMS,du,"du: your bill of AED 1,250.00 is due on 1 Jan. Pay in the app to avoid interruption.",true
+legit,en,SMS,du,du: you have used 80% of your data allowance. Renew your plan in the app.,true
+legit,en,SMS,etisalat,"Etisalat by e&: your recharge of AED 3,500 was successful. Your balance is AED 47.25.",true
+legit,en,SMS,etisalat,"Etisalat by e&: your postpaid bill for October is AED 1,250.00. Payment due by 1 Jan. More at https://etisalat.ae",true
+legit,en,SMS,etisalat,Etisalat by e&: enjoy 5 GB extra data free this month. Activate in the app.,true
+legit,en,SMS,du,du: your data pack is now active until 5 Nov. Thank you for choosing du.,true
+legit,en,SMS,etisalat,"Etisalat by e&: your current balance is AED 1,234.56, valid until 28 Oct.",true
+legit,en,SMS,du,du: your monthly plan has been renewed. 10 GB available until 20 Jan.,true
+legit,en,SMS,RTA,"RTA: your account balance is AED 8,450.00. Recharge via the RTA app or rta.ae when it goes below AED 10.",true
+legit,en,SMS,RTA,RTA: your vehicle registration expires on 12 Dec. Renew via the RTA app or rta.ae.,true
+legit,en,SMS,SALIK,"Salik: a toll of AED 4 was deducted on 26 Nov at 09:30. Balance AED 1,234.56.",true
+legit,en,SMS,SALIK,"Salik: your nol card was topped up with AED 480.50. Balance AED 1,234.56.",true
+legit,en,SMS,+971500000029,"SEHA: reminder, your appointment with Dr. Hassan is on 28 Oct at 11:00. Reply 1 to confirm or 2 to reschedule.",true
+legit,en,SMS,+971500000010,SEHA: your lab results are ready. Please log in to the SEHA app to view them.,true
+legit,en,SMS,+971500000038,Aster Clinic: your vaccination appointment for Hamdan is on 1 Jan at 16:45.,true
+legit,en,SMS,+971500000073,NMC Healthcare: thank you for your visit today. Your prescription is ready at the pharmacy on the ground floor.,true
+legit,en,SMS,+971500000091,Aster Clinic: your dental check-up is due. Book online or call us to schedule.,true
+legit,en,SMS,+971500000067,Carrefour: 25% off fashion this weekend. Shop in the app. Reply STOP to opt out.,true
+legit,en,SMS,+971500000038,"Sharaf DG: Yellow Friday sale, up to 20% off, today only. Shop in the app.",true
+legit,en,SMS,+971500000040,Noon: free delivery on orders above AED 100 until 28 Oct.,true
+legit,en,SMS,+971500000065,Talabat: new arrivals in home appliances are here. Members get an extra 40% off this week.,true
+legit,en,SMS,ADCB,ADCB: earn 2x reward points on dining this October. T&Cs apply.,true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: enjoy 0% instalments on electronics purchases above AED 1,000 with your credit card until 15 Nov.",true
+legit,en,SMS,FAB,FAB: our Abu Dhabi branch will be closed on 26 Nov for the public holiday. Digital services remain available.,true
+legit,en,SMS,ICP,ICP: your Emirates ID is ready for collection at the Sharjah ICP centre. Bring your passport. More at icp.gov.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID application REQ-00000001 has been approved. The card will be delivered by Emirates Post within 14 working days.,true
+legit,en,SMS,ICP,ICP: your appointment at the Dubai customer happiness centre is on 15 Nov at 08:00.,true
+legit,en,SMS,ICP,ICP: your residency visa renewal REQ-00000096 is being processed. Expected completion in 5 working days. u.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID is ready for collection at the Sharjah ICP centre. Please bring your passport. More at https://icp.gov.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID card REQ-00000029 has been printed and handed to Emirates Post for delivery.,true
+legit,en,SMS,ICP,ICP: your Emirates ID has been renewed. The digital version is available in the ICP app and UAE Pass.,true
+legit,en,SMS,UAEPASS,UAE Pass: your account was upgraded to verified. You can now sign documents digitally. uaepass.ae,true
+legit,en,SMS,UAEPASS,"UAE Pass: you signed in on a new device on 26 Nov at 10:15. If this was not you, change your password in the app.",true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000066 has been completed. View the result at tamm.abudhabi,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000011 has been received. Expected processing time 10 working days.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your traffic file has no outstanding fines. Drive safely.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your request REQ-00000043 has been received and is under process.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your lost item report REQ-00000084 has been registered. We will contact you if it is found.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your payment of AED 400 for violation REQ-00000074 was received. Thank you.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your driving licence expires on 20 Jan. Renew it through the Abu Dhabi Police app or UAE Pass.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your driving licence has been renewed. The digital copy is available in the app.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: no fines are registered on your traffic file as of 5 Nov. Thank you for driving safely.,true
+legit,en,SMS,DubaiPolice,Dubai Police: you can check and pay traffic fines in the official app or through UAE Pass.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: no traffic fines are registered on your file. Drive safely. adpolice.gov.ae,true
+legit,en,SMS,DubaiPolice,Dubai Police: your traffic file was checked on 28 Oct: no fines. More services at https://u.ae,true
+legit,en,SMS,DubaiPolice,Dubai Police: your payment for violation REQ-00000018 was received. Receipt available at https://u.ae,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your request REQ-00000028 has been completed. Details at https://adpolice.gov.ae,true
+legit,en,SMS,DARB,Darb: your parking in zone 112 expires at 10:15. Extend via the Darb app.,true
+legit,en,SMS,DARB,"Darb: parking paid for zone 201 until 17:00. AED 2 deducted. Balance AED 25,900.10.",true
+legit,en,SMS,MAWAQIF,Mawaqif: your monthly parking permit expires on 12 Dec. Renew in the app.,true
+legit,en,SMS,+971500000063,Al Yasmina Academy: parents are reminded that school closes at 11:00 on 15 Nov for the staff meeting.,true
+legit,en,SMS,+971500000037,Raha International School: the term 2 fee invoice is available on the parent portal. Due date 26 Nov.,true
+legit,en,SMS,+971500000093,Al Yasmina Academy: Grade 7 swimming lessons start 28 Oct. Please send swimwear with your child.,true
+legit,en,SMS,+971500000098,GEMS Wellington: tomorrow is a national dress day for Grade 11. School buses run as normal.,true
+legit,en,SMS,+971500000032,Brighton College: parent-teacher meetings are on 28 Oct from 11:00. Book your slot on the portal.,true
+legit,en,SMS,+971500000017,Raha International School: the school bus for Noor will arrive about 10 minutes late this morning due to traffic.,true
+legit,en,CHAT,Um Khalid,Are we still on for padel at 8? I booked court 1.,true
+legit,en,CHAT,Reem,Can you pick up the kids at 10? I'm stuck in traffic on Sheikh Zayed Road.,true
+legit,en,CHAT,Hamad,"Mum says dinner is at 8, don't be late habibi.",true
+legit,en,CHAT,Fatima,"Meeting moved to 4:30, same room. Bring the printed report.",true
+legit,en,CHAT,Mum,Can you share Dad's number? I lost my contacts.,true
+legit,en,CHAT,Fatima,"Reminder: Mum's wedding is on 3 Dec, we should buy the gift this week.",true
+legit,en,CHAT,+971500000076,"Hi, this is Hamad from the gym. Your session tomorrow is at 10 AM, see you then.",true
+legit,en,CHAT,+971500000006,"Your car is ready at the garage, you can collect it any time before 11 PM.",true
+legit,en,CHAT,+971500000064,"Hi, I'm the driver from Talabat, I'm at the gate, please come down.",true
+legit,en,CHAT,+971500000073,"This is Noor from the salon, confirming your appointment on 3 Dec at 13:30.",true
+legit,en,SMS,ADIB,"ADIB: 854791 is your OTP for a purchase of AED 15,000 at NOON. Do not share this code with anyone.",true
+legit,en,SMS,FAB,"Your FAB verification code is 594913. It expires in 3 minutes. Never share it, even with bank staff.",true
+legit,en,SMS,ADIB,"ADIB: use 095431 to confirm your online banking login. If you did not request this, call the number on the back of your card.",true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: AED 99.00 was debited from your account ending 0053 at NOON on 1 Jan. Available balance AED 4,080.00.",true
+legit,en,SMS,ADIB,ADIB: a salary credit of AED 250 has been received in your account ending 0036.,true
+legit,en,SMS,ADCB,"ADCB: your credit card statement is ready. Minimum due AED 2,000 by 15 Nov. View it in the ADCB app.",true
+legit,en,SMS,ADIB,ADIB: your new debit card has been dispatched and will arrive within 10 working days.,true
+legit,en,SMS,Mashreq,Mashreq: AED 99.00 was credited to your account ending 0041 on 28 Oct. Thank you for banking with us.,true
+legit,en,SMS,FAB,FAB: your cheque book request has been processed. Collect it from your branch after 3 Dec.,true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: card ending 0071 was used for AED 760 at IKEA. If this was not you, call us on the number on your card.",true
+legit,en,SMS,Aramex,Aramex: your shipment 0000000049 is out for delivery today between 4 PM and 8 PM.,true
+legit,en,SMS,EmiratesPost,Emirates Post: your parcel 0000000046 has been delivered. Thank you for choosing Emirates Post.,true
+legit,en,SMS,Aramex,Aramex: we missed you today. Your parcel 0000000065 will be re-attempted tomorrow. Track at https://aramex.com,true
+legit,en,SMS,EmiratesPost,Emirates Post: your shipment 0000000089 has arrived at our Khalifa City facility and will be delivered on 20 Jan.,true
+legit,en,SMS,EmiratesPost,Emirates Post: your driver is nearby. Please keep your phone reachable for the next 30 minutes.,true
+legit,en,SMS,Aramex,Aramex: parcel 0000000001 is ready for pickup at the Ajman branch. Bring your Emirates ID.,true
+legit,en,SMS,Aramex,Aramex: shipment 0000000021 is out for delivery today. Track it at https://aramex.com,true
+legit,en,SMS,EmiratesPost,Emirates Post: your shipment 0000000061 was delivered on 5 Nov at 08:00. Track your deliveries at https://emiratespost.ae,true
+legit,en,SMS,Aramex,Aramex: shipment 0000000076 has left our Khalifa City hub. Expected delivery 26 Nov. Details at https://aramex.com,true
+legit,en,SMS,Aramex,Aramex: your parcel 0000000070 is scheduled for delivery on 1 Jan. No action is needed.,true
+legit,en,SMS,+971500000074,Your Noon order N0000000063 has been shipped and will arrive on 3 Dec.,true
+legit,en,SMS,+971500000071,Noon: your order N0000000091 is out for delivery. The driver will call you before arrival.,true
+legit,en,SMS,+971500000071,Sharaf DG: your order N0000000014 has been delivered. Rate your experience in the app.,true
+legit,en,SMS,+971500000070,Namshi: your return for order N0000000002 was received. The refund will reach your card within 10 working days.,true
+legit,en,SMS,DEWA,"DEWA: your bill for August is AED 120.00, due on 12 Dec. Pay through the DEWA app or https://dewa.gov.ae",true
+legit,en,SMS,DEWA,"DEWA: payment of AED 5,000 received on 15 Nov. Thank you.",true
+legit,en,SMS,DEWA,DEWA: your October consumption was 50% lower than last month. Keep it up.,true
+legit,en,SMS,ADDC,ADDC: scheduled maintenance in your area on 20 Jan from 09:30 for about two hours. We apologise for the inconvenience.,true
+legit,en,SMS,DEWA,DEWA: your bill of AED 760 is now available. Due date 3 Dec. View details at https://dewa.gov.ae,true
+legit,en,SMS,etisalat,"Etisalat by e&: your bill of AED 1,250.00 is due on 15 Nov. Pay in the app to avoid interruption.",true
+legit,en,SMS,du,du: your recharge of AED 250 was successful. Your balance is AED 47.25.,true
+legit,en,SMS,du,du: your postpaid bill for October is AED 760. Payment due by 1 Jan. More at https://du.ae,true
+legit,en,SMS,etisalat,Etisalat by e&: enjoy 20 GB extra data free this month. Activate in the app.,true
+legit,en,SMS,etisalat,Etisalat by e&: your data pack is now active until 5 Nov. Thank you for choosing Etisalat by e&.,true
+legit,en,SMS,etisalat,"Etisalat by e&: your current balance is AED 1,234.56, valid until 12 Dec.",true
+legit,en,SMS,du,du: your monthly plan has been renewed. 10 GB available until 5 Nov.,true
+legit,en,SMS,SALIK,Salik: your account balance is AED 312.75. Recharge via the Salik app or salik.ae when it goes below AED 10.,true
+legit,en,SMS,SALIK,Salik: your vehicle registration expires on 20 Jan. Renew via the Salik app or salik.ae.,true
+legit,en,SMS,RTA,"RTA: a toll of AED 4 was deducted on 15 Nov at 13:30. Balance AED 1,234.56.",true
+legit,en,SMS,SALIK,"Salik: your nol card was topped up with AED 5,000. Balance AED 47.25.",true
+legit,en,SMS,+971500000008,"Burjeel: reminder, your appointment with Dr. Siddiqui is on 3 Dec at 16:45. Reply 1 to confirm or 2 to reschedule.",true
+legit,en,SMS,+971500000098,Burjeel: your lab results are ready. Please log in to the Burjeel app to view them.,true
+legit,en,SMS,+971500000002,Aster Clinic: your vaccination appointment for Noor is on 28 Oct at 11:00.,true
+legit,en,SMS,+971500000050,NMC Healthcare: your dental check-up is due. Book online or call us to schedule.,true
+legit,en,SMS,+971500000049,Namshi: 15% off home appliances this weekend. Shop in the app. Reply STOP to opt out.,true
+legit,en,SMS,+971500000023,"Centrepoint: Yellow Friday sale, up to 20% off, today only. Shop in the app.",true
+legit,en,SMS,+971500000005,Sharaf DG: free delivery on orders above AED 100 until 5 Nov.,true
+legit,en,SMS,+971500000057,Sharaf DG: new arrivals in home appliances are here. Members get an extra 15% off this week.,true
+legit,en,SMS,ADIB,ADIB: earn 2x reward points on dining this November. T&Cs apply.,true
+legit,en,SMS,FAB,FAB: our Madinat Zayed branch will be closed on 1 Jan for the public holiday. Digital services remain available.,true
+legit,en,SMS,ICP,ICP: your Emirates ID is ready for collection at the Madinat Zayed ICP centre. Bring your passport. More at icp.gov.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID application REQ-00000054 has been approved. The card will be delivered by Emirates Post within 5 working days.,true
+legit,en,SMS,ICP,ICP: your appointment at the Dubai customer happiness centre is on 1 Jan at 08:00.,true
+legit,en,SMS,ICP,ICP: your residency visa renewal REQ-00000023 is being processed. Expected completion in 14 working days. u.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID is ready for collection at the Abu Dhabi ICP centre. Please bring your passport. More at https://icp.gov.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID card REQ-00000067 has been printed and handed to Emirates Post for delivery.,true
+legit,en,SMS,UAEPASS,"UAE Pass: you signed in on a new device on 1 Jan at 13:30. If this was not you, change your password in the app.",true
+legit,en,SMS,UAEPASS,UAE Pass: your digital signature was used to sign a document on 5 Nov at 17:00.,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000015 has been completed. View the result at tamm.abudhabi,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000016 has been received. Expected processing time 7 working days.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your request REQ-00000026 has been received and is under process.,true
+legit,en,SMS,DubaiPolice,Dubai Police: speed limits on Sheikh Zayed Road change on 15 Nov. Drive safely.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your lost item report REQ-00000075 has been registered. We will contact you if it is found.,true
+legit,en,SMS,ADPolice,"Abu Dhabi Police: your payment of AED 1,000 for violation REQ-00000081 was received. Thank you.",true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your driving licence expires on 12 Dec. Renew it through the Abu Dhabi Police app or UAE Pass.,true
+legit,en,SMS,DubaiPolice,Dubai Police: no fines are registered on your traffic file as of 26 Nov. Thank you for driving safely.,true
+legit,en,SMS,DubaiPolice,Dubai Police: your traffic file was checked on 1 Jan: no fines. More services at https://u.ae,true
+legit,en,SMS,DubaiPolice,Dubai Police: your payment for violation REQ-00000030 was received. Receipt available at https://u.ae,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your request REQ-00000045 has been completed. Details at https://adpolice.gov.ae,true
+legit,en,SMS,DARB,Darb: your parking in zone C4 expires at 14:15. Extend via the Darb app.,true
+legit,en,SMS,DARB,"Darb: parking paid for zone C4 until 16:45. AED 2 deducted. Balance AED 25,900.10.",true
+legit,en,SMS,DARB,Darb: your monthly parking permit expires on 3 Dec. Renew in the app.,true
+legit,en,SMS,+971500000029,Raha International School: parents are reminded that school closes at 10:15 on 5 Nov for the staff meeting.,true
+legit,en,SMS,+971500000094,Al Ittihad School: the term 2 fee invoice is available on the parent portal. Due date 28 Oct.,true
+legit,en,SMS,+971500000070,Al Ittihad School: Grade 5 swimming lessons start 12 Dec. Please send swimwear with your child.,true
+legit,en,SMS,+971500000019,Al Yasmina Academy: tomorrow is a national dress day for Grade 11. School buses run as normal.,true
+legit,en,SMS,+971500000087,Al Yasmina Academy: parent-teacher meetings are on 5 Nov from 08:00. Book your slot on the portal.,true
+legit,en,SMS,+971500000012,Al Ittihad School: the school bus for Omar will arrive about 10 minutes late this morning due to traffic.,true
+legit,en,CHAT,Um Khalid,Are we still on for padel at 4? I booked court 4.,true
+legit,en,CHAT,Mariam,Can you pick up the kids at 11? I'm stuck in traffic on Sheikh Zayed Road.,true
+legit,en,CHAT,Dad,"Mum says dinner is at 9, don't be late habibi.",true
+legit,en,CHAT,Omar,"Meeting moved to 6:30, same room. Bring the printed report.",true
+legit,en,CHAT,Dad,Can you share Ahmed's number? I lost my contacts.,true
+legit,en,CHAT,Ahmed,"The plumber is coming at 5 tomorrow, can you be home?",true
+legit,en,CHAT,Khalid,"Reminder: Reem's wedding is on 15 Nov, we should buy the gift this week.",true
+legit,en,CHAT,+971500000057,"Hi, this is Noora from the gym. Your session tomorrow is at 10 AM, see you then.",true
+legit,en,CHAT,+971500000066,"Hi, I'm the driver from Noon, I'm at the gate, please come down.",true
+legit,en,CHAT,+971500000044,"This is Noor from the salon, confirming your appointment on 1 Jan at 13:30.",true
+legit,en,SMS,Mashreq,"Mashreq: 957292 is your OTP for a purchase of AED 15,000 at CARREFOUR. Do not share this code with anyone.",true
+legit,en,SMS,EmiratesNBD,"Your Emirates NBD verification code is 983607. It expires in 2 minutes. Never share it, even with bank staff.",true
+legit,en,SMS,Mashreq,"Mashreq: use 317227 to confirm your online banking login. If you did not request this, call the number on the back of your card.",true
+legit,en,SMS,ADCB,"ADCB: AED 480.50 was debited from your account ending 0049 at WAITROSE on 15 Nov. Available balance AED 8,450.00.",true
+legit,en,SMS,ADIB,ADIB: a salary credit of AED 99.00 has been received in your account ending 0056.,true
+legit,en,SMS,EmiratesNBD,Emirates NBD: your credit card statement is ready. Minimum due AED 480.50 by 12 Dec. View it in the Emirates NBD app.,true
+legit,en,SMS,EmiratesNBD,Emirates NBD: your new debit card has been dispatched and will arrive within 3 working days.,true
+legit,en,SMS,ADIB,ADIB: AED 250 was credited to your account ending 0007 on 12 Dec. Thank you for banking with us.,true
+legit,en,SMS,ADIB,ADIB: your cheque book request has been processed. Collect it from your branch after 1 Jan.,true
+legit,en,SMS,EmiratesNBD,"Emirates NBD: card ending 0057 was used for AED 480.50 at SPINNEYS. If this was not you, call us on the number on your card.",true
+legit,en,SMS,Aramex,Aramex: your shipment 0000000061 is out for delivery today between 10 AM and 2 PM.,true
+legit,en,SMS,Aramex,Aramex: your parcel 0000000029 has been delivered. Thank you for choosing Aramex.,true
+legit,en,SMS,Aramex,Aramex: we missed you today. Your parcel 0000000081 will be re-attempted tomorrow. Track at https://aramex.com,true
+legit,en,SMS,EmiratesPost,Emirates Post: your shipment 0000000073 has arrived at our Sharjah facility and will be delivered on 1 Jan.,true
+legit,en,SMS,Aramex,Aramex: parcel 0000000089 is ready for pickup at the Sharjah branch. Bring your Emirates ID.,true
+legit,en,SMS,EmiratesPost,Emirates Post: shipment 0000000081 is out for delivery today. Track it at https://emiratespost.ae,true
+legit,en,SMS,Aramex,Aramex: your shipment 0000000011 was delivered on 20 Jan at 13:30. Track your deliveries at https://aramex.com,true
+legit,en,SMS,EmiratesPost,Emirates Post: shipment 0000000070 has left our Madinat Zayed hub. Expected delivery 5 Nov. Details at https://emiratespost.ae,true
+legit,en,SMS,Aramex,Aramex: your parcel 0000000026 is scheduled for delivery on 3 Dec. No action is needed.,true
+legit,en,SMS,+971500000066,Your Lulu order N0000000041 has been shipped and will arrive on 3 Dec.,true
+legit,en,SMS,+971500000023,Carrefour: your order N0000000026 is out for delivery. The driver will call you before arrival.,true
+legit,en,SMS,+971500000049,Talabat: your order N0000000058 has been delivered. Rate your experience in the app.,true
+legit,en,SMS,+971500000097,Carrefour: your return for order N0000000060 was received. The refund will reach your card within 14 working days.,true
+legit,en,SMS,DEWA,"DEWA: your bill for November is AED 3,500, due on 12 Dec. Pay through the DEWA app or https://dewa.gov.ae",true
+legit,en,SMS,DEWA,"DEWA: payment of AED 5,000 received on 1 Jan. Thank you.",true
+legit,en,SMS,DEWA,DEWA: your September consumption was 20% lower than last month. Keep it up.,true
+legit,en,SMS,DEWA,DEWA: scheduled maintenance in your area on 20 Jan from 13:30 for about two hours. We apologise for the inconvenience.,true
+legit,en,SMS,DEWA,DEWA: your bill of AED 99.00 is now available. Due date 28 Oct. View details at https://dewa.gov.ae,true
+legit,en,SMS,du,du: your bill of AED 480.50 is due on 26 Nov. Pay in the app to avoid interruption.,true
+legit,en,SMS,etisalat,"Etisalat by e&: your recharge of AED 760 was successful. Your balance is AED 4,080.00.",true
+legit,en,SMS,du,"du: your postpaid bill for October is AED 3,500. Payment due by 3 Dec. More at https://du.ae",true
+legit,en,SMS,etisalat,Etisalat by e&: your data pack is now active until 15 Nov. Thank you for choosing Etisalat by e&.,true
+legit,en,SMS,du,"du: your current balance is AED 25,900.10, valid until 20 Jan.",true
+legit,en,SMS,du,du: your monthly plan has been renewed. 50 GB available until 5 Nov.,true
+legit,en,SMS,RTA,"RTA: your account balance is AED 4,080.00. Recharge via the RTA app or rta.ae when it goes below AED 10.",true
+legit,en,SMS,SALIK,"Salik: a toll of AED 4 was deducted on 12 Dec at 16:45. Balance AED 4,080.00.",true
+legit,en,SMS,SALIK,"Salik: your nol card was topped up with AED 3,500. Balance AED 8,450.00.",true
+legit,en,SMS,+971500000069,"SEHA: reminder, your appointment with Dr. Ahmed is on 15 Nov at 17:00. Reply 1 to confirm or 2 to reschedule.",true
+legit,en,SMS,+971500000043,Aster Clinic: your vaccination appointment for Alia is on 5 Nov at 17:00.,true
+legit,en,SMS,+971500000045,Burjeel: thank you for your visit today. Your prescription is ready at the pharmacy on the ground floor.,true
+legit,en,SMS,+971500000087,Burjeel: your dental check-up is due. Book online or call us to schedule.,true
+legit,en,SMS,+971500000057,Sharaf DG: 70% off home appliances this weekend. Shop in the app. Reply STOP to opt out.,true
+legit,en,SMS,+971500000048,Centrepoint: free delivery on orders above AED 100 until 28 Oct.,true
+legit,en,SMS,+971500000094,Namshi: new arrivals in home appliances are here. Members get an extra 40% off this week.,true
+legit,en,SMS,Mashreq,Mashreq: earn 2x reward points on dining this August. T&Cs apply.,true
+legit,en,SMS,ADIB,"ADIB: enjoy 0% instalments on electronics purchases above AED 1,000 with your credit card until 26 Nov.",true
+legit,en,SMS,ADIB,ADIB: our Abu Dhabi branch will be closed on 26 Nov for the public holiday. Digital services remain available.,true
+legit,en,SMS,ICP,ICP: your Emirates ID application REQ-00000045 has been approved. The card will be delivered by Emirates Post within 10 working days.,true
+legit,en,SMS,ICP,ICP: your appointment at the Sharjah customer happiness centre is on 20 Jan at 17:00.,true
+legit,en,SMS,ICP,ICP: your residency visa renewal REQ-00000098 is being processed. Expected completion in 5 working days. u.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID is ready for collection at the Dubai ICP centre. Please bring your passport. More at https://icp.gov.ae,true
+legit,en,SMS,ICP,ICP: your Emirates ID card REQ-00000042 has been printed and handed to Emirates Post for delivery.,true
+legit,en,SMS,UAEPASS,"UAE Pass: you signed in on a new device on 26 Nov at 14:15. If this was not you, change your password in the app.",true
+legit,en,SMS,UAEPASS,UAE Pass: your digital signature was used to sign a document on 12 Dec at 11:00.,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000083 has been completed. View the result at tamm.abudhabi,true
+legit,en,SMS,TAMM,TAMM: your request REQ-00000064 has been received. Expected processing time 5 working days.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your request REQ-00000038 has been received and is under process.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: speed limits on Sheikh Zayed Road change on 12 Dec. Drive safely.,true
+legit,en,SMS,ADPolice,Abu Dhabi Police: your lost item report REQ-00000046 has been registered. We will contact you if it is found.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم تسجيل الدخول من جهاز جديد بتاريخ 12 ديسمبر الساعة 13:30. إذا لم تكن أنت، غيّر كلمة المرور من التطبيق.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم استخدام توقيعك الرقمي لتوقيع مستند بتاريخ 15 نوفمبر الساعة 13:30.,true
+legit,ar,SMS,TAMM,تم: تم إنجاز طلبك رقم REQ-00000016. يمكنك الاطلاع على النتيجة عبر tamm.abudhabi,true
+legit,ar,SMS,TAMM,تم: تم استلام طلبك رقم REQ-00000005. مدة المعالجة المتوقعة 5 أيام عمل.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: لا توجد مخالفات مرورية على ملفك. قيادة آمنة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم استلام طلبك رقم REQ-00000000 وهو قيد المعالجة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تتغير حدود السرعة على شارع الشيخ زايد اعتباراً من 1 يناير. قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم تسجيل بلاغ المفقودات رقم REQ-00000066. سنتواصل معك عند العثور عليه.,true
+legit,ar,SMS,ADPolice,"شرطة أبوظبي: تم استلام دفعتك بقيمة 1,000 درهم للمخالفة رقم REQ-00000093. شكراً لك.",true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تنتهي صلاحية رخصة القيادة بتاريخ 5 نوفمبر. جدّدها عبر التطبيق أو الهوية الرقمية.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم تجديد رخصة القيادة بنجاح. يمكنك تحميل النسخة الرقمية من التطبيق.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: لا توجد مخالفات مسجلة على ملفك المروري حتى تاريخ 12 ديسمبر. نتمنى لك قيادة آمنة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: لا توجد مخالفات مرورية مسجلة على مركبتك. نتمنى لك قيادة آمنة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم سداد جميع المخالفات المرورية المسجلة على ملفك. شكراً لك ونتمنى لك قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: يمكنك الاستعلام عن المخالفات المرورية وسدادها عبر التطبيق الرسمي أو الهوية الرقمية.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: نتيجة الاستعلام: لا توجد مخالفات مرورية على رقم اللوحة المسجل باسمك.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: لا توجد مخالفات مرورية مسجلة على ملفك. نتمنى لك قيادة آمنة. adpolice.gov.ae,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم فحص ملفك المروري بتاريخ 3 ديسمبر: لا توجد مخالفات. المزيد من الخدمات عبر https://adpolice.gov.ae,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم استلام دفعتك للمخالفة رقم REQ-00000020. الإيصال متاح عبر https://adpolice.gov.ae,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم إنجاز طلبك رقم REQ-00000069. التفاصيل عبر https://u.ae,true
+legit,ar,SMS,MAWAQIF,مواقف: ينتهي وقت المواقف في المنطقة M3 الساعة 17:00. يمكنك التمديد عبر تطبيق درب.,true
+legit,ar,SMS,DARB,"درب: تم دفع رسوم المواقف للمنطقة 318 حتى الساعة 16:45. تم خصم درهمين. الرصيد 8,450.00 درهم.",true
+legit,ar,SMS,MAWAQIF,مواقف: ينتهي تصريح المواقف الشهري بتاريخ 26 نوفمبر. جدّده عبر التطبيق.,true
+legit,ar,SMS,+971500000012,مدرسة الاتحاد: نذكّر أولياء الأمور بأن الدوام ينتهي الساعة 17:00 يوم 26 نوفمبر بسبب اجتماع الهيئة التدريسية.,true
+legit,ar,SMS,+971500000010,أكاديمية الياسمينة: فاتورة الفصل الثاني متاحة على بوابة أولياء الأمور. تاريخ الاستحقاق 15 نوفمبر.,true
+legit,ar,SMS,+971500000041,كلية برايتون: تبدأ دروس السباحة للصف 5 بتاريخ 1 يناير. يرجى إرسال ملابس السباحة مع الطالب.,true
+legit,ar,SMS,+971500000099,مدرسة الراحة الدولية: غداً يوم الزي الوطني للصف 9. الحافلات تعمل كالمعتاد.,true
+legit,ar,SMS,+971500000060,أكاديمية الياسمينة: اجتماع أولياء الأمور بتاريخ 28 أكتوبر من الساعة 08:00. احجز موعدك عبر البوابة.,true
+legit,ar,SMS,+971500000082,مدرسة الراحة الدولية: ستتأخر حافلة حمدان حوالي 10 دقائق هذا الصباح بسبب الازدحام.,true
+legit,ar,CHAT,ريم,السلام عليكم، الاجتماع بكرة الساعة 11 الصبح في المكتب.,true
+legit,ar,CHAT,حمد,ممكن تاخذ الأولاد من المدرسة الساعة 9؟ أنا واقف في الزحمة.,true
+legit,ar,CHAT,حمد,وصلت المطار، أشوفك عند البوابة بعد 20 دقيقة.,true
+legit,ar,CHAT,ماما,ماما تقول العشا الساعة 6، لا تتأخر.,true
+legit,ar,CHAT,فاطمة,دفعت فاتورة الكهرباء؟ أعتقد آخر يوم بكرة.,true
+legit,ar,CHAT,نورة,كل عام وأنت بخير! العشا عليّ نهاية الأسبوع.,true
+legit,ar,CHAT,سارة,أرسل لي لوكيشن المطعم لو سمحت.,true
+legit,ar,CHAT,أحمد,تأجل الاجتماع للساعة 5 ونص، نفس القاعة. جيب التقرير المطبوع.,true
+legit,ar,CHAT,أحمد,أنا في كارفور، نحتاج شي للبيت؟,true
+legit,ar,CHAT,أبو عمر,صلاة الجمعة في المسجد الكبير الساعة 1، جاي؟,true
+legit,ar,CHAT,فاطمة,ممكن ترسل لي رقم خالد؟ ضاعت جهات الاتصال عندي.,true
+legit,ar,CHAT,ريم,السباك جاي بكرة الساعة 11، تقدر تكون في البيت؟,true
+legit,ar,CHAT,نورة,بالتوفيق في الامتحان اليوم، إن شاء الله تنجح.,true
+legit,ar,CHAT,خالد,الطريق زحمة على شارع الخليج العربي، خذ الطريق الثاني.,true
+legit,ar,CHAT,نورة,يبه، وصلت الجامعة بالسلامة، بتصل عليك الليل.,true
+legit,ar,CHAT,ريم,تذكير: عرس مريم بتاريخ 28 أكتوبر، لازم نشتري الهدية هالأسبوع.,true
+legit,ar,CHAT,+971500000086,مرحباً، معك حمد من النادي. حصتك بكرة الساعة 9 الصبح، أشوفك.,true
+legit,ar,CHAT,+971500000027,سيارتك جاهزة في الكراج، تقدر تاخذها أي وقت قبل الساعة 10 المسا.,true
+legit,ar,CHAT,+971500000056,السلام عليكم، معك الخياط. الكندورة جاهزة للاستلام.,true
+legit,ar,CHAT,+971500000007,مرحبا، أنا المندوب من طلبات، واقف عند البوابة، لو سمحت انزل.,true
+legit,ar,CHAT,+971500000005,معك نور من الصالون، نأكد موعدك بتاريخ 28 أكتوبر الساعة 13:30.,true
+legit,ar,SMS,ADIB,مصرف أبوظبي الإسلامي: رمز التحقق الخاص بك هو 878450 لعملية شراء بقيمة 480.50 درهم من نون. لا تشارك هذا الرمز مع أي شخص.,true
+legit,ar,SMS,FAB,رمز التحقق الخاص بك من بنك أبوظبي الأول هو 207134، صالح لمدة 3 دقائق. لا تشاركه مع أي أحد، حتى موظفي البنك.,true
+legit,ar,SMS,ADIB,مصرف أبوظبي الإسلامي: استخدم الرمز 054046 لتأكيد تسجيل الدخول. إذا لم تطلب ذلك، اتصل بالرقم الموجود خلف بطاقتك.,true
+legit,ar,SMS,ADIB,"مصرف أبوظبي الإسلامي: تم خصم 15,000 درهم من حسابك المنتهي بـ 0073 لدى إيكيا بتاريخ 1 يناير. الرصيد المتاح 8,450.00 درهم.",true
+legit,ar,SMS,ADIB,"مصرف أبوظبي الإسلامي: تم إيداع راتب بقيمة 2,000 درهم في حسابك المنتهي بـ 0097.",true
+legit,ar,SMS,ADIB,مصرف أبوظبي الإسلامي: كشف حساب بطاقتك الائتمانية جاهز. الحد الأدنى للدفع 250 درهم قبل 20 يناير. اطلع عليه في تطبيق مصرف أبوظبي الإسلامي.,true
+legit,ar,SMS,FAB,بنك أبوظبي الأول: تم إرسال بطاقتك الجديدة وستصلك خلال 7 أيام عمل.,true
+legit,ar,SMS,FAB,"بنك أبوظبي الأول: تم إيداع 2,000 درهم في حسابك المنتهي بـ 0035 بتاريخ 1 يناير. شكراً لتعاملك معنا.",true
+legit,ar,SMS,ADIB,مصرف أبوظبي الإسلامي: تم استخدام البطاقة المنتهية بـ 0069 بمبلغ 250 درهم لدى أدنوك. إذا لم تكن أنت، اتصل بنا على الرقم الموجود على بطاقتك.,true
+legit,ar,SMS,Aramex,أرامكس: شحنتك 0000000076 في طريقها للتوصيل اليوم بين الساعة 9 صباحاً و 1 ظهراً.,true
+legit,ar,SMS,Aramex,أرامكس: تم تسليم طردك 0000000096. شكراً لاختيارك أرامكس.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: لم نجدك اليوم. سنعيد محاولة توصيل طردك 0000000021 غداً. تتبع الشحنة عبر https://emiratespost.ae,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: وصلت شحنتك 0000000066 إلى مركزنا في البرشاء وسيتم توصيلها بتاريخ 20 يناير.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: المندوب قريب منك. يرجى إبقاء هاتفك متاحاً خلال 30 دقيقة.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: طردك 0000000010 جاهز للاستلام من فرع الشارقة. يرجى إحضار الهوية الإماراتية.,true
+legit,ar,SMS,Aramex,أرامكس: شحنتك 0000000027 في طريقها للتوصيل اليوم. تتبعها عبر https://aramex.com,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: تم تسليم شحنتك 0000000024 بتاريخ 26 نوفمبر الساعة 14:15. تتبع شحناتك عبر https://emiratespost.ae,true
+legit,ar,SMS,Aramex,أرامكس: غادرت الشحنة 0000000099 مركزنا في البرشاء. التوصيل المتوقع 3 ديسمبر. التفاصيل عبر https://aramex.com,true
+legit,ar,SMS,Aramex,أرامكس: من المقرر توصيل طردك 0000000055 بتاريخ 15 نوفمبر. لا يلزم اتخاذ أي إجراء.,true
+legit,ar,SMS,+971500000034,تم شحن طلبك من سنتربوينت رقم N0000000027 وسيصل بتاريخ 20 يناير.,true
+legit,ar,SMS,+971500000082,كارفور: طلبك رقم N0000000001 في طريقه إليك. سيتصل بك المندوب قبل الوصول.,true
+legit,ar,SMS,+971500000054,كارفور: تم تسليم طلبك رقم N0000000026. قيّم تجربتك عبر التطبيق.,true
+legit,ar,SMS,+971500000048,طلبات: تم استلام المرتجع لطلبك N0000000045. سيُعاد المبلغ إلى بطاقتك خلال 3 أيام عمل.,true
+legit,ar,SMS,ADDC,"شركة أبوظبي للتوزيع: فاتورتك لشهر أكتوبر بقيمة 3,500 درهم، تاريخ الاستحقاق 1 يناير. يمكنك الدفع عبر التطبيق أو https://addc.ae",true
+legit,ar,SMS,ADDC,شركة أبوظبي للتوزيع: تم استلام دفعة بقيمة 120.00 درهم بتاريخ 15 نوفمبر. شكراً لك.,true
+legit,ar,SMS,ADDC,شركة أبوظبي للتوزيع: استهلاكك لشهر سبتمبر أقل بنسبة 10% من الشهر الماضي. أحسنت.,true
+legit,ar,SMS,DEWA,هيئة كهرباء ومياه دبي: صيانة مجدولة في منطقتك بتاريخ 15 نوفمبر من الساعة 10:15 لمدة ساعتين تقريباً. نعتذر عن الإزعاج.,true
+legit,ar,SMS,ADDC,"شركة أبوظبي للتوزيع: فاتورتك بقيمة 2,000 درهم متاحة الآن. تاريخ الاستحقاق 15 نوفمبر.",true
+legit,ar,SMS,du,"دو: فاتورتك بقيمة 15,000 درهم مستحقة بتاريخ 26 نوفمبر. ادفع عبر التطبيق لتجنب انقطاع الخدمة.",true
+legit,ar,SMS,etisalat,اتصالات من e&: استهلكت 80% من باقة البيانات. جدّد باقتك عبر التطبيق.,true
+legit,ar,SMS,etisalat,"اتصالات من e&: تم شحن رصيدك بمبلغ 250 درهم بنجاح. رصيدك الحالي 25,900.10 درهم.",true
+legit,ar,SMS,etisalat,"اتصالات من e&: فاتورة شهر ديسمبر بقيمة 3,500 درهم. الدفع قبل 28 أكتوبر. التفاصيل عبر https://etisalat.ae",true
+legit,ar,SMS,du,دو: استمتع بـ 5 جيجابايت إضافية مجاناً هذا الشهر. فعّلها من التطبيق.,true
+legit,ar,SMS,etisalat,اتصالات من e&: تم تفعيل باقة البيانات بنجاح. صالحة حتى 1 يناير.,true
+legit,ar,SMS,du,"دو: رصيدك الحالي 8,450.00 درهم، صالح حتى 12 ديسمبر. شكراً لاستخدامك دو.",true
+legit,ar,SMS,du,دو: تم تجديد باقتك الشهرية بنجاح. 50 جيجابايت متاحة حتى 1 يناير.,true
+legit,ar,SMS,RTA,"هيئة الطرق والمواصلات: رصيدك الحالي 1,234.56 درهم. أعد الشحن عبر تطبيق هيئة الطرق والمواصلات عندما يقل عن 10 دراهم.",true
+legit,ar,SMS,SALIK,سالك: تنتهي ملكية مركبتك بتاريخ 28 أكتوبر. جدّد عبر التطبيق أو salik.ae.,true
+legit,ar,SMS,RTA,هيئة الطرق والمواصلات: تم خصم 4 دراهم عند المرور بتاريخ 3 ديسمبر الساعة 08:00. الرصيد 312.75 درهم.,true
+legit,ar,SMS,RTA,"هيئة الطرق والمواصلات: تم شحن بطاقة نول بمبلغ 15,000 درهم. الرصيد 47.25 درهم.",true
+legit,ar,SMS,+971500000020,عيادة أستر: تذكير بموعدك مع د. الحمادي بتاريخ 26 نوفمبر الساعة 16:45. أرسل 1 للتأكيد أو 2 لإعادة الجدولة.,true
+legit,ar,SMS,+971500000069,صحة: نتائج التحاليل جاهزة. يمكنك الاطلاع عليها عبر التطبيق.,true
+legit,ar,SMS,+971500000049,كليفلاند كلينك أبوظبي: موعد تطعيم عمر بتاريخ 26 نوفمبر الساعة 16:45.,true
+legit,ar,SMS,+971500000023,إن إم سي: شكراً لزيارتك اليوم. وصفتك الطبية جاهزة في الصيدلية بالطابق الأرضي.,true
+legit,ar,SMS,+971500000032,كليفلاند كلينك أبوظبي: حان موعد فحص الأسنان الدوري. احجز عبر الإنترنت أو اتصل بنا.,true
+legit,ar,SMS,+971500000079,نمشي: خصم 70% على الأزياء نهاية هذا الأسبوع. تسوق عبر التطبيق.,true
+legit,ar,SMS,+971500000073,لولو: تخفيضات الجمعة الصفراء، خصم يصل إلى 40%، اليوم فقط. تسوق عبر التطبيق.,true
+legit,ar,SMS,+971500000030,نمشي: توصيل مجاني للطلبات فوق 100 درهم حتى 15 نوفمبر.,true
+legit,ar,SMS,+971500000074,لولو: وصلت تشكيلة الإلكترونيات الجديدة. الأعضاء يحصلون على خصم إضافي 25% هذا الأسبوع.,true
+legit,ar,SMS,Mashreq,بنك المشرق: اكسب نقاط مكافآت مضاعفة على المطاعم خلال شهر أغسطس. تطبق الشروط والأحكام.,true
+legit,ar,SMS,EmiratesNBD,"بنك الإمارات دبي الوطني: استمتع بتقسيط بدون فوائد على مشتريات الأجهزة المنزلية فوق 1,000 درهم ببطاقتك الائتمانية حتى 3 ديسمبر.",true
+legit,ar,SMS,FAB,بنك أبوظبي الأول: سيكون فرع أبوظبي مغلقاً بتاريخ 20 يناير بمناسبة العطلة الرسمية. الخدمات الرقمية متاحة.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: بطاقة الهوية الإماراتية جاهزة للاستلام من مركز أبوظبي. يرجى إحضار جواز السفر. icp.gov.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: تمت الموافقة على طلب الهوية رقم REQ-00000059. ستصلك البطاقة عبر بريد الإمارات خلال 5 أيام عمل.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: موعدك في مركز أبوظبي بتاريخ 26 نوفمبر الساعة 16:45.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: طلب تجديد الإقامة رقم REQ-00000063 قيد المعالجة. الإنجاز المتوقع خلال 5 أيام عمل. u.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: بطاقة الهوية الإماراتية جاهزة للاستلام من مركز عجمان. يرجى إحضار جواز السفر. المزيد عبر https://icp.gov.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: تمت طباعة بطاقة الهوية رقم REQ-00000057 وتسليمها لبريد الإمارات للتوصيل.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: تم تجديد هويتك الإماراتية. النسخة الرقمية متاحة في التطبيق والهوية الرقمية.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم ترقية حسابك إلى حساب موثّق. يمكنك الآن توقيع المستندات رقمياً. uaepass.ae,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم تسجيل الدخول من جهاز جديد بتاريخ 3 ديسمبر الساعة 10:15. إذا لم تكن أنت، غيّر كلمة المرور من التطبيق.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم استخدام توقيعك الرقمي لتوقيع مستند بتاريخ 26 نوفمبر الساعة 11:00.,true
+legit,ar,SMS,TAMM,تم: تم إنجاز طلبك رقم REQ-00000083. يمكنك الاطلاع على النتيجة عبر tamm.abudhabi,true
+legit,ar,SMS,TAMM,تم: تم استلام طلبك رقم REQ-00000023. مدة المعالجة المتوقعة 5 أيام عمل.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم استلام طلبك رقم REQ-00000029 وهو قيد المعالجة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تتغير حدود السرعة على شارع الشيخ زايد اعتباراً من 20 يناير. قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم تسجيل بلاغ المفقودات رقم REQ-00000055. سنتواصل معك عند العثور عليه.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم استلام دفعتك بقيمة 600 درهم للمخالفة رقم REQ-00000079. شكراً لك.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تنتهي صلاحية رخصة القيادة بتاريخ 5 نوفمبر. جدّدها عبر التطبيق أو الهوية الرقمية.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: لا توجد مخالفات مسجلة على ملفك المروري حتى تاريخ 20 يناير. نتمنى لك قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: لا توجد مخالفات مرورية مسجلة على مركبتك. نتمنى لك قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم سداد جميع المخالفات المرورية المسجلة على ملفك. شكراً لك ونتمنى لك قيادة آمنة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: يمكنك الاستعلام عن المخالفات المرورية وسدادها عبر التطبيق الرسمي أو الهوية الرقمية.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: لا توجد مخالفات مرورية مسجلة على ملفك. نتمنى لك قيادة آمنة. u.ae,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم فحص ملفك المروري بتاريخ 5 نوفمبر: لا توجد مخالفات. المزيد من الخدمات عبر https://u.ae,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم استلام دفعتك للمخالفة رقم REQ-00000017. الإيصال متاح عبر https://adpolice.gov.ae,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم إنجاز طلبك رقم REQ-00000000. التفاصيل عبر https://u.ae,true
+legit,ar,SMS,DARB,درب: ينتهي وقت المواقف في المنطقة 201 الساعة 17:00. يمكنك التمديد عبر تطبيق درب.,true
+legit,ar,SMS,DARB,درب: تم دفع رسوم المواقف للمنطقة M3 حتى الساعة 16:45. تم خصم درهمين. الرصيد 47.25 درهم.,true
+legit,ar,SMS,MAWAQIF,مواقف: ينتهي تصريح المواقف الشهري بتاريخ 15 نوفمبر. جدّده عبر التطبيق.,true
+legit,ar,SMS,+971500000031,أكاديمية الياسمينة: نذكّر أولياء الأمور بأن الدوام ينتهي الساعة 11:00 يوم 15 نوفمبر بسبب اجتماع الهيئة التدريسية.,true
+legit,ar,SMS,+971500000015,مدرسة جيمس ويلينغتون: فاتورة الفصل الثاني متاحة على بوابة أولياء الأمور. تاريخ الاستحقاق 1 يناير.,true
+legit,ar,SMS,+971500000052,مدرسة جيمس ويلينغتون: تبدأ دروس السباحة للصف 9 بتاريخ 5 نوفمبر. يرجى إرسال ملابس السباحة مع الطالب.,true
+legit,ar,SMS,+971500000075,مدرسة الراحة الدولية: اجتماع أولياء الأمور بتاريخ 28 أكتوبر من الساعة 08:00. احجز موعدك عبر البوابة.,true
+legit,ar,SMS,+971500000049,أكاديمية الياسمينة: ستتأخر حافلة زايد حوالي 10 دقائق هذا الصباح بسبب الازدحام.,true
+legit,ar,CHAT,ريم,السلام عليكم، الاجتماع بكرة الساعة 7 الصبح في المكتب.,true
+legit,ar,CHAT,أبو عمر,ممكن تاخذ الأولاد من المدرسة الساعة 6؟ أنا واقف في الزحمة.,true
+legit,ar,CHAT,خالد,ماما تقول العشا الساعة 10، لا تتأخر.,true
+legit,ar,CHAT,حمد,تأجل الاجتماع للساعة 4 ونص، نفس القاعة. جيب التقرير المطبوع.,true
+legit,ar,CHAT,بابا,ممكن ترسل لي رقم أبو عمر؟ ضاعت جهات الاتصال عندي.,true
+legit,ar,CHAT,نورة,السباك جاي بكرة الساعة 7، تقدر تكون في البيت؟,true
+legit,ar,CHAT,فاطمة,تذكير: عرس نورة بتاريخ 20 يناير، لازم نشتري الهدية هالأسبوع.,true
+legit,ar,CHAT,+971500000078,مرحباً، معك حمد من النادي. حصتك بكرة الساعة 8 الصبح، أشوفك.,true
+legit,ar,CHAT,+971500000093,مرحبا، أنا المندوب من نمشي، واقف عند البوابة، لو سمحت انزل.,true
+legit,ar,CHAT,+971500000075,معك نور من الصالون، نأكد موعدك بتاريخ 12 ديسمبر الساعة 09:30.,true
+legit,ar,SMS,Mashreq,"بنك المشرق: رمز التحقق الخاص بك هو 413193 لعملية شراء بقيمة 1,250.00 درهم من إيكيا. لا تشارك هذا الرمز مع أي شخص.",true
+legit,ar,SMS,ADIB,رمز التحقق الخاص بك من مصرف أبوظبي الإسلامي هو 020604، صالح لمدة 2 دقائق. لا تشاركه مع أي أحد، حتى موظفي البنك.,true
+legit,ar,SMS,Mashreq,بنك المشرق: استخدم الرمز 420641 لتأكيد تسجيل الدخول. إذا لم تطلب ذلك، اتصل بالرقم الموجود خلف بطاقتك.,true
+legit,ar,SMS,FAB,"بنك أبوظبي الأول: تم خصم 15,000 درهم من حسابك المنتهي بـ 0094 لدى طلبات بتاريخ 28 أكتوبر. الرصيد المتاح 25,900.10 درهم.",true
+legit,ar,SMS,ADCB,بنك أبوظبي التجاري: تم إيداع راتب بقيمة 99.00 درهم في حسابك المنتهي بـ 0073.,true
+legit,ar,SMS,FAB,بنك أبوظبي الأول: كشف حساب بطاقتك الائتمانية جاهز. الحد الأدنى للدفع 250 درهم قبل 26 نوفمبر. اطلع عليه في تطبيق بنك أبوظبي الأول.,true
+legit,ar,SMS,Mashreq,بنك المشرق: تم إرسال بطاقتك الجديدة وستصلك خلال 14 أيام عمل.,true
+legit,ar,SMS,EmiratesNBD,بنك الإمارات دبي الوطني: تم إيداع 480.50 درهم في حسابك المنتهي بـ 0003 بتاريخ 28 أكتوبر. شكراً لتعاملك معنا.,true
+legit,ar,SMS,EmiratesNBD,"بنك الإمارات دبي الوطني: تم استخدام البطاقة المنتهية بـ 0005 بمبلغ 3,500 درهم لدى نون. إذا لم تكن أنت، اتصل بنا على الرقم الموجود على بطاقتك.",true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: شحنتك 0000000034 في طريقها للتوصيل اليوم بين الساعة 10 صباحاً و 2 ظهراً.,true
+legit,ar,SMS,Aramex,أرامكس: تم تسليم طردك 0000000079. شكراً لاختيارك أرامكس.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: لم نجدك اليوم. سنعيد محاولة توصيل طردك 0000000009 غداً. تتبع الشحنة عبر https://emiratespost.ae,true
+legit,ar,SMS,Aramex,أرامكس: وصلت شحنتك 0000000080 إلى مركزنا في عجمان وسيتم توصيلها بتاريخ 3 ديسمبر.,true
+legit,ar,SMS,Aramex,أرامكس: المندوب قريب منك. يرجى إبقاء هاتفك متاحاً خلال 30 دقيقة.,true
+legit,ar,SMS,Aramex,أرامكس: طردك 0000000089 جاهز للاستلام من فرع مدينة زايد. يرجى إحضار الهوية الإماراتية.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: شحنتك 0000000039 في طريقها للتوصيل اليوم. تتبعها عبر https://emiratespost.ae,true
+legit,ar,SMS,Aramex,أرامكس: تم تسليم شحنتك 0000000054 بتاريخ 3 ديسمبر الساعة 13:30. تتبع شحناتك عبر https://aramex.com,true
+legit,ar,SMS,Aramex,أرامكس: غادرت الشحنة 0000000094 مركزنا في مدينة خليفة. التوصيل المتوقع 3 ديسمبر. التفاصيل عبر https://aramex.com,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: من المقرر توصيل طردك 0000000085 بتاريخ 1 يناير. لا يلزم اتخاذ أي إجراء.,true
+legit,ar,SMS,+971500000006,تم شحن طلبك من كارفور رقم N0000000071 وسيصل بتاريخ 5 نوفمبر.,true
+legit,ar,SMS,+971500000059,لولو: طلبك رقم N0000000037 في طريقه إليك. سيتصل بك المندوب قبل الوصول.,true
+legit,ar,SMS,+971500000029,كارفور: تم تسليم طلبك رقم N0000000017. قيّم تجربتك عبر التطبيق.,true
+legit,ar,SMS,+971500000092,نون: تم استلام المرتجع لطلبك N0000000012. سيُعاد المبلغ إلى بطاقتك خلال 10 أيام عمل.,true
+legit,ar,SMS,DEWA,هيئة كهرباء ومياه دبي: فاتورتك لشهر أكتوبر بقيمة 120.00 درهم، تاريخ الاستحقاق 3 ديسمبر. يمكنك الدفع عبر التطبيق أو https://dewa.gov.ae,true
+legit,ar,SMS,ADDC,"شركة أبوظبي للتوزيع: تم استلام دفعة بقيمة 5,000 درهم بتاريخ 3 ديسمبر. شكراً لك.",true
+legit,ar,SMS,ADDC,شركة أبوظبي للتوزيع: استهلاكك لشهر أكتوبر أقل بنسبة 50% من الشهر الماضي. أحسنت.,true
+legit,ar,SMS,ADDC,شركة أبوظبي للتوزيع: صيانة مجدولة في منطقتك بتاريخ 28 أكتوبر من الساعة 11:00 لمدة ساعتين تقريباً. نعتذر عن الإزعاج.,true
+legit,ar,SMS,ADDC,شركة أبوظبي للتوزيع: فاتورتك بقيمة 99.00 درهم متاحة الآن. تاريخ الاستحقاق 15 نوفمبر.,true
+legit,ar,SMS,etisalat,"اتصالات من e&: فاتورتك بقيمة 15,000 درهم مستحقة بتاريخ 15 نوفمبر. ادفع عبر التطبيق لتجنب انقطاع الخدمة.",true
+legit,ar,SMS,du,"دو: تم شحن رصيدك بمبلغ 1,250.00 درهم بنجاح. رصيدك الحالي 1,234.56 درهم.",true
+legit,ar,SMS,etisalat,اتصالات من e&: فاتورة شهر سبتمبر بقيمة 760 درهم. الدفع قبل 5 نوفمبر. التفاصيل عبر https://etisalat.ae,true
+legit,ar,SMS,etisalat,اتصالات من e&: استمتع بـ 50 جيجابايت إضافية مجاناً هذا الشهر. فعّلها من التطبيق.,true
+legit,ar,SMS,du,دو: تم تفعيل باقة البيانات بنجاح. صالحة حتى 20 يناير.,true
+legit,ar,SMS,du,"دو: رصيدك الحالي 1,234.56 درهم، صالح حتى 1 يناير. شكراً لاستخدامك دو.",true
+legit,ar,SMS,etisalat,اتصالات من e&: تم تجديد باقتك الشهرية بنجاح. 5 جيجابايت متاحة حتى 28 أكتوبر.,true
+legit,ar,SMS,RTA,"هيئة الطرق والمواصلات: رصيدك الحالي 8,450.00 درهم. أعد الشحن عبر تطبيق هيئة الطرق والمواصلات عندما يقل عن 10 دراهم.",true
+legit,ar,SMS,SALIK,سالك: تنتهي ملكية مركبتك بتاريخ 20 يناير. جدّد عبر التطبيق أو salik.ae.,true
+legit,ar,SMS,SALIK,"سالك: تم خصم 4 دراهم عند المرور بتاريخ 28 أكتوبر الساعة 17:00. الرصيد 1,234.56 درهم.",true
+legit,ar,SMS,RTA,"هيئة الطرق والمواصلات: تم شحن بطاقة نول بمبلغ 1,250.00 درهم. الرصيد 312.75 درهم.",true
+legit,ar,SMS,+971500000022,عيادة أستر: تذكير بموعدك مع د. فاطمة بتاريخ 15 نوفمبر الساعة 17:00. أرسل 1 للتأكيد أو 2 لإعادة الجدولة.,true
+legit,ar,SMS,+971500000084,عيادة أستر: نتائج التحاليل جاهزة. يمكنك الاطلاع عليها عبر التطبيق.,true
+legit,ar,SMS,+971500000075,برجيل: موعد تطعيم حمدان بتاريخ 3 ديسمبر الساعة 10:15.,true
+legit,ar,SMS,+971500000059,ميديكلينيك: حان موعد فحص الأسنان الدوري. احجز عبر الإنترنت أو اتصل بنا.,true
+legit,ar,SMS,+971500000005,لولو: خصم 25% على ملابس الأطفال نهاية هذا الأسبوع. تسوق عبر التطبيق.,true
+legit,ar,SMS,+971500000094,طلبات: تخفيضات الجمعة الصفراء، خصم يصل إلى 40%، اليوم فقط. تسوق عبر التطبيق.,true
+legit,ar,SMS,+971500000099,كارفور: توصيل مجاني للطلبات فوق 100 درهم حتى 20 يناير.,true
+legit,ar,SMS,+971500000099,نمشي: وصلت تشكيلة مستحضرات التجميل الجديدة. الأعضاء يحصلون على خصم إضافي 70% هذا الأسبوع.,true
+legit,ar,SMS,ADCB,بنك أبوظبي التجاري: اكسب نقاط مكافآت مضاعفة على المطاعم خلال شهر سبتمبر. تطبق الشروط والأحكام.,true
+legit,ar,SMS,Mashreq,"بنك المشرق: استمتع بتقسيط بدون فوائد على مشتريات البقالة فوق 1,000 درهم ببطاقتك الائتمانية حتى 12 ديسمبر.",true
+legit,ar,SMS,ADIB,مصرف أبوظبي الإسلامي: سيكون فرع دبي مغلقاً بتاريخ 12 ديسمبر بمناسبة العطلة الرسمية. الخدمات الرقمية متاحة.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: بطاقة الهوية الإماراتية جاهزة للاستلام من مركز العين. يرجى إحضار جواز السفر. icp.gov.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: تمت الموافقة على طلب الهوية رقم REQ-00000062. ستصلك البطاقة عبر بريد الإمارات خلال 14 أيام عمل.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: موعدك في مركز البرشاء بتاريخ 26 نوفمبر الساعة 11:00.,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: طلب تجديد الإقامة رقم REQ-00000047 قيد المعالجة. الإنجاز المتوقع خلال 3 أيام عمل. u.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: بطاقة الهوية الإماراتية جاهزة للاستلام من مركز العين. يرجى إحضار جواز السفر. المزيد عبر https://icp.gov.ae,true
+legit,ar,SMS,ICP,الهيئة الاتحادية للهوية والجنسية: تمت طباعة بطاقة الهوية رقم REQ-00000053 وتسليمها لبريد الإمارات للتوصيل.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم تسجيل الدخول من جهاز جديد بتاريخ 12 ديسمبر الساعة 11:00. إذا لم تكن أنت، غيّر كلمة المرور من التطبيق.,true
+legit,ar,SMS,UAEPASS,الهوية الرقمية: تم استخدام توقيعك الرقمي لتوقيع مستند بتاريخ 20 يناير الساعة 09:30.,true
+legit,ar,SMS,TAMM,تم: تم إنجاز طلبك رقم REQ-00000030. يمكنك الاطلاع على النتيجة عبر tamm.abudhabi,true
+legit,ar,SMS,TAMM,تم: تم استلام طلبك رقم REQ-00000035. مدة المعالجة المتوقعة 3 أيام عمل.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم استلام طلبك رقم REQ-00000007 وهو قيد المعالجة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تتغير حدود السرعة على شارع الشيخ زايد اعتباراً من 3 ديسمبر. قيادة آمنة.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم تسجيل بلاغ المفقودات رقم REQ-00000094. سنتواصل معك عند العثور عليه.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم استلام دفعتك بقيمة 300 درهم للمخالفة رقم REQ-00000076. شكراً لك.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تنتهي صلاحية رخصة القيادة بتاريخ 3 ديسمبر. جدّدها عبر التطبيق أو الهوية الرقمية.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: لا توجد مخالفات مسجلة على ملفك المروري حتى تاريخ 28 أكتوبر. نتمنى لك قيادة آمنة.,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: نتيجة الاستعلام: لا توجد مخالفات مرورية على رقم اللوحة المسجل باسمك.,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم فحص ملفك المروري بتاريخ 5 نوفمبر: لا توجد مخالفات. المزيد من الخدمات عبر https://adpolice.gov.ae,true
+legit,ar,SMS,ADPolice,شرطة أبوظبي: تم استلام دفعتك للمخالفة رقم REQ-00000005. الإيصال متاح عبر https://adpolice.gov.ae,true
+legit,ar,SMS,DubaiPolice,شرطة دبي: تم إنجاز طلبك رقم REQ-00000077. التفاصيل عبر https://u.ae,true
+legit,ar,SMS,DARB,درب: ينتهي وقت المواقف في المنطقة 318 الساعة 09:30. يمكنك التمديد عبر تطبيق درب.,true
+legit,ar,SMS,MAWAQIF,مواقف: تم دفع رسوم المواقف للمنطقة 112 حتى الساعة 11:00. تم خصم درهمين. الرصيد 47.25 درهم.,true
+legit,ar,SMS,MAWAQIF,مواقف: ينتهي تصريح المواقف الشهري بتاريخ 3 ديسمبر. جدّده عبر التطبيق.,true
+legit,ar,SMS,+971500000033,مدرسة الاتحاد: نذكّر أولياء الأمور بأن الدوام ينتهي الساعة 09:30 يوم 28 أكتوبر بسبب اجتماع الهيئة التدريسية.,true
+legit,ar,SMS,+971500000002,مدرسة الراحة الدولية: فاتورة الفصل الثاني متاحة على بوابة أولياء الأمور. تاريخ الاستحقاق 28 أكتوبر.,true
+legit,ar,SMS,+971500000052,مدرسة الاتحاد: تبدأ دروس السباحة للصف 3 بتاريخ 20 يناير. يرجى إرسال ملابس السباحة مع الطالب.,true
+legit,ar,SMS,+971500000049,مدرسة جيمس ويلينغتون: غداً يوم الزي الوطني للصف 9. الحافلات تعمل كالمعتاد.,true
+legit,ar,SMS,+971500000064,مدرسة الراحة الدولية: اجتماع أولياء الأمور بتاريخ 1 يناير من الساعة 10:15. احجز موعدك عبر البوابة.,true
+legit,ar,SMS,+971500000049,مدرسة الاتحاد: ستتأخر حافلة علياء حوالي 10 دقائق هذا الصباح بسبب الازدحام.,true
+legit,ar,CHAT,حمد,السلام عليكم، الاجتماع بكرة الساعة 8 الصبح في المكتب.,true
+legit,ar,CHAT,بابا,ممكن ترسل لي رقم أحمد؟ ضاعت جهات الاتصال عندي.,true
+legit,ar,CHAT,فاطمة,السباك جاي بكرة الساعة 6، تقدر تكون في البيت؟,true
+legit,ar,CHAT,خالد,تذكير: عرس حمد بتاريخ 12 ديسمبر، لازم نشتري الهدية هالأسبوع.,true
+legit,ar,CHAT,+971500000052,مرحباً، معك خالد من النادي. حصتك بكرة الساعة 11 الصبح، أشوفك.,true
+legit,ar,CHAT,+971500000011,مرحبا، أنا المندوب من نون، واقف عند البوابة، لو سمحت انزل.,true
+legit,ar,CHAT,+971500000094,معك نور من الصالون، نأكد موعدك بتاريخ 3 ديسمبر الساعة 08:00.,true
+legit,ar,SMS,EmiratesNBD,"بنك الإمارات دبي الوطني: رمز التحقق الخاص بك هو 456207 لعملية شراء بقيمة 3,500 درهم من سبينيس. لا تشارك هذا الرمز مع أي شخص.",true
+legit,ar,SMS,ADCB,رمز التحقق الخاص بك من بنك أبوظبي التجاري هو 478437، صالح لمدة 5 دقائق. لا تشاركه مع أي أحد، حتى موظفي البنك.,true
+legit,ar,SMS,Mashreq,بنك المشرق: استخدم الرمز 156693 لتأكيد تسجيل الدخول. إذا لم تطلب ذلك، اتصل بالرقم الموجود خلف بطاقتك.,true
+legit,ar,SMS,EmiratesNBD,"بنك الإمارات دبي الوطني: تم خصم 3,500 درهم من حسابك المنتهي بـ 0005 لدى إيكيا بتاريخ 15 نوفمبر. الرصيد المتاح 312.75 درهم.",true
+legit,ar,SMS,Mashreq,بنك المشرق: تم إيداع راتب بقيمة 760 درهم في حسابك المنتهي بـ 0016.,true
+legit,ar,SMS,FAB,بنك أبوظبي الأول: كشف حساب بطاقتك الائتمانية جاهز. الحد الأدنى للدفع 120.00 درهم قبل 28 أكتوبر. اطلع عليه في تطبيق بنك أبوظبي الأول.,true
+legit,ar,SMS,FAB,بنك أبوظبي الأول: تم إرسال بطاقتك الجديدة وستصلك خلال 10 أيام عمل.,true
+legit,ar,SMS,EmiratesNBD,بنك الإمارات دبي الوطني: تم إيداع 99.00 درهم في حسابك المنتهي بـ 0093 بتاريخ 5 نوفمبر. شكراً لتعاملك معنا.,true
+legit,ar,SMS,Mashreq,"بنك المشرق: تم استخدام البطاقة المنتهية بـ 0071 بمبلغ 2,000 درهم لدى أدنوك. إذا لم تكن أنت، اتصل بنا على الرقم الموجود على بطاقتك.",true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: شحنتك 0000000062 في طريقها للتوصيل اليوم بين الساعة 10 صباحاً و 2 ظهراً.,true
+legit,ar,SMS,Aramex,أرامكس: تم تسليم طردك 0000000084. شكراً لاختيارك أرامكس.,true
+legit,ar,SMS,Aramex,أرامكس: لم نجدك اليوم. سنعيد محاولة توصيل طردك 0000000060 غداً. تتبع الشحنة عبر https://aramex.com,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: وصلت شحنتك 0000000053 إلى مركزنا في الشارقة وسيتم توصيلها بتاريخ 20 يناير.,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: طردك 0000000028 جاهز للاستلام من فرع الشارقة. يرجى إحضار الهوية الإماراتية.,true
+legit,ar,SMS,Aramex,أرامكس: شحنتك 0000000062 في طريقها للتوصيل اليوم. تتبعها عبر https://aramex.com,true
+legit,ar,SMS,EmiratesPost,بريد الإمارات: تم تسليم شحنتك 0000000036 بتاريخ 1 يناير الساعة 08:00. تتبع شحناتك عبر https://emiratespost.ae,true
+legit,ar,SMS,Aramex,أرامكس: غادرت الشحنة 0000000025 مركزنا في الشارقة. التوصيل المتوقع 26 نوفمبر. التفاصيل عبر https://aramex.com,true
+legit,ar,SMS,Aramex,أرامكس: من المقرر توصيل طردك 0000000078 بتاريخ 15 نوفمبر. لا يلزم اتخاذ أي إجراء.,true
+legit,ar-latn,CHAT,+971500000060,"hala, ana Hamad men el gym. el session bokra el sa3a 9 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000061,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 4 el masa.",true
+legit,ar-latn,SMS,+971500000044,"salam, ma3ak el khayat. el kandoora jahza, momken temor takhodha.",true
+legit,ar-latn,CHAT,+971500000007,"marhaba, ana el mandoob men Carrefour, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,CHAT,+971500000038,"ma3ak Noor men el salon, n2akked maw3edak yom 3 Dec el sa3a 08:00.",true
+legit,ar-latn,SMS,+971500000060,"el order taba3ak jahez, momken temor takhdo ba3d el 11.",true
+legit,ar-latn,CHAT,+971500000004,"el mo3allem Ahmed: el dars bokra el sa3a 5, la tensa el kitab.",true
+legit,ar-latn,CHAT,+971500000001,"ma3ak el kahraba2i, bajeek ba3d 10 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Ahmed,yalla nel2a 3al 10 fel padel? 7ajazt el court 3.,true
+legit,ar-latn,CHAT,Sara,momken takhod el awlad men el madrasa el sa3a 9? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Baba,"weselt el matar, ashoofak 3end el gate ba3d 20 d2ee2a.",true
+legit,ar-latn,CHAT,Khalid,"mama t2ool el 3asha el sa3a 4, la tet2akhar.",true
+legit,ar-latn,CHAT,Ahmed,dafa3t fatoorat el kahraba? a3ta2ed akher yom bokra.,true
+legit,ar-latn,CHAT,Abu Omar,kol sana w enta tayeb! el 3asha 3alay el weekend.,true
+legit,ar-latn,CHAT,Mama,ersel li location el mat3am law sama7t.,true
+legit,ar-latn,CHAT,Abu Omar,"el ejtima3 bokra el sa3a 11 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Noora,"wesalt el bait bel salama, tasbe7 3ala kheir.",true
+legit,ar-latn,CHAT,Hamad,sho ra2yak nroo7 el mall ba3d el 3asha?,true
+legit,ar-latn,CHAT,Sara,"ana fel Carrefour, ne7taj shi lel bait?",true
+legit,ar-latn,CHAT,Baba,"salat el jom3a fel masjed el kbeer el sa3a 1, jay?",true
+legit,ar-latn,CHAT,Noora,momken tersel li ra9m Noora? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Abu Omar,"el sabbak jay bokra el sa3a 10, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Khalid,"bel tawfee2 fel emte7an el yom, enta 2adha.",true
+legit,ar-latn,CHAT,Reem,"el taree2 za7ma 3ala share3 el khaleej el 3arabi, khod el taree2 el tani.",true
+legit,ar-latn,CHAT,Reem,"yuba, weselt el jam3a bel salama, batasel 3alek el lail.",true
+legit,ar-latn,CHAT,Khalid,"tazkeer: 3ers Baba yom 3 Dec, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Hamad,"ta2ajjal el ejtima3 lel sa3a 4 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,CHAT,Reem,"7abibi, jeeb khobz w 7aleeb w enta jay.",true
+legit,ar-latn,CHAT,Um Khalid,ba3d el dawam nroo7 el corniche? el jaw 7elo el yom.,true
+legit,ar-latn,CHAT,Abu Omar,"shokran 3ala el ghada el yom, kan ktheer tayeb.",true
+legit,ar-latn,SMS,+971500000041,"hala, ana Khalid men el gym. el session bokra el sa3a 7 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000061,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 6 el masa.",true
+legit,ar-latn,SMS,+971500000094,"marhaba, ana el mandoob men Lulu, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000032,"el order taba3ak jahez, momken temor takhdo ba3d el 8.",true
+legit,ar-latn,SMS,+971500000057,"el mo3allem Noora: el dars bokra el sa3a 10, la tensa el kitab.",true
+legit,ar-latn,SMS,+971500000096,"ma3ak el kahraba2i, bajeek ba3d 11 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Noora,yalla nel2a 3al 6 fel padel? 7ajazt el court 3.,true
+legit,ar-latn,CHAT,Um Khalid,momken takhod el awlad men el madrasa el sa3a 7? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Baba,"mama t2ool el 3asha el sa3a 10, la tet2akhar.",true
+legit,ar-latn,CHAT,Um Khalid,"el ejtima3 bokra el sa3a 9 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Ahmed,momken tersel li ra9m Abu Omar? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Abu Omar,"el sabbak jay bokra el sa3a 6, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Hamad,"tazkeer: 3ers Ahmed yom 28 Oct, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Um Khalid,"ta2ajjal el ejtima3 lel sa3a 7 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,SMS,+971500000061,"hala, ana Um Khalid men el gym. el session bokra el sa3a 7 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000082,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 10 el masa.",true
+legit,ar-latn,SMS,+971500000035,"marhaba, ana el mandoob men Centrepoint, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000083,"ma3ak Noor men el salon, n2akked maw3edak yom 15 Nov el sa3a 10:15.",true
+legit,ar-latn,SMS,+971500000077,"el order taba3ak jahez, momken temor takhdo ba3d el 10.",true
+legit,ar-latn,CHAT,+971500000098,"el mo3allem Sara: el dars bokra el sa3a 5, la tensa el kitab.",true
+legit,ar-latn,CHAT,+971500000020,"ma3ak el kahraba2i, bajeek ba3d 8 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Hamad,yalla nel2a 3al 5 fel padel? 7ajazt el court 4.,true
+legit,ar-latn,CHAT,Khalid,"mama t2ool el 3asha el sa3a 11, la tet2akhar.",true
+legit,ar-latn,CHAT,Reem,"el ejtima3 bokra el sa3a 7 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Abu Omar,"el sabbak jay bokra el sa3a 8, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Abu Omar,"tazkeer: 3ers Baba yom 15 Nov, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,SMS,+971500000095,"hala, ana Baba men el gym. el session bokra el sa3a 9 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000027,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 9 el masa.",true
+legit,ar-latn,SMS,+971500000050,"ma3ak Noor men el salon, n2akked maw3edak yom 26 Nov el sa3a 17:00.",true
+legit,ar-latn,CHAT,Um Khalid,yalla nel2a 3al 4 fel padel? 7ajazt el court 3.,true
+legit,ar-latn,CHAT,Reem,"mama t2ool el 3asha el sa3a 7, la tet2akhar.",true
+legit,ar-latn,CHAT,Baba,"el ejtima3 bokra el sa3a 10 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Ahmed,momken tersel li ra9m Um Khalid? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Mama,"el sabbak jay bokra el sa3a 7, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Abu Omar,"tazkeer: 3ers Sara yom 3 Dec, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,+971500000065,"hala, ana Khalid men el gym. el session bokra el sa3a 8 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000026,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 8 el masa.",true
+legit,ar-latn,CHAT,+971500000080,"marhaba, ana el mandoob men Talabat, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000036,"ma3ak Noor men el salon, n2akked maw3edak yom 1 Jan el sa3a 08:00.",true
+legit,ar-latn,CHAT,+971500000029,"el mo3allem Noora: el dars bokra el sa3a 4, la tensa el kitab.",true
+legit,ar-latn,SMS,+971500000065,"ma3ak el kahraba2i, bajeek ba3d 7 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Noora,yalla nel2a 3al 5 fel padel? 7ajazt el court 1.,true
+legit,ar-latn,CHAT,Khalid,momken takhod el awlad men el madrasa el sa3a 5? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Sara,"mama t2ool el 3asha el sa3a 9, la tet2akhar.",true
+legit,ar-latn,CHAT,Um Khalid,momken tersel li ra9m Hamad? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Hamad,"el sabbak jay bokra el sa3a 9, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Hamad,"tazkeer: 3ers Mama yom 1 Jan, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,SMS,+971500000033,"hala, ana Reem men el gym. el session bokra el sa3a 5 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000020,"marhaba, ana el mandoob men Sharaf DG, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000029,"ma3ak Noor men el salon, n2akked maw3edak yom 15 Nov el sa3a 16:45.",true
+legit,ar-latn,SMS,+971500000087,"el mo3allem Um Khalid: el dars bokra el sa3a 5, la tensa el kitab.",true
+legit,ar-latn,CHAT,Hamad,yalla nel2a 3al 7 fel padel? 7ajazt el court 2.,true
+legit,ar-latn,CHAT,Um Khalid,momken takhod el awlad men el madrasa el sa3a 8? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Mama,momken tersel li ra9m Mama? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Mama,"tazkeer: 3ers Baba yom 1 Jan, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Noora,"ta2ajjal el ejtima3 lel sa3a 6 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,CHAT,+971500000086,"hala, ana Mama men el gym. el session bokra el sa3a 6 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000049,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 11 el masa.",true
+legit,ar-latn,CHAT,+971500000020,"marhaba, ana el mandoob men Noon, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000017,"ma3ak Noor men el salon, n2akked maw3edak yom 3 Dec el sa3a 13:30.",true
+legit,ar-latn,CHAT,+971500000029,"el mo3allem Baba: el dars bokra el sa3a 8, la tensa el kitab.",true
+legit,ar-latn,SMS,+971500000031,"ma3ak el kahraba2i, bajeek ba3d 4 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Mama,yalla nel2a 3al 10 fel padel? 7ajazt el court 1.,true
+legit,ar-latn,CHAT,Ahmed,momken takhod el awlad men el madrasa el sa3a 4? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Noora,"el ejtima3 bokra el sa3a 4 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Ahmed,"tazkeer: 3ers Noora yom 26 Nov, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,+971500000070,"hala, ana Reem men el gym. el session bokra el sa3a 10 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000021,"ma3ak Noor men el salon, n2akked maw3edak yom 1 Jan el sa3a 16:45.",true
+legit,ar-latn,CHAT,+971500000043,"el order taba3ak jahez, momken temor takhdo ba3d el 7.",true
+legit,ar-latn,SMS,+971500000007,"el mo3allem Hamad: el dars bokra el sa3a 4, la tensa el kitab.",true
+legit,ar-latn,SMS,+971500000007,"ma3ak el kahraba2i, bajeek ba3d 5 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Hamad,yalla nel2a 3al 8 fel padel? 7ajazt el court 3.,true
+legit,ar-latn,CHAT,Mama,"mama t2ool el 3asha el sa3a 8, la tet2akhar.",true
+legit,ar-latn,CHAT,Mama,"tazkeer: 3ers Um Khalid yom 28 Oct, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Ahmed,"ta2ajjal el ejtima3 lel sa3a 5 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,SMS,+971500000011,"hala, ana Baba men el gym. el session bokra el sa3a 5 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000006,"el sayara jahza fel garage, te2dar takhodha ay wa2t abl el 7 el masa.",true
+legit,ar-latn,CHAT,+971500000018,"ma3ak Noor men el salon, n2akked maw3edak yom 3 Dec el sa3a 16:45.",true
+legit,ar-latn,CHAT,+971500000053,"el mo3allem Hamad: el dars bokra el sa3a 10, la tensa el kitab.",true
+legit,ar-latn,CHAT,+971500000068,"ma3ak el kahraba2i, bajeek ba3d 9 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Sara,"mama t2ool el 3asha el sa3a 6, la tet2akhar.",true
+legit,ar-latn,CHAT,Noora,"el ejtima3 bokra el sa3a 5 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Reem,momken tersel li ra9m Khalid? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Baba,"tazkeer: 3ers Hamad yom 1 Jan, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,SMS,+971500000065,"hala, ana Khalid men el gym. el session bokra el sa3a 4 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000023,"el mo3allem Um Khalid: el dars bokra el sa3a 10, la tensa el kitab.",true
+legit,ar-latn,CHAT,+971500000074,"ma3ak el kahraba2i, bajeek ba3d 6 daqayeq, el bab maftoo7?",true
+legit,ar-latn,CHAT,Mama,yalla nel2a 3al 7 fel padel? 7ajazt el court 4.,true
+legit,ar-latn,CHAT,Hamad,momken takhod el awlad men el madrasa el sa3a 11? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Ahmed,momken tersel li ra9m Baba? da3et el contacts 3endi.,true
+legit,ar-latn,CHAT,Um Khalid,"tazkeer: 3ers Reem yom 28 Oct, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Khalid,"ta2ajjal el ejtima3 lel sa3a 8 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,CHAT,+971500000042,"ma3ak Noor men el salon, n2akked maw3edak yom 28 Oct el sa3a 13:30.",true
+legit,ar-latn,CHAT,+971500000047,"el order taba3ak jahez, momken temor takhdo ba3d el 4.",true
+legit,ar-latn,SMS,+971500000050,"el mo3allem Ahmed: el dars bokra el sa3a 10, la tensa el kitab.",true
+legit,ar-latn,CHAT,Ahmed,yalla nel2a 3al 11 fel padel? 7ajazt el court 1.,true
+legit,ar-latn,CHAT,Baba,momken takhod el awlad men el madrasa el sa3a 6? ana wa2ef fel za7ma.,true
+legit,ar-latn,SMS,+971500000017,"hala, ana Hamad men el gym. el session bokra el sa3a 8 el sob7, ashoofak.",true
+legit,ar-latn,SMS,+971500000042,"ma3ak Noor men el salon, n2akked maw3edak yom 26 Nov el sa3a 14:15.",true
+legit,ar-latn,SMS,+971500000017,"el order taba3ak jahez, momken temor takhdo ba3d el 5.",true
+legit,ar-latn,SMS,+971500000075,"el mo3allem Khalid: el dars bokra el sa3a 6, la tensa el kitab.",true
+legit,ar-latn,CHAT,Mama,yalla nel2a 3al 4 fel padel? 7ajazt el court 4.,true
+legit,ar-latn,CHAT,Reem,"el sabbak jay bokra el sa3a 11, te2dar tkoon fel bait?",true
+legit,ar-latn,CHAT,Abu Omar,"tazkeer: 3ers Noora yom 1 Jan, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,+971500000051,"ma3ak Noor men el salon, n2akked maw3edak yom 1 Jan el sa3a 10:15.",true
+legit,ar-latn,SMS,+971500000099,"el order taba3ak jahez, momken temor takhdo ba3d el 9.",true
+legit,ar-latn,SMS,+971500000099,"el mo3allem Khalid: el dars bokra el sa3a 7, la tensa el kitab.",true
+legit,ar-latn,CHAT,Ahmed,yalla nel2a 3al 6 fel padel? 7ajazt el court 4.,true
+legit,ar-latn,CHAT,Um Khalid,"el ejtima3 bokra el sa3a 8 el sob7 fel maktab, la tensa el laptop.",true
+legit,ar-latn,CHAT,Ahmed,momken tersel li ra9m Reem? da3et el contacts 3endi.,true
+legit,ar-latn,SMS,+971500000061,"hala, ana Noora men el gym. el session bokra el sa3a 10 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000009,"ma3ak Noor men el salon, n2akked maw3edak yom 1 Jan el sa3a 13:30.",true
+legit,ar-latn,CHAT,Sara,yalla nel2a 3al 8 fel padel? 7ajazt el court 1.,true
+legit,ar-latn,CHAT,Mama,momken takhod el awlad men el madrasa el sa3a 10? ana wa2ef fel za7ma.,true
+legit,ar-latn,CHAT,Hamad,"mama t2ool el 3asha el sa3a 5, la tet2akhar.",true
+legit,ar-latn,CHAT,Sara,"tazkeer: 3ers Noora yom 28 Oct, lazem neshtiri el hadiya hal esboo3.",true
+legit,ar-latn,CHAT,Baba,"ta2ajjal el ejtima3 lel sa3a 10 w nos, nafs el 2a3a. jeeb el ta2reer.",true
+legit,ar-latn,CHAT,+971500000096,"hala, ana Noora men el gym. el session bokra el sa3a 7 el sob7, ashoofak.",true
+legit,ar-latn,CHAT,+971500000027,"marhaba, ana el mandoob men Namshi, wa2ef 3end el gate, law sama7t enzel.",true
+legit,ar-latn,SMS,+971500000023,"el mo3allem Mama: el dars bokra el sa3a 10, la tensa el kitab.",true
+legit,ar-latn,CHAT,Ahmed,yalla nel2a 3al 5 fel padel? 7ajazt el court 3.,true
+legit,ar-latn,CHAT,Abu Omar,momken tersel li ra9m Sara? da3et el contacts 3endi.,true

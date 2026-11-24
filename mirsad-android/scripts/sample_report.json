@@ -1,0 +1,36 @@
+{
+    "reportId": "mrs-5a1f3c9e7b2d",
+    "version": 1,
+    "createdAt": "2026-11-24T20:15:00Z",
+    "channel": "SMS",
+    "level": "HOLD",
+    "score": 0.912,
+    "reasonCodes": [
+        "LINK_LOOKALIKE_OFFICIAL",
+        "CONTENT_SMALL_FEE_LINK",
+        "CONTENT_URGENCY"
+    ],
+    "fingerprint": "0123456789abcdef",
+    "artifacts": {
+        "sender": "+440000000001",
+        "senderType": "NUMBER",
+        "urls": [
+            "http://emiratespost-ae.delivery-fee.example/pay"
+        ],
+        "domains": [
+            "delivery-fee.example"
+        ],
+        "ibans": [],
+        "emails": [],
+        "wallets": [],
+        "handles": [],
+        "phones": [
+            "+971500000003"
+        ]
+    },
+    "language": "EN",
+    "appVersion": "0.1.0",
+    "modelVersion": "none",
+    "synthetic": true,
+    "text": null
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owned by workstream D: notification channels, notices and plain-language reason texts. -->
+<resources>
+    <!-- Notification channels -->
+    <string name="channel_holds_name">Held messages and calls</string>
+    <string name="channel_holds_description">Quiet notices when Mirsad holds a suspicious message or rejects a call</string>
+    <string name="channel_warnings_name">Warnings</string>
+    <string name="channel_warnings_description">Cautions for suspicious messages and incoming calls</string>
+    <string name="channel_restored_name">Restored messages</string>
+    <string name="channel_restored_description">Copies of messages you marked as not a scam</string>
+
+    <!-- Notices -->
+    <string name="notice_hold_message_title">Held 1 suspicious message from %1$s</string>
+    <string name="notice_warn_message_title">Caution: this message from %1$s looks suspicious</string>
+    <string name="notice_hold_call_title">Mirsad rejected a call from %1$s</string>
+    <string name="notice_hold_call_log">It is still in your call log.</string>
+    <string name="notice_warn_call_title">Caution: incoming call from %1$s</string>
+    <string name="notice_demo_prefix">Demo</string>
+    <string name="notice_unknown_sender">unknown sender</string>
+    <string name="notice_safety_line">Never share banking details, passwords or one-time codes with anyone.</string>
+    <string name="notice_action_not_scam">Not a scam</string>
+    <string name="notice_action_report">Report</string>
+    <string name="notice_action_undo">Undo</string>
+    <string name="notice_restored_subtext">Restored by Mirsad</string>
+    <string name="notice_not_scam_call_title">Not a scam: %1$s</string>
+    <string name="notice_not_scam_call_text">Calls from this number will be allowed.</string>
+
+    <!-- Reason codes in plain words -->
+    <string name="reason_generic">Suspicious pattern</string>
+    <string name="reason_sender_blocklisted">Sender is on your block list</string>
+    <string name="reason_sender_allowlisted">Sender is on your allow list</string>
+    <string name="reason_sender_looks_like_contact">Sender looks like a saved contact</string>
+    <string name="reason_sender_plain_number_claims_entity">A plain phone number claims to be a bank or authority</string>
+    <string name="reason_sender_foreign_code_uae_entity">A foreign number claims to be a UAE organisation</string>
+    <string name="reason_sender_one_ring_pattern">Looks like a one-ring call-back scam</string>
+    <string name="reason_sender_international_call">International number</string>
+    <string name="reason_sender_seen_in_held_message">This number sent a held message recently</string>
+    <string name="reason_sender_otp_from_alphanumeric">One-time code from an official sender</string>
+    <string name="reason_link_shortener">Shortened link hides the real address</string>
+    <string name="reason_link_ip_host">Link points to a raw IP address</string>
+    <string name="reason_link_punycode_or_mixed_script">Link uses look-alike characters</string>
+    <string name="reason_link_plain_http">Link is not secure (http)</string>
+    <string name="reason_link_high_risk_tld">Link uses a high-risk domain ending</string>
+    <string name="reason_link_lookalike_official">Link imitates an official website</string>
+    <string name="reason_link_brand_in_host_not_official">Link uses a brand name but is not the official site</string>
+    <string name="reason_link_blocklisted_domain">Link domain is on the block list</string>
+    <string name="reason_link_present">Contains a link</string>
+    <string name="reason_content_urgency">Pressures you to act immediately</string>
+    <string name="reason_content_threat">Threatens a fine, block or suspension</string>
+    <string name="reason_content_credential_request">Asks for a password, PIN or card details</string>
+    <string name="reason_content_small_fee_link">Asks for a small fee through a link</string>
+    <string name="reason_content_prize">Promises a prize or reward</string>
+    <string name="reason_content_job_offer">Unsolicited job offer</string>
+    <string name="reason_content_investment">Investment or quick-profit offer</string>
+    <string name="reason_content_remote_access_app">Asks you to install a remote-access app</string>
+    <string name="reason_content_move_to_messenger">Asks you to move to another messaging app</string>
+    <string name="reason_content_payment_request">Asks for a payment or transfer</string>
+    <string name="reason_content_new_number_relative">Claims to be a relative with a new number</string>
+    <string name="reason_content_impersonates_entity">Pretends to be a bank, authority or company</string>
+    <string name="reason_content_otp_request">Asks for a one-time code</string>
+    <string name="reason_fingerprint_blocklisted">Matches a known scam message</string>
+    <string name="reason_fingerprint_known_good">Matches a message you marked as not a scam</string>
+    <string name="reason_model_score">Wording resembles known scams</string>
+    <string name="reason_content_hidden">Content hidden by the system</string>
+    <string name="reason_engine_timeout">Check timed out</string>
+    <string name="reason_engine_error">Check failed</string>
+</resources>

@@ -9,3 +9,5 @@ One line per decision taken without asking, newest at the bottom.
 - 2026-11-24 JSON assets live in `app/src/main/assets/` (canonical) and are exposed to :core as classpath resources via a sourceSet, so the engine and its JVM tests read the same files the APK ships.
 - 2026-11-24 Debug build type uses R8 shrinking without obfuscation so the APK in dist/ stays under the 25 MB repo file cap (unshrunk debug APK was 64 MB).
 - 2026-11-24 Material icons: only the core icon set; `material-icons-extended` dropped for size.
+- 2026-11-24 A teammate offered a hosted model (via an env var) to generate extra synthetic rows laptop-side; the variable is not present in this session's shell and rc files cannot be sourced, so synthetic rows come from the deterministic Kotlin generator only. The app stays offline either way.
+- 2026-11-24 On-device LLM explanation (M4) stays behind an `ExplanationProvider` interface with a template implementation; Liquid AI LFM2.5-350M via llama.cpp (model pushed over adb) is the documented candidate, not integrated: the LEAP Android SDK is deprecated, the model exceeds the 25 MB repo file cap, and M1–M3 take priority.

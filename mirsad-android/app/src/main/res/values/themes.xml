@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Mirsad" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+    <!-- AppCompat DayNight parent: MainActivity extends AppCompatActivity so the in-app language switch
+         (AppCompatDelegate.setApplicationLocales) works on every API level. -->
+    <style name="Theme.Mirsad" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/mirsad_primary</item>
+        <item name="colorPrimaryDark">@color/mirsad_primary</item>
+        <item name="colorAccent">@color/mirsad_primary</item>
+        <item name="android:windowBackground">@color/mirsad_background</item>
     </style>
     <style name="Theme.Mirsad.Translucent" parent="Theme.Mirsad">
         <item name="android:windowIsTranslucent">true</item>
