@@ -29,6 +29,7 @@ object AutopilotBus {
     val STEPS = listOf(
         "home", "demo", "demo_scam", "incident", "restore", "call", "report",
         "quarantine", "settings", "onboarding", "lang_ar", "lang_en",
+        "report_message", "skip_onboarding", "reset",
     )
 
     // Android 10+ blocks activity starts from a background receiver (BAL_BLOCK), and the process may die before

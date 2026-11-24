@@ -438,3 +438,44 @@ data class BlocklistFile(
     val domains: List<String> = emptyList(),
     val fingerprints: List<String> = emptyList(),
 )
+
+/**
+ * One display order for reasons everywhere (incident screen, rows, notices): hard evidence first, then the other
+ * signals against the message by weight, then the classifier's opinion, then the safe signals.
+ */
+object ReasonOrder {
+    private fun rank(r: Reason): Int = when {
+        r.hard -> 0
+        r.code == ReasonCodes.MODEL_SCORE -> 2
+        r.weight < 0.0 -> 3
+        else -> 1
+    }
+
+    fun forDisplay(reasons: List<Reason>): List<Reason> =
+        reasons.sortedWith(compareBy<Reason> { rank(it) }.thenByDescending { kotlin.math.abs(it.weight) })
+
+    /** The [max] strongest reasons that count against the message. */
+    fun top(reasons: List<Reason>, max: Int): List<Reason> =
+        forDisplay(reasons.filter { it.weight > 0.0 }).take(max)
+}
+
+/** Turns the engine's compact reason details into something a person can read. Never contains message text. */
+object ReasonDetail {
+    /** A short display detail for [reason], or null when the raw detail adds nothing for a reader. */
+    fun display(reason: Reason): String? {
+        val d = reason.detail?.trim().orEmpty()
+        if (d.isEmpty()) return null
+        return when (reason.code) {
+            // "entityId:host" -> the offending host
+            ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL -> d.substringAfter(':')
+            // "lookalike~official" -> "lookalike ≈ official"
+            ReasonCodes.LINK_LOOKALIKE_OFFICIAL -> d.replace("~", " ≈ ")
+            // "official:domain" -> the official domain
+            ReasonCodes.LINK_PRESENT -> d.removePrefix("official:")
+            ReasonCodes.CONTENT_SMALL_FEE_LINK, ReasonCodes.CONTENT_PAYMENT_REQUEST,
+            ReasonCodes.CONTENT_CREDENTIAL_REQUEST,
+            -> null
+            else -> d
+        }
+    }
+}

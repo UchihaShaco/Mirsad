@@ -117,6 +117,8 @@ fun IncidentScreen(
     LaunchedEffect(incident?.id, action) {
         if (incident != null && action == Routes.ACTION_RESTORE && !autoDone) {
             autoDone = true
+            // Let the held state stay on screen for a moment before the automatic tap (demo recording).
+            kotlinx.coroutines.delay(2200)
             notScam()
         }
     }
@@ -225,7 +227,7 @@ private fun IncidentBody(
 
         // Reasons
         SectionTitle(stringResource(R.string.incident_why))
-        val reasons = incident.reasons.sortedByDescending { it.weight }
+        val reasons = app.mirsad.core.contract.ReasonOrder.forDisplay(incident.reasons)
         if (reasons.isEmpty()) {
             Text(stringResource(R.string.incident_no_reasons), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
@@ -297,7 +299,7 @@ private fun ReasonRow(reason: Reason, level: Level) {
         val tags = buildList {
             if (reason.hard) add(stringResource(R.string.incident_hard))
             if (reason.weight < 0) add(stringResource(R.string.incident_safe_signal))
-            reason.detail?.takeIf { it.isNotBlank() }?.let { add(it) }
+            app.mirsad.core.contract.ReasonDetail.display(reason)?.let { add(ltrIsolate(it)) }
         }
         if (tags.isNotEmpty()) {
             Spacer(Modifier.height(6.dp))

@@ -193,7 +193,7 @@ fun IncidentRow(incident: Incident, onClick: () -> Unit, modifier: Modifier = Mo
                     else -> incident.text!!.lineSequence().first()
                 }
                 Text(firstLine, style = contentStyle(MaterialTheme.typography.bodyMedium, firstLine), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                val top = incident.reasons.filter { it.weight > 0 }.sortedByDescending { it.weight }.take(2)
+                val top = app.mirsad.core.contract.ReasonOrder.top(incident.reasons, 2)
                 if (top.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
                     Text(

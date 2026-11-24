@@ -133,7 +133,7 @@ class MirsadEngineSeedTest {
         assertTrue(ReasonCodes.CONTENT_URGENCY in postCodes)
         assertTrue(post.artifacts.contains(app.mirsad.core.contract.Artifact(ArtifactType.DOMAIN, "delivery-fee.example")))
         assertEquals(Language.EN, post.language)
-        assertEquals("1.0.0", post.rulesVersion)
+        assertTrue(post.rulesVersion.matches(Regex("""\d+\.\d+\.\d+""")))
 
         val mum = engine.analyse(event(seeds[10]))
         val mumCodes = mum.reasons.map { it.code }.toSet()

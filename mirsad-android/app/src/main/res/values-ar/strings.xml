@@ -132,6 +132,8 @@
     <string name="demo_intro">اختر عيّنة أو الصق رسالة. يحللها مرصاد على هذا الهاتف بالمحرك الحقيقي ويعرض ما كان سيفعله.</string>
     <string name="demo_scam_samples">عيّنات رسائل احتيال</string>
     <string name="demo_legit_samples">عيّنات رسائل سليمة</string>
+    <string name="demo_wrong_samples">رسالة حقيقية يخطئ مرصاد في تقديرها</string>
+    <string name="demo_wrong_note">عمر غيّر رقمه فعلاً، ومرصاد لا يستطيع معرفة ذلك، لذلك يحجز الرسالة. افتحها واضغط «ليس احتيالاً»: ضغطة واحدة تستعيد الرسالة وتسمح للمرسل وتحفظ القالب. اضغط على المثال مرة أخرى بعد ذلك ولن تُحجز الرسالة.</string>
     <string name="demo_paste_title">الصق أي رسالة</string>
     <string name="demo_sender_label">المرسل (رقم أو اسم)</string>
     <string name="demo_text_label">نص الرسالة</string>

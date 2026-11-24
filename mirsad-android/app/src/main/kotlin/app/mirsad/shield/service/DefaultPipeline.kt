@@ -69,7 +69,10 @@ class DefaultPipeline(
             synthetic = synthetic,
             title = event.sender.trim().takeIf { it.isNotEmpty() },
         )
-        val stored = incident.copy(id = incidents.insert(incident))
+        // Privacy: traffic the live services allow is not stored. Mirsad keeps a copy only of what it warned
+        // about or held; Demo, share and manual checks are stored because the user asked for that verdict.
+        val persist = verdict.level != Level.ALLOW || source !in LIVE_SOURCES
+        val stored = if (persist) incident.copy(id = incidents.insert(incident)) else incident
         Log.i(
             TAG,
             "incident #${stored.id} ${stored.level} ${stored.channel} source=$source synthetic=$synthetic " +
@@ -177,6 +180,9 @@ class DefaultPipeline(
         const val ORIGIN_NOT_A_SCAM = "not_a_scam"
         private const val HELD_WINDOW_MS = 7L * 24 * 3600 * 1000
         private const val ZERO_FINGERPRINT = "0000000000000000"
+
+        /** Background sources: their ALLOW verdicts are never persisted. */
+        private val LIVE_SOURCES = setOf(IncidentSource.NOTIFICATION, IncidentSource.CALL_SCREENING)
 
         /** Sources whose incidents are surfaced as notices. Share/manual checks show their result on screen. */
         private val NOTIFYING_SOURCES = setOf(IncidentSource.NOTIFICATION, IncidentSource.CALL_SCREENING, IncidentSource.DEMO)

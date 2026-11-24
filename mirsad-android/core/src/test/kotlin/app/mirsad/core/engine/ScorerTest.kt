@@ -14,7 +14,7 @@ class ScorerTest {
 
     @Test
     fun `rules file loaded with a version and thresholds`() {
-        assertEquals("1.0.0", rules.version)
+        assertTrue(Regex("""\d+\.\d+\.\d+""").matches(rules.version), "rules.json carries a semantic version")
         assertEquals(0.45, rules.thresholds(Sensitivity.BALANCED).warn)
         assertEquals(0.65, rules.thresholds(Sensitivity.BALANCED).hold)
         assertEquals(0.60, rules.thresholds(Sensitivity.RELAXED).warn)

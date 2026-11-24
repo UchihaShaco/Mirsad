@@ -141,6 +141,8 @@
     <string name="demo_intro">Pick a sample or paste a message. Mirsad analyses it on this phone with the real engine and shows what it would do.</string>
     <string name="demo_scam_samples">Sample scam messages</string>
     <string name="demo_legit_samples">Sample legitimate messages</string>
+    <string name="demo_wrong_samples">A real message Mirsad gets wrong</string>
+    <string name="demo_wrong_note">Omar really did change his number. Mirsad cannot know that, so it holds the message. Open it and tap Not a scam: one tap restores it, allows the sender and remembers the template. Tap the sample again afterwards and it is no longer held.</string>
     <string name="demo_paste_title">Paste any message</string>
     <string name="demo_sender_label">Sender (number or name)</string>
     <string name="demo_text_label">Message text</string>

@@ -42,3 +42,17 @@ tasks.register<JavaExec>("trainModel") {
         rootProject.file("app/src/main/assets/model.bin").absolutePath,
     )
 }
+
+// Command-line demo of the engine (no phone needed): writes the runtime classpath so scripts/analyse.sh
+// can run app.mirsad.core.cli.AnalyseMainKt directly with java.
+tasks.register("cliClasspath") {
+    group = "mirsad"
+    description = "Compiles :core and writes its runtime classpath to build/cli-classpath.txt"
+    dependsOn("classes", "processResources")
+    val out = layout.buildDirectory.file("cli-classpath.txt")
+    val cp = sourceSets.main.get().runtimeClasspath
+    outputs.file(out)
+    doLast {
+        out.get().asFile.writeText(cp.files.joinToString(File.pathSeparator) { it.absolutePath })
+    }
+}

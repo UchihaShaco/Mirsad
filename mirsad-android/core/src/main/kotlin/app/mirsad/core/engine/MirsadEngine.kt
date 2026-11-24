@@ -80,7 +80,11 @@ class MirsadEngine(
 
         senderRules(event, sender, entities, context, bag)
         linkAnalyser.analyse(links, context, bag)
-        contentRules(norm, artifacts, hasRiskyLink, bag)
+        val foreignSender = sender.kind == SenderKind.NUMBER && sender.e164 != null && !PhoneNumbers.isUae(sender.e164)
+        // A small fee behind a link is what a local shop sends too. It becomes hard evidence only when something
+        // else does not add up: a named UAE entity, a foreign number, or a deceptive link.
+        val feeCorroborated = entities.isNotEmpty() || foreignSender || SUSPICIOUS_LINK_CODES.any { bag.contains(it) }
+        contentRules(norm, artifacts, hasRiskyLink, feeCorroborated, bag)
         impersonationRule(sender, entities, hasRiskyLink, bag)
 
         // Legit one-time code from an alphanumeric sender: strong safe signal, never HOLD.
@@ -106,11 +110,14 @@ class MirsadEngine(
         }
 
         val reasons = bag.reasons
-        val score = scorer.score(reasons)
-        var level = scorer.level(score, bag.hasHard, context.sensitivity)
-
         val blocklistHard = bag.contains(ReasonCodes.SENDER_BLOCKLISTED) ||
             bag.contains(ReasonCodes.LINK_BLOCKLISTED_DOMAIN) || bag.contains(ReasonCodes.FINGERPRINT_BLOCKLISTED)
+        val heldNumberCall = event.channel == Channel.CALL && bag.get(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE)?.hard == true
+        // A block-list hit, or a call from a number that sent a held message, is a decision the user (or a police
+        // alert) already made: it holds at every sensitivity, subject to the never-HOLD caps below.
+        val score = scorer.score(reasons).let { if (blocklistHard || heldNumberCall) maxOf(it, LIST_HIT_SCORE) else it }
+        var level = scorer.level(score, bag.hasHard, context.sensitivity)
+
         if (knownGood) level = if (blocklistHard) minOf(level, Level.WARN) else Level.ALLOW
         if (sender.kind == SenderKind.CONTACT) level = minOf(level, Level.WARN)
         if (otpLegit) level = minOf(level, Level.WARN)
@@ -150,7 +157,11 @@ class MirsadEngine(
         }
         val e164 = sender.e164
         if (e164 != null && e164 in context.recentlyHeldNumbers) {
-            bag.add(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE, rules.weight(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE), null, true)
+            // Hard evidence for calls only (a call from a number that sent a held message in the last 7 days).
+            // For a follow-up message it is a soft signal: enough to warn, never enough to hold on its own.
+            val code = ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE
+            if (event.channel == Channel.CALL) bag.add(code, rules.hardWeight(code), null, true)
+            else bag.add(code, rules.weight(code), null, false)
         }
         val entityIds = entities.joinToString(",") { it.id }
         if (sender.kind == SenderKind.NUMBER && e164 != null && entities.isNotEmpty()) {
@@ -178,7 +189,7 @@ class MirsadEngine(
         }
     }
 
-    private fun contentRules(norm: String, artifacts: List<Artifact>, hasRiskyLink: Boolean, bag: ReasonBag) {
+    private fun contentRules(norm: String, artifacts: List<Artifact>, hasRiskyLink: Boolean, feeCorroborated: Boolean, bag: ReasonBag) {
         if (norm.isEmpty()) return
         for (rule in rules.contentRules) {
             if (!rule.matches(norm)) continue
@@ -199,7 +210,9 @@ class MirsadEngine(
             .any { it < rules.smallFeeMaxAmount }
         if (smallAmount && rules.smallFeeKeywords?.containsMatchIn(norm) == true) {
             val code = ReasonCodes.CONTENT_SMALL_FEE_LINK
-            if (hasRiskyLink) bag.add(code, rules.hardWeight(code), "link", true) else bag.add(code, rules.weight(code), null, false)
+            val corroborated = feeCorroborated || bag.contains(ReasonCodes.CONTENT_THREAT)
+            if (hasRiskyLink && corroborated) bag.add(code, rules.hardWeight(code), "link", true)
+            else bag.add(code, rules.weight(code), if (hasRiskyLink) "link" else null, false)
         }
         if (rules.paymentRequest.any { it.containsMatchIn(norm) }) {
             val code = ReasonCodes.CONTENT_PAYMENT_REQUEST
@@ -226,6 +239,13 @@ class MirsadEngine(
     private fun elapsedMs(startNanos: Long): Long = (System.nanoTime() - startNanos) / 1_000_000
 
     companion object {
+        /** Score floor for block-list hits; above every sensitivity's HOLD threshold. */
+        private const val LIST_HIT_SCORE = 0.9
+        private val SUSPICIOUS_LINK_CODES = listOf(
+            ReasonCodes.LINK_SHORTENER, ReasonCodes.LINK_IP_HOST, ReasonCodes.LINK_PUNYCODE_OR_MIXED_SCRIPT,
+            ReasonCodes.LINK_HIGH_RISK_TLD, ReasonCodes.LINK_LOOKALIKE_OFFICIAL,
+            ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL, ReasonCodes.LINK_BLOCKLISTED_DOMAIN,
+        )
         private val PRESSURE_CODES = listOf(
             ReasonCodes.CONTENT_THREAT, ReasonCodes.CONTENT_URGENCY, ReasonCodes.CONTENT_CREDENTIAL_REQUEST,
             ReasonCodes.CONTENT_OTP_REQUEST, ReasonCodes.CONTENT_PRIZE, ReasonCodes.CONTENT_SMALL_FEE_LINK,

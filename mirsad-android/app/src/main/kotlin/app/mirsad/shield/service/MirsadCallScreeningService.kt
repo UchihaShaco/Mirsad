@@ -47,7 +47,8 @@ class MirsadCallScreeningService : CallScreeningService() {
         val incident: Incident? = runBlocking {
             withTimeoutOrNull(BUDGET_MS) { pipeline.process(event, IncidentSource.CALL_SCREENING, synthetic = false) }
         }
-        Log.i(TAG, "call from $number -> ${incident?.level ?: "ALLOW (timeout)"} incident=${incident?.id}")
+        // Never log the full number: last two digits only.
+        Log.i(TAG, "call from …${number.takeLast(2)} -> ${incident?.level ?: "ALLOW (timeout)"} incident=${incident?.id}")
         return if (incident?.level == Level.HOLD) {
             CallResponse.Builder()
                 .setDisallowCall(true)

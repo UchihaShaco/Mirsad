@@ -38,7 +38,10 @@ AUTOPILOT_RECEIVER="$APP_ID/.demo.AutopilotReceiver"
 LISTENER_COMPONENT="$APP_ID/$APP_ID.service.MirsadNotificationListener"
 
 # The scam sender and message used across the storyboard (synthetic, zero-filled, .example domain).
-SCAM_NUMBER="+440000000001"
+# Fictional number for the injected scam SMS and the follow-up call. The emulator's telephony stack rewrites
+# some zero-filled numbers (an SMS from +440000000001 arrives as +44000000001), which would break the
+# "call from the number of a held message" rule; +447000000001 arrives intact for both SMS and calls.
+SCAM_NUMBER="${SCAM_NUMBER:-+447000000001}"
 SCAM_SMS="Emirates Post: your parcel is held at customs. Pay AED 3.50 within 24 hours or it will be returned: http://emiratespost-ae.delivery-fee.example/pay"
 LEGIT_NUMBER="+971500000003"
 LEGIT_SMS="Your order 12345 has shipped. Track it in the app."

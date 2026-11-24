@@ -100,6 +100,17 @@ fun DemoScreen(
                 items(DemoSeeds.legit) { sample ->
                     SampleCard(sample, enabled = !busy) { onRun(sample.toEvent(), IncidentSource.DEMO, true) }
                 }
+                item { SectionTitle(stringResource(R.string.demo_wrong_samples)) }
+                item {
+                    Text(
+                        stringResource(R.string.demo_wrong_note),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(DemoSeeds.wronglyHeld) { sample ->
+                    SampleCard(sample, enabled = !busy) { onRun(sample.toEvent(), IncidentSource.DEMO, true) }
+                }
                 item { SectionTitle(stringResource(R.string.demo_paste_title)) }
                 item {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {

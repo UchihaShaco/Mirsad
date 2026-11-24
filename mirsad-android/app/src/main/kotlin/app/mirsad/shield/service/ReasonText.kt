@@ -49,14 +49,13 @@ object ReasonText {
 
     fun describe(context: Context, reason: Reason): String {
         val base = context.getString(labels[reason.code] ?: R.string.reason_generic)
-        val detail = reason.detail?.trim()?.takeIf { it.isNotEmpty() && reason.code.startsWith("LINK_") }
+        val detail = app.mirsad.core.contract.ReasonDetail.display(reason)?.takeIf { reason.code.startsWith("LINK_") }
         return if (detail != null) "$base ($detail)" else base
     }
 
     /** Up to [max] distinct reasons that count against the message: hard evidence first, then by weight. */
     fun summary(context: Context, reasons: List<Reason>, max: Int = 3): List<String> =
-        reasons.filter { it.weight > 0.0 }
-            .sortedWith(compareByDescending<Reason> { it.hard }.thenByDescending { it.weight })
+        app.mirsad.core.contract.ReasonOrder.top(reasons, reasons.size)
             .map { describe(context, it) }
             .distinct()
             .take(max)

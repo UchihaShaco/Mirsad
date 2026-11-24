@@ -11,7 +11,9 @@ import app.mirsad.shield.MainActivity
  *
  *   adb shell am broadcast -a app.mirsad.shield.AUTOPILOT -n app.mirsad.shield/.demo.AutopilotReceiver --es step <name>
  *
- * Steps: home, demo, demo_scam, incident, restore, call, report, quarantine, settings, onboarding, lang_ar, lang_en.
+ * Steps: home, demo, demo_scam, incident, restore, call, report, report_message, quarantine, settings, onboarding,
+ * skip_onboarding, reset (deletes all Mirsad data), lang_ar, lang_en.
+ * The receiver is protected by android.permission.DUMP in the debug manifest: adb shell holds it, other apps do not.
  * The step is posted to [AutopilotBus]; the root composable consumes it. If the activity is not running it is started
  * first and the pending step is picked up as soon as the root subscribes.
  */

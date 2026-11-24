@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "note": "Stage 1 rules for MirsadEngine. All regex patterns run on the normalised text (lowercase, tashkeel stripped, alef/ya/ta-marbuta unified, Arabic-Indic digits mapped to ASCII). Weights are in [-1, 1]; 'hard' reasons gate HOLD. Reasons with the same code are merged (max weight, hard if any is hard).",
   "scoring": {
     "k": 1.5,
@@ -19,7 +19,7 @@
     "SENDER_FOREIGN_CODE_UAE_ENTITY":  { "weight": 0.38, "hard": false },
     "SENDER_ONE_RING_PATTERN":         { "weight": 0.35, "hard": false },
     "SENDER_INTERNATIONAL_CALL":       { "weight": 0.30, "hard": false },
-    "SENDER_SEEN_IN_HELD_MESSAGE":     { "weight": 0.80, "hard": true },
+    "SENDER_SEEN_IN_HELD_MESSAGE": { "weight": 0.45, "hard": false, "hardWeight": 0.8, "comment": "hard (hardWeight) for calls only; a soft signal for follow-up messages" },
     "SENDER_OTP_FROM_ALPHANUMERIC":    { "weight": -0.80, "hard": false },
     "LINK_SHORTENER":                  { "weight": 0.30, "hard": false },
     "LINK_IP_HOST":                    { "weight": 0.40, "hard": false },
@@ -173,7 +173,7 @@
     ]
   },
   "smallFee": {
-    "comment": "An amount below maxAmount (AED) next to a pay/fee/customs/delivery word. Hard when a non-official link is present.",
+    "comment": "An amount below maxAmount (AED) next to a pay/fee/customs/delivery word. Hard only when a non-official link is present AND something corroborates it: a named UAE entity, a foreign sender number, a deceptive link (shortener, IP host, punycode, risky TLD, lookalike, brand in host, blocklisted) or a threat. A bare small fee with a link (a laundry, a nursery) is a soft signal: WARN at most.",
     "maxAmount": 50,
     "amountPatterns": [
       "(?:aed|dhs?|dirhams?|dh|درهم|درهما|دراهم|د\\.?إ\\.?|د\\.?ا\\.?)\\s?(\\d{1,4}(?:[.,]\\d{1,3})?)\\b",

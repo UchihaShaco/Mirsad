@@ -11,17 +11,15 @@
 #   cmd statusbar expand-notifications | collapse           (adb shell cmd statusbar help)
 # Compression: ffmpeg -vf scale=W:-1 -pix_fmt rgb24 -compression_level 9 -pred mixed (ffmpeg -h encoder=png / -h full).
 #
-# Storyboard (autopilot steps are implemented by workstream C; with the stub receiver, screens look alike):
-#   01_home                 app launched, autopilot home
-#   02_onboarding           deep link EXTRA_SCREEN=onboarding
-#   03_demo                 autopilot demo_scam
-#   04_held_notice          scam SMS injected, shade expanded (held notice), then collapsed
-#   05_incident             autopilot incident
-#   06_quarantine_not_a_scam autopilot quarantine (Not a scam action visible)
-#   07_report_preview       autopilot report
-#   08_home_arabic          set_locale ar, autopilot home
-#   09_demo_arabic          autopilot demo_scam
-#   10_incident_arabic      autopilot incident, then set_locale en
+# Storyboard (real services: needs scripts/grant_permissions.sh first; autopilot steps are debug-only):
+#   02_onboarding            deep link EXTRA_SCREEN=onboarding (after autopilot skip_onboarding + reset)
+#   03_demo                  autopilot demo (the sample list)
+#   04_held_notice           scam SMS injected, held by the listener; shade expanded (held notice)
+#   05_incident              autopilot incident (the held SMS)
+#   06_quarantine_not_a_scam after a rejected call and the wrongly-held friend message restored with Not a scam
+#   07_report_preview        autopilot report_message (report for the held SMS)
+#   01_home                  captured last so it shows real counts and the latest incidents
+#   08_home_arabic, 09_demo_arabic, 10_incident_arabic, 11_quarantine_arabic   after set_locale ar
 
 source "$(dirname "$0")/_lib.sh"
 
@@ -74,29 +72,36 @@ shade_open()  { adbs shell cmd statusbar expand-notifications; }
 shade_close() { adbs shell cmd statusbar collapse; }
 
 # ---- storyboard ----------------------------------------------------------------------------------
+# Real flow: the scam SMS and the call go through the notification listener and the call screening service,
+# the "restore" step is the wrongly-held friend message, and Home is captured last so it shows real counts.
 log "Storyboard start (STEP_WAIT=${STEP_WAIT}s)"
 clear_demo_notifications
 "$SCRIPTS_DIR/set_locale.sh" en
 launch_app
 sleep "$STEP_WAIT"
+autopilot_step skip_onboarding;            sleep 1
+autopilot_step reset;                      sleep "$STEP_WAIT"
 
-autopilot_step home;                       sleep "$STEP_WAIT"; capture 01_home
 launch_app onboarding;                     sleep "$STEP_WAIT"; capture 02_onboarding
-launch_app; autopilot_step demo_scam;      sleep "$STEP_WAIT"; capture 03_demo
+launch_app; autopilot_step demo;           sleep "$STEP_WAIT"; capture 03_demo
 
 "$SCRIPTS_DIR/inject_sms.sh" "$SCAM_NUMBER" "$SCAM_SMS"
-sleep 3
+sleep 4
 shade_open; sleep 2;                       capture 04_held_notice
 shade_close; sleep 1
 
 autopilot_step incident;                   sleep "$STEP_WAIT"; capture 05_incident
+"$SCRIPTS_DIR/inject_call.sh" "$SCAM_NUMBER" 3
+autopilot_step restore;                    sleep 5
 autopilot_step quarantine;                 sleep "$STEP_WAIT"; capture 06_quarantine_not_a_scam
-autopilot_step report;                     sleep "$STEP_WAIT"; capture 07_report_preview
+autopilot_step report_message;             sleep "$STEP_WAIT"; capture 07_report_preview
+autopilot_step home;                       sleep "$STEP_WAIT"; capture 01_home
 
 "$SCRIPTS_DIR/set_locale.sh" ar;           sleep "$STEP_WAIT"
 autopilot_step home;                       sleep "$STEP_WAIT"; capture 08_home_arabic
-autopilot_step demo_scam;                  sleep "$STEP_WAIT"; capture 09_demo_arabic
+autopilot_step demo;                       sleep "$STEP_WAIT"; capture 09_demo_arabic
 autopilot_step incident;                   sleep "$STEP_WAIT"; capture 10_incident_arabic
+autopilot_step quarantine;                 sleep "$STEP_WAIT"; capture 11_quarantine_arabic
 
 "$SCRIPTS_DIR/set_locale.sh" en
 autopilot_step home

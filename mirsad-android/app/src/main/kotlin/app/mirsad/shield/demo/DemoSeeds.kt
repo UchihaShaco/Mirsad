@@ -39,12 +39,27 @@ object DemoSeeds {
         Channel.SMS, scam = true,
     )
 
-    /** The storyboard legitimate message used for "Not a scam". */
+    /** A legitimate bank code: must always be ALLOW. */
     val ADCB_OTP = DemoSample(
         "ADCB",
         "Your OTP is 482913 for a purchase of AED 120.00 at CARREFOUR. Do not share this code with anyone.",
         Channel.SMS, scam = false,
     )
+
+    /**
+     * A legitimate message that Mirsad wrongly HOLDS: a friend who really changed number and asks to be paid
+     * back, with an IBAN. To the engine it is indistinguishable from the "relative with a new number" scam,
+     * so it is the honest example for the one-tap "Not a scam" flow. The IBAN is fictional (valid check digits).
+     */
+    val FRIEND_NEW_NUMBER = DemoSample(
+        "+971500000041",
+        "Hi, it is Omar, this is my new number. Can you transfer the AED 500 for the football pitch today? " +
+            "My IBAN is AE440330000000000000042",
+        Channel.CHAT, scam = false,
+    )
+
+    /** Legitimate messages the engine gets wrong; shown in their own Demo section. */
+    val wronglyHeld: List<DemoSample> = listOf(FRIEND_NEW_NUMBER)
 
     const val DEMO_CALL_NUMBER = "+440000000001"
 

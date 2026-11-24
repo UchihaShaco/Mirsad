@@ -15,9 +15,11 @@
 #    0-3   home, protection on                          (autopilot home)
 #    3-10  parcel-fee SMS arrives and is held           (inject_sms + shade expand/collapse)
 #   10-16  incident with reasons and timing             (autopilot incident)
-#   16-21  legitimate message restored with Not a scam  (autopilot restore)
-#   21-26  call from the scam number is rejected        (inject_call + autopilot call)
-#   26-30  report preview                               (autopilot report)
+#   16-21  a wrongly held legitimate message restored with Not a scam  (autopilot restore)
+#   21-26  call from the scam number is rejected by call screening     (inject_call + autopilot incident)
+#   26-30  report preview for the held message                         (autopilot report_message)
+# The SMS and the call go through the real notification listener and call screening service
+# (run scripts/grant_permissions.sh first); the autopilot only navigates.
 
 source "$(dirname "$0")/_lib.sh"
 
@@ -38,9 +40,10 @@ app_installed || die "$APP_ID is not installed; run scripts/install.sh first"
 clear_demo_notifications
 "$SCRIPTS_DIR/set_locale.sh" en
 adbs shell am start -S -W -n "$MAIN_ACTIVITY" >/dev/null
-autopilot_step home
+autopilot_step skip_onboarding; sleep 1
+autopilot_step reset
 adbs shell rm -f "$DEVICE_MP4" >/dev/null 2>&1 || true
-sleep 2
+sleep 3
 
 # Wall-clock aligned storyboard: at <t> seconds after T0 (integer seconds is fine for this cut).
 at() { local target=$(( T0 + $1 )); while (( SECONDS < target )); do sleep 0.2; done; log "t=$1s: $2"; }
@@ -62,8 +65,9 @@ at 6  "shade: held notice";       adbs shell cmd statusbar expand-notifications
 at 10 "shade collapse";           adbs shell cmd statusbar collapse
 at 10 "incident";                 autopilot_step incident
 at 16 "restore (Not a scam)";     autopilot_step restore
-at 21 "call rejected";            "$SCRIPTS_DIR/inject_call.sh" "$SCAM_NUMBER" 3 & autopilot_step call
-at 26 "report preview";           autopilot_step report
+at 21 "call rejected";            "$SCRIPTS_DIR/inject_call.sh" "$SCAM_NUMBER" 3 &
+at 23 "rejected call incident";   autopilot_step incident
+at 26 "report preview";           autopilot_step report_message
 at 30 "end of storyboard"
 
 # screenrecord stops itself at the time limit; wait for the adb process (bounded).

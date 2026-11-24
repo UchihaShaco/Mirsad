@@ -38,6 +38,9 @@ import app.mirsad.core.contract.Event
 import app.mirsad.core.contract.IncidentSource
 import app.mirsad.shield.AppContainer
 import app.mirsad.shield.R
+import app.mirsad.core.contract.IncidentFilter
+import app.mirsad.core.contract.Level
+import app.mirsad.core.contract.ListKind
 import app.mirsad.shield.demo.AutopilotBus
 import app.mirsad.shield.demo.DemoSeeds
 import app.mirsad.shield.ui.screens.DemoScreen
@@ -159,9 +162,35 @@ private class RootActions(
             "demo" -> goTop(Routes.DEMO)
             "demo_scam" -> run(DemoSeeds.PARCEL_FEE.toEvent(), IncidentSource.DEMO, synthetic = true)
             "incident" -> scope.launch { latestIncidentId()?.let { openIncident(it) } }
-            "restore" -> run(DemoSeeds.ADCB_OTP.toEvent(), IncidentSource.DEMO, synthetic = true, action = Routes.ACTION_RESTORE)
+            "restore" -> scope.launch {
+                // Re-runnable: forget what an earlier run of this step taught the app, so the sample is held again.
+                val sample = DemoSeeds.FRIEND_NEW_NUMBER
+                withContext(Dispatchers.Default) {
+                    val fingerprint = container.engine.analyse(sample.toEvent()).fingerprint
+                    container.lists.removeValue(ListKind.ALLOW_SENDER, sample.sender)
+                    container.lists.removeValue(ListKind.KNOWN_GOOD_FINGERPRINT, fingerprint)
+                }
+                run(sample.toEvent(), IncidentSource.DEMO, synthetic = true, action = Routes.ACTION_RESTORE)
+            }
+            "reset" -> scope.launch {
+                withContext(Dispatchers.Default) {
+                    container.incidents.deleteAll()
+                    container.lists.deleteAll()
+                    container.feedback.deleteAll()
+                }
+                goFresh(Routes.HOME)
+            }
             "call" -> run(DemoSeeds.callEvent(DemoSeeds.DEMO_CALL_NUMBER), IncidentSource.DEMO, synthetic = true)
             "report" -> scope.launch { latestIncidentId()?.let { openReport(it) } }
+            // Report preview for the latest held message (richer than a call: links, domains, fee).
+            "report_message" -> scope.launch {
+                val held = container.incidents.observe(IncidentFilter(level = Level.HOLD)).first()
+                (held.firstOrNull { it.channel != Channel.CALL } ?: held.firstOrNull())?.let { openReport(it.id) }
+            }
+            "skip_onboarding" -> scope.launch {
+                container.settings.update { it.copy(onboardingDone = true) }
+                goFresh(Routes.HOME)
+            }
             "quarantine" -> goTop(Routes.QUARANTINE)
             "settings" -> goTop(Routes.SETTINGS)
             "onboarding" -> nav.navigate(Routes.ONBOARDING)
