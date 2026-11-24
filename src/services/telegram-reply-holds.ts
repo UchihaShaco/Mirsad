@@ -121,11 +121,13 @@ export function recordConversationReview(
       AND e.capture_method='telegram_business_live' AND e.type IN ('edited','recorded') AND e.text IS NOT NULL
     ORDER BY (e.type='edited') DESC,e.position DESC LIMIT 1`, { chatId, messageId, workspaceId });
   if (!event) throw new Error('conversation_review_source_missing');
-  const indicators = [...decision.reasons].sort().join(',');
+  // Equivalent decisions compare as sorted sets; the stored list keeps the model's order, which the officer reads.
+  const indicators = decision.reasons.join(',');
+  const indicatorKey = [...decision.reasons].sort().join(',');
   const prior = tx.get(`SELECT 1 FROM case_actions flag WHERE flag.chat_id=:chatId AND flag.type='telegram_officer_review_requested'
     AND flag.position>:boundary AND json_extract(flag.detail,'$.reason')='conversation_review'
-    AND json_extract(flag.detail,'$.reviewStatus')=:status AND ${indicatorSetSql('flag')}=:indicators LIMIT 1`,
-    { chatId, boundary: readChatTestBoundary(tx, chatId), status: decision.status, indicators });
+    AND json_extract(flag.detail,'$.reviewStatus')=:status AND ${indicatorSetSql('flag')}=:indicatorKey LIMIT 1`,
+    { chatId, boundary: readChatTestBoundary(tx, chatId), status: decision.status, indicatorKey });
   if (prior) return;
   record(tx, {
     chatId, workspaceId, messageId, actorId: null, type: 'telegram_officer_review_requested',

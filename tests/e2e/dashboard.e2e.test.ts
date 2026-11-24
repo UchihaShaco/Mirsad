@@ -844,6 +844,9 @@ describe('reference dashboard', () => {
       const sentAt = stand.clock.now().getTime();
       await live.deliver(incoming(contact, 'Checking in.', sentAt));
       await live.dispatch(contact);
+      // One-click Dispatch answers the waiting DM at once. Nothing may be sent after the bank details arrive.
+      await live.app.drain();
+      expect(stand.sender.sent).toHaveLength(1);
       const chat = (await live.chatFor(contact))!;
       const { page, problems } = await openDashboard(live.data.token, live.url);
       await openChat(page, chat.displayLabel);
@@ -868,7 +871,10 @@ describe('reference dashboard', () => {
       await source.waitFor({ state: 'hidden' });
       await header.getByText('Automated replies can continue.', { exact: true }).waitFor();
       expect((await live.chatFor(contact))!.telegramReplyHold).toMatchObject({ evidenceItems: [{ reason: 'link' }], officerReview: null });
-      expect(stand.sender.sent).toHaveLength(0);
+      expect(stand.sender.sent).toHaveLength(1);
+      const [answer] = await live.caseActionsOf(contact, 'ai_reply_sent');
+      const [first] = (await live.timelineOf(contact)).messages;
+      expect(answer?.detail.inReplyTo).toBe(first.id);
       expect(problems).toEqual([]);
     } finally {
       await live.stop();
@@ -1105,9 +1111,10 @@ describe('reference dashboard', () => {
     const decisionReady = new Promise<void>(resolve => { finishDecision = resolve; });
     Object.assign(stand.generator, { decide: async () => {
       await decisionReady;
-      return { kind: 'silence', reason: 'ordinary_terms_clear' };
+      return { kind: 'silence', reason: 'ordinary_terms_clear', explanation: 'The sender listed the terms and asked nothing new.' };
     } });
-    const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact) }, stand);
+    // Ali's automatic path decides on its own; a Dispatch would instead ask for a message.
+    const live = await TelegramHarness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(contact), TELEGRAM_AI_AUTO_START: 'true' }, stand);
     try {
       const latest = await live.receive(contact, 'Those are all the terms.');
       const chat = (await live.chatFor(contact))!;
@@ -1117,9 +1124,9 @@ describe('reference dashboard', () => {
       const reason = 'The model considered the terms of the offer clear.';
       await bubble.getByText('Those are all the terms.', { exact: true }).waitFor();
       expect(await bubble.getByText(reason, { exact: true }).count()).toBe(0);
-      await live.dispatch(contact);
       finishDecision();
       await bubble.getByText(reason, { exact: true }).waitFor();
+      await bubble.getByText('The sender listed the terms and asked nothing new.', { exact: true }).waitFor();
       await openEvidence(page);
       await page.locator('#case-log').getByText(reason, { exact: true }).waitFor();
       expect(stand.sender.to(contact)).toHaveLength(0);
@@ -1139,6 +1146,9 @@ describe('reference dashboard', () => {
       const original = incoming(contact, 'I can share the checkout details.', sentAt);
       await live.deliver(original);
       await live.dispatch(contact);
+      // One-click Dispatch answers the waiting DM at once; the rest of the exchange sends nothing more.
+      await live.app.drain();
+      expect(stand.sender.sent).toHaveLength(1);
       const chat = (await live.chatFor(contact))!;
       const { page, problems } = await openDashboard(live.data.token, live.url);
       await openChat(page, chat.displayLabel);
@@ -1198,7 +1208,7 @@ describe('reference dashboard', () => {
       await page.locator('#timeline article[data-kind="message"].focused').filter({ hasText: '18 Sample Street' }).waitFor();
       expect(await header.getByRole('button', { name: 'Mark reviewed' }).count()).toBe(1);
       expect(await header.getByText('Automated replies can continue.').count()).toBe(0);
-      expect(stand.sender.sent).toHaveLength(0);
+      expect(stand.sender.sent).toHaveLength(1);
       expect(problems).toEqual([]);
     } finally {
       await live.stop();

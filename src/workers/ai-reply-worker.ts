@@ -298,10 +298,15 @@ export function isAnswerable(chat: Pick<ChatRow, 'external_chat_id'>, message: L
   );
 }
 
+/**
+ * Whether the automatic path must leave this message alone. A reply request is not an outcome: while it is open the
+ * request path handles the message, and once it lapsed without one (an officer paused or took over, for example) the
+ * message is again answered by the ordinary rules, so Resume AI picks it up while it is still fresh.
+ */
 function hasFinalOutcome(tx: Tx, messageId: string): boolean {
   const row = tx.get<{ found: number }>(
     `SELECT 1 AS found FROM case_actions WHERE
-      (message_id=:messageId AND type IN ('ai_reply_failed','ai_reply_skipped','leave_unanswered','telegram_reply_requested'))
+      (message_id=:messageId AND type IN ('ai_reply_failed','ai_reply_skipped','leave_unanswered'))
       OR (type='ai_reply_sent' AND json_extract(detail,'$.inReplyTo')=:messageId) LIMIT 1`,
     { messageId },
   );

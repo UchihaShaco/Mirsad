@@ -126,8 +126,15 @@ describe('Telegram contact consent and officer review at intake', () => {
       'No need to send documents.', 'https://maps.app.goo.gl.example.test/xyz', 'Is the pickup at 12 Oak Street?'];
     await h.deliver(...[...relevant, ...unrelated].map(text => incoming(locationChat, text, now())));
     const timeline = await h.timelineOf(locationChat);
-    const ids = new Set((await h.caseActionsOf(locationChat, flagged)).map(a => a.messageId));
-    expect(timeline.messages.filter((m: { id: string }) => ids.has(m.id)).map((m: { text: string }) => m.text).sort()).toEqual(relevant.sort());
+    const actions = await h.caseActionsOf(locationChat, flagged);
+    const textsFor = (reason: string) => {
+      const ids = new Set(actions.filter(a => a.detail.reason === reason).map(a => a.messageId));
+      return timeline.messages.filter((m: { id: string }) => ids.has(m.id)).map((m: { text: string }) => m.text).sort();
+    };
+    // A map URL, genuine or a look-alike host, is a link warning like any other URL; only supplied places are locations.
+    const pin = 'Here is the pin https://maps.app.goo.gl/example123';
+    expect(textsFor('location')).toEqual(relevant.filter(text => text !== pin).sort());
+    expect(textsFor('link')).toEqual([pin, 'https://maps.app.goo.gl.example.test/xyz'].sort());
   });
 });
 

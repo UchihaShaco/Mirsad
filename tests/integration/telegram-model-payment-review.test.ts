@@ -137,7 +137,7 @@ it('supplies dispatch context separately from the eligible conversation and log'
       { 'Idempotency-Key': 'test-dispatch-with-brief' });
     expect(dispatched.success).toBe(true);
     await h.app.drain();
-    expect(decide.mock.calls[0]?.[5]).toEqual({ dispatchBrief: officerContext, paymentLinks: [] });
+    expect(decide.mock.calls[0]?.[5]).toEqual({ dispatchBrief: officerContext, dispatchIntent: 'reply', paymentLinks: [] });
     expect(JSON.stringify(decide.mock.calls[0]?.[0])).not.toContain(officerContext);
     expect(JSON.stringify(await h.caseActionsOf(contact, 'dispatch_started'))).not.toContain(officerContext);
     expect(h.logs.join('\n')).not.toContain(officerContext);

@@ -51,8 +51,9 @@ describe('case log labels', () => {
   });
 
   it('explains the AI reply failures whose code alone would mislead: a guard block, and a reply sent but not stored', () => {
-    expect(Object.keys(AI_REPLY_FAILURE_NOTES).sort()).toEqual(['blocked_reply', 'store_failed', 'telegram_chat_mismatch']);
-    expect(AI_REPLY_FAILURE_NOTES.store_failed).toContain('Sent in Telegram');
+    expect(Object.keys(AI_REPLY_FAILURE_NOTES).sort()).toEqual(['blocked_reply', 'delivery_unknown', 'empty_reply', 'invalid_response',
+      'selected_source_unavailable', 'source_unavailable', 'store_failed', 'telegram_chat_mismatch']);
+    expect(AI_REPLY_FAILURE_NOTES.store_failed).toContain('Check Telegram');
   });
 });
 
