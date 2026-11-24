@@ -58,7 +58,7 @@ object SimHash {
     }
 
     private const val SHORT_TEXT_TOKENS = 6
-    private val URL = Regex("https?://\\S+|www\\.\\S+|\\b[a-z0-9-]*[a-z][a-z0-9-]*(?:\\.[a-z0-9-]+)+(?:/\\S*)?")
+    private val URL = Regex("https?://\\S+|www\\.\\S+|\\b[a-z0-9-]{0,62}[a-z][a-z0-9-]{0,62}(?:\\.[a-z0-9-]{1,63}){1,8}(?:/\\S*)?")
     private val NUMBER = Regex("\\d+(?:[.,:]\\d+)*")
     private val PUNCT = Regex("[^\\p{L}\\p{N}#<>_ ]+")
 }

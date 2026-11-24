@@ -232,4 +232,6 @@
     <string name="reason_ENGINE_TIMEOUT">Analysis ran out of time; only partial checks were done.</string>
     <string name="reason_ENGINE_ERROR">Analysis hit an error; treat the result with caution.</string>
     <string name="reason_unknown">Signal: %1$s</string>
+    <string name="settings_export_feedback">Export my corrections as training rows</string>
+    <string name="settings_export_feedback_empty">No corrections yet. Use Not a scam on an incident first.</string>
 </resources>

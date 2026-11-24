@@ -72,7 +72,7 @@ class TextNormaliser(private val arabizi: ArabiziLexicon = ArabiziLexicon.EMPTY)
 
     companion object {
         private val WHITESPACE = Regex("\\s+")
-        private val URL_LIKE = Regex("https?://\\S+|www\\.\\S+|\\b[a-z0-9-]*[a-z][a-z0-9-]*(?:\\.[a-z0-9-]+)+(?:/\\S*)?")
+        private val URL_LIKE = Regex("https?://\\S+|www\\.\\S+|\\b[a-z0-9-]{0,62}[a-z][a-z0-9-]{0,62}(?:\\.[a-z0-9-]{1,63}){1,8}(?:/\\S*)?")
         private val TOKEN_SPLIT = Regex("[^a-z0-9']+")
         /** A token with letters and one of the digits Arabizi uses for Arabic letters (2 3 5 7 9). */
         private val DIGIT_LETTER = Regex("[a-z]+[23579][a-z]+|[23579][a-z]{2,}|[a-z]{2,}[37]")

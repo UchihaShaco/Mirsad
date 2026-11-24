@@ -75,14 +75,15 @@ private fun ReportBody(container: AppContainer, incident: Incident, modifier: Mo
     val now = remember { System.currentTimeMillis() }
 
     // Build the report for the selected tab; re-rendered when the checkbox changes.
-    val (json, preview) = remember(incident, includeText, tab, hasFalsePositive) {
+    val arabic = androidx.compose.ui.platform.LocalConfiguration.current.locales[0].language == "ar"
+    val (json, preview) = remember(incident, includeText, tab, hasFalsePositive, arabic) {
         val reports = container.reports
         if (tab == 1 && hasFalsePositive) {
             val r = reports.falsePositiveReport(incident, includeText, BuildConfig.VERSION_NAME, now)
-            reports.toJson(r) to reports.preview(r)
+            reports.toJson(r) to (if (arabic) app.mirsad.core.report.ReportPreviewText.ar(r) else reports.preview(r))
         } else {
             val r = reports.scamReport(incident, includeText, BuildConfig.VERSION_NAME, now)
-            reports.toJson(r) to reports.preview(r)
+            reports.toJson(r) to (if (arabic) app.mirsad.core.report.ReportPreviewText.ar(r) else reports.preview(r))
         }
     }
     val disabledReason = remember(incident) { ReportActions.amanDisabledReason(incident) }

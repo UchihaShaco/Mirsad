@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "note": "Stage 1 rules for MirsadEngine. All regex patterns run on the normalised text (lowercase, tashkeel stripped, alef/ya/ta-marbuta unified, Arabic-Indic digits mapped to ASCII). Weights are in [-1, 1]; 'hard' reasons gate HOLD. Reasons with the same code are merged (max weight, hard if any is hard).",
   "scoring": {
     "k": 1.5,
@@ -7,41 +7,134 @@
     "comment": "rulesScore = 1 - exp(-k * max(0, sum of weights)); final = 1 - (1 - rulesScore) * (1 - modelWeight * P(scam)). The classifier alone cannot exceed modelWeight and never satisfies the hard gate."
   },
   "thresholds": {
-    "RELAXED":  { "warn": 0.60, "hold": 0.80 },
-    "BALANCED": { "warn": 0.45, "hold": 0.65 },
-    "STRICT":   { "warn": 0.35, "hold": 0.55 }
+    "RELAXED": {
+      "warn": 0.6,
+      "hold": 0.8
+    },
+    "BALANCED": {
+      "warn": 0.45,
+      "hold": 0.65
+    },
+    "STRICT": {
+      "warn": 0.35,
+      "hold": 0.55
+    }
   },
   "weights": {
-    "SENDER_BLOCKLISTED":              { "weight": 0.90, "hard": true },
-    "SENDER_ALLOWLISTED":              { "weight": -1.0, "hard": false },
-    "SENDER_LOOKS_LIKE_CONTACT":       { "weight": -0.20, "hard": false },
-    "SENDER_PLAIN_NUMBER_CLAIMS_ENTITY": { "weight": 0.38, "hard": false },
-    "SENDER_FOREIGN_CODE_UAE_ENTITY":  { "weight": 0.38, "hard": false },
-    "SENDER_ONE_RING_PATTERN":         { "weight": 0.35, "hard": false },
-    "SENDER_INTERNATIONAL_CALL":       { "weight": 0.30, "hard": false },
-    "SENDER_SEEN_IN_HELD_MESSAGE": { "weight": 0.45, "hard": false, "hardWeight": 0.8, "comment": "hard (hardWeight) for calls only; a soft signal for follow-up messages" },
-    "SENDER_OTP_FROM_ALPHANUMERIC":    { "weight": -0.80, "hard": false },
-    "LINK_SHORTENER":                  { "weight": 0.30, "hard": false },
-    "LINK_IP_HOST":                    { "weight": 0.40, "hard": false },
-    "LINK_PUNYCODE_OR_MIXED_SCRIPT":   { "weight": 0.40, "hard": false },
-    "LINK_PLAIN_HTTP":                 { "weight": 0.15, "hard": false },
-    "LINK_HIGH_RISK_TLD":              { "weight": 0.30, "hard": false },
-    "LINK_LOOKALIKE_OFFICIAL":         { "weight": 0.65, "hard": true },
-    "LINK_BRAND_IN_HOST_NOT_OFFICIAL": { "weight": 0.60, "hard": true },
-    "LINK_BLOCKLISTED_DOMAIN":         { "weight": 0.80, "hard": true },
-    "LINK_PRESENT":                    { "weight": 0.05, "hard": false },
-    "LINK_OFFICIAL":                   { "weight": -0.25, "hard": false, "comment": "emitted as LINK_PRESENT with detail official:<domain>" },
-    "CONTENT_IMPERSONATES_ENTITY":     { "weight": 0.25, "hard": false },
-    "CONTENT_OTP_REQUEST":             { "weight": 0.40, "hard": false },
-    "CONTENT_CREDENTIAL_REQUEST":      { "weight": 0.70, "hard": true },
-    "CONTENT_SMALL_FEE_LINK":          { "weight": 0.20, "hard": false, "hardWeight": 0.50 },
-    "CONTENT_PAYMENT_REQUEST":         { "weight": 0.25, "hard": false, "hardWeight": 0.65 },
-    "FINGERPRINT_BLOCKLISTED":         { "weight": 0.90, "hard": true },
-    "FINGERPRINT_KNOWN_GOOD":          { "weight": -1.0, "hard": false }
+    "SENDER_BLOCKLISTED": {
+      "weight": 0.9,
+      "hard": true
+    },
+    "SENDER_ALLOWLISTED": {
+      "weight": -1.0,
+      "hard": false
+    },
+    "SENDER_LOOKS_LIKE_CONTACT": {
+      "weight": -0.2,
+      "hard": false
+    },
+    "SENDER_PLAIN_NUMBER_CLAIMS_ENTITY": {
+      "weight": 0.38,
+      "hard": false
+    },
+    "SENDER_FOREIGN_CODE_UAE_ENTITY": {
+      "weight": 0.38,
+      "hard": false
+    },
+    "SENDER_ONE_RING_PATTERN": {
+      "weight": 0.35,
+      "hard": false
+    },
+    "SENDER_INTERNATIONAL_CALL": {
+      "weight": 0.3,
+      "hard": false
+    },
+    "SENDER_SEEN_IN_HELD_MESSAGE": {
+      "weight": 0.45,
+      "hard": false,
+      "hardWeight": 0.8,
+      "comment": "hard (hardWeight) for calls only; a soft signal for follow-up messages"
+    },
+    "SENDER_OTP_FROM_ALPHANUMERIC": {
+      "weight": -0.8,
+      "hard": false
+    },
+    "LINK_SHORTENER": {
+      "weight": 0.3,
+      "hard": false
+    },
+    "LINK_IP_HOST": {
+      "weight": 0.4,
+      "hard": false
+    },
+    "LINK_PUNYCODE_OR_MIXED_SCRIPT": {
+      "weight": 0.4,
+      "hard": false
+    },
+    "LINK_PLAIN_HTTP": {
+      "weight": 0.15,
+      "hard": false
+    },
+    "LINK_HIGH_RISK_TLD": {
+      "weight": 0.3,
+      "hard": false
+    },
+    "LINK_LOOKALIKE_OFFICIAL": {
+      "weight": 0.65,
+      "hard": true
+    },
+    "LINK_BRAND_IN_HOST_NOT_OFFICIAL": {
+      "weight": 0.6,
+      "hard": true
+    },
+    "LINK_BLOCKLISTED_DOMAIN": {
+      "weight": 0.8,
+      "hard": true
+    },
+    "LINK_PRESENT": {
+      "weight": 0.05,
+      "hard": false
+    },
+    "LINK_OFFICIAL": {
+      "weight": -0.25,
+      "hard": false,
+      "comment": "emitted as LINK_PRESENT with detail official:<domain>"
+    },
+    "CONTENT_IMPERSONATES_ENTITY": {
+      "weight": 0.25,
+      "hard": false
+    },
+    "CONTENT_OTP_REQUEST": {
+      "weight": 0.4,
+      "hard": false
+    },
+    "CONTENT_CREDENTIAL_REQUEST": {
+      "weight": 0.7,
+      "hard": true
+    },
+    "CONTENT_SMALL_FEE_LINK": {
+      "weight": 0.2,
+      "hard": false,
+      "hardWeight": 0.5
+    },
+    "CONTENT_PAYMENT_REQUEST": {
+      "weight": 0.25,
+      "hard": false,
+      "hardWeight": 0.65
+    },
+    "FINGERPRINT_BLOCKLISTED": {
+      "weight": 0.9,
+      "hard": true
+    },
+    "FINGERPRINT_KNOWN_GOOD": {
+      "weight": -1.0,
+      "hard": false
+    }
   },
   "contentRules": [
     {
-      "code": "CONTENT_URGENCY", "weight": 0.12,
+      "code": "CONTENT_URGENCY",
+      "weight": 0.12,
       "patterns": [
         "\\b(within|in) (the next )?\\d+ ?(hours?|hrs?|h|minutes?|mins?)\\b",
         "\\b(immediately|right now|urgent(ly)?|asap|last chance|final (notice|warning|reminder)|act now|expires? (today|soon|in \\d+)|before it('|’)?s too late|time is running out|limited time|only \\d+ (hours|minutes) left|without delay)\\b",
@@ -53,19 +146,30 @@
       ]
     },
     {
-      "code": "CONTENT_URGENCY", "weight": 0.10, "detail": "today",
-      "patterns": ["\\btoday\\b", "(?<![\\p{L}])اليوم(?![\\p{L}])", "\\b(elyoum|alyoum|el yom|al youm)\\b"]
+      "code": "CONTENT_URGENCY",
+      "weight": 0.1,
+      "detail": "today",
+      "patterns": [
+        "\\btoday\\b",
+        "(?<![\\p{L}])اليوم(?![\\p{L}])",
+        "\\b(elyoum|alyoum|el yom|al youm)\\b"
+      ]
     },
     {
-      "code": "CONTENT_THREAT", "weight": 0.25,
+      "code": "CONTENT_THREAT",
+      "weight": 0.25,
       "patterns": [
         "\\b(suspend(ed|s|sion)?|block(ed)?|disconnect(ed|ion)?|terminat(e|ed|ion)|deactivat(e|ed|ion)|frozen|freeze|locked|arrest(ed)?|legal action|lawsuit|court case|police case|penalt(y|ies)|surcharge|fines?|fined|late fee|will be returned|returned to (the )?sender|lose access|permanently (closed|deleted|disabled|blocked)|restricted|unauthori[sz]ed|suspicious (activity|transaction|login|transfer|attempt)|compromised|hacked|unpaid|overdue|seized|deport(ed|ation)?|travel ban|visa (cancel|fine)|discontinued|expire[sd]? (today|tomorrow|soon))\\b",
-        "(تعليق|ايقاف|توقيف|حظر|قطع الخدمه|قطع الكهرباء|قطع الماء|غرامه|مخالفه|مضاعفه|اعتقال|قضيه|اجراء قانوني|تجميد|اغلاق|الغاء|حجز على|الحجز على|مصادره|ترحيل|سيتم ايقاف|سيتم قطع|سيتم حظر|معلق|محظور|مجمد|متاخره|غير مدفوع|غير مدفوعه|مشبوه|مشبوهه|اختراق|منع السفر)",
+        "(تعليق|ايقاف|توقيف|حظر|قطع الخدمه|قطع الكهرباء|قطع الماء|غرامه|مخالفه|مضاعفه|اعتقال|قضيه|اجراء قانوني|تجميد|اغلاق|(?<!ل)الغاء(?! الاشتراك)|حجز على|الحجز على|مصادره|ترحيل|سيتم ايقاف|سيتم قطع|سيتم حظر|معلق|محظور|مجمد|متاخره|غير مدفوع|غير مدفوعه|مشبوه|مشبوهه|اختراق|منع السفر)",
         "\\b(ma5alfa|mokhalafa|mukhalafa|gharama|ghrama|7ajez|7ajz|mahkama)\\b"
       ]
     },
     {
-      "code": "CONTENT_CREDENTIAL_REQUEST", "weight": 0.20, "hardWithLink": true, "hardWeight": 0.60, "detail": "update-via-link",
+      "code": "CONTENT_CREDENTIAL_REQUEST",
+      "weight": 0.2,
+      "hardWithLink": true,
+      "hardWeight": 0.6,
+      "detail": "update-via-link",
       "patterns": [
         "\\b(update|verify|confirm|validate|complete|re-?activate|activate|unlock|restore|renew|secure|re-?link|re-?register) (your|ur|the|my|all)? ?(kyc|details|information|info|data|account|card|identity|emirates id|id|profile|records|documents|uae pass|wallet|bank account|sim|number|registration)\\b",
         "\\bkyc\\b.{0,30}\\b(link|click|here|below)\\b",
@@ -74,15 +178,19 @@
       ]
     },
     {
-      "code": "CONTENT_PRIZE", "weight": 0.38,
+      "code": "CONTENT_PRIZE",
+      "weight": 0.38,
       "patterns": [
-        "\\b(you (have |'ve )?won|winner|congratulations|congrats|prize|lottery|lucky draw|raffle|claim your (prize|reward|gift|winnings)|reward of|gift card|free (iphone|phone|gift|car)|jackpot|cash prize|been selected|you are selected)\\b",
-        "(مبروك|ربحت|فزت|جائزه|جوائز|الفائز|يانصيب|هديه مجانيه|مكافاه|تم اختيارك)",
-        "\\b(mabrouk|mabrook|rbe7t|rba7t|jayza|jaiza|ja2iza)\\b"
+        "\\b(you (have |'ve )?won|winner|prize|lottery|lucky draw|claim your (prize|reward|gift|winnings)|reward of|gift card|free (iphone|phone|gift|car)|jackpot|cash prize)\\b",
+        "(ربحت|فزت|جائزه|جوائز|الفائز|يانصيب|هديه مجانيه|مكافاه)",
+        "\\b(rbe7t|rba7t|jayza|jaiza|ja2iza)\\b"
       ]
     },
     {
-      "code": "CONTENT_JOB_OFFER", "weight": 0.38, "hardWithLink": true, "hardWeight": 0.55,
+      "code": "CONTENT_JOB_OFFER",
+      "weight": 0.38,
+      "hardWithLink": true,
+      "hardWeight": 0.55,
       "patterns": [
         "\\b(part[- ]?time|full[- ]?time|work from home|home[- ]?based|online|remote|easy|simple) (job|work|task|position|opportunity|income)s?\\b",
         "\\b(aed|dhs?|usd|\\$)? ?\\d{2,5} ?(aed|dhs?|dirhams?|usd)? ?(per|a|/|each|every) ?day\\b",
@@ -97,7 +205,10 @@
       ]
     },
     {
-      "code": "CONTENT_INVESTMENT", "weight": 0.38, "hardWithLink": true, "hardWeight": 0.55,
+      "code": "CONTENT_INVESTMENT",
+      "weight": 0.38,
+      "hardWithLink": true,
+      "hardWeight": 0.55,
       "patterns": [
         "\\bguaranteed (\\d+ ?%|returns?|profits?|income|earnings|gains?)\\b",
         "\\b\\d+ ?% (monthly|weekly|daily|per (month|week|day)|a (month|week|day)) ?(profit|return|roi|income|gain)s?\\b",
@@ -114,60 +225,88 @@
       ]
     },
     {
-      "code": "CONTENT_REMOTE_ACCESS_APP", "weight": 0.70, "hard": true,
+      "code": "CONTENT_REMOTE_ACCESS_APP",
+      "weight": 0.7,
+      "hard": true,
       "patterns": [
         "\\b(anydesk|any desk|teamviewer|team viewer|quicksupport|quick support|airdroid|rustdesk|ultraviewer|ammyy|supremo|splashtop|aeroadmin|logmein|remote desktop app|screen ?sharing app)\\b",
         "(اني ديسك|اني دسك|انيديسك|تيم فيور|تيم فيوير|تيم فيو)"
       ]
     },
     {
-      "code": "CONTENT_MOVE_TO_MESSENGER", "weight": 0.30,
+      "code": "CONTENT_MOVE_TO_MESSENGER",
+      "weight": 0.3,
       "patterns": [
         "\\b(whatsapp|whats app|telegram|wa\\.me|t\\.me|signal app|botim)\\b",
         "(واتساب|واتس اب|واتس|تلغرام|تليجرام|تلجرام|تيليجرام|بوتيم)"
       ]
     },
     {
-      "code": "CONTENT_NEW_NUMBER_RELATIVE", "weight": 0.38,
+      "code": "CONTENT_NEW_NUMBER_RELATIVE",
+      "weight": 0.38,
       "patterns": [
         "\\b(this is my new (number|no|phone)|my new number|changed my number|new number save it|save (this|my new) number|lost my phone|dropped my phone|broke my phone|phone (is|got) (broken|stolen|lost|damaged)|this is my (temporary|temp) number|i('m| am) using (a friend's|my friend's|a new|another) (phone|number)|writing from a new number)\\b",
         "(هذا رقمي الجديد|رقمي الجديد|غيرت رقمي|احفظ (هذا )?الرقم|ضاع تلفوني|ضاع هاتفي|انكسر تلفوني|تلفوني خربان|انسرق تلفوني|رقم جديد)",
         "\\b(hada|hatha|haza) ra?qami (el|al)?(jdeed|jadeed|jdid)\\b",
-        "\\braqami (el|al)?(jdeed|jadeed|jdid)\\b"
+        "\\braqami (el|al)?(jdeed|jadeed|jdid)\\b",
+        "\\b(my )?phone (died|broke|is broken|got broken|fell|dropped|was stolen|got stolen|is lost|got lost)\\b|\\btexting (you )?from (a |my )?(mate|friend|colleague)'?s (phone|number)\\b"
       ]
     },
     {
-      "code": "CONTENT_NEW_NUMBER_RELATIVE", "weight": 0.45, "detail": "family",
+      "code": "CONTENT_NEW_NUMBER_RELATIVE",
+      "weight": 0.45,
+      "detail": "family",
       "patterns": [
         "\\b(mum|mom|mama|dad|papa|baba|mother|father|bro|brother|sis|sister|son|daughter|uncle|aunt|auntie|habibi|habibti|grandma|grandpa)\\b.{0,80}\\b(new (number|phone)|lost my phone|dropped my phone|broke my phone|changed my number)\\b",
         "(ماما|بابا|يمه|يبه|امي|ابي|اختي|اخوي|اخي|خالتي|عمتي|حبيبي|حبيبتي|ولدي|بنتي).{0,80}(رقمي الجديد|رقم جديد|ضاع تلفوني|ضاع هاتفي|غيرت رقمي)",
         "\\b(mama|baba|yuma|yoba|habibi|habibti)\\b.{0,60}\\b(new number|raqam jdeed|raqam jadeed)\\b"
+      ]
+    },
+    {
+      "code": "CONTENT_CREDENTIAL_REQUEST",
+      "weight": 0.2,
+      "hardWithLink": true,
+      "hardWeight": 0.6,
+      "detail": "id-copy",
+      "patterns": [
+        "(?<!\\b(?:not|never|don't|don’t|dont|no one|nobody|won't|won’t|avoid|refuse|if anyone|if someone|if somebody|if a caller|asked (?:me|him|her|us) to)\\b[^.?!,;:]{0,60})\\b(share|send|provide|give|submit|forward|whatsapp)\\b[^.?!\\n]{0,40}?\\b(emirates id|passport)( number| copy| details)?\\b"
+      ]
+    },
+    {
+      "code": "CONTENT_PRIZE",
+      "weight": 0.2,
+      "detail": "opener",
+      "patterns": [
+        "\\b(congratulations|congrats|raffle|been selected|you are selected)\\b",
+        "(مبروك|تم اختيارك)",
+        "\\b(mabrouk|mabrook)\\b"
       ]
     }
   ],
   "credentialRequest": {
     "comment": "Verb-first request to disclose a credential. The negation lookbehind keeps 'Do not share this code' from firing.",
     "patterns": [
-      "(?<!\\bnot |\\bnever |\\bdon't |\\bdont |\\bdo not |\\bdo not ever |\\bnever ever )\\b(share|send|provide|give|reply with|tell|forward|text|submit|read out|disclose|quote|whatsapp)\\b(?: (?:us|me|them|it|the|your|ur|this|that|a|an|all|of|with|back|over|now|please|kindly|immediately|to|him|her))*[^.?!\\n]{0,40}?\\b(otp|otps|one[- ]?time (password|code|pin)|verification code|security code|passcode|pass code|pin( code| number)?|cvv|cvc|card (number|details|no|pin|info)|credit card|debit card|password|passwords|emirates id( number| copy| details)?|uae ?pass( code| approval| otp| login)?|(the|this|that|your|ur|my) code|login details|credentials|username and password|atm pin)\\b",
-      "\\b(otp|verification code|one[- ]?time (password|code)|pin|cvv|password)\\b[^.?!\\n]{0,25}?\\b(so (that )?(we|i) can|to (stop|cancel|block|verify|unblock|release|confirm|complete))\\b",
-      "(?<!لا |لن |عدم |ممنوع |لا تقم ب|يرجى عدم |الرجاء عدم |يمنع |ولا |و لا )(?<![\\p{L}])[وف]?(ارسل|ارسال|شارك|مشاركه|زودنا|زود|اعطنا|اعط|اعطني|اخبرنا|اكتب لنا|ابعث|ابعثي|ارسلي|شاركي|اعطيني|ترسل|تشارك|تزودنا|تعطينا|ترسلي|تشاركي)( لنا| لي| له| لها| الان| فورا| الينا)?[^.؟!\\n]{0,40}?(رمز التحقق|رمز تحقق|كود التحقق|الرمز السري|الرقم السري|كلمه المرور|كلمه السر|رقم بطاقتك|رقم البطاقه|بيانات بطاقتك|بطاقتك|cvv|رمز|كود|رقم الهويه|هويتك|بيانات الدخول|الباسورد|الرمز)",
-      "(?<!\\bnot |\\bnever |\\bdon't |\\bdont |\\bdo not |\\bla |\\bma )\\b(ab3at|ab3ath|eb3at|ib3at|arsel|arsil|rsel|3ateeni|3tini|3tena|3atena|8olli|qolli|2olli|sharek|sharik)\\b[^.?!\\n]{0,30}?\\b(otp|ramz|elramz|al ?ramz|code|elcode|alcode|pin|cvv|password|bta8a|bita8a|bitaqa)\\b"
+      "(?<!\\b(?:not|never|don't|don’t|dont|no one|nobody|won't|won’t|avoid|refuse|if anyone|if someone|if somebody|if a caller|asked (?:me|him|her|us) to)\\b[^.?!,;:]{0,60})(?<!\\bwill |\\bwe'll )\\b(share|send|provide|give|reply with|tell|forward|text|submit|read out|read (?:me|us)|disclose|quote)\\b(?: (?:us|me|them|it|the|your|ur|this|that|a|an|all|of|with|back|over|now|please|kindly|immediately|to|him|her)){0,6}[^.?!\\n]{0,40}?\\b(otp|otps|one[- ]?time (password|code|pin)|verification code|security code|passcode|pass code|pin( code| number)?|cvv|cvc|card (number|details|no|pin|info)|credit card|debit card|(?<!wifi |wi-fi |router )password|passwords|uae ?pass( code| approval| otp| login)?|(the|this|that|your|ur|my) code(?! [a-z]+\\d+\\b)(?! (?:with|to) (?:a |your |ur |my )?friends?\\b)|login details|credentials|username and password|atm pin)\\b",
+      "(?<!\\b(?:not|never|don't|don’t|dont|no one|nobody|won't|won’t|avoid|refuse|if anyone|if someone|if somebody|if a caller|asked (?:me|him|her|us) to)\\b[^.?!,;:]{0,60})\\b(?:need|needs|require|requires|want|wants|waiting for)\\b[^.?!\\n]{0,40}?\\b(otp|verification code|one[- ]?time (password|code)|pin|cvv|password)\\b[^.?!\\n]{0,25}?\\b(so (that )?(we|i) can|to (stop|cancel|block|verify|unblock|release|confirm|complete))\\b",
+      "(?<!تم )(?<!(?:^|[\\s:،.])[وف]?(?:لا|لن|عدم|ممنوع|يمنع|تجنب|اياك|احذر) (?:[^.؟!،]{0,40} )?)(?<![\\p{L}])[وف]?(ارسل(?!نا |ت )|ارسال|شارك|مشاركه|زودنا|زود|اعطنا|اعط|اعطني|اخبرنا|اكتب لنا|ابعث|ابعثي|ارسلي|شاركي|اعطيني|ترسل|تشارك|تزودنا|تعطينا|ترسلي|تشاركي)(?![^.؟!]{0,60}(?:خصم|عروض|كوبون|قسيمه|تخفيض))( لنا| لي| له| لها| الان| فورا| الينا)?[^.؟!\\n]{0,40}?(رمز التحقق|رمز تحقق|كود التحقق|الرمز السري|الرقم السري|كلمه المرور|كلمه السر|رقم بطاقتك|رقم البطاقه|بيانات بطاقتك|بطاقتك|cvv|رمز|كود|رقم الهويه|هويتك|بيانات الدخول|الباسورد|الرمز)",
+      "(?<!\\b(?:not|never|don't|dont|la|ma|mamnoo3|mamnu3)\\b[^.?!,]{0,40})\\b(ab3at|ab3ath|eb3at|ib3at|arsel|arsil|rsel|3ateeni|3tini|3tena|3atena|8olli|qolli|2olli|sharek|sharik)\\b[^.?!\\n]{0,30}?\\b(otp|ramz|elramz|al ?ramz|code|elcode|alcode|pin|cvv|password|bta8a|bita8a|bitaqa)\\b"
     ]
   },
   "otpRequest": {
     "comment": "Subset of credentialRequest limited to one-time codes; emitted as CONTENT_OTP_REQUEST alongside it.",
     "patterns": [
-      "(?<!\\bnot |\\bnever |\\bdon't |\\bdont |\\bdo not )\\b(share|send|provide|give|reply with|tell|forward|text|submit|read out|disclose|quote)\\b(?: (?:us|me|them|it|the|your|ur|this|that|a|an|all|of|with|back|over|now|please|kindly|immediately|to))*[^.?!\\n]{0,40}?\\b(otp|otps|one[- ]?time (password|code|pin)|verification code|security code|passcode|(the|this|that|your|ur) code)\\b",
-      "\\b(otp|verification code|one[- ]?time (password|code))\\b[^.?!\\n]{0,25}?\\b(so (that )?(we|i) can|to (stop|cancel|block|verify|unblock|release|confirm|complete))\\b",
-      "(?<!لا |لن |عدم |ممنوع |لا تقم ب|يرجى عدم |الرجاء عدم |يمنع |ولا |و لا )(?<![\\p{L}])[وف]?(ارسل|ارسال|شارك|مشاركه|زودنا|زود|اعطنا|اعط|اعطني|اخبرنا|ابعث|ارسلي|شاركي|اعطيني|ترسل|تشارك|تزودنا|تعطينا|ترسلي|تشاركي)( لنا| لي| له| لها| الان| فورا| الينا)?[^.؟!\\n]{0,40}?(رمز التحقق|رمز تحقق|كود التحقق|الرمز|رمز|كود)",
-      "(?<!\\bnot |\\bnever |\\bdon't |\\bdont |\\bdo not |\\bla |\\bma )\\b(ab3at|ab3ath|eb3at|ib3at|arsel|arsil|3ateeni|3tini|3tena|8olli|qolli|sharek|sharik)\\b[^.?!\\n]{0,30}?\\b(otp|ramz|elramz|al ?ramz|code|elcode|alcode)\\b"
+      "(?<!\\b(?:not|never|don't|don’t|dont|no one|nobody|won't|won’t|avoid|refuse|if anyone|if someone|if somebody|if a caller|asked (?:me|him|her|us) to)\\b[^.?!,;:]{0,60})(?<!\\bwill |\\bwe'll )\\b(share|send|provide|give|reply with|tell|forward|text|submit|read out|read (?:me|us)|disclose|quote)\\b(?: (?:us|me|them|it|the|your|ur|this|that|a|an|all|of|with|back|over|now|please|kindly|immediately|to)){0,6}[^.?!\\n]{0,40}?\\b(otp|otps|one[- ]?time (password|code|pin)|verification code|security code|passcode|(the|this|that|your|ur|my) code(?! [a-z]+\\d+\\b)(?! (?:with|to) (?:a |your |ur |my )?friends?\\b))\\b",
+      "(?<!\\b(?:not|never|don't|don’t|dont|no one|nobody|won't|won’t|avoid|refuse|if anyone|if someone|if somebody|if a caller|asked (?:me|him|her|us) to)\\b[^.?!,;:]{0,60})\\b(?:need|needs|require|requires|want|wants|waiting for)\\b[^.?!\\n]{0,40}?\\b(otp|verification code|one[- ]?time (password|code))\\b[^.?!\\n]{0,25}?\\b(so (that )?(we|i) can|to (stop|cancel|block|verify|unblock|release|confirm|complete))\\b",
+      "(?<!تم )(?<!(?:^|[\\s:،.])[وف]?(?:لا|لن|عدم|ممنوع|يمنع|تجنب|اياك|احذر) (?:[^.؟!،]{0,40} )?)(?<![\\p{L}])[وف]?(ارسل(?!نا |ت )|ارسال|شارك|مشاركه|زودنا|زود|اعطنا|اعط|اعطني|اخبرنا|ابعث|ارسلي|شاركي|اعطيني|ترسل|تشارك|تزودنا|تعطينا|ترسلي|تشاركي)(?![^.؟!]{0,60}(?:خصم|عروض|كوبون|قسيمه|تخفيض))( لنا| لي| له| لها| الان| فورا| الينا)?[^.؟!\\n]{0,40}?(رمز التحقق|رمز تحقق|كود التحقق|الرمز|رمز|كود)",
+      "(?<!\\b(?:not|never|don't|dont|la|ma|mamnoo3|mamnu3)\\b[^.?!,]{0,40})\\b(ab3at|ab3ath|eb3at|ib3at|arsel|arsil|3ateeni|3tini|3tena|8olli|qolli|sharek|sharik)\\b[^.?!\\n]{0,30}?\\b(otp|ramz|elramz|al ?ramz|code|elcode|alcode)\\b"
     ]
   },
   "otpMessage": {
     "comment": "A legitimate one-time-code message: a code word near a 4-8 digit number.",
     "patterns": [
-      "\\b(otp|one[- ]?time (password|code|pin)|verification code|security code|passcode|pass code|pin|code|auth(entication)? code|login code|access code|activation code|confirmation code)\\b[^\\n]{0,40}?\\b\\d{4,8}\\b",
-      "\\b\\d{4,8}\\b[^\\n]{0,40}?\\b(is your|as your|otp|verification code|one[- ]?time|passcode|security code|login code|access code)\\b",
+      "\\b(otp|one[- ]?time (password|code|pin)|verification code|security code|passcode|pass code|pin|code|auth(entication)? code|login code|access code|activation code|confirmation code)\\b[^\\n]{0,80}?\\b(?:\\d{4,8}|\\d{3}[- ]\\d{3})\\b",
+      "\\b(?:\\d{4,8}|\\d{3}[- ]\\d{3})\\b[^\\n]{0,40}?\\b(is your|as your|otp|verification code|one[- ]?time|passcode|security code|login code|access code)\\b",
+      "\\b(use|enter) (?:otp |code )?\\d{4,8} to (complete|confirm|verify|authori[sz]e|log ?in|approve)\\b",
       "(رمز التحقق|رمز تحقق|كود التحقق|رمز الدخول|رمز التفعيل|كلمه مرور لمره واحده|الرمز السري|رمز الامان|رمز)[^\\n]{0,40}?\\d{4,8}",
       "\\d{4,8}[^\\n]{0,40}?(هو رمز|رمز التحقق|رمز تحقق|كود التحقق|رمز الدخول|كلمه المرور)"
     ]
@@ -184,17 +323,109 @@
   "paymentRequest": {
     "comment": "A request to transfer or pay money. Hard when an IBAN or crypto wallet is present in the text.",
     "patterns": [
-      "\\b(send|transfer|pay|deposit|wire|remit|top ?up|recharge|load)\\b(?: (?:me|us|him|her|them|it|the|a|an|only|just|about|around|now|immediately|urgently|please|kindly|back|over|to|via|through|by|an amount of|amount of|the amount of|the sum of))*[^.?!\\n]{0,25}?\\b(aed|dhs?|dirhams?|usd|dollars?|money|amount|cash|funds?|\\d|iban|wallet|usdt|bitcoin|btc|eth|crypto|western union|account|card)\\b",
+      "\\b(send|transfer|pay|deposit|wire|remit|top ?up|recharge|load)\\b(?: (?:me|us|him|her|them|it|the|a|an|only|just|about|around|now|immediately|urgently|please|kindly|back|over|to|via|through|by|an amount of|amount of|the amount of|the sum of)){0,6}[^.?!\\n]{0,25}?\\b(aed|dhs?|dirhams?|usd|dollars?|money|amount|cash|funds?|\\d|iban|wallet|usdt|bitcoin|btc|eth|crypto|western union|account|card)\\b",
       "\\b(iban|account number|bank details|wallet address)\\b ?(:|is|below|-)",
       "\\b(payment|transfer|deposit) (to|into|of) (the )?(following|below|this|my|our) (iban|account|wallet|number)\\b",
-      "(حول|حوّل|ارسل|ادفع|اودع|سدد|اشحن|حولي|ارسلي|ادفعي)( لي| لنا| له| لها| المبلغ| مبلغ| الان| فورا| فقط| حوالي| على)?[^.؟!\\n]{0,25}?(درهم|دراهم|مبلغ|فلوس|دولار|اموال|ايبان|محفظه|\\d|حساب)",
+      "(?<![\\p{L}])(حول|ارسل|ادفع|اودع|سدد|اشحن|حولي|ارسلي|ادفعي)(?![\\p{L}])( لي| لنا| له| لها| المبلغ| مبلغ| الان| فورا| فقط| حوالي| على)?[^.؟!\\n]{0,25}?(درهم|دراهم|مبلغ|فلوس|دولار|اموال|ايبان|محفظه|\\d[\\d.,]* ?(?:درهم|دراهم|دولار|الف|aed)|حساب)",
       "(ايبان|رقم الحساب|رقم الايبان|رقم المحفظه) ?(:|هو|ادناه|التالي)",
       "\\b(7awel|7awwel|7awil|hawel|ab3at|eb3at|edfa3|idfa3|adfa3)\\b[^.?!\\n]{0,25}?\\b(aed|dhs?|dirham|floos|flous|fulus|mablagh|\\d|iban)\\b"
     ]
   },
   "links": {
-    "shorteners": ["bit.ly","bitly.com","tinyurl.com","t.co","cutt.ly","is.gd","rb.gy","shorturl.at","tiny.cc","goo.gl","ow.ly","buff.ly","rebrand.ly","t.ly","s.id","v.gd","clck.ru","u.to","short.io","bl.ink","tr.im","soo.gd","surl.li","cli.re","shorte.st","adf.ly","bc.vc","shorturl.com","short.gy","tiny.one","rotf.lol","qr.link","lnk.to","1ink.cc","2u.pw","kutt.it","me2.do","ouo.io","urlz.fr","zi.ma"],
-    "highRiskTlds": ["top","xyz","click","link","info","icu","buzz","cfd","sbs","rest","zip","mov","tk","ml","ga","cf","gq","work","loan","men","date","racing","win","review","stream","download","gdn","bid","trade","party","science","cam","quest","monster","lol","pw","support","help","live","online","site","website","fun","vip","shop","store","cyou","bond","lat","wiki","world"],
+    "shorteners": [
+      "bit.ly",
+      "bitly.com",
+      "tinyurl.com",
+      "t.co",
+      "cutt.ly",
+      "is.gd",
+      "rb.gy",
+      "shorturl.at",
+      "tiny.cc",
+      "ow.ly",
+      "buff.ly",
+      "rebrand.ly",
+      "t.ly",
+      "s.id",
+      "v.gd",
+      "clck.ru",
+      "u.to",
+      "short.io",
+      "bl.ink",
+      "tr.im",
+      "soo.gd",
+      "surl.li",
+      "cli.re",
+      "shorte.st",
+      "adf.ly",
+      "bc.vc",
+      "shorturl.com",
+      "short.gy",
+      "tiny.one",
+      "rotf.lol",
+      "qr.link",
+      "lnk.to",
+      "1ink.cc",
+      "2u.pw",
+      "kutt.it",
+      "me2.do",
+      "ouo.io",
+      "urlz.fr",
+      "zi.ma"
+    ],
+    "highRiskTlds": [
+      "top",
+      "xyz",
+      "click",
+      "link",
+      "info",
+      "icu",
+      "buzz",
+      "cfd",
+      "sbs",
+      "rest",
+      "zip",
+      "mov",
+      "tk",
+      "ml",
+      "ga",
+      "cf",
+      "gq",
+      "work",
+      "loan",
+      "men",
+      "date",
+      "racing",
+      "win",
+      "review",
+      "stream",
+      "download",
+      "gdn",
+      "bid",
+      "trade",
+      "party",
+      "science",
+      "cam",
+      "quest",
+      "monster",
+      "lol",
+      "pw",
+      "support",
+      "help",
+      "live",
+      "online",
+      "site",
+      "website",
+      "fun",
+      "vip",
+      "shop",
+      "store",
+      "cyou",
+      "bond",
+      "lat",
+      "wiki",
+      "world"
+    ],
     "brandSubstringMinLength": 5,
     "lookalikeMaxDistance": 2,
     "lookalikeShortDomainMaxDistance": 1,
@@ -202,12 +433,238 @@
   },
   "calls": {
     "comment": "Wangiri (one-ring) and premium-rate country/area prefixes. Both call reasons are WARN-level only.",
-    "oneRingPrefixes": ["+216","+218","+222","+231","+232","+235","+236","+243","+247","+252","+257","+258","+260","+261","+263","+265","+269","+290","+371","+373","+375","+381","+387","+389","+421","+423","+675","+676","+677","+678","+679","+680","+681","+682","+683","+685","+686","+687","+688","+689","+690","+691","+692","+850","+881","+882","+883","+888","+979","+1268","+1284","+1473","+1649","+1664","+1767","+1784","+1809","+1829","+1849","+1868","+1876","+1242","+1246","+1441","+1758","+1869","+1721","+1345","+1670","+1671","+1684","+1340"]
+    "oneRingPrefixes": [
+      "+216",
+      "+218",
+      "+222",
+      "+231",
+      "+232",
+      "+235",
+      "+236",
+      "+243",
+      "+247",
+      "+252",
+      "+257",
+      "+258",
+      "+260",
+      "+261",
+      "+263",
+      "+265",
+      "+269",
+      "+290",
+      "+371",
+      "+373",
+      "+375",
+      "+381",
+      "+387",
+      "+389",
+      "+421",
+      "+423",
+      "+675",
+      "+676",
+      "+677",
+      "+678",
+      "+679",
+      "+680",
+      "+681",
+      "+682",
+      "+683",
+      "+685",
+      "+686",
+      "+687",
+      "+688",
+      "+689",
+      "+690",
+      "+691",
+      "+692",
+      "+850",
+      "+881",
+      "+882",
+      "+883",
+      "+888",
+      "+979",
+      "+1268",
+      "+1284",
+      "+1473",
+      "+1649",
+      "+1664",
+      "+1767",
+      "+1784",
+      "+1809",
+      "+1829",
+      "+1849",
+      "+1868",
+      "+1876",
+      "+1242",
+      "+1246",
+      "+1441",
+      "+1758",
+      "+1869",
+      "+1721",
+      "+1345",
+      "+1670",
+      "+1671",
+      "+1684",
+      "+1340"
+    ]
   },
   "arabizi": {
     "comment": "Latin-script Arabic. strong tokens count 2, weak tokens 1, digit-as-letter tokens 2; LATIN_ARABIC when the total is at least 3 and no Arabic script is present.",
-    "strong": ["wallah","walla","wallahi","yalla","yala","inshallah","inshalla","insha'allah","habibi","habibti","7abibi","7abibti","khalas","5alas","akhi","akhoy","akhuy","mashallah","shukran","shokran","3ala","3la","ya3ni","y3ni","kaif","keef","kif","ahlan","marhaba","salam","salaam","alhamdulillah","3ndi","3andi","shu","sho","wayed","kteer","ktir","b3d","ba3d","ma3","3shan","3ashan","elyoum","alyoum","bukra","bokra","sa7","sa7bi","mabrouk","mabrook","tmam","tamam","hala","3ndak","3ndk","mafi","mafee","shway","shwaya","meshi","mashi","tayeb","tayyeb","yakhi","ya5i","khalli","5alli","3omri","3yuni","hayati","5air","kheir","khair","ahlain","allah","yarab","ya3tik","mumkin","momken","lahza","la7za","ya5ouya","akhou","3ammo","3amo","bait","beit","salama","kallemni","kalemni","weselt","wesalt","wsalt","tfdha","tfda","nel2a","nelta2i","fel","bel","3al","3ala","ta3al","ta3ali","shlonak","shlonik","shakhbarak","3asa","3asak","mashkoor","mashkoora","sheft","shift","roo7","rou7","ro7","yemkin","ymkn","akeed","akid","yeb","ya3ni"],
-    "weak": ["ya","bas","zain","zein","aiwa","aywa","la","ana","enta","inta","ent","enti","inti","wen","wein","fen","feen","leh","lesh","lish","kda","keda","ok","okay","halla","eh","ah","aywah"]
+    "strong": [
+      "wallah",
+      "walla",
+      "wallahi",
+      "yalla",
+      "yala",
+      "inshallah",
+      "inshalla",
+      "insha'allah",
+      "habibi",
+      "habibti",
+      "7abibi",
+      "7abibti",
+      "khalas",
+      "5alas",
+      "akhi",
+      "akhoy",
+      "akhuy",
+      "mashallah",
+      "shukran",
+      "shokran",
+      "3ala",
+      "3la",
+      "ya3ni",
+      "y3ni",
+      "kaif",
+      "keef",
+      "kif",
+      "ahlan",
+      "marhaba",
+      "salam",
+      "salaam",
+      "alhamdulillah",
+      "3ndi",
+      "3andi",
+      "shu",
+      "sho",
+      "wayed",
+      "kteer",
+      "ktir",
+      "b3d",
+      "ba3d",
+      "ma3",
+      "3shan",
+      "3ashan",
+      "elyoum",
+      "alyoum",
+      "bukra",
+      "bokra",
+      "sa7",
+      "sa7bi",
+      "mabrouk",
+      "mabrook",
+      "tmam",
+      "tamam",
+      "hala",
+      "3ndak",
+      "3ndk",
+      "mafi",
+      "mafee",
+      "shway",
+      "shwaya",
+      "meshi",
+      "mashi",
+      "tayeb",
+      "tayyeb",
+      "yakhi",
+      "ya5i",
+      "khalli",
+      "5alli",
+      "3omri",
+      "3yuni",
+      "hayati",
+      "5air",
+      "kheir",
+      "khair",
+      "ahlain",
+      "allah",
+      "yarab",
+      "ya3tik",
+      "mumkin",
+      "momken",
+      "lahza",
+      "la7za",
+      "ya5ouya",
+      "akhou",
+      "3ammo",
+      "3amo",
+      "bait",
+      "beit",
+      "salama",
+      "kallemni",
+      "kalemni",
+      "weselt",
+      "wesalt",
+      "wsalt",
+      "tfdha",
+      "tfda",
+      "nel2a",
+      "nelta2i",
+      "fel",
+      "bel",
+      "3al",
+      "3ala",
+      "ta3al",
+      "ta3ali",
+      "shlonak",
+      "shlonik",
+      "shakhbarak",
+      "3asa",
+      "3asak",
+      "mashkoor",
+      "mashkoora",
+      "sheft",
+      "shift",
+      "roo7",
+      "rou7",
+      "ro7",
+      "yemkin",
+      "ymkn",
+      "akeed",
+      "akid",
+      "yeb",
+      "ya3ni"
+    ],
+    "weak": [
+      "ya",
+      "bas",
+      "zain",
+      "zein",
+      "aiwa",
+      "aywa",
+      "la",
+      "ana",
+      "enta",
+      "inta",
+      "ent",
+      "enti",
+      "inti",
+      "wen",
+      "wein",
+      "fen",
+      "feen",
+      "leh",
+      "lesh",
+      "lish",
+      "kda",
+      "keda",
+      "ok",
+      "okay",
+      "halla",
+      "eh",
+      "ah",
+      "aywah"
+    ]
   },
   "reasonDetails": {
     "comment": "Details never contain raw message text: hosts, entity ids, prefixes and rule labels only."

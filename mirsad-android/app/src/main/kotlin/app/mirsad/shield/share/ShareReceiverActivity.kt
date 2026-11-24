@@ -70,6 +70,7 @@ class ShareReceiverActivity : ComponentActivity() {
 
     private companion object {
         const val TAG = "MirsadShare"
-        const val SHARED_SENDER = "shared"
+        /** The sender of a shared text is unknown: an empty sender is classified as UNKNOWN, never as an ID. */
+        const val SHARED_SENDER = ""
     }
 }

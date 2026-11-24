@@ -32,7 +32,12 @@ interface IncidentDao {
     @Query("SELECT COUNT(*) FROM incidents WHERE level != 'ALLOW' AND createdAt >= :since")
     suspend fun countFlagged(since: Long): Int
 
-    @Query("SELECT DISTINCT sender FROM incidents WHERE level = 'HOLD' AND senderType = 'NUMBER' AND createdAt >= :since")
+    // Real held messages only: not calls (a held call must not renew its own rule), not demo incidents, and not
+    // incidents the user marked "Not a scam".
+    @Query(
+        "SELECT DISTINCT sender FROM incidents WHERE level = 'HOLD' AND senderType = 'NUMBER' AND channel != 'CALL' " +
+            "AND synthetic = 0 AND feedback != 'FALSE_POSITIVE' AND createdAt >= :since",
+    )
     suspend fun heldNumbersSince(since: Long): List<String>
 
     @Query("DELETE FROM incidents WHERE createdAt < :epochMillis")

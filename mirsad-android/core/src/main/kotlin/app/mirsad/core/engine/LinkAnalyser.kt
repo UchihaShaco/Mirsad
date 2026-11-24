@@ -77,7 +77,11 @@ class LinkAnalyser(private val rules: RuleSet, private val lexicon: Lexicon) {
                 bag.add(ReasonCodes.LINK_LOOKALIKE_OFFICIAL, rules.weight(ReasonCodes.LINK_LOOKALIKE_OFFICIAL), "$domain~$official", true)
             }
             brandInHost(link.host)?.let { entityId ->
-                bag.add(ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL, rules.weight(ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL), "$entityId:${link.host}", true)
+                // A brand sub-domain on a well-known deep-link, survey or mailing platform (adcb.onelink.me,
+                // emiratesnbd.qualtrics.com) is how real brands send app and survey links: a soft signal only.
+                val platform = domain in BRAND_PLATFORMS
+                val code = ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL
+                bag.add(code, if (platform) PLATFORM_BRAND_WEIGHT else rules.weight(code), "$entityId:${link.host}", !platform)
             }
         }
     }
@@ -132,7 +136,13 @@ class LinkAnalyser(private val rules: RuleSet, private val lexicon: Lexicon) {
 
     companion object {
         private val SCHEMED = Regex("(?i)\\b(?:https?://|www\\.)[^\\s<>\"'،؛«»]+")
-        private val BARE = Regex("(?<![\\w@.\\-/])((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,24})(?::\\d{2,5})?(/[^\\s<>\"'،؛«»]*)?")
+        private val BARE = Regex("(?<![\\w@.\\-/])((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.){1,8}[a-z]{2,24})(?![\\w.%+-]*@)(?::\\d{2,5})?(/[^\\s<>\"'،؛«»]*)?")
+        /** Third-party platforms that host brand sub-domains for real brands. */
+        private val BRAND_PLATFORMS = setOf(
+            "onelink.me", "app.link", "page.link", "sng.link", "adj.st", "qualtrics.com", "medallia.com",
+            "surveymonkey.com", "typeform.com", "hubspotlinks.com", "mailchi.mp", "sendgrid.net",
+        )
+        private const val PLATFORM_BRAND_WEIGHT = 0.15
         private val IPV4 = Regex("\\d{1,3}(?:\\.\\d{1,3}){3}")
         private const val TRAILING = ".,;:!?)]}>'\"»،؛"
 

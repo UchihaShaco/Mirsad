@@ -35,9 +35,13 @@ class MirsadEngine(
         return try {
             analyseOrThrow(event, context, start)
         } catch (t: Throwable) {
+            // Never fail open on a message that could carry a lure: an internal error on text with a link, a
+            // number or a money word is a caution (WARN never removes anything); calls and plain text are allowed.
+            val text = event.text.orEmpty()
+            val risky = event.channel != Channel.CALL && !event.senderLooksLikeContact && RISKY_ON_ERROR.containsMatchIn(text.take(MAX_ANALYSED_CHARS))
             Verdict(
-                score = 0.0,
-                level = Level.ALLOW,
+                score = if (risky) 0.5 else 0.0,
+                level = if (risky) Level.WARN else Level.ALLOW,
                 reasons = listOf(Reason(ReasonCodes.ENGINE_ERROR, 0.0, t.javaClass.simpleName)),
                 artifacts = emptyList(),
                 fingerprint = SimHash.ZERO,
@@ -59,7 +63,8 @@ class MirsadEngine(
         if (event.contentHidden) {
             return verdict(0.0, Level.ALLOW, listOf(Reason(ReasonCodes.CONTENT_HIDDEN, 0.0)), emptyList(), SimHash.ZERO, Language.UNKNOWN, start)
         }
-        val text = event.text ?: ""
+        // Real SMS and chat messages are far shorter; the cap bounds the worst-case regex time.
+        val text = (event.text ?: "").take(MAX_ANALYSED_CHARS)
         val norm = normaliser.normalise(text)
         val language = normaliser.detectLanguage(norm)
         val fingerprint = SimHash.fingerprint(norm)
@@ -85,6 +90,7 @@ class MirsadEngine(
         // else does not add up: a named UAE entity, a foreign number, or a deceptive link.
         val feeCorroborated = entities.isNotEmpty() || foreignSender || SUSPICIOUS_LINK_CODES.any { bag.contains(it) }
         contentRules(norm, artifacts, hasRiskyLink, feeCorroborated, bag)
+        paymentGate(sender, foreignSender, bag)
         impersonationRule(sender, entities, hasRiskyLink, bag)
 
         // Legit one-time code from an alphanumeric sender: strong safe signal, never HOLD.
@@ -221,6 +227,23 @@ class MirsadEngine(
         }
     }
 
+    /**
+     * A transfer request with an IBAN or wallet is what landlords, schools and contractors send too. It stays hard
+     * evidence only from a plain or unknown number AND when something else corroborates it (pressure, a "new number"
+     * story, impersonation, a foreign number, a prize); otherwise it is a soft signal (WARN at most).
+     */
+    private fun paymentGate(sender: SenderInfo, foreignSender: Boolean, bag: ReasonBag) {
+        val code = ReasonCodes.CONTENT_PAYMENT_REQUEST
+        val reason = bag.get(code) ?: return
+        if (!reason.hard) return
+        val fromNumber = sender.kind == SenderKind.NUMBER || sender.kind == SenderKind.UNKNOWN
+        val corroborated = foreignSender || PAYMENT_CORROBORATION.any { bag.contains(it) }
+        if (!(fromNumber && corroborated)) {
+            bag.remove(code)
+            bag.add(code, rules.weight(code), reason.detail, false)
+        }
+    }
+
     private fun verdict(
         score: Double, level: Level, reasons: List<Reason>, artifacts: List<Artifact>,
         fingerprint: String, language: Language, start: Long, modelVersion: String = "none",
@@ -239,12 +262,21 @@ class MirsadEngine(
     private fun elapsedMs(startNanos: Long): Long = (System.nanoTime() - startNanos) / 1_000_000
 
     companion object {
+        /** Only the first part of a very long text is analysed. */
+        const val MAX_ANALYSED_CHARS = 2_000
+        private val RISKY_ON_ERROR = Regex("(?i)https?://|www\\.|wa\\.me|t\\.me|\\d{3}|aed|dhs?\\b|درهم|iban")
+
         /** Score floor for block-list hits; above every sensitivity's HOLD threshold. */
         private const val LIST_HIT_SCORE = 0.9
         private val SUSPICIOUS_LINK_CODES = listOf(
             ReasonCodes.LINK_SHORTENER, ReasonCodes.LINK_IP_HOST, ReasonCodes.LINK_PUNYCODE_OR_MIXED_SCRIPT,
             ReasonCodes.LINK_HIGH_RISK_TLD, ReasonCodes.LINK_LOOKALIKE_OFFICIAL,
             ReasonCodes.LINK_BRAND_IN_HOST_NOT_OFFICIAL, ReasonCodes.LINK_BLOCKLISTED_DOMAIN,
+        )
+        private val PAYMENT_CORROBORATION = listOf(
+            ReasonCodes.CONTENT_URGENCY, ReasonCodes.CONTENT_THREAT, ReasonCodes.CONTENT_NEW_NUMBER_RELATIVE,
+            ReasonCodes.CONTENT_IMPERSONATES_ENTITY, ReasonCodes.CONTENT_PRIZE, ReasonCodes.CONTENT_INVESTMENT,
+            ReasonCodes.CONTENT_JOB_OFFER, ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE,
         )
         private val PRESSURE_CODES = listOf(
             ReasonCodes.CONTENT_THREAT, ReasonCodes.CONTENT_URGENCY, ReasonCodes.CONTENT_CREDENTIAL_REQUEST,

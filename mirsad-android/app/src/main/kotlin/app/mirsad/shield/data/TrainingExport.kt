@@ -5,7 +5,8 @@ import app.mirsad.core.contract.FeedbackVerdict
 import app.mirsad.core.contract.IncidentStore
 
 /**
- * Turns feedback rows into labelled CSV rows: `label,lang,channel,sender,text,synthetic,source`.
+ * Turns feedback rows into labelled CSV rows: `label,lang,channel,sender,text,synthetic,source` (source=feedback),
+ * the same columns as data/seed_messages.csv, so wrong verdicts become new training rows.
  * label = legit for FALSE_POSITIVE, scam for CONFIRMED_SCAM. The sender column is always blank.
  * Only the user decides to share the result (nothing is uploaded).
  */
@@ -26,7 +27,7 @@ class TrainingExport(private val feedback: FeedbackStore, private val incidents:
                 "",
                 row.text.orEmpty(),
                 (incident?.synthetic ?: false).toString(),
-                incident?.source?.name?.lowercase().orEmpty(),
+                "feedback",
             )
             out.append(fields.joinToString(",") { csvField(it) }).append('\n')
         }

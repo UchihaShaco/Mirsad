@@ -28,7 +28,8 @@ import kotlinx.serialization.json.Json
  * Every notice carries the safety line. Demo (synthetic) incidents get a "Demo" prefix.
  */
 object Notices {
-    const val CHANNEL_HOLDS = "mirsad_holds"
+    /** Quiet by design: a held item is already safe, so its notice makes no sound. */
+    const val CHANNEL_HOLDS = "mirsad_holds_quiet"
     const val CHANNEL_WARNINGS = "mirsad_warnings"
     const val CHANNEL_RESTORED = "mirsad_restored"
 
@@ -49,7 +50,7 @@ object Notices {
 
     fun createChannels(context: Context) {
         val channels = listOf(
-            NotificationChannelCompat.Builder(CHANNEL_HOLDS, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+            NotificationChannelCompat.Builder(CHANNEL_HOLDS, NotificationManagerCompat.IMPORTANCE_LOW)
                 .setName(context.getString(R.string.channel_holds_name))
                 .setDescription(context.getString(R.string.channel_holds_description))
                 .build(),
@@ -62,7 +63,10 @@ object Notices {
                 .setDescription(context.getString(R.string.channel_restored_description))
                 .build(),
         )
-        NotificationManagerCompat.from(context).createNotificationChannelsCompat(channels)
+        NotificationManagerCompat.from(context).apply {
+            createNotificationChannelsCompat(channels)
+            deleteNotificationChannel("mirsad_holds") // the earlier, noisy channel
+        }
     }
 
     /** Posts the HOLD or WARN notice for [incident]; does nothing for ALLOW. */
@@ -98,7 +102,7 @@ object Notices {
             .setShowWhen(true)
             .setGroup(if (hold) GROUP_HOLD else GROUP_WARN)
             .setCategory(if (isCall) NotificationCompat.CATEGORY_STATUS else NotificationCompat.CATEGORY_MESSAGE)
-            .setPriority(if (hold) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
+            .setPriority(if (hold) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
             .addAction(0, context.getString(R.string.notice_action_not_scam), notScamAction(context, incident.id))
             .addAction(0, context.getString(R.string.notice_action_report), openReport(context, incident.id))
         if (isCall && !hold) builder.setTimeoutAfter(CALL_WARN_TIMEOUT_MS)
@@ -141,17 +145,21 @@ object Notices {
     fun cancelRestored(context: Context, incidentId: Long) =
         NotificationManagerCompat.from(context).cancel(TAG_RESTORED, notificationId(incidentId))
 
+    /** True when a Mirsad notice can actually reach the user (permission granted and notifications not blocked). */
     fun canPost(context: Context): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED
+        (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) && NotificationManagerCompat.from(context).areNotificationsEnabled()
 
     // --- helpers --------------------------------------------------------------------------------
 
     private fun displaySender(context: Context, incident: Incident): String {
         val sender = incident.sender.trim()
         return when {
-            sender.isNotBlank() -> sender
+            // Numbers and IDs are wrapped in a left-to-right isolate so "+971..." reads correctly inside Arabic.
+            sender.isNotBlank() -> "\u2066" + sender + "\u2069"
             !incident.title.isNullOrBlank() -> incident.title.orEmpty()
             else -> context.getString(R.string.notice_unknown_sender)
         }

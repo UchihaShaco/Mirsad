@@ -71,6 +71,7 @@ class MirsadNotificationListener : NotificationListenerService() {
         val isNumber = Senders.looksLikePhoneNumber(sender)
         // A name is treated as a saved contact; a short all-caps SMS sender ID (e.g. "ADCB") is not.
         val looksLikeContact = !isNumber && sender.isNotBlank() &&
+            sender.any { it.isLetter() } &&
             !(channel == Channel.SMS && Senders.looksLikeAlphanumericId(sender))
         val hidden = content.text.isNullOrBlank()
         val event = Event(
@@ -83,7 +84,10 @@ class MirsadNotificationListener : NotificationListenerService() {
             contentHidden = hidden,
         )
         val incident = container.pipeline.process(event, IncidentSource.NOTIFICATION, synthetic = false)
-        if (incident.level == Level.HOLD) {
+        // Never silent: the original is removed only when Mirsad can post its own notice in its place.
+        if (incident.level == Level.HOLD && !Notices.canPost(this)) {
+            Log.w(TAG, "incident #${incident.id} held but notices are off: original notification kept")
+        } else if (incident.level == Level.HOLD) {
             runCatching { cancelNotification(key) }
                 .onSuccess { Log.i(TAG, "removed notification $key for incident #${incident.id}") }
                 .onFailure { Log.w(TAG, "could not remove notification $key", it) }

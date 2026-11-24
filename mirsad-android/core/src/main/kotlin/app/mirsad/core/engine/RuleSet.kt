@@ -114,6 +114,13 @@ class RuleSet(val file: RulesFile) {
     val oneRingPrefixes: List<String> = file.calls.oneRingPrefixes
     val arabizi: ArabiziLexicon = ArabiziLexicon(file.arabizi.strong, file.arabizi.weak)
 
+    /** Every compiled pattern with a label, for profiling and the on-device self-check. */
+    fun allPatterns(): List<Pair<String, Regex>> =
+        contentRules.flatMap { r -> r.patterns.map { r.spec.code to it } } +
+            credentialRequest.map { "credentialRequest" to it } + otpRequest.map { "otpRequest" to it } +
+            otpMessage.map { "otpMessage" to it } + paymentRequest.map { "paymentRequest" to it } +
+            smallFeeAmounts.map { "smallFeeAmount" to it } + listOfNotNull(smallFeeKeywords?.let { "smallFeeKeyword" to it })
+
     companion object {
         private val DEFAULT_THRESHOLDS = mapOf(
             Sensitivity.RELAXED to Thresholds(0.60, 0.80),
@@ -133,9 +140,14 @@ class RuleSet(val file: RulesFile) {
 
         private fun compileAll(patterns: List<String>): List<Regex> = patterns.mapNotNull { compile(it) }
 
+        /** Patterns the platform regex engine refused (Android's ICU engine is stricter than the JVM's). */
+        val rejectedPatterns: MutableList<String> = java.util.Collections.synchronizedList(mutableListOf())
+
         private fun compile(pattern: String): Regex? {
             if (pattern.isBlank()) return null
-            return runCatching { Regex(pattern, setOf(RegexOption.IGNORE_CASE)) }.getOrNull()
+            return runCatching { Regex(pattern, setOf(RegexOption.IGNORE_CASE)) }
+                .onFailure { rejectedPatterns += pattern.take(80) }
+                .getOrNull()
         }
     }
 }

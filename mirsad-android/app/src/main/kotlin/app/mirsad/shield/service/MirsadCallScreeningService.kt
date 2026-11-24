@@ -49,7 +49,8 @@ class MirsadCallScreeningService : CallScreeningService() {
         }
         // Never log the full number: last two digits only.
         Log.i(TAG, "call from …${number.takeLast(2)} -> ${incident?.level ?: "ALLOW (timeout)"} incident=${incident?.id}")
-        return if (incident?.level == Level.HOLD) {
+        // Never silent: a call is rejected only when Mirsad can tell the user why.
+        return if (incident?.level == Level.HOLD && Notices.canPost(this)) {
             CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)

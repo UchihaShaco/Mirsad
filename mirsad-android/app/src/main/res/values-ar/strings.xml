@@ -221,4 +221,6 @@
     <string name="reason_ENGINE_TIMEOUT">انتهى وقت التحليل؛ أُجريت فحوصات جزئية فقط.</string>
     <string name="reason_ENGINE_ERROR">واجه التحليل خطأ؛ تعامل مع النتيجة بحذر.</string>
     <string name="reason_unknown">إشارة: %1$s</string>
+    <string name="settings_export_feedback">تصدير تصحيحاتي كبيانات تدريب</string>
+    <string name="settings_export_feedback_empty">لا توجد تصحيحات بعد. استخدم «ليس احتيالاً» على إحدى الحالات أولاً.</string>
 </resources>

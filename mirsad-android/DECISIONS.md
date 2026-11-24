@@ -19,3 +19,11 @@ One line per decision taken without asking, newest at the bottom.
 - 2026-11-24 Demo and media use +447000000001 for the injected scam SMS and call: the emulator's telephony stack rewrites +440000000001 to +44000000001, which would break the SMS-to-call rule in the recording.
 - 2026-11-24 The debug autopilot receiver requires android.permission.DUMP (held by adb shell only), because the APK in dist/ is the debug build and the autopilot can reset data.
 - 2026-11-24 Assets ship twice in the APK (as assets and as Java resources of :core, about 1 MB extra): accepted, so the engine loads the same files on the JVM and on Android without an Android-specific loader.
+- 2026-11-24 Applied the verifier's validated rules patch (negation-aware credential/OTP requests, wider OTP templates, fewer shortener false hits, aadc.ae official): on the verifier's 289 new legitimate messages HOLD fell from 28 to 1 while the scam corpus kept its HOLD/WARN split.
+- 2026-11-24 Engine hardening: only the first 2,000 characters are analysed, link/e-mail/URL regexes are bounded, and an internal error on text with a link, number or money word returns WARN (never ALLOW): pathological inputs went from up to 90 s to under 0.4 s.
+- 2026-11-24 A transfer request with an IBAN or wallet is hard evidence only from a plain or unknown number and when corroborated (pressure, new-number story, impersonation, foreign number, prize, job, investment); landlords, schools and contractors are WARN at most.
+- 2026-11-24 A brand sub-domain on a known deep-link/survey platform (onelink.me, qualtrics.com …) is a soft signal: real banks send app and survey links that way.
+- 2026-11-24 Never silent: if Mirsad cannot post notices (permission or notifications off), a would-be HOLD keeps the original notification and a call is allowed.
+- 2026-11-24 The held-number call rule counts only real held messages (not calls, not demo incidents, not items marked Not a scam), so demo runs never affect live protection.
+- 2026-11-24 HOLD notices use a quiet channel (IMPORTANCE_LOW, no sound); WARN stays high importance so a suspicious call shows a heads-up while it rings.
+- 2026-11-24 Report copies are saved in app-private storage only and removed by Delete all data; the report preview lists follow the app language.

@@ -68,7 +68,7 @@ class ArtifactExtractor {
         private val WA_ME = Regex("(?:https?://)?(?:www\\.)?wa\\.me/(\\+?\\d{6,15})")
         private val WHATSAPP_SEND = Regex("(?:https?://)?(?:api\\.|www\\.)?whatsapp\\.com/send/?\\?phone=(\\+?\\d{6,15})")
         private val T_ME = Regex("(?:https?://)?(?:www\\.)?(?:t\\.me|telegram\\.me)/(\\+?[a-z0-9_]{3,64})")
-        private val EMAIL = Regex("[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,24}")
+        private val EMAIL = Regex("(?<![a-z0-9._%+-])[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(?:\\.[a-z0-9-]{1,63}){0,6}\\.[a-z]{2,24}")
         private val PHONE = Regex("(?<![\\p{L}\\p{N}@.])(?:\\+|00)?\\d[\\d\\s().-]{5,18}\\d(?![\\p{L}\\p{N}])")
         private val IBAN_CANDIDATE = Regex("(?<![A-Za-z0-9])[A-Za-z]{2}\\d{2}(?:[ \\-]?[A-Za-z0-9]){11,34}")
         private val BTC = Regex("(?<![A-Za-z0-9])(?:bc1[ac-hj-np-z02-9]{25,62}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})(?![A-Za-z0-9])")

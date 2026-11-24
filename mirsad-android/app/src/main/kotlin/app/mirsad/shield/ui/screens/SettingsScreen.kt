@@ -177,6 +177,32 @@ fun SettingsScreen(
                 }
             }
             item {
+                val exportTitle = stringResource(R.string.settings_export_feedback)
+                val exportEmpty = stringResource(R.string.settings_export_feedback_empty)
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            val csv = (container as? app.mirsad.shield.data.RoomContainer)?.trainingExport?.exportCsv().orEmpty()
+                            if (csv.lines().count { it.isNotBlank() } <= 1) {
+                                Toast.makeText(context, exportEmpty, Toast.LENGTH_SHORT).show()
+                            } else {
+                                val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(android.content.Intent.EXTRA_SUBJECT, "mirsad-feedback.csv")
+                                    putExtra(android.content.Intent.EXTRA_TEXT, csv)
+                                }
+                                runCatching { context.startActivity(android.content.Intent.createChooser(send, exportTitle)) }
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(painterResource(R.drawable.ic_send), null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(exportTitle)
+                }
+            }
+            item {
                 OutlinedButton(
                     onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth(),
                     colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
@@ -213,6 +239,8 @@ fun SettingsScreen(
                             container.incidents.deleteAll()
                             container.lists.deleteAll()
                             container.feedback.deleteAll()
+                            app.mirsad.shield.report.ReportActions.deleteSavedReports(context)
+                            androidx.core.app.NotificationManagerCompat.from(context).cancelAll()
                             Toast.makeText(context, deletedToast, Toast.LENGTH_SHORT).show()
                         }
                     },

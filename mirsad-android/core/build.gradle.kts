@@ -24,6 +24,8 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnit()
+    // The legitimate-message suite and the training data are test inputs: editing them re-runs the tests.
+    inputs.dir(rootProject.file("data")).withPropertyName("mirsadData").withPathSensitivity(PathSensitivity.RELATIVE)
     testLogging {
         events("failed")
         showStandardStreams = true

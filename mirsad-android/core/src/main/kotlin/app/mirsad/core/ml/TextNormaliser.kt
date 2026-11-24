@@ -18,11 +18,11 @@ object TextNormaliser {
     const val EMAIL_TOKEN = "<email>"
     const val DIGIT_TOKEN = "#"
 
-    private val EMAIL = Regex("""[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}""")
+    private val EMAIL = Regex("""(?<![a-z0-9._%+-])[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,6}\.[a-z]{2,24}""")
     private val SCHEME_URL = Regex("""(?:https?://|www\.)[^\s<>"']+""")
     // A bare domain such as salik.ae, t.me/abc or emiratespost-ae.fee.example/pay. The TLD must be letters so
     // that decimals such as "3.50" and times such as "9.30" are not treated as hosts.
-    private val BARE_DOMAIN = Regex("""(?<![\w@.\-#])(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s<>"']*)?(?![\w.-]*@)""")
+    private val BARE_DOMAIN = Regex("""(?<![\w@.\-#])(?:[a-z0-9-]{1,63}\.){1,8}[a-z]{2,24}(?:/[^\s<>"']*)?(?![\w.-]*@)""")
     private val DIGITS = Regex("""[0-9]+""")
     private val WHITESPACE = Regex("""\s+""")
 

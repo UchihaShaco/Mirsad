@@ -47,17 +47,20 @@ object ReportActions {
     }
 
     /**
-     * Saves the JSON under getExternalFilesDir("reports") (pull with
-     * `adb pull /sdcard/Android/data/app.mirsad.shield/files/reports/`), or under filesDir/reports when external
-     * storage is unavailable (`adb exec-out run-as app.mirsad.shield cat files/reports/<name>.json`).
+     * Saves the JSON under the app-private filesDir/reports, readable over adb on this debug build with
+     * `adb exec-out run-as app.mirsad.shield cat files/reports/<name>.json` (scripts/push_report_to_mirsad.sh).
      * Returns the absolute path, or null when neither could be written.
      */
+    /** Removes every report copy Mirsad saved. Called by Settings > Delete all data. */
+    fun deleteSavedReports(context: Context) {
+        runCatching { File(context.filesDir, REPORTS_DIR).deleteRecursively() }
+        runCatching { context.getExternalFilesDir(REPORTS_DIR)?.deleteRecursively() } // copies from earlier builds
+    }
+
     fun saveForAdb(context: Context, fileNameHint: String, json: String): String? {
         val name = safeFileName(fileNameHint)
-        val candidates = listOfNotNull(
-            context.getExternalFilesDir(REPORTS_DIR),
-            File(context.filesDir, REPORTS_DIR),
-        )
+        // App-private storage only: no other app can read it. "Delete all data" removes it (see deleteSavedReports).
+        val candidates = listOf(File(context.filesDir, REPORTS_DIR))
         for (dir in candidates) {
             try {
                 if (!dir.isDirectory && !dir.mkdirs()) continue

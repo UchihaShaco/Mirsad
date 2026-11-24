@@ -1,9 +1,55 @@
 {
   "note": "Starter list, to be verified.",
-  "government": ["u.ae","icp.gov.ae","ica.gov.ae","moi.gov.ae","mohre.gov.ae","tdra.gov.ae","centralbank.ae","adpolice.gov.ae","dubaipolice.gov.ae","rta.ae","salik.ae","dewa.gov.ae","addc.ae","uaepass.ae","tamm.abudhabi","emiratespost.ae","mawaqif.ae","itc.gov.ae","abudhabi.ae","dubai.ae","seha.ae","doh.gov.ae","mohap.gov.ae"],
-  "telecom": ["etisalat.ae","eand.com","du.ae"],
-  "banks": ["bankfab.com","emiratesnbd.com","adcb.com","adib.ae","dib.ae","mashreq.com","mashreqbank.com","rakbank.ae"],
-  "couriers": ["aramex.com","dhl.com","fedex.com"],
-  "officialSuffixes": ["gov.ae","mil.ae","ac.ae"],
+  "government": [
+    "u.ae",
+    "icp.gov.ae",
+    "ica.gov.ae",
+    "moi.gov.ae",
+    "mohre.gov.ae",
+    "tdra.gov.ae",
+    "centralbank.ae",
+    "adpolice.gov.ae",
+    "dubaipolice.gov.ae",
+    "rta.ae",
+    "salik.ae",
+    "dewa.gov.ae",
+    "addc.ae",
+    "uaepass.ae",
+    "tamm.abudhabi",
+    "emiratespost.ae",
+    "mawaqif.ae",
+    "itc.gov.ae",
+    "abudhabi.ae",
+    "dubai.ae",
+    "seha.ae",
+    "doh.gov.ae",
+    "mohap.gov.ae",
+    "aadc.ae"
+  ],
+  "telecom": [
+    "etisalat.ae",
+    "eand.com",
+    "du.ae"
+  ],
+  "banks": [
+    "bankfab.com",
+    "emiratesnbd.com",
+    "adcb.com",
+    "adib.ae",
+    "dib.ae",
+    "mashreq.com",
+    "mashreqbank.com",
+    "rakbank.ae"
+  ],
+  "couriers": [
+    "aramex.com",
+    "dhl.com",
+    "fedex.com"
+  ],
+  "officialSuffixes": [
+    "gov.ae",
+    "mil.ae",
+    "ac.ae"
+  ],
   "suffixNote": "Any registrable domain under one of officialSuffixes is treated as official (these second-level suffixes are restricted to UAE government/academic registrants)."
 }

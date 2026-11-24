@@ -22,6 +22,15 @@ fun main(args: Array<String>) {
         System.err.println("usage: analyse <sender> <text> [SMS|CHAT|CALL] [RELAXED|BALANCED|STRICT]  |  analyse --file <tsv> [sensitivity]")
         return
     }
+    if (args[0] == "--profile") {
+        // Times every rule pattern on the given text: finds regexes that backtrack.
+        val text = app.mirsad.core.engine.TextNormaliser(app.mirsad.core.engine.RuleSet.loadFromResources().arabizi).normalise(args[1])
+        app.mirsad.core.engine.RuleSet.loadFromResources().allPatterns().map { (label, re) ->
+            val t0 = System.nanoTime(); val n = runCatching { re.findAll(text).count() }.getOrElse { -1 }
+            Triple(label, (System.nanoTime() - t0) / 1_000_000, n) to re.pattern.take(70)
+        }.sortedByDescending { it.first.second }.take(8).forEach { println("${it.first.second}ms\t${it.first.first}\tmatches=${it.first.third}\t${it.second}") }
+        return
+    }
     if (args[0] == "--file") {
         val sensitivity = args.getOrNull(2)?.let { Sensitivity.valueOf(it.uppercase()) } ?: Sensitivity.BALANCED
         File(args[1]).readLines(Charsets.UTF_8).filter { it.isNotBlank() && !it.startsWith("#") }.forEach { line ->
