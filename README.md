@@ -5,39 +5,136 @@ it, renders a timestamped Mirsad-rendered capture of each received message, runs
 pause or take over at any time, and keeps a private phone watchlist. A host platform integrates through the same HTTP API
 and event stream that the reference dashboard uses.
 
-This first version is local and synthetic: Telegram-shaped fixtures replayed over HTTP, a local model, simulated replies.
-What still needs a host integration, an approval or an approved environment is listed under
-[What is simulated](#what-is-simulated-and-what-needs-a-host-integration).
+Mirsad supports a local fixture walkthrough and an approved live Telegram Business connection.
 
-## Quick start
+## Run Mirsad on Windows
 
-Needs Node.js 24.18 or later. The commands are for PowerShell, which is this machine's shell. In PowerShell, set an
-environment variable on its own line, with `$env:NAME = "value"`, before the command that reads it.
+### Start the existing installation
+
+Open PowerShell on the Mirsad machine and run the following commands. Use this directory on every start so the service
+loads the existing `.env` and opens the same `data\` directory.
 
 ```powershell
-npm install
-# Optional: use the offline rules reviewer instead of the local model (see "Local model setup").
+Set-Location -LiteralPath 'D:\Mirsad'
+npm start
+```
+
+Keep that window open. Once `mirsad_started` appears, open the [officer portal](http://127.0.0.1:8787/) on the same
+machine. To check the service from a second PowerShell window, run the command below. It should return `ok`.
+
+```powershell
+(Invoke-RestMethod -Uri 'http://127.0.0.1:8787/healthz').data.status
+```
+
+To stop a foreground run, press **Ctrl+C** in the window that started Mirsad and wait for the PowerShell prompt.
+To restart, run `npm start` there again. If another launcher already owns the running instance, use that launcher to
+stop it before starting another. Both `npm start` and `npm run demo` run the **same service** with the configured
+Telegram settings. With live replies enabled, either command can send real Telegram messages.
+
+### First installation from Git
+
+Install Git and **Node.js 24 LTS, version 24.18.0 or later in the 24.x series**, with npm. On a new machine, use a
+GitHub account with access to this private repository and clone it into an empty destination.
+
+```powershell
+git clone https://github.com/UchihaShaco/Mirsad.git D:\Mirsad
+```
+
+In the fresh checkout, run the following in PowerShell. The copy runs only when the machine has no local configuration.
+
+```powershell
+Set-Location -LiteralPath 'D:\Mirsad'
+node --version
+npm ci
+if (-not (Test-Path -LiteralPath '.env')) {
+    Copy-Item -LiteralPath '.env.example' -Destination '.env'
+}
+```
+
+The example binds to `127.0.0.1:8787`, uses `./data`, and starts with live Telegram intake and replies disabled.
+A Git checkout contains the application and synthetic fixtures. To reconnect an existing inbox on another machine,
+restore its private configuration and consistent data backup before starting. For a **new** inbox, start once with
+the example defaults to create the seeded workspace, then stop it. Follow the Telegram setup guide to connect the
+business account, provision the live connector, and grant access. Then create the officer login described below.
+After updating a checkout, run `npm ci` while the service is stopped whenever the lockfile has changed.
+[Telegram setup](docs/telegram/setup.md) · [Storage and backups](docs/deployment-notes.md#5-backups)
+
+### Configure replies and test changes
+
+| Operation | What to do |
+|---|---|
+| Enable Telegram on a new installation | Set the bot token, approved connection, scope and approval references in the local `.env`. For replies, configure the consent reference and Telegram's **Reply to Messages** right. Follow the setup guide to enable `TELEGRAM_LIVE_ENABLED` and `TELEGRAM_AI_REPLIES_ENABLED`. Run `npm run telegram:verify` and restart. |
+| Use Gemini for English and Emirati Arabic | In `.env`, set `MIRSAD_REPLY_PROVIDER=openrouter` and `MIRSAD_OPENROUTER_MODEL=google/gemini-3.8-flash`. Put the key in `OPENROUTER_API_KEY` using a local editor. Run `npm run openrouter:verify` for a synthetic test, then restart. During live operation, eligible reply text goes to OpenRouter and Google. |
+| Run with a local model | For local replies, choose `MIRSAD_REPLY_PROVIDER=lmstudio`. Start the LM Studio server at `http://127.0.0.1:1234/v1` and load the model named by `MIRSAD_LMSTUDIO_MODEL` (default `qwen3.5-9b`). The separate findings reviewer uses `MIRSAD_REVIEWER`. OpenRouter replies can run without LM Studio. |
+| Test automatic Dispatch | In **Settings**, enable **Auto-reply to every Telegram DM** and **Test mode** for the all-private inbox. The next eligible message activates a new chat. For your own account or a participant who already agreed, use **Dispatch this chat → Dispatch test chat** to record permission for replies. Switching Test mode off stops automatic Dispatch for new chats. |
+| Apply a prompt edit | Save `prompts/ali.md`, then select **Settings → Reload Ali’s prompt**. Check the confirmation and send the next test DM. A turn already in progress uses the prior version. A validation error leaves the last working prompt active. |
+
+Keep the live configuration, credentials, database and evidence on the operator machine. The repository supplies
+the setting names and defaults in [.env.example](.env.example). For connection setup, reply eligibility and disabling
+the connectors, see [Telegram setup](docs/telegram/setup.md) and [Telegram rollback](docs/telegram/rollback.md).
+
+### Troubleshooting
+
+| Symptom | Check |
+|---|---|
+| Portal is unreachable | Check the startup window for `config_invalid` or `mirsad_start_failed`. Confirm the configured host and port. To identify a process already listening on the default port, run `Get-NetTCPConnection -State Listen -LocalPort 8787` and check its `OwningProcess`. |
+| Portal works but live DMs do not arrive | Look for `telegram_live_connector_started` after startup. If the connector was refused, inspect the reported setting names, run `npm run telegram:verify`, correct the configuration or Telegram Business permissions, then restart. |
+| A DM arrived but Ali did not answer | Check for `telegram_ai_replies_started`, the chat's Dispatch status, participant permission, a review hold or officer takeover. Look beside the message for a recorded silence reason. For hosted replies, `npm run openrouter:verify` tests the key and model independently of Telegram. |
+| A fresh clone needs a smoke test | Run `npm run demo:walkthrough -- --reviewer deterministic`. It uses synthetic fixtures, a temporary data directory and a separate loopback port. It needs neither Telegram credentials nor a model server. |
+
+## Sign in to the connected Telegram inbox
+
+Open the dashboard at `http://127.0.0.1:8787/` and enter your Mirsad username and password.
+The account's inbox shows chats from its linked Telegram account. Your Telegram login and bot token are separate.
+
+A local operator can create an officer once a live Telegram account has been provisioned. From the project directory, run
+`npm run officer:create -- <username>` and enter a temporary password at the hidden prompts. The command grants the
+officer access to the existing live account. On first sign-in, the portal asks the officer to choose a different
+password of 12–128 characters before opening the inbox. Only salted password hashes are stored.
+To reset an existing officer's password, use `npm run officer:create -- --reset <username>`. This revokes the officer's
+sessions and prompts them to choose a new password on their next sign-in.
+
+## Fixture walkthrough
+
+For an automated walkthrough, run `npm run demo:walkthrough -- --reviewer deterministic`. To explore a fixture inbox
+manually, open a separate PowerShell window and set a fixture data directory and port before starting. These
+settings apply to that window. The fixture instance can run alongside the connected inbox.
+
+```powershell
+Set-Location -LiteralPath 'D:\Mirsad'
+$env:MIRSAD_DATA_DIR = "./data/fixture-walkthrough"
+$env:MIRSAD_PORT = "8788"
+$env:MIRSAD_DEMO_SEED = "true"
+$env:TELEGRAM_LIVE_ENABLED = "false"
+$env:TELEGRAM_AI_REPLIES_ENABLED = "false"
 $env:MIRSAD_REVIEWER = "deterministic"
 npm run demo
 ```
 
-`npm run demo` starts Mirsad on `http://127.0.0.1:8787`. On the first start with an empty data directory (`./data`) it
-seeds a demo workspace: two officers, an intake account and an officer account on Telegram, and a fixture connector. Their
-tokens are written once to `data/demo-credentials.json`, which is git-ignored.
+This fixture instance listens on `http://127.0.0.1:8788`. An empty fixture directory is seeded with two officers,
+two fixture Telegram accounts and a fixture connector. It stores the demo credentials inside that directory.
 
-In a second terminal:
+In a second PowerShell window, point the fixture tools at the same instance. The demo sign-in links give access
+to the fixture inbox. Keep them in that local terminal.
 
 ```powershell
+Set-Location -LiteralPath 'D:\Mirsad'
+$env:MIRSAD_DATA_DIR = "./data/fixture-walkthrough"
+$env:MIRSAD_PORT = "8788"
+$env:MIRSAD_BASE_URL = "http://127.0.0.1:8788"
 npm run demo:credentials                                     # prints a sign-in link per demo officer
 npm run replay -- fixtures/telegram/inbound-first-greeting.json
 ```
 
-Open the `Demo Officer 1` link that `demo:credentials` printed (`http://127.0.0.1:8787/#token=...`). The new chat appears
+Open the `Demo Officer 1` link for the fixture port. The new chat appears
 in the **New inbound** queue. Replay any other file in `fixtures/telegram/`; [docs/telegram/fixtures.md](docs/telegram/fixtures.md)
-says what each one exercises. Select chats and click **Dispatch** to start AI review. Use **Pause AI**, **Take over** and
-**Resume AI** on a chat. Under takeover the composer opens blank; send a reply, or choose **Leave unanswered**. To enter
-a merchant's payment confirmation, use **Record merchant confirmation** in the chat's case panel: a payment link whose
-host it does not list is then marked **Suspected fraud**. Try it with `merchant-conflict.json` and the host
+says what each one exercises. **Needs review** filters the queue to conversations waiting for an officer’s decision.
+Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
+For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
+Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose
+**Leave unanswered**. **Message details** opens the source timestamps and capture. For the case log and watchlist
+matches, open **Evidence**. Under **Add merchant confirmation**, record a verified payment host and its source.
+A conflicting host raises **Suspected fraud**. Try it with `merchant-conflict.json` and the host
 `pay.merchant.example`.
 
 ## Commands
@@ -45,6 +142,7 @@ host it does not list is then marked **Suspected fraud**. Try it with `merchant-
 | Command | What it does |
 |---|---|
 | `npm run demo` (or `npm start`) | Starts the service on loopback. Settings are read from `.env` (copy [.env.example](.env.example)) or the environment. |
+| `npm run officer:create -- <username>` | Creates a local password login for the existing live Telegram account. |
 | `npm run demo:credentials` | Prints the dashboard sign-in links for the configured data directory, plus the names of the variables the headless client and the replay script read. |
 | `npm run replay -- fixtures/telegram/<file>.json` | Posts a synthetic fixture to a running instance through `POST /v1/ingest`. It refuses a file that is not marked synthetic, or that holds a domain or phone number outside the reserved ranges. |
 | `npm test` | Unit, integration and contract tests (vitest). |
@@ -52,25 +150,37 @@ host it does not list is then marked **Suspected fraud**. Try it with `merchant-
 | `npm run test:e2e` | Dashboard end-to-end tests in the installed Microsoft Edge or Google Chrome (playwright-core; no browser download). |
 | `npm run demo:walkthrough -- --reviewer deterministic` | The clean-start walkthrough (below) with the offline reviewer. `--reviewer lmstudio` uses the local model; without `--reviewer` it uses the configured one (`MIRSAD_REVIEWER`, default `lmstudio`). `--keep` keeps the temporary data directory and prints its sign-in links. |
 | `npm run eval:model -- --set heldout --reviewer lmstudio` | Model evaluation on the held-out synthetic transcripts. Writes `docs/evaluation/heldout-lmstudio-latest.{md,json}`. Use `--set dev` for the tuning set and `--reviewer deterministic` for the rules baseline. |
+| `npm run eval:replies -- --set dev --out reply-report.json` | Replays synthetic conversations through local Qwen and the reply guard. Choose `dev` (41), `heldout` (15), `all` (the original 56), or `offers` (37). The JSON report records model attempts, retries, replies, silence and the criteria for each case. |
+| `npm run gemini:verify` | Checks the configured OpenRouter key against Gemini 3.8 Flash using invented English and Arabic exchanges. |
+| `npm run openrouter:verify` | Checks the selected OpenRouter reply model with invented English, Emirati Arabic and seller-recall exchanges. |
 | `npm run telegram:readiness` | The eight local Telegram readiness checks against a temporary instance. Writes `docs/telegram/readiness.{json,md}`. |
 | `npm run telegram:verify`, `npm run telegram:provision` | Bot and connection verification, and local provisioning, for the controlled Telegram test. See [docs/telegram/setup.md](docs/telegram/setup.md). |
 | `npm run openapi:generate` | Regenerates [openapi.yaml](openapi.yaml) from the zod contract. A test fails when the committed file is stale. |
 | `npx tsx examples/headless-client/run.ts` | The HTTP-only integration example. Needs a running instance. |
 
-## What was verified
+## Verification
 
-These are the results of this build's final runs on 2026-11-22, on Windows 11 with Node 24.18.0. The first three ran at
-commit `fa24c3f`; the commits after it change only documentation. The two walkthrough runs ran at commit `33cbefc`. The
-last two rows are copied from their committed reports, which record when they ran:
+On 2026-11-24 the Windows release passed type checking, 1,090 automated tests across 90 files, and all 37 dashboard
+browser tests. Four WhatsApp placeholder tests were skipped. A separate clean checkout installed with `npm ci`,
+started using the example configuration with a deterministic reviewer, and served the portal, health endpoint and
+authenticated officer endpoint using newly seeded credentials.
+
+### Historical verification results
+
+The first three checks ran on 2026-11-23 on Windows 11 with Node 24.18.0, against the working tree after `eb0fcd5`.
+They used synthetic data and isolated instances. The two walkthroughs ran at commit `33cbefc`. The readiness and
+evaluation rows give the dates of their committed reports.
 
 | Run | Result |
 |---|---|
-| `npm test` | 47 test files: 417 tests passed and 4 skipped. The skipped block is the WhatsApp channel contract, which stays off while its gate is closed. The output has no warnings. |
+| `npm test` | 679 tests passed across 58 files. The 4 WhatsApp channel contract placeholders were skipped. Telegram tests cover the three-second minimum, fee questions and corrections, bounded history, distinct evidence items, and immediate cancellation when a sender provides bank-transfer details. |
 | `npm run typecheck` | Clean. |
-| `npm run test:e2e` | 10 of 10 dashboard flows passed in a headless installed browser (the suite tries Microsoft Edge first, then Chrome). |
+| `npm run test:e2e` | 12 of 12 dashboard flows passed. They include the first visible item, a two-item hold, the immediate bank-details hold, and source-linked officer review. |
+| Synthetic Telegram replies on local Qwen | The 56-case regression replay met 34/41 development and 13/15 held-out criteria. Five misses used the previous first-material silence rule. In fresh worker conversations an English job-fee exchange followed the requested question and acknowledgment. Arabic clarification was inconsistent. |
+| Synthetic offers and later fees | Two replays of the same 34 conversations met 31/34 and 33/34 criteria, up from 23/34. All 10 later-fee cases passed both times and both explicit stops stayed silent. Remaining misses included confusing a service provider with a customer and awkward Arabic wording. |
 | `npm run demo:walkthrough -- --reviewer deterministic` | 22 of 22 checks passed, in 2.3 s. |
 | `npm run demo:walkthrough -- --reviewer lmstudio` | 22 of 22 checks passed with Qwen3.5 9B on LM Studio (`127.0.0.1:1234`, 4,096-token context), in 21.0 s. Both runs raised 5 findings and published 121 stream events with the same mix of types. |
-| Telegram readiness ([readiness.md](docs/telegram/readiness.md)) | **Ready for controlled test**: all eight local checks passed, recorded 2026-11-22T01:34:09.511Z. The live test is pending (see [Telegram](#telegram)). |
+| Telegram readiness ([readiness.md](docs/telegram/readiness.md)) | **Ready for controlled test**: all eight local checks passed, recorded 2026-11-22T01:34:09.511Z. A first approved live test began on 2026-11-22 (see [Telegram](#telegram)). |
 | Held-out model evaluation (the latest run, recorded in [docs/evaluation](docs/evaluation/) at 2026-11-22T03:44:38.530Z) | Qwen3.5 9B: precision 87.0%, recall 95.2%, 1 unsupported finding (rejected, never shown), median review 242 ms (p95 5,785 ms) over 55 messages. The deterministic baseline: precision 68.4%, recall 61.9%. Details under [Evaluation results](#evaluation-results). |
 
 ### The walkthrough
@@ -115,28 +225,30 @@ outside officer straight into the temporary database, because no HTTP route prov
 
 Simulated or fixture-only in this version:
 
-- **Composer sends.** A reply is stored once as an outgoing message labelled **Simulated send**, with officer
-  attribution and time. Nothing is delivered to any channel, and no code path sends to Telegram or WhatsApp.
-- **Telegram intake.** All Telegram-shaped data enters through the replay of synthetic fixtures. The live Business
-  connector is built and tested only against a fake Bot API server, and it stays disabled.
+- **Composer sends.** The officer's composer stores an outgoing message labelled **Simulated send** with officer
+  attribution and time. The opt-in Telegram reply worker can deliver eligible replies in the configured chat scope.
+- **Telegram intake.** The demo's Telegram-shaped data enters through the replay of synthetic fixtures. The live
+  Business connector is tested against a fake Bot API server and stays disabled until the account owner approves
+  scoped test chats; a first approved test on the owner's own account began on 2026-11-22.
 - **Model review.** The model reviews only content that arrives through a connector whose capture method is
   `fixture_replay`, such as the demo fixture connector. `npm run replay` checks that a fixture is marked synthetic and
   holds only reserved domains and numbers; the API does not, so text posted straight to `POST /v1/ingest` with such a
-  connector's token also reaches the model once its chat is dispatched. Live Telegram content is never sent to any
-  model, local inference included.
-- **Identity.** The demo identity adapter maps bearer tokens from the demo seed to officers and to a fixture connector.
+  connector's token also reaches the model once its chat is dispatched. Live Telegram content is never reviewed for
+  findings. For automated replies, the configured reply provider receives eligible conversation text from enrolled contacts.
+- **Identity.** The fixture walkthrough uses seeded bearer tokens. Live officers can sign in with a local username and password.
 - **Start of conversation.** `Contact started chat` and `Officer started chat` appear only when a fixture author asserts
   a start. Real Telegram updates carry no start marker, so live chats always show `First observed: …`.
 
 Needs a host integration, an approval or an approved environment:
 
 - **Real delivery** of composer replies, through an approved host adapter for that channel.
-- **The host's login** in place of the demo identity adapter. `IdentityProvider` is the port to replace (design section 3).
+- **Host single sign-on.** `IdentityProvider` is the integration point for an external identity service (design section 3).
 - **An approved environment in the UAE** for case storage, screenshot processing, inference, logs and backups. See
   [docs/deployment-notes.md](docs/deployment-notes.md).
 - **Encryption at rest**, with separate key custody. The local SQLite file and evidence directory are not encrypted.
-- **A retention and deletion policy.** Original text and captures are never changed or deleted by Mirsad. Deleting
-  evidence follows the approved case retention policy, which this version does not implement.
+- **A retention and deletion policy.** Source edits and deletions are recorded alongside captured originals. An officer
+  can explicitly erase a chat or the inbox, including local captures. The host supplies retention schedules and
+  ensures backups and logs follow the same policy.
 - **The controlled Telegram test**, which needs the account owner's approval and test credentials.
 
 ## HTTP contract
@@ -147,7 +259,9 @@ and response schemas and one complete workflow under `x-workflow-example`).
 an incoming event, read the timeline and take over. A test runs it against a live service and validates every exchange
 against `openapi.yaml`.
 
-**Auth.** Every route except `/healthz` and the dashboard files needs `Authorization: Bearer <token>`. There are two
+**Auth.** `POST /v1/auth/login` accepts the officer's username and password. A temporary password returns a password-change
+challenge. Submit the credentials with `newPassword` to finish signing in and receive an expiring session.
+Use `POST /v1/auth/logout` to end that session. Protected API routes take `Authorization: Bearer <token>`. There are two
 kinds of principal. Officers use every route except intake. A connector is the separate ingestion credential: it may call
 only `POST /v1/ingest`, `POST /v1/chats/{chatId}/events` and `GET /v1/me`, and its capture method is fixed when it is
 provisioned. A missing or unknown token gets `401 unauthenticated`; the wrong kind of principal gets
@@ -158,7 +272,7 @@ provisioned. A missing or unknown token gets `401 unauthenticated`; the wrong ki
 `{ "success": false, "data": null, "error": { "code", "message", "details" } }`. The chat list adds
 `meta: { total, limit, offset }`. The artifact route (PNG) and the event stream (SSE) are the two exceptions.
 
-**Idempotency.** `POST /v1/dispatches` and `POST /v1/chats/{chatId}/officer-messages` need an `Idempotency-Key` header.
+**Idempotency.** `POST /v1/dispatches`, `POST /v1/dispatches/by-phone` and `POST /v1/chats/{chatId}/officer-messages` need an `Idempotency-Key` header.
 The same key with the same body replays the stored response, with `Idempotency-Replayed: true`. The same key with a
 different body gets `422 idempotency_key_reused`.
 
@@ -172,7 +286,11 @@ different body gets `422 idempotency_key_reused`.
 | `POST /v1/ingest` | connector | Submit an intake event. Creates or finds the chat and appends the event in one transaction. |
 | `POST /v1/chats/{chatId}/events` | connector | The same intake for a registered chat: `message.recorded`, `message.edited`, `message.deleted`. |
 | `POST /v1/dispatches` | officer | Start AI review on 1 to 100 chats; per-chat status. Access to the whole selection is checked first. A chat that is already active keeps its mode, and its unavailable reviews are retried. |
+| `POST /v1/dispatches/by-phone` | officer | Dispatch one Telegram chat by an international phone number. Returns the dispatch receipt on a unique verified match, or an outcome for an unknown or ambiguous number. |
 | `POST /v1/chats/{chatId}/control` | officer | `pause`, `take_over` or `resume`, with `expectedRevision`. |
+| `GET /v1/chats/{chatId}/erase-preview`, `GET /v1/inbox/erase-preview` | officer | Get the affected conversation count and the snapshot needed to confirm erasure. |
+| `POST /v1/chats/{chatId}/erase-telegram`, `POST /v1/inbox/erase-telegram` | officer | Request Telegram deletion of verified, eligible messages. Returns counts and a list of conversations to check. Requires the confirmed snapshot and an idempotency key. |
+| `POST /v1/chats/{chatId}/erase`, `POST /v1/inbox/erase` | officer | Permanently erase local history and captures for the confirmed snapshot. Requires its own idempotency key. |
 | `POST /v1/chats/{chatId}/officer-messages` | officer | Composer send by the controlling officer: one **Simulated send**. |
 | `POST /v1/chats/{chatId}/officer-decisions` | officer | `leave_unanswered` on an incoming message: an internal case action only. |
 | `GET /v1/chats/{chatId}/timeline` | officer | Messages, message events, case actions, findings, case references and the cursor. |
@@ -316,10 +434,43 @@ local checks passed:
 - takeover with a composer reply is recorded as Simulated send;
 - the live connector refuses to start without its gates.
 
-The controlled test with a real account is **pending**. It needs the account owner's approval of explicitly scoped test
-chats, and test credentials. Neither is available, so the live connector stays disabled (`TELEGRAM_LIVE_ENABLED=false`).
-Nothing in this repository can mark the connector `Controlled test verified`. That state is reported only from a
+The controlled test with a real account needs the account owner's approval of explicitly scoped test chats, and test
+credentials; without both the live connector stays disabled (`TELEGRAM_LIVE_ENABLED=false`, the default). A first
+approved test on the owner's own test account began on 2026-11-22; what it observed is in the worksheet below. Nothing
+in this repository can mark the connector `Controlled test verified`. That state is reported only from a
 controlled-test record written by hand after an approved test.
+
+**Automated replies (opt-in).** In a chat with recorded consent, the configured provider drafts each
+eligible reply using recent messages. It can return a casual greeting, clarify an ambiguous fragment, answer a
+direct question briefly, or stay silent when it has already answered. The guard checks repeated wording before sending.
+When someone offers work, an item or a service, the model can ask one ordinary question about the duties, condition or terms.
+If a new fee to start work has no stated purpose, it asks once what it covers. Once the sender explains, it acknowledges the answer and lets them lead.
+The prompt uses up to 32 recent eligible messages plus the sender's relevant earlier offer and correction.
+Offer memory comes from that chat's eligible messages in SQLite and carries over when the sender changes language.
+The worker waits for three quiet seconds after the latest incoming message, reads the burst together and checks
+officer controls and contact preferences before sending.
+
+A contact can end the current exchange with **Stop** and start a new one later with **Hi** or a direct question.
+After **Never contact me again**, the contact can explicitly invite a reply in their own words. The first volunteered
+payment link, document or relevant location appears in the officer portal with a link to the source message.
+A second distinct item pauses automatic replies. Bank-transfer details volunteered by the sender trigger an immediate
+pause, including when they are the first item. The portal links the officer to the source. The officer marks each item reviewed. A request to pay or an
+explanation of the fee does not count. Officer controls and contact opt-outs apply independently. See setup step 9 for retesting.
+
+**Chat scope.** All-private intake covers eligible private DMs on the connected account. In **Settings**, turn on
+**Auto-reply to every Telegram DM**. The **Test mode** switch then controls automatic Dispatch.
+
+- With **Test mode on**, the next eligible private message marks a never-started chat **AI active**. Either you or
+  the contact can start the conversation. When you send the opener in Telegram, Ali waits for the contact’s incoming
+  message and recorded permission before replying. Other contacts receive no invitation and their messages
+  stay out of the reply model. For your own test account or a participant who already agreed to AI replies and fraud
+  screening, choose **Dispatch this chat → Dispatch test chat** to record that permission.
+- With **Test mode off**, new chats wait for manual **Dispatch**. New contacts can receive a local invitation and respond
+  **I AGREE** or **أوافق**. Already-active chats with permission can continue. Turning off **Auto-reply to every Telegram
+  DM** pauses all automatic replies and invitations.
+
+Officer pauses, takeover, STOP and review holds remain effective in both modes. Excluded chats and Telegram’s service
+chat are dropped before storage.
 
 - Setup for the controlled test: [docs/telegram/setup.md](docs/telegram/setup.md), including the conditions Telegram's
   terms place on handling business messages.
@@ -340,11 +491,12 @@ API only.
 ## Local model setup
 
 The default reviewer is **Qwen3.5 9B Q4_K_M**, served by LM Studio's OpenAI-compatible server on loopback. Its model ID
-is `qwen3.5-9b`, and it is loaded with a 4,096-token context.
+is `qwen3.5-9b`. Set `MIRSAD_LMSTUDIO_CONTEXT_TOKENS=8192` in `.env` for the 8,192-token configuration below.
+The app uses this value to decide how much conversation history to include. Keep it aligned with the `-c` value.
 
 ```powershell
 lms server start --bind 127.0.0.1 --port 1234
-lms load qwen3.5-9b -c 4096 --parallel 4 -y
+lms load qwen3.5-9b -c 8192 --parallel 4 -y
 # Undo:
 lms unload qwen3.5-9b
 lms server stop
@@ -357,6 +509,85 @@ lms server stop
 | `MIRSAD_LMSTUDIO_MODEL` | `qwen3.5-9b` |
 | `MIRSAD_LMSTUDIO_CONTEXT_TOKENS` | `4096` |
 | `MIRSAD_LMSTUDIO_TIMEOUT_MS` | `120000` |
+
+### Telegram reply provider
+
+For an eligible Telegram chat, **Dispatch** starts or continues AI work on a fresh inbound turn. An officer can attach an
+optional briefing to one chat. Ali uses it as an unverified lead and bases its assessment on the conversation.
+**Draft first message** prepares editable text for officer-led outreach in Telegram.
+
+From the inbox, **Dispatch a number** takes an international phone number and an optional private briefing.
+Mirsad can match a chat when the contact previously shared their own Telegram contact card with the linked business
+account. Cards received before verified matching was installed need to be shared again for an automatic match.
+A unique match starts the usual dispatch flow. The receipt lets you open the conversation and see whether Ali
+replied. If several conversations match, open the intended chat from the inbox and dispatch it there.
+If there is no verified match, choose **Draft first message**, edit the opener, and open it in Telegram to send it
+yourself. Telegram limits business-bot replies to private chats with an incoming message in the past 24 hours.
+[Telegram Business Bot rights](https://core.telegram.org/bots/api#businessbotrights) · [Telegram phone links](https://core.telegram.org/api/links#phone-number-links)
+
+Ali can flag a captured payment link for officer review when the conversation gives a concrete reason for concern.
+The red review flag links to the incoming message. The officer can open the source and mark the item reviewed.
+
+**Lower concern** lists conversations with a supported in-person arrangement. Open **Evidence** to see the
+messages supporting the contact’s agreement, the meeting time and the location. A date gets its own source when
+the exchange supplies one. This is a provisional assessment of the exchange. It does not verify a seller’s identity
+or that a meeting took place. Later risk signals can remove the current assessment.
+
+After a fresh test starts for a chat, Ali works from the new exchange. The officer can open **Previous conversation**
+in **Evidence** to inspect the old transcript. Earlier meeting assessments are also available under
+**Lower concern → Previous tests**. The test boundary preserves contact permissions, officer holds and evidence.
+
+To permanently clear one conversation, open it and choose **Reset this chat**. To clear the conversations in your
+officer inbox, open **Settings → Erase entire inbox**, check the number of conversations and type **ERASE**.
+Choose the red **Delete from Telegram for both** button first if you want the messages removed from Telegram.
+Review the result for each conversation with outstanding messages. Open those chats in Telegram and use its
+**Clear History** option for both participants if needed. Telegram can contain messages Mirsad never received.
+The local erase button removes current and earlier messages, case history, evidence captures and Ali’s memory.
+The next incoming message can open a fresh conversation. Local erasure keeps the controls needed to honor
+contact opt-outs and prevent old Telegram updates from restoring the erased history.
+
+Edit and save `prompts/ali.md` for live Telegram wording and officer handoff rules, then click
+**Settings → Reload Ali’s prompt**. The next model turn uses the saved version. A turn already
+being drafted finishes with the version it started with. If the file fails validation, the last working
+version stays active. A normal message in an enrolled chat can produce a reply,
+silence, or a local officer report that holds further replies. When a reply is skipped, the dashboard
+shows the recorded reason under the incoming message and in the chat’s **Case log**. A reply suppressed by the repeat-question rule
+is attributed to the reply guard. Older skips have no recorded reason. The generator interfaces,
+memory, delivery checks and tests are described in the
+[reply generator editor guide](docs/telegram/reply-generator.md).
+
+Set `MIRSAD_REPLY_PROVIDER=openrouter` and `OPENROUTER_API_KEY` in the git-ignored `.env`.
+`MIRSAD_OPENROUTER_MODEL` selects one model for English and Emirati Arabic. The choices are
+`google/gemini-3.8-flash` (default, hosted by Google) and `thedrummer/cydonia-24b-v4.1` (hosted by Parasail).
+Eligible reply text goes to OpenRouter and the selected host. Run `npm run openrouter:verify` to check the
+selection with invented messages, then restart Mirsad to apply it. The dashboard and evidence database
+stay on this machine. The findings reviewer has its own configuration.
+
+With the default `MIRSAD_REPLY_PROVIDER=lmstudio`, Arabic Telegram replies use everyday Emirati Arabic. To use a separate local model for them, set
+`MIRSAD_LMSTUDIO_ARABIC_MODEL` to its exact loaded ID. English replies and the reviewer continue to use
+`MIRSAD_LMSTUDIO_MODEL`. Each sent reply records the model that wrote it. When two models are configured, a
+completion from an unexpected model fails before delivery.
+
+Ali (علي) is the chat name of the automated consumer receiving the sender's offer. Ali can acknowledge the
+offer or ask about it. If the sender reverses the roles, Ali can clarify who is selling. Ali does not offer
+photos, quote prices, or give out product, contact, payment, delivery, or personal details.
+When someone asks who is replying, Ali answers honestly. The reply model produces a structured
+decision. Only validated public reply text is eligible for delivery. Officer handoffs carry the
+applicable indicator codes and an application-supplied reference to the original message.
+
+Kallamni is an optional, separately installed Arabic model for the local provider. The repository does not bundle
+its weights. To reproduce the earlier noncommercial hackathon configuration on a 16 GB Radeon RX 9060 XT,
+install the optional model in LM Studio before running this command:
+
+```powershell
+lms load kallamni-4b-v1 --identifier kallamni-4b-v1 --context-length 4096 --parallel 1 --gpu 0.72 -y
+```
+
+Set `MIRSAD_LMSTUDIO_ARABIC_MODEL=kallamni-4b-v1` and `MIRSAD_LMSTUDIO_ARABIC_CONTEXT_TOKENS=4096` in
+`.env`, then start Mirsad. Both models share the local LM Studio endpoint by default. If using a second loopback
+server, set `MIRSAD_LMSTUDIO_ARABIC_BASE_URL`. The Arabic weight used in that configuration was Mohamed Yasser's Kallamni-4B v1
+Q6_K, published under CC BY-NC 4.0. [Model card](https://huggingface.co/yasserrmd/kallamni-4b-v1) ·
+[Publisher's GGUF files](https://huggingface.co/yasserrmd/kallamni-4b-v1-gguf/tree/main).
 
 `GET /v1/status` reports `reviewer.reachable`. That is true only when LM Studio lists the configured model as loaded,
 because LM Studio answers a request for any model name with whichever model is loaded. To work offline, switch to the
@@ -447,6 +678,13 @@ From design section 18:
 14. The dashboard has a light theme and switches to dark with the operating system setting. It uses the system's fonts
     (Segoe UI Variable on Windows) and draws its marks in CSS, because its Content-Security-Policy allows no remote font
     and its stylesheet references no files. The design it follows is on a design canvas, outside the repository.
+15. Automated replies in approved Telegram chats are opt-in and off by default. The account owner decided on
+    2026-11-22 to allow them, which lifts two brief rules for those chats: no model analysis of live Telegram content,
+    and the AI kept separate from sending. They need a consent reference, because Telegram's terms allow AI use on chat
+    data only with the explicit consent of everyone in the chat. Live content is still never reviewed for findings.
+16. Private-chat intake and automatic replies have separate scopes. The all-private intake switch requires its own
+    reference. The officer's Inbox switch can extend opt-in to all eligible incoming DMs. A new contact's
+    acceptance in Telegram establishes the starting point for their AI conversation history.
 
 ## Known limits
 
@@ -504,9 +742,14 @@ From design section 18:
   - SQLite runs in WAL mode with `synchronous = FULL`, so a commit is on disk before Mirsad answers. Each evidence file
     is flushed to disk before it is renamed into place and counts as stored; its directory is flushed after the rename
     where the platform allows it (Node cannot on Windows).
-  - Original message text is never updated or deleted.
-- **No sending.** No code path sends a message to Telegram or WhatsApp. The Telegram Bot API client has four read-only
-  calls.
+  - Incoming edits and source deletions preserve original message text as evidence. An explicit officer erasure
+    removes the local evidence, including the original.
+- **Sending only when switched on.** With `TELEGRAM_AI_REPLIES_ENABLED=false` (the default) no code path sends a
+  message to Telegram or WhatsApp. The Telegram Bot API client has four read-only calls; replies go through a separate
+  sender with one method (`sendMessage` on the approved business connection), created only when automated replies
+  are on. In all-DM mode, new contacts can enroll by invitation or an officer can record existing participant permission in the selected conversation.
+- **Officer-confirmed Telegram deletion.** A separate Bot API client calls `deleteBusinessMessages` only after the officer
+  confirms the scope. Live capture and automated replies cannot invoke that operation.
 - **Not yet protected:** data at rest. Encryption and key custody belong to the approved environment.
 
 ## Repository layout
@@ -519,12 +762,13 @@ src/
   domain/        pure rules: control machine, initiation, text safety, phones, links, cues, finding validation, review policy
   storage/       SQLite (node:sqlite) schema and repositories, local evidence store
   services/      use cases: intake, chats, dispatch, control, officer actions, timeline, artifacts, watchlist, status, stream
-  workers/       job loop, capture worker, review worker
+  workers/       job loop, capture worker, review worker, AI reply worker (opt-in)
+  replies/       disclosed local-model assistant prompt and reply guard
   capture/       Mirsad-rendered capture renderer (@napi-rs/canvas) and PNG provenance metadata
   review/        deterministic and LM Studio reviewers, prompt, publishing rules, evaluation metrics
   identity/      demo identity (bearer tokens), provisioning, demo seed
   http/          server, middleware, one route file per group
-  adapters/      fixture replay; Telegram types, fixture schema, normalizer, read-only Bot API client, live connector
+  adapters/      fixture replay; Telegram types, fixture schema, normalizer, read-only Bot API client, reply sender, live connector
   dashboard/     reference dashboard: static HTML, CSS and ES modules, a client of the API and the event stream
 scripts/         replay, demo walkthrough and credentials, OpenAPI generation, model evaluation, Telegram verify/readiness/provision
 examples/headless-client/   HTTP-only integration example

@@ -1,7 +1,7 @@
 # Telegram live connector: setup for a controlled test
 
-Status: prepared, not run. The live connector is built and tested only against a fake Bot API server. No approved test
-access exists yet, so nothing here has been run against Telegram, and the connector stays off
+Status: a first approved test on the account owner's own test account began on 2026-11-22; what it observed is in the
+[worksheet](event-coverage-worksheet.md). The live connector is tested against a fake Bot API server, and it stays off
 (`TELEGRAM_LIVE_ENABLED=false`) until the account owner has approved explicitly scoped test chats and test credentials
 are available. Rollback steps are in [rollback.md](rollback.md).
 
@@ -10,16 +10,19 @@ are available. Rollback steps are in [rollback.md](rollback.md).
 - It long-polls the Bot API (`getUpdates`, 30-second timeout) for the four business update types only:
   `business_connection`, `business_message`, `edited_business_message`, `deleted_business_messages`.
 - It stores an update only when it belongs to the approved business connection (`TELEGRAM_APPROVED_CONNECTION_ID`) and
-  to a chat on the approved list (`TELEGRAM_APPROVED_CHAT_IDS`). Every other update is dropped before storage and only
-  counted: no text, ID or name from it is stored or logged.
+  to a chat in scope: a chat on the approved list (`TELEGRAM_APPROVED_CHAT_IDS`) or, by the owner's decision, any private
+  chat of the account (`TELEGRAM_CHAT_SCOPE=all_private`, step 10). Chats on `TELEGRAM_EXCLUDED_CHAT_IDS` and Telegram's
+  own service chat are never in scope. Every other update is dropped before storage and only counted: no text, ID or
+  name from it is stored or logged.
 - It stores through the same intake function as fixture replay, under its own connector principal with the capture
-  method `telegram_business_live`. Content captured live is never sent to any model, including local inference; its
-  review status is `not_permitted`.
+  method `telegram_business_live`. Content captured live is never reviewed for findings: its review status is
+  `not_permitted`. The optional reply provider receives eligible text from enrolled chats when replies are enabled (steps 9–10).
 - Telegram sends no start-of-conversation marker, so live chats always show `First observed: incoming` or
   `First observed: outgoing`, never `Contact started chat` or `Officer started chat`.
 - It cannot send. The Bot API client has four read-only calls (`getMe`, `getWebhookInfo`, `getBusinessConnection`,
   `getUpdates`) and no send, edit, delete or read-marking method. Officer replies from the composer are recorded as
-  `Simulated send` and are not delivered anywhere.
+  `Simulated send` and are not delivered anywhere. The opt-in replies of step 9 use a separate sender with one method,
+  `sendMessage`, which the connector never holds.
 - It stops on its own when a `business_connection` update shows the approved connection disabled, replaced by a new
   connection ID, or owned by someone other than the provisioned account, and when Telegram rejects the token.
 
@@ -32,10 +35,12 @@ prototype does not meet them on its own; the approved environment for the test m
    The prototype's local SQLite file and evidence directory are not encrypted.
 2. Publish a privacy notice that says what is stored, how, for how long and why.
 3. Set a retention limit and provide a way to delete a user's data on request.
-4. Use business message content only to provide the service, and never share it with third parties or third-party
-   APIs.
+4. Use business message content only to provide the service. Sharing eligible reply text with an external provider
+   requires the user's authorization under [Telegram Business terms, section 5.4](https://telegram.org/tos/bot-developers#5-4-telegram-business).
 5. Never hide the bot's activity from the account owner, and tell the owner about significant changes.
-6. Keep AI analysis of Telegram content off. It is a legal-review item; Mirsad already refuses to review live content.
+6. Keep AI use of Telegram content off unless everyone in the chat has given explicit, informed consent. It is a
+   legal-review item. Mirsad never reviews live content for findings, and its opt-in automated replies (step 9) need
+   a consent reference before they start.
 
 You also need the account owner's written approval naming the test chats. Its reference becomes
 `TELEGRAM_APPROVAL_REFERENCE`.
@@ -49,7 +54,8 @@ You also need the account owner's written approval naming the test chats. Its re
 ## 2. Turn on business mode
 
 In BotFather, open the bot's settings and turn on Business Mode. The exact menu path was not documented in the pages
-read during research; record the path you used in the worksheet (row U11). `npm run telegram:verify` confirms the
+read during research; in the first test BotFather called it Secretary Mode. Record the path you used in the worksheet
+(row U11). `npm run telegram:verify` confirms the
 result: check `bot_can_connect_to_business` passes only when `getMe` reports `can_connect_to_business: true`.
 
 ## 3. The owner connects the bot to the approved test chats only
@@ -62,9 +68,9 @@ between app versions):
    chats", "contacts" or "non-contacts".
 3. Grant no rights. Leave replying, reading, deleting and every profile, gift, stars and stories right off. Read-only
    intake needs none; whether Telegram still delivers updates with no rights is one of the things the test observes
-   (row U3).
+   (row U3). Only the opt-in replies of step 9 add one right, Reply to Messages.
 
-Only one business bot can be connected per account. Telegram's documents disagree on whether a Premium subscription is
+To cover every private chat of the account instead, see step 10. Only one business bot can be connected per account. Telegram's documents disagree on whether a Premium subscription is
 needed (row U14); confirm on the test account.
 
 ## 4. Find the connection ID and the owner's user ID
@@ -75,7 +81,8 @@ With `TELEGRAM_BOT_TOKEN` set in `.env` (and the connector still off):
 npm run telegram:verify -- --discover-connections
 ```
 
-It prints each pending business connection: connection ID, owner user ID, enabled or disabled, and any rights granted.
+It prints each pending business connection's ID, owner user ID, enabled status and granted rights. Mirsad displays
+recognized rights by name and uses `unrecognized_right` when Telegram reports any other grant.
 It makes one short `getUpdates` call that asks for `business_connection` updates and passes no offset, so it confirms
 nothing: updates already queued stay queued for the connector. Other pending updates are counted, never read.
 Telegram keeps that `allowed_updates=["business_connection"]` setting until the next `getUpdates` call, which is the
@@ -91,9 +98,10 @@ Copy `.env.example` to `.env` (git-ignored) and set:
 |---|---|
 | `TELEGRAM_BOT_TOKEN` | The token from BotFather. Secret. |
 | `TELEGRAM_APPROVED_CONNECTION_ID` | The connection ID from step 4. |
-| `TELEGRAM_APPROVED_CHAT_IDS` | Comma-separated chat IDs of the approved test chats. In a private business chat the chat ID is normally the contact's Telegram user ID; the test confirms this (row U4). |
+| `TELEGRAM_APPROVED_CHAT_IDS` | Comma-separated chat IDs of the approved test chats. In a private business chat the chat ID is the contact's Telegram user ID (row U4, observed). |
 | `TELEGRAM_APPROVAL_REFERENCE` | The reference of the owner's written approval. |
 | `TELEGRAM_LIVE_ENABLED` | Leave `false` until step 8. |
+| `TELEGRAM_CHAT_SCOPE`, `TELEGRAM_ALL_CHATS_REFERENCE`, `TELEGRAM_EXCLUDED_CHAT_IDS` | Leave the scope `approved` (the default) unless the owner decides to cover every private chat (step 10). Excluded chat IDs are never stored or answered, in either scope. |
 
 ## 6. Provision the live account and connector
 
@@ -108,8 +116,10 @@ This creates, in the local database:
 - grants for the officers named (by principal ID or exact display name), so they can open the live chats.
 
 It prints IDs only. The connector's token is written only to `<dataDir>/telegram-live-credentials.json` (under the data
-directory, which is git-ignored). The connector runs inside Mirsad and does not use that token; keep the file for audit
-or for a separate intake process. Running the command again keeps the existing connector and its token and adds any new
+directory, which is git-ignored). The connector runs inside Mirsad. A separate intake process using that token can
+submit normalized HTTP events for explicitly approved chats while the connector is running in approved scope.
+All-private intake requires a raw Telegram update so Mirsad can check chat type and sender before storage.
+Running the command again keeps the existing connector and its token and adds any new
 officer grants. It refuses a second owner account: one connector serves one owner. Pass `--workspace <id>` when the
 database holds more than one workspace.
 
@@ -128,8 +138,11 @@ It calls `getMe`, `getWebhookInfo` and `getBusinessConnection` only (it reads no
 | `polling_transport` | No webhook is set, so long polling can be used. |
 | `connection_enabled` | The approved connection exists and is enabled. |
 | `connection_owner_provisioned` | Its owner is the account provisioned in step 6. |
-| `connection_rights_none` | No rights are granted. |
-| `approved_chats_configured` | `TELEGRAM_APPROVED_CHAT_IDS` is set. |
+| `connection_rights_none` | Intake alone accepts zero granted rights. With automated replies enabled, the permitted grants are **Reply to Messages** and optional **Read Messages**. |
+| `ai_replies_can_reply` | Telegram reports the reply right for the connection. Checked when automated replies are enabled. |
+| `ai_reply_chats_configured` | The approved scope has an eligible reply chat, or all-private intake can enroll contacts directly from their DMs. |
+| `ai_reply_consent_configured` | The recorded consent reference is set for automated replies. |
+| `approved_chats_configured` | Approved scope has at least one chat ID. All-private scope has a decision reference. Each ID in the active list and the exclusions is a nonzero, safe decimal integer written without leading zeros. |
 | `approval_reference_configured` | `TELEGRAM_APPROVAL_REFERENCE` is set. |
 
 It exits 0 only when every check passes. Without a token it lists what is missing and exits 1 without calling Telegram.
@@ -144,6 +157,89 @@ Set `TELEGRAM_LIVE_ENABLED=true` and restart Mirsad (`npm start`).
 - Telegram keeps undelivered updates for up to 24 hours. Updates queued before connection discovery (step 4) arrive on
   the first poll; only those from the approved connection and chats are stored. Message updates created after discovery
   and before that first poll were filtered out by discovery's `allowed_updates` setting and never arrive (step 4).
+
+## 9. Optional automated replies
+
+Record the consent of everyone in each test chat. List those chat IDs in `TELEGRAM_APPROVED_CHAT_IDS`, set
+`TELEGRAM_AI_REPLY_CONSENT_REFERENCE` to the consent reference and set `TELEGRAM_AI_REPLIES_ENABLED=true`.
+In Telegram Business grant the bot **Reply to Messages**. You can leave **Read Messages** enabled. It allows marking
+messages as read on the account's behalf, an action Mirsad does not perform. Run `npm run telegram:verify`, restart Mirsad, then
+Dispatch the approved chat or Resume AI if the officer had paused it. The connector and reply worker each log their
+startup. LM Studio is the default reply provider. To use OpenRouter for both languages, set
+`MIRSAD_REPLY_PROVIDER=openrouter` and place the key in `OPENROUTER_API_KEY` in `.env`. Set
+`MIRSAD_OPENROUTER_MODEL=thedrummer/cydonia-24b-v4.1` to use Parasail or `google/gemini-3.8-flash`
+to use Google. OpenRouter and the selected host process eligible reply text. Run
+`npm run openrouter:verify` with the saved key, then restart the service.
+Live evidence stays ineligible for automated findings review.
+
+### Retest from the approved contact account
+
+1. After a previous **Stop**, start a fresh exchange from the same approved account by sending **Hi** or a direct
+   question. That message is eligible for a reply after the quiet period. If the contact previously said
+   **Never contact me again**, they can ask to talk again in their own words. The dashboard records the return.
+2. Send two short messages less than three seconds apart. Mirsad waits at least three seconds after the second one.
+   It can issue one reply for the burst or stay silent. Send **Hi** on its own for a brief greeting, then try
+   **AI?** and **Are you a bot?** as separate turns. Compare the response when you repeat an answered question.
+   The model chooses the words and can leave a turn unanswered. A subsequent stop, edit, deletion or takeover can discard a pending draft.
+3. Share a synthetic document. Open the chat in the dashboard and follow the first item's source-message link.
+   Automatic replies are still available. Share a second distinct item, such as a Telegram location.
+   The dashboard now shows the chat needs officer review. Examine both items and choose **Mark reviewed**
+   for each. The case log records each decision. A clearly identified payment link can also count as an item.
+   To test the immediate-pause exception, use a fresh synthetic fixture that supplies payment-recipient bank details.
+   The source-linked bank-details flag should hold the chat even if this is the first item.
+   For documents and native map pins, Mirsad records the type of share. Open the original in Telegram for the file
+   or exact pin. A typed address remains part of the source message.
+   Each flagged item needs its own review. Marking it reviewed leaves officer controls and contact consent intact.
+4. Send **Please stop messaging me** while a reply is pending. The pending reply is cancelled. A closing **Thanks**
+   keeps the exchange closed. Start a new one later with **Hi again**. **Stop testing now** from a contact
+   cannot switch off the service or change officer controls.
+
+Native location and venue shares count as explicit location evidence. Text recognition is conservative. A location given
+as an address or a map pin can trigger review. A city in casual conversation alone does not. Human review is local and
+the flag makes no determination of wrongdoing. A Telegram send already submitted before a stop may still be delivered.
+
+Repeated textual payment links, addresses and recipient accounts can be matched within a review cycle. Native files
+and pins have only a type marker and a source message. Sending the same file as a separate message can count again.
+The portal links to the captured payment instructions. The officer assesses the source and any supplied beneficiary name.
+
+## 10. Optional all-private intake
+
+The default intake scope is the approved list. On a dedicated account with a documented decision to capture other
+private chats, set `TELEGRAM_CHAT_SCOPE=all_private` and `TELEGRAM_ALL_CHATS_REFERENCE`, then restart Mirsad.
+An officer with access to the connected account can open **Settings** and use **Auto-reply to every Telegram DM**.
+The switch takes effect immediately and the selection persists across restarts.
+
+With all-DM replies on, **Test mode** controls automatic Dispatch. The switch starts off on a new installation
+and remembers your choice across restarts. An installation that previously disabled **Send consent prompt to new
+contacts** already has **Test mode** on.
+
+- **On.** A fresh private message from you or the contact automatically marks a never-started chat **AI active**.
+  If you send the opener in Telegram, Ali waits for an incoming DM from the contact. A participant with recorded
+  permission can receive an AI reply. A new participant without permission appears in the inbox without an invitation
+  or a request to the reply model. Turning the switch on does not dispatch past messages.
+- **Off.** New chats wait for an officer to choose **Dispatch this chat**. Already-active chats with permission can
+  continue automatically. New contacts can receive the bilingual consent invitation.
+
+To record permission for your own test account or a participant who already agreed to AI replies and fraud screening,
+open the conversation and choose **Dispatch this chat**. In Test mode, confirm with **Dispatch test chat**. With Test
+mode off, select the permission checkbox and choose **Dispatch**. This explicit action can pick up the latest unanswered
+eligible DM if it is less than 24 hours old. Earlier messages stay outside this new permission.
+
+When a contact receives an invitation, they can reply
+**I AGREE** or **أوافق**, then send the message they want Ali to answer. The AI provider receives only subsequent
+eligible messages. **STOP** or **توقف** withdraws consent. Contacts on the pre-approved list use the existing
+consent record. Pauses, officer takeover and pending officer reviews still apply. With **Auto-reply to every Telegram DM** off, incoming
+DMs continue to appear in the Inbox and Mirsad stops automated messages, including invitations. Turning it back on
+applies to new incoming messages. A request already submitted to Telegram can still be delivered.
+
+In Telegram Business, select the private chats the bot should receive, for example **All Private Chats Except…**
+on a dedicated account. Only DMs Telegram forwards on the linked connection can appear in Mirsad.
+
+Telegram kept its connection ID when the owner switched the account from Only Selected Chats to All Private Chats
+Except… on 2026-11-22 (worksheet U8). Telegram’s service chat and `TELEGRAM_EXCLUDED_CHAT_IDS` are excluded in both
+scopes. All-private intake also excludes the account’s own chat, non-private chats and incoming bot messages.
+Senderless deletions in that scope are accepted only for previously observed live messages. See [rollback.md](rollback.md)
+to withdraw a chat or stop the connector.
 
 ## What to watch during the test
 

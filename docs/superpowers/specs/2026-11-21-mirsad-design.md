@@ -386,7 +386,7 @@ Every change, including a dispatch that starts a chat: `revision + 1`, `inbox_st
 
 Dispatch (`POST /v1/dispatches`): first resolve every `chatId` with `canAccessChat`; if any is missing or inaccessible return `404 chat_not_found` with `details.chatIds` and change nothing. Then apply the dispatch column to each chat in one transaction and record `dispatch_started` for the chats that started.
 
-Composer (`POST …/officer-messages`), checked in this order: chat access (404) → body (400) → idempotent replay → `ai_mode = 'officer_control'` else `409 not_in_takeover` → caller is the controller else `403 not_controller` → revision else `409 revision_conflict`. It inserts one outgoing message (`origin = 'officer_composer'`, `capture_method = 'officer_composer'`, `send_status = 'simulated'`, author set), a `recorded` event without capture or review, an `officer_message_sent` case action and a `message.recorded` stream event. Nothing is delivered to any channel; there is no code path that sends to Telegram or WhatsApp.
+Composer (`POST …/officer-messages`), checked in this order: chat access (404) → body (400) → idempotent replay → `ai_mode = 'officer_control'` else `409 not_in_takeover` → caller is the controller else `403 not_controller` → revision else `409 revision_conflict`. It inserts one outgoing message (`origin = 'officer_composer'`, `capture_method = 'officer_composer'`, `send_status = 'simulated'`, author set), a `recorded` event without capture or review, an `officer_message_sent` case action and a `message.recorded` stream event. Nothing an officer writes is delivered to any channel; the only code that sends is the opt-in AI reply worker of section 20.
 
 Decision (`POST …/officer-decisions`): same takeover checks; `messageId` must be an incoming message of this chat (`404 message_not_found`). Inserts only a `leave_unanswered` case action. A repeat for the same message returns the existing action with `200` and `created: false`. The chat stays open and capture continues.
 
@@ -481,9 +481,13 @@ Evidence capture never waits for review. The reviewer extracts; code decides.
 - `ChannelAdapter<Raw>.normalize(raw) -> IntakeEnvelope[]` is the shared adapter interface. The Telegram adapter is a pure mapping from one Bot API `Update` to intake envelopes; exact field mapping is in section 19.
 - Fixtures in `fixtures/telegram/*.json` hold Telegram-shaped, fully synthetic updates: `{ description, synthetic: true, account: 'intake' | 'officer', businessUserId, businessConnectionId, updates: Update[], conversationStarts?: [{ chatId, messageId }] }`. `account` is symbolic: the replay caller maps it to a real `externalAccountId`, because the test harness and the demo seed use different account IDs. The adapter drops updates whose `business_connection_id` differs from `businessConnectionId`. `conversationStarts` is the fixture author's assertion about a synthetic conversation; real Telegram updates carry no start marker, so live intake always yields `First observed: …`.
 - `npm run replay -- <fixture>` normalizes a fixture and posts each envelope to `POST /v1/ingest` with the fixture connector's token. Replay is the only way Telegram-shaped data enters the prototype. It refuses a file that is not marked `synthetic: true` or that contains a domain or phone number outside the reserved ranges, because fixture-replay content is the only Telegram-shaped content the model may review.
-- Live connector (`src/adapters/telegram/live-connector.ts`): long polling for business updates only. It stays off unless `TELEGRAM_LIVE_ENABLED=true` and the bot token, approved connection ID, approved chat IDs and approval reference are all set. Updates for other connections or chats are dropped before storage and only counted. It ingests through the same intake function with a `telegram_business_live` connector, so its content is never reviewed by any model (section 10). It has no send capability.
+- Live connector (`src/adapters/telegram/live-connector.ts`): long polling for business updates only. It stays off unless `TELEGRAM_LIVE_ENABLED=true` and the bot token, approved connection ID, chat scope and approval reference are all set. The chat scope (`src/adapters/telegram/chat-scope.ts`) is `approved` (the default: `TELEGRAM_APPROVED_CHAT_IDS` required) or `all_private` (every private chat of the account, by the owner's decision of 2026-11-22: `TELEGRAM_ALL_CHATS_REFERENCE` required instead, and the owner's own chat, non-private chats and messages from other bots are dropped). `TELEGRAM_EXCLUDED_CHAT_IDS` and Telegram's service chat `777000` are never in scope. Updates for other connections or out-of-scope chats are dropped before storage and only counted. It ingests through the same intake function with a `telegram_business_live` connector, so its content is never reviewed for findings (section 10); only the opt-in replies of section 20 show an approved chat's latest messages to the local model. It has no send capability.
 - Readiness: `npm run telegram:readiness` runs these local checks against a temporary instance and writes each result to `docs/telegram/readiness.json` and `docs/telegram/readiness.md`: an inbound-first chat is flagged New inbound; an officer-first chat shows both directions; every received message has its own capture; an edit and a deletion are separate events and the original stays; a redelivered update creates nothing new; outgoing (officer-sent) fixture messages arrive and are labelled outgoing; a takeover followed by a composer reply is recorded as Simulated send; the live connector refuses to start without its gates. The state is `ready_for_controlled_test` only when every check passes. `controlled_test_verified` is reported only when the file named by `MIRSAD_CONTROLLED_TEST_RECORD` exists and validates against the schema in `src/contract/controlled-test-record.ts` (approval reference, date, tester, approved scope, per-event coverage, manual reply result). Nothing in the code can produce that record without an approved test.
 - `GET /v1/status` returns `{ service: { version, startedAt }, storage: { database, evidenceDirectory }, workers: { capture: { pending, failed }, review: { pending, running, unavailable } }, reviewer: { kind, modelId, reachable }, channels: { telegram: { fixtureReplay: 'available', liveConnector: 'disabled' | 'enabled', readiness: 'not_assessed' | 'ready_for_controlled_test' | 'controlled_test_verified', readinessRecordedAt }, whatsapp: { status: 'not_started', gate: string } } }`.
+
+In all-private scope, incoming messages and edits need an identifiable human sender. Deletions carry no sender, so
+live intake marks only IDs already observed through a live message or edit for the same account and chat. The approved
+scope and fixture replay retain the deletion placeholder behavior of section 7.
 
 ## 14. WhatsApp gate
 
@@ -491,13 +495,13 @@ WhatsApp-specific implementation starts only after the Telegram controlled test 
 
 ## 15. Config
 
-Environment variables (all in `.env.example`; `.env` is git-ignored): `MIRSAD_HOST` (default `127.0.0.1`; only `127.0.0.1`, `localhost` or `::1` are accepted), `MIRSAD_PORT` (8787), `MIRSAD_DATA_DIR` (`./data`), `MIRSAD_DEMO_SEED` (`true`), `MIRSAD_REVIEWER` (`lmstudio`; or `deterministic`, `disabled`), `MIRSAD_LMSTUDIO_BASE_URL` (`http://127.0.0.1:1234/v1`; the parsed hostname must be exactly `127.0.0.1`, `localhost` or `[::1]`), `MIRSAD_LMSTUDIO_MODEL` (`qwen3.5-9b`), `MIRSAD_LMSTUDIO_CONTEXT_TOKENS` (4096), `MIRSAD_LMSTUDIO_TIMEOUT_MS` (120000), `MIRSAD_REVIEW_CONCURRENCY` (2), `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (`fixture_replay`), `MIRSAD_STREAM_RETENTION` (5000), `MIRSAD_RATE_LIMIT_PER_MINUTE` (600), `MIRSAD_WHATSAPP_IMPORT_ENABLED` (`false`), `MIRSAD_CONTROLLED_TEST_RECORD` (`docs/telegram/controlled-test-record.json`), `TELEGRAM_LIVE_ENABLED` (`false`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_APPROVED_CONNECTION_ID`, `TELEGRAM_APPROVED_CHAT_IDS`, `TELEGRAM_APPROVAL_REFERENCE`.
+Environment variables (all in `.env.example`; `.env` is git-ignored): `MIRSAD_HOST` (default `127.0.0.1`; only `127.0.0.1`, `localhost` or `::1` are accepted), `MIRSAD_PORT` (8787), `MIRSAD_DATA_DIR` (`./data`), `MIRSAD_DEMO_SEED` (`true`), `MIRSAD_REVIEWER` (`lmstudio`; or `deterministic`, `disabled`), `MIRSAD_LMSTUDIO_BASE_URL` (`http://127.0.0.1:1234/v1`; the parsed hostname must be exactly `127.0.0.1`, `localhost` or `[::1]`), `MIRSAD_LMSTUDIO_MODEL` (`qwen3.5-9b`), `MIRSAD_LMSTUDIO_CONTEXT_TOKENS` (4096), `MIRSAD_LMSTUDIO_TIMEOUT_MS` (120000), `MIRSAD_REVIEW_CONCURRENCY` (2), `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (`fixture_replay`), `MIRSAD_STREAM_RETENTION` (5000), `MIRSAD_RATE_LIMIT_PER_MINUTE` (600), `MIRSAD_WHATSAPP_IMPORT_ENABLED` (`false`), `MIRSAD_CONTROLLED_TEST_RECORD` (`docs/telegram/controlled-test-record.json`), `TELEGRAM_LIVE_ENABLED` (`false`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_APPROVED_CONNECTION_ID`, `TELEGRAM_APPROVED_CHAT_IDS`, `TELEGRAM_APPROVAL_REFERENCE`, `TELEGRAM_CHAT_SCOPE` (`approved`; or `all_private`), `TELEGRAM_ALL_CHATS_REFERENCE`, `TELEGRAM_EXCLUDED_CHAT_IDS` (section 13), `TELEGRAM_AI_REPLIES_ENABLED` (`false`), `TELEGRAM_AI_REPLY_CONSENT_REFERENCE`, `TELEGRAM_AI_AUTO_START` (`false`) (section 20).
 
 Demo seed (first start with an empty database and `MIRSAD_DEMO_SEED=true`): one workspace, two demo officers, two Telegram fixture accounts (`tg-demo-intake`, marked as an intake account, and `tg-demo-officer`), one fixture connector (`fixture_replay`, trusted start marker) granted on both. Tokens are random, stored hashed, and written once to `<dataDir>/demo-credentials.json` (git-ignored) for the local scripts and the dashboard sign-in.
 
 ## 16. Logging
 
-`Logger` writes JSON lines. Log fields are IDs, codes, counts, lengths and durations. Message text, quotes, extracted values, phone numbers, display names and tokens are never logged; errors are logged by code and class. A test ingests a canary string and asserts it never appears in captured log output.
+`Logger` writes JSON lines. Log fields are IDs, codes, counts, lengths and durations. Message text, quotes, extracted values, phone numbers, display names and tokens are never logged; errors are logged by code and class. A test ingests a canary string and asserts it never appears in captured log output; the AI reply tests assert the same for the contact's text and for what the model wrote, sent or blocked.
 
 ## 17. Test harness
 
@@ -606,7 +610,85 @@ Source: the official Bot API reference and Telegram's terms, read on 2026-11-21.
 
 - Update types: `business_connection` (`BusinessConnection { id, user, user_chat_id, date, rights?, is_enabled }`; `rights` replaced the old `can_reply` flag in Bot API 9.0), `business_message` and `edited_business_message` (a full `Message` with `business_connection_id`; an edit carries the whole new version and no previous text), `deleted_business_messages` (`{ business_connection_id, chat, message_ids }`, nothing else).
 - Not available from this intake: earlier history, any start-of-conversation marker, read receipts, who deleted a message, edit history. Undelivered updates are kept for at most 24 hours.
-- Connector mechanics: long polling with `getUpdates` and an explicit `allowed_updates` list of the four business types; persist the offset only after the update is committed. Verification without reading content: `getMe` (`can_connect_to_business`), `getWebhookInfo` (empty `url` for polling), `getBusinessConnection`. Read-only intake needs no rights; Mirsad never calls a send or read-marking method.
-- To be observed in the controlled test (the docs are silent): whether messages the owner types in their own app arrive, whether bot-sent replies echo back, whether delivery works with no rights granted, how offline edits and "delete for me" behave, whether the connection ID changes when the owner edits the scope, and the format of `contact.phone_number`.
-- Preconditions the terms place on a live test, all outside this prototype: data encrypted at rest with the key stored separately, a published privacy notice, a retention limit and deletion-on-request path, business message content used only to provide the service and never shared with third parties, bot activity never hidden from the account owner. AI analysis of Telegram content is a legal-review item and stays off.
+- Connector mechanics: long polling with `getUpdates` and an explicit `allowed_updates` list of the four business types; persist the offset only after the update is committed. Verification without reading content: `getMe` (`can_connect_to_business`), `getWebhookInfo` (empty `url` for polling), `getBusinessConnection`. Read-only intake needs no rights; the connector never calls a send or read-marking method (only the opt-in reply sender of section 20 calls `sendMessage`).
+- To be observed in the controlled test (the docs are silent): whether messages the owner types in their own app arrive, whether bot-sent replies echo back, whether delivery works with no rights granted, how offline edits and "delete for me" behave, whether the connection ID changes when the owner edits the scope, and the format of `contact.phone_number`. The first approved test (2026-11-22) answered some of these; its observations are in `docs/telegram/event-coverage-worksheet.md`.
+- Preconditions the terms place on a live test, all outside this prototype: data encrypted at rest with the key stored separately, a published privacy notice, a retention limit and deletion-on-request path, business message content used only to provide the service and never shared with third parties, bot activity never hidden from the account owner. AI use of Telegram content is a legal-review item: findings review of live content stays off, and the opt-in replies of section 20 need the recorded consent of everyone in the chat.
 - WhatsApp: Meta's Business Messaging Policy (Government and Political Use) prohibits law-enforcement agencies from using the WhatsApp Business Platform, so the later WhatsApp phase is fixture replay and approved import only.
+
+## 20. Local-model replies in approved Telegram chats (owner decision, 2026-11-22)
+
+The account owner asked for the local model to answer live Telegram messages. This lifts two brief rules for the approved
+chats only, and only when switched on: "Keep live Telegram content out of model analysis, including local inference" and
+"Keep the AI reviewer separate from sending". Findings review of live content stays off (`not_permitted`), and the
+reviewer still never sends.
+
+- Switch: `TELEGRAM_AI_REPLIES_ENABLED` (default `false`) plus `TELEGRAM_AI_REPLY_CONSENT_REFERENCE`, the reference of
+  the recorded consent of everyone in the approved chats (Telegram's content licensing terms allow AI "deployment" on
+  chat data only with that consent). The worker also needs every live connector gate and the one provisioned live
+  binding; a refusal is logged as `telegram_ai_replies_refused` with the missing names, and the service keeps running.
+- Writer: the local model on loopback receives every eligible turn, including greetings. It can clarify a
+  one-word fragment, answer a direct question about automation truthfully in its own words, and leave a repeat
+  unanswered. It replies as the recipient. Examples in English and Arabic teach it to show mild interest
+  in ordinary offers and to distinguish a new charge from a charge the sender already explained. The local
+  model chooses brief wording that fits the sender’s language and register. When a new fee to start work has
+  no stated purpose, it asks once what the fee covers. An explanation gets a brief acknowledgment.
+  When someone describes a fee another person asked them to pay, it responds to their concern.
+  The worker reads up to 32 eligible source messages within the current enrollment and conversation.
+  It uses the latest edit, excludes deleted messages, and sends the portion that fits the configured context budget.
+  The service keeps the project name out of its model instructions, masks it in incoming text prepared for inference,
+  and filters earlier branded outgoing replies from model history. Evidence retains the source text.
+  For a programming request, a question about an earlier message or file,
+  or an offer to share ID, the generator appends a short fixed instruction. Conversation text stays in the chat
+  history. The reply guard checks drafts before submission and gives the model one chance to correct a blocked reply.
+  `npm run eval:replies` exercises this path directly against local Qwen using synthetic conversations.
+- Eligibility: only explicitly approved, opted-in chats may receive automated replies, in either intake scope.
+  A three-second quiet interval follows the latest incoming activity. A newer message restarts the wait. The worker
+  supplies the current burst separately from earlier conversation, including earlier unanswered turns.
+  When a contact immediately repeats the same standalone identity question after a clear answer, redundant
+  output is recorded as a silent turn. A clarification or new topic can receive a reply.
+  The worker rechecks hold state, officer controls and current conversation before submission.
+- Holds: a stop ends the current exchange. A fresh greeting or direct question from the same enrolled contact can open
+  another one. A stronger no-contact request requires an intentional invitation to reply. The new exchange's model history
+  starts with its opening message. Each contact decision is recorded. The first volunteered payment link, document
+  or relevant location appears in the officer portal with its source. A second distinct item pauses automatic replies
+  until the officer reviews the outstanding items. When the sender volunteers payment-recipient bank details, one
+  qualifying item triggers immediate review. Its flag links to the source message and carries no banking values.
+  Previously pending holds retain their original review requirement.
+  Each review records the officer and item. Contact preferences and officer controls apply independently across restarts.
+- Sender: `createBotSender` in `bot-api.ts`, a separate client with one method (`sendMessage` with
+  `business_connection_id`). The connector's read-only client is unchanged and never holds the sender.
+- Worker: `src/workers/ai-reply-worker.ts`, one job at a time on the job loop, woken with the review worker (new
+  evidence, Dispatch, Resume AI) and every 3 seconds; of the chats waiting, the one whose latest message is oldest goes
+  first. A chat is answered when it is on the approved reply list and in intake scope (section 13) and `ai_active` and its
+  latest message is an incoming text from the contact, captured live, not deleted, sent and received within 15 minutes
+  (the earlier of Telegram's date and Mirsad's receipt counts, so a backlog delivered after downtime is not answered),
+  with no recorded failure and not already taken in this process. Before each additional model request and before
+  sending, the worker checks for the same control revision, active mode, latest answerable message and model input
+  history. Clearing the latest text or caption removes the message from eligibility. When an edit or deletion changes
+  the history used by a draft, the worker abandons that attempt. The discard log records `newer_message`,
+  `mode_changed`, `chat_missing`, `not_answerable` or `history_changed`.
+  A model failure is dropped the same way when the chat changed meanwhile, so it is recorded only while the message
+  still awaits the reply. After a newer message, that one is answered; after a takeover or Pause AI, the dropped message
+  is answered on Resume AI while still within 15 minutes. The live gates are checked with the connector's own
+  `missingLiveGates`.
+- Auto-start (`TELEGRAM_AI_AUTO_START`, default `false`; the owner chose it on 2026-11-22 together with the all-private
+  scope): an eligible, explicitly approved chat that was never started (`not_started`) also counts as waiting. The claim transaction starts
+  it through `applyModeChange` like a Dispatch (revision + 1, inbox open, stream event), recorded as `ai_auto_started`
+  with no actor, then answers it. Paused and officer-controlled chats are never started automatically, and a chat whose
+  first message is older than the 15 minutes stays `not_started`. Log: `telegram_ai_chat_auto_started` (chat ID).
+- Storage: the sent message goes through intake under the live connector principal with `sourceMessageId`
+  `tg:<message_id>`, so Telegram's own copy is a `duplicate_message`. A case action `ai_reply_sent` names the reply and
+  carries `inReplyTo`, Telegram's message ID and the wording source. The model ID is recorded when the model wrote the reply. `ai_reply_failed` carries a code and Telegram's status,
+  the guard's rule for `blocked_reply`, or Telegram's message ID for a reply Telegram accepted that could not be kept
+  (`store_failed`, or `telegram_chat_mismatch` when Telegram reports another chat); it marks the incoming message as
+  tried, in the database, so a restart does not retry it. No schema change: case action types are not constrained in
+  the database.
+- Setup check: with replies on, `connection_rights_none` allows `can_reply` and optional `can_read_messages`, and
+  `ai_replies_can_reply`, `ai_reply_chats_configured` and `ai_reply_consent_configured` are added.
+- Dashboard: new outbound replies show “Outgoing automated reply” and “written by the local model”. Historical sends retain their wording source.
+  The case log records successful delivery or the reason a reply failed, including guard blocks and storage failures after Telegram accepted a reply.
+- Accepted limits: a crash (not an error) between Telegram accepting a reply and Mirsad storing it can lead to a second
+  reply after a restart within the 15 minutes, since Telegram did not echo the bot's replies in the first test (worksheet
+  U2). Telegram can still deliver a reply Mirsad submitted before a Pause or takeover succeeded.
+  The guard recognizes English and common Arabic wording. The model may repeat phrases or make grammatical errors.
+  The worker records intentional silence as `ai_reply_skipped` so a restart cannot send an abandoned response.
