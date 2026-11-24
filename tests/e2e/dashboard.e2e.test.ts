@@ -11,8 +11,6 @@ import type { ReplyGenerator } from '../../src/replies/reply-generator.ts';
 import type { Timeline } from '../../src/contract/schemas.ts';
 import { provisionLiveOfficer } from '../../src/identity/officer-password.ts';
 import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
-import { insertChat } from '../../src/storage/repos/chats.ts';
-import { grantAccount, insertChannelAccount } from '../../src/storage/repos/principals.ts';
 import { record as recordCaseAction } from '../../src/storage/repos/case-actions.ts';
 import { envelope, recorded, uniqueId } from '../helpers/events.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
@@ -1018,33 +1016,6 @@ describe('reference dashboard', () => {
     await inboxItem(page, 'Open chats', label).waitFor();
     expect(await otherCheckbox.isChecked()).toBe(true);
     expect(await inboxItem(page, 'New inbound', otherLabel).isVisible()).toBe(true);
-  });
-
-  it('dispatches a registered non-Telegram case without offering an officer briefing', async () => {
-    const label = 'Registered WhatsApp Case';
-    const me = (await h.http(h.tokens.officerA).get('/v1/me')).body.data.principal;
-    const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
-    let chatId: string;
-    try {
-      chatId = db.transaction(tx => {
-        const account = insertChannelAccount(tx, {
-          workspaceId: me.workspaceId, source: 'whatsapp', externalAccountId: uniqueId('fixture-'),
-          label: 'Fixture WhatsApp Account', isIntake: false,
-        });
-        grantAccount(tx, me.id, account.id);
-        return insertChat(tx, { workspaceId: me.workspaceId, channelAccountId: account.id, externalChatId: uniqueId('chat-'),
-          displayLabel: label, createdVia: 'register', createdBy: me.id, inboxStatus: 'open' }).id;
-      });
-    } finally { db.close(); }
-    const { page } = await openDashboard(h.tokens.officerA);
-    await openChat(page, label);
-    await page.locator('#open-chat-dispatch').click();
-    expect(await page.locator('#chat-dispatch-context').isVisible()).toBe(false);
-    expect(await page.locator('#chat-dispatch-clear').isVisible()).toBe(false);
-    const dispatch = page.waitForRequest(request => request.method() === 'POST' && new URL(request.url()).pathname === '/v1/dispatches');
-    await page.locator('#confirm-chat-dispatch').click();
-    expect((await dispatch).postDataJSON()).toEqual({ chatIds: [chatId] });
-    await page.locator('#chat-header').getByText('AI active', { exact: true }).waitFor();
   });
 
   it('dispatches a briefing only for its selected chat and opens an editable local draft for a new contact', async () => {

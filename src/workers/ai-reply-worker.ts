@@ -83,7 +83,7 @@ export class AiRepliesGateError extends Error {
 }
 
 export interface AiReplyWorkerDeps {
-  config: Pick<Config, 'telegram' | 'whatsappImportEnabled' | 'reviewAllowedCaptureMethods'>;
+  config: Pick<Config, 'telegram' | 'reviewAllowedCaptureMethods'>;
   db: Db;
   clock: Clock;
   logger: Logger;

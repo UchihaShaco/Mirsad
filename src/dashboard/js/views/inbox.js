@@ -9,7 +9,7 @@ import { briefingChatId, DISPATCH_LIMIT, groupInbox, needsOfficerReview } from '
 import { chatHref } from '../state/route.js';
 
 /** Short channel marks for the dense list; the full channel name stays in the row for assistive tools. */
-const CHANNEL_CODES = { telegram: 'TG', whatsapp: 'WA' };
+const CHANNEL_CODES = { telegram: 'TG' };
 
 /** The checkbox names itself from the chat label, so every assistive tool announces which chat it selects. */
 function selector(chat, state, handlers) {

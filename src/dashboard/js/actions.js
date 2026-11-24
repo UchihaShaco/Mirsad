@@ -53,10 +53,6 @@ async function finishDispatch(ctx, chatIds, result) {
   } else if (chatIds.length === 1 && ctx.getState().timeline?.chat.id === chatIds[0] &&
       ctx.getState().timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live')) {
     info(ctx, 'Dispatch returned without a Telegram delivery receipt. Check the chat timeline. The running service must support reply requests to show their status.');
-  } else if (chatIds.length === 1 && ctx.getState().timeline?.chat.id === chatIds[0] &&
-      ctx.getState().timeline.messages.some(message => message.source.captureMethod === 'whatsapp_business_live') &&
-      result.results[0]?.status !== 'requires_resume') {
-    info(ctx, 'Dispatch accepted. The AI will assess the latest eligible unanswered message.');
   } else {
     info(ctx, describeDispatch(result.results));
   }

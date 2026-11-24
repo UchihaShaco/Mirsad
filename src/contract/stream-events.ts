@@ -41,23 +41,6 @@ export interface StreamEventDataMap {
 
 export type StreamEventType = keyof StreamEventDataMap;
 
-export const STREAM_EVENT_TYPES = [
-  'chat.created',
-  'chat.control_changed',
-  'message.recorded',
-  'message.edited',
-  'message.deleted',
-  'message.conflicting_copy',
-  'capture.updated',
-  'review.updated',
-  'finding.created',
-  'case_action.recorded',
-  'case_reference.recorded',
-  'watchlist.entry_updated',
-  'watchlist.match',
-  'stream.reset',
-] as const satisfies readonly StreamEventType[];
-
 /** Types written to the stream_events table (stream.reset is synthesized by the reader). */
 export type StoredStreamEventType = Exclude<StreamEventType, 'stream.reset'>;
 

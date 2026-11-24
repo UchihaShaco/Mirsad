@@ -51,7 +51,6 @@ export function evidenceCountLabel(count) {
 export const CAPTURE_METHOD_LABELS = {
   fixture_replay: 'Fixture replay',
   telegram_business_live: 'Telegram Business (live)',
-  whatsapp_business_live: 'WhatsApp Business (live demo)',
   approved_import: 'Approved import',
   host_intake: 'Host intake',
   officer_composer: 'Mirsad composer',

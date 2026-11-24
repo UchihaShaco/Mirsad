@@ -61,7 +61,7 @@ export function deleted(opts: { messageId: number | string; updateId: number; di
 }
 
 export interface Envelope {
-  source: 'telegram' | 'whatsapp';
+  source: 'telegram';
   externalAccountId: string;
   externalChatId: string;
   chat?: { displayLabel?: string };
@@ -69,7 +69,7 @@ export interface Envelope {
 }
 
 export function envelope(
-  account: { source: 'telegram' | 'whatsapp'; externalAccountId: string },
+  account: { source: 'telegram'; externalAccountId: string },
   externalChatId: string,
   event: Record<string, unknown>,
   displayLabel?: string,

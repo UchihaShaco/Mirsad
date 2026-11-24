@@ -632,7 +632,7 @@ describe('which message the reply worker answers', () => {
     const skipped: [string, Partial<MessageRow>][] = [
       ['an outgoing message', { direction: 'outgoing' }],
       ['an officer draft', { origin: 'officer_composer' }],
-      ['an imported message', { capture_method: 'whatsapp_export' }],
+      ['an imported message', { capture_method: 'approved_import' }],
       ['a placeholder for a message never seen', { original_captured: 0 }],
       ['a message deleted at the source', { deleted_at_source: 1 }],
       ['a message from someone else', { sender_external_id: '6000000999' }],

@@ -22,7 +22,6 @@ const REPEAT_ACTIONS = {
  */
 function dispatchEffect(chat, view, repliesMode) {
   const hold = chat.telegramReplyHold;
-  if (view.whatsapp) return { tone: 'live', title: 'The AI may reply as soon as you confirm', text: '' };
   if (!view.live) {
     return { tone: 'quiet', title: 'Dispatch starts AI review', text: 'The messages captured in this chat are queued for review. Nothing is sent to the contact.' };
   }
@@ -204,14 +203,13 @@ function bindChatDispatch(ctx, options) {
     const chat = timeline.chat;
     const replies = timeline.telegramReplies;
     const live = !!replies || (chat.source === 'telegram' && timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live'));
-    const whatsapp = chat.source === 'whatsapp' && timeline.messages.some(message => message.source.captureMethod === 'whatsapp_business_live');
     const target = replies?.target;
     const repeat = !replies?.blocked && Object.hasOwn(REPEAT_ACTIONS, target?.state) ? target.state : null;
     if (live && !editBriefing) {
       void ctx.handlers.onDispatchCurrent(briefing, chat.id, telegramDispatchRequest(target));
       return;
     }
-    const view = { chatId: chat.id, live, whatsapp, repeat, target, blocked: replies?.blocked };
+    const view = { chatId: chat.id, live, repeat, target, blocked: replies?.blocked };
     session = view;
     refs.chatDispatchTarget.textContent = chat.displayLabel;
     refs.chatDispatchForm.reset();
@@ -227,18 +225,14 @@ function bindChatDispatch(ctx, options) {
     refs.chatDispatchContext.value = briefing ?? '';
     refs.chatDispatchClear.checked = briefing === null;
     refs.chatDispatchContext.disabled = briefing === null;
-    refs.chatDispatchMode.textContent = whatsapp ? 'WhatsApp demo' : 'Participant permission';
-    refs.chatDispatchModeHint.textContent = whatsapp
-      ? 'Dispatch asks Gemini to assess this tester’s latest unanswered text. Ali can reply from the connected WhatsApp number within 24 hours of that text.'
-      : '';
-    refs.chatDispatchModeHint.hidden = !whatsapp;
+    refs.chatDispatchMode.textContent = 'Participant permission';
     drawDispatchEffect(refs, chat, view, ctx.getState().dmReplies?.mode);
-    refs.chatDispatchLatest.textContent = live || whatsapp ? latestIncomingNote(timeline) : '';
+    refs.chatDispatchLatest.textContent = live ? latestIncomingNote(timeline) : '';
     const record = timeline.caseActions.findLast(action => action.type === 'telegram_dispatch_permission_recorded' || action.type === 'telegram_dispatch_approved');
     refs.chatDispatchRecord.hidden = !record;
     refs.chatDispatchRecord.textContent = record ? 'An officer confirmed participant permission on ' + formatTime(record.occurredAt) + '.' : '';
     // A live Telegram chat shows this section only to say when permission was confirmed.
-    refs.chatDispatchPermissionSection.hidden = whatsapp ? false : !(live && record);
+    refs.chatDispatchPermissionSection.hidden = !(live && record);
     refs.chatDispatchDialog.showModal();
   };
   refs.openChatDispatch.addEventListener('click', event => {

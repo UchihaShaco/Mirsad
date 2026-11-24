@@ -130,7 +130,7 @@ const LowerConcern = z.object({
 export const ChatSummary = z.object({
   id: z.string(),
   source: Source,
-  channelLabel: z.enum([CHANNEL_LABELS.telegram, CHANNEL_LABELS.whatsapp]),
+  channelLabel: z.enum([CHANNEL_LABELS.telegram]),
   externalAccountId: z.string(),
   externalChatId: z.string(),
   displayLabel: z.string(),
@@ -535,7 +535,6 @@ export const Status = z.object({
       readiness: z.enum(E.READINESS_STATES),
       readinessRecordedAt: timestamp.nullable(),
     }),
-    whatsapp: z.object({ status: z.enum(['not_started', 'demo_listening', 'demo_unavailable']), gate: z.string() }),
   }),
 });
 export type Status = z.infer<typeof Status>;

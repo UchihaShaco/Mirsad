@@ -54,10 +54,9 @@ function availableControls(chat, me) {
   };
 }
 
-/** Ali replies in live Telegram chats; a live WhatsApp chat is assessed on Dispatch; anything else is AI review. */
+/** Ali replies in live Telegram chats; anything else (fixture replay, imports) is AI review. */
 function voiceOf(timeline) {
-  if (!isLiveChat(timeline) && timeline.telegramAiPermission === undefined) return 'review';
-  return timeline.chat.source === 'telegram' ? 'ali' : 'demo';
+  return !isLiveChat(timeline) && timeline.telegramAiPermission === undefined ? 'review' : 'ali';
 }
 
 function initials(name) {
@@ -84,7 +83,6 @@ function controlCopy(key, { chat, voice, repliesOff, pausedBy }) {
   switch (key) {
     case 'ai_active':
       if (voice === 'review') return { headline: [text('AI review is running')], note: 'New messages are reviewed as they arrive.' };
-      if (voice === 'demo') return { headline: [text('The AI is active')], note: 'Dispatch asks it to assess the latest unanswered text. Pause AI or Take over stops it.' };
       return repliesOff
         ? { headline: [text('Ali is on standby')], note: 'Account-wide replies are off in Settings, so nothing is sent from this chat.' }
         : { headline: [text('Ali is handling replies')], note: 'Ali answers eligible incoming messages. Pause AI or Take over stops automated replies.' };
@@ -109,7 +107,6 @@ function controlCopy(key, { chat, voice, repliesOff, pausedBy }) {
       };
     default:
       if (voice === 'review') return { headline: [text('AI review has not started')], note: 'Messages are captured. Dispatch starts AI review. Take over keeps the chat with you.' };
-      if (voice === 'demo') return { headline: [text('Nobody is replying yet')], note: 'Incoming texts are captured. Dispatch asks the AI to assess the latest unanswered text. Take over keeps the chat with you.' };
       return { headline: [text('Nobody is replying yet')], note: 'Incoming messages are captured. Dispatch hands this chat to Ali. Take over keeps it with you.' };
   }
 }

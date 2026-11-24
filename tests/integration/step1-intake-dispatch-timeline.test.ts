@@ -602,11 +602,12 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(missing.body.error.code).toBe('chat_not_found');
   });
 
-  it('whatsapp intake is refused while the gate is closed', async () => {
+  it('intake for a channel other than Telegram is refused and stores nothing', async () => {
     const before = await settledSnapshot();
-    const res = await ingest(envelope({ source: 'whatsapp', externalAccountId: 'wa-demo-1' }, uniqueId('wa-'), recorded({ messageId: 150 })));
-    expect(res.status).toBe(422);
-    expect(res.body.error.code).toBe('channel_not_enabled');
+    const other = { ...envelope(h.accounts.intake, uniqueId('other-'), recorded({ messageId: 150 })), source: 'other-channel' };
+    const res = await ingest(other);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('validation_failed');
     expect(storeSnapshot(h.dataDir)).toEqual(before);
   });
 

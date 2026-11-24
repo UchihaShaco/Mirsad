@@ -74,7 +74,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Chat registered.', schema: 'RegisterChatResponse' },
       { status: 200, description: 'The chat already existed.', schema: 'RegisterChatResponse' },
     ],
-    errors: ['validation_failed', 'account_not_found', ...ACCOUNT, 'channel_not_enabled'],
+    errors: ['validation_failed', 'account_not_found', ...ACCOUNT],
   },
   'GET /v1/chats': {
     summary: 'List authorized conversations',
@@ -91,7 +91,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
+    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/chats/{chatId}/events': {
     summary: 'Submit an intake event to a registered chat',
@@ -101,7 +101,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
+    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/dispatches': {
     summary: 'Dispatch selected chats and request eligible Telegram replies',

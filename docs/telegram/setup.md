@@ -279,4 +279,3 @@ to withdraw a chat or stop the connector.
   Never copy it as the real record. Its approval reference starts with `EXAMPLE-ONLY-`, and a record whose reference
   starts that way is never counted as verified, whatever its results and whether or not `TELEGRAM_APPROVAL_REFERENCE`
   is set.
-- A verified record is also what allows `MIRSAD_WHATSAPP_IMPORT_ENABLED=true` (see `docs/whatsapp/import-plan.md`).

@@ -38,11 +38,9 @@ export type IntakeTarget =
   | { chatId: string }
   | { source: ChannelAccountRow['source']; externalAccountId: string; externalChatId: string; chat?: { displayLabel?: string } };
 
-export type IntakeConfig = Pick<Config, 'whatsappImportEnabled' | 'reviewAllowedCaptureMethods' | 'telegram'> & {
+export type IntakeConfig = Pick<Config, 'reviewAllowedCaptureMethods' | 'telegram'> & {
   /** Transport-specific scope check, after the account grant and before any evidence or placeholder is written. */
   authorizeTarget?: (account: ChannelAccountRow, externalChatId: string) => void;
-  /** Supplied only by the local, account-bound WhatsApp Business connector. */
-  authorizeWhatsAppDemo?: (account: ChannelAccountRow, externalChatId: string) => void;
   /** Supplied only by the poller for an original private message written by either human participant. */
   nativePrivateMessageId?: number;
 };
@@ -69,27 +67,6 @@ interface StoredEvent {
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
 const toUtc = (iso: string | undefined): string | null => (iso === undefined ? null : new Date(iso).toISOString());
 
-function assertChannelEnabled(source: ChannelAccountRow['source'], connector: Principal, config: IntakeConfig): void {
-  if (connector.captureMethod === 'whatsapp_business_live') {
-    if (source !== 'whatsapp' || !config.authorizeWhatsAppDemo) {
-      throw AppError.of('account_not_authorized', 'Live WhatsApp intake requires the configured WhatsApp connection.');
-    }
-    return;
-  }
-  if (source === 'whatsapp' && !config.whatsappImportEnabled) {
-    throw AppError.of('channel_not_enabled', 'WhatsApp intake is not enabled until the Telegram controlled test is verified.');
-  }
-}
-
-function authorizeIntake(tx: Tx, account: ChannelAccountRow, peer: string, connector: Principal, config: IntakeConfig): void {
-  if (connector.captureMethod === 'whatsapp_business_live') {
-    config.authorizeWhatsAppDemo!(account, peer);
-  } else if (account.source === 'whatsapp' && tx.get('SELECT 1 FROM whatsapp_demo_bindings WHERE account_id=?', [account.id])) {
-    throw AppError.of('account_not_authorized', 'This WhatsApp account requires its own live connection.');
-  }
-  config.authorizeTarget?.(account, peer);
-}
-
 function eventDirection(event: IntakeEvent): Direction | undefined {
   return event.direction;
 }
@@ -105,19 +82,17 @@ function resolveById(tx: Tx, connector: Principal, chatId: string, config: Intak
   if (!chat || !canAccessChat(tx, connector, chat)) throw AppError.of('chat_not_found', 'Chat not found.');
   const account = findChannelAccountById(tx, chat.channel_account_id);
   if (!account) throw new Error('chat_account_missing');
-  assertChannelEnabled(account.source, connector, config);
-  authorizeIntake(tx, account, chat.external_chat_id, connector, config);
+  config.authorizeTarget?.(account, chat.external_chat_id);
   return { chat, account, created: false };
 }
 
 function resolveChat(tx: Tx, connector: Principal, target: IntakeTarget, event: IntakeEvent, config: IntakeConfig) {
   if ('chatId' in target) return resolveById(tx, connector, target.chatId, config);
-  assertChannelEnabled(target.source, connector, config);
   const account = findChannelAccount(tx, connector.workspaceId, target.source, target.externalAccountId);
   if (!account || !hasGrant(tx, connector.id, account.id)) {
     throw AppError.of('account_not_authorized', 'This connector is not authorized for that channel account.');
   }
-  authorizeIntake(tx, account, target.externalChatId, connector, config);
+  config.authorizeTarget?.(account, target.externalChatId);
   const existing = findChatByExternalId(tx, connector.workspaceId, account.id, target.externalChatId);
   if (existing) return { chat: existing, account, created: false };
   const inboxStatus = eventDirection(event) === 'incoming' ? 'new_inbound' : 'open';

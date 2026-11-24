@@ -40,8 +40,8 @@ describe('storage/db', () => {
       expect.arrayContaining(['workspaces', 'principals', 'chats', 'messages', 'stream_events', 'connector_state', 'telegram_evidence_sources', 'officer_passwords', 'officer_sessions', 'dispatch_briefs']),
     );
     expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['telegram_dispatch_contacts', 'chat_erasure_fences', 'telegram_message_proofs']));
-    expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['whatsapp_demo_bindings', 'whatsapp_reply_attempts', 'whatsapp_demo_opt_outs']));
-    expect(tables).toHaveLength(35);
+    expect(tables.map(t => t.name).filter(name => name.startsWith('whatsapp'))).toEqual([]);
+    expect(tables).toHaveLength(32);
     expect(() =>
       db!.transaction((tx) =>
         tx.run(
@@ -65,7 +65,7 @@ describe('storage/db', () => {
       version: tx.get('PRAGMA user_version'),
       references: tx.all<{table:string}>('PRAGMA foreign_key_list(telegram_evidence_sources)').map(row => row.table).sort(),
     }));
-    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 14 }, references: ['case_actions','chats','messages'] });
+    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 15 }, references: ['case_actions','chats','messages'] });
     expect(() => db!.transaction(tx => tx.run("INSERT INTO telegram_evidence_sources VALUES ('c','m','document','opaque','a')"))).toThrow(/FOREIGN KEY/);
   });
 
@@ -83,12 +83,31 @@ describe('storage/db', () => {
     } finally { old.close(); }
     db = openDatabase(file());
     db.transaction(tx => {
-      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 14 });
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 15 });
       expect(tx.get('SELECT token_sha256 FROM principals WHERE id=?', ['officer'])).toEqual({ token_sha256: 'previous-hash' });
       expect(tx.get('SELECT channel_account_id FROM account_grants WHERE principal_id=?', ['officer'])).toEqual({ channel_account_id: 'account' });
       expect(tx.all('SELECT * FROM officer_passwords')).toEqual([]);
       expect(tx.all('SELECT * FROM officer_sessions')).toEqual([]);
     });
+  });
+
+  it('drops the retired WhatsApp demo tables on upgrade only while they are empty', () => {
+    db = openDatabase(file());
+    db.close();
+    db = null;
+    const old = new DatabaseSync(file());
+    try {
+      old.exec(`CREATE TABLE whatsapp_demo_bindings (phone_number_id TEXT PRIMARY KEY);
+        CREATE TABLE whatsapp_reply_attempts (message_id TEXT PRIMARY KEY);
+        CREATE TABLE whatsapp_demo_opt_outs (chat_id TEXT PRIMARY KEY);
+        INSERT INTO whatsapp_demo_opt_outs VALUES ('kept-because-it-has-a-row');
+        PRAGMA user_version = 14;`);
+    } finally { old.close(); }
+    db = openDatabase(file());
+    const remaining = db.transaction(tx => tx.all<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'whatsapp%' ORDER BY name").map(row => row.name));
+    expect(remaining).toEqual(['whatsapp_demo_opt_outs']);
+    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 15 });
   });
 
   it('a failed transaction leaves no rows', () => {

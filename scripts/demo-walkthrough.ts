@@ -300,7 +300,7 @@ async function serviceHealthy(run: Run): Promise<Outcome> {
   const health = await call(run, HealthResponse, 'GET', '/healthz', { token: null });
   const { reviewer, channels } = await call(run, Status, 'GET', '/v1/status');
   return outcome(health.status === 'ok', `healthz ${health.status}`, `reviewer ${reviewer.kind} ${reviewer.reachable ? 'reachable' : 'unreachable'}`,
-    `Telegram ${channels.telegram.readiness}, live connector ${channels.telegram.liveConnector}, WhatsApp gate ${channels.whatsapp.gate}`);
+    `Telegram ${channels.telegram.readiness}, live connector ${channels.telegram.liveConnector}`);
 }
 
 async function inboundFirst(run: Run): Promise<Outcome> {

@@ -67,10 +67,6 @@ export function eraseChatHistory(tx: Tx, officer: Principal, chatId: string, exp
   if (tx.get('SELECT 1 FROM telegram_pending_sends WHERE chat_id=? AND expires_at>?', [chatId, tx.now()])) {
     throw AppError.of('invalid_transition', 'A Telegram send is in progress. Retry when it finishes.');
   }
-  if (tx.get(`SELECT 1 FROM whatsapp_reply_attempts a JOIN messages m ON m.id=a.message_id
-    WHERE m.chat_id=? AND a.state='sending' AND unixepoch(a.created_at)>unixepoch('now')-120`, [chatId])) {
-    throw AppError.of('invalid_transition', 'A WhatsApp send is in progress. Retry when it finishes.');
-  }
   tx.run('DELETE FROM telegram_pending_sends WHERE chat_id=?', [chatId]);
   const telegramId = markErasureFence(tx, chatId);
   const hold = getTelegramReplyHold(tx, chatId);

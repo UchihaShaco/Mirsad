@@ -30,7 +30,7 @@ export const LABELS = {
   phoneNumberTiedToConcern: 'Phone number tied to a concern',
 } as const;
 
-export const CHANNEL_LABELS = { telegram: 'Telegram', whatsapp: 'WhatsApp' } as const;
+export const CHANNEL_LABELS = { telegram: 'Telegram' } as const;
 
 export const ORIGIN_LABELS = [
   LABELS.contactStartedChat,

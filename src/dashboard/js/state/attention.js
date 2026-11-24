@@ -5,7 +5,7 @@
  */
 import { evidenceItemsFor } from '../format.js';
 
-const LIVE_CAPTURE_METHODS = new Set(['telegram_business_live', 'whatsapp_business_live']);
+const LIVE_CAPTURE_METHODS = new Set(['telegram_business_live']);
 
 /**
  * The service reports the chat-level hold separately from its pending warnings and captured items.

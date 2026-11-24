@@ -12,7 +12,7 @@ export function createDemoIdentity(db: Db): IdentityProvider {
       if (token === null) return null;
       if (token.startsWith('session_')) return db.transaction(tx => lookupActiveOfficerSession(tx, token));
       const row = db.transaction((tx) => findPrincipalByTokenHash(tx, hashToken(token)));
-      if (!row || row.disabled === 1 || row.capture_method === 'whatsapp_business_live') return null;
+      if (!row || row.disabled === 1) return null;
       return toPrincipal(row);
     },
   };

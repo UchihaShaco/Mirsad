@@ -94,25 +94,7 @@ describe('controlled-test record gate', () => {
     expect(readControlledTestRecord(file)).toEqual(failed);
   });
 
-  it('loadConfig opens the WhatsApp gate only with a valid record at MIRSAD_CONTROLLED_TEST_RECORD', () => {
-    const env = { MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: file };
-    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    write(passingRecord());
-    const config = loadConfig(env);
-    expect(config.whatsappImportEnabled).toBe(true);
-    expect(config.controlledTestRecordPath).toBe(file);
-    expect(() => loadConfig({ ...env, TELEGRAM_APPROVAL_REFERENCE: 'OTHER-REF' })).toThrow(
-      /MIRSAD_WHATSAPP_IMPORT_ENABLED/,
-    );
-    const { tester: _tester, ...withoutTester } = passingRecord();
-    write(withoutTester);
-    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    write({ ...passingRecord(), manualReply: { result: 'failed' } });
-    expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    write(passingRecord());
-    const elsewhere = path.join(dir, 'other-record.json');
-    expect(() => loadConfig({ ...env, MIRSAD_CONTROLLED_TEST_RECORD: elsewhere })).toThrow(
-      /MIRSAD_WHATSAPP_IMPORT_ENABLED/,
-    );
+  it('loadConfig reads the record path from MIRSAD_CONTROLLED_TEST_RECORD', () => {
+    expect(loadConfig({ MIRSAD_CONTROLLED_TEST_RECORD: file }).controlledTestRecordPath).toBe(file);
   });
 });

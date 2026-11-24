@@ -1,13 +1,12 @@
 /** Closed value sets of the Mirsad contract (design sections 4 and 6). */
 
-export const SOURCES = ['telegram', 'whatsapp'] as const;
+export const SOURCES = ['telegram'] as const;
 export type Source = (typeof SOURCES)[number];
 
 /** Capture methods a connector can be provisioned with. */
 export const CONNECTOR_CAPTURE_METHODS = [
   'fixture_replay',
   'telegram_business_live',
-  'whatsapp_business_live',
   'approved_import',
   'host_intake',
 ] as const;
@@ -172,7 +171,6 @@ export const TELEGRAM_REPLY_REQUEST_STATUSES = ['queued', 'sent', 'skipped', 'fa
 export type TelegramReplyRequestStatus = (typeof TELEGRAM_REPLY_REQUEST_STATUSES)[number];
 
 export const CASE_REFERENCE_KINDS = ['merchant_payment_confirmation'] as const;
-export type CaseReferenceKind = (typeof CASE_REFERENCE_KINDS)[number];
 
 export const WATCHLIST_STATUSES = ['needs_review', 'approved', 'cleared'] as const;
 export type WatchlistStatus = (typeof WATCHLIST_STATUSES)[number];
@@ -184,7 +182,6 @@ export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention'] as con
 export type ObservationOrigin = (typeof OBSERVATION_ORIGINS)[number];
 
 export const INGEST_RESULTS = ['recorded', 'duplicate_event', 'duplicate_message', 'conflicting_copy'] as const;
-export type IngestResultKind = (typeof INGEST_RESULTS)[number];
 
 export const START_MARKER_RESULTS = ['accepted', 'ignored_untrusted', 'ignored_conflict', 'none'] as const;
 export type StartMarkerResult = (typeof START_MARKER_RESULTS)[number];
@@ -193,4 +190,3 @@ export const REVIEWER_KINDS = ['lmstudio', 'deterministic', 'disabled'] as const
 export type ReviewerKind = (typeof REVIEWER_KINDS)[number];
 
 export const READINESS_STATES = ['not_assessed', 'ready_for_controlled_test', 'controlled_test_verified'] as const;
-export type ReadinessState = (typeof READINESS_STATES)[number];

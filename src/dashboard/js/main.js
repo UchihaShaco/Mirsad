@@ -29,7 +29,6 @@ const ELEMENT_IDS = {
   chatDispatchContext: 'chat-dispatch-context', chatDispatchClear: 'chat-dispatch-clear', chatDispatchStatus: 'chat-dispatch-status',
   chatDispatchBriefFields: 'chat-dispatch-brief-fields',
   chatDispatchPermissionSection: 'chat-dispatch-permission-section', chatDispatchMode: 'chat-dispatch-mode',
-  chatDispatchModeHint: 'chat-dispatch-mode-hint',
   chatDispatchRecord: 'chat-dispatch-record', chatDispatchEligibility: 'chat-dispatch-eligibility',
   confirmChatDispatch: 'confirm-chat-dispatch', cancelChatDispatch: 'cancel-chat-dispatch',
   dmReplies: 'dm-replies', dmRepliesSwitch: 'dm-replies-switch', dmRepliesHint: 'dm-replies-hint',

@@ -161,7 +161,7 @@ A conflicting host raises **Suspected fraud**. Try it with `merchant-conflict.js
 ## Verification
 
 On 2026-11-24 the Windows release passed type checking, 1,090 automated tests across 90 files, and all 37 dashboard
-browser tests. Four WhatsApp placeholder tests were skipped. A separate clean checkout installed with `npm ci`,
+browser tests. A separate clean checkout installed with `npm ci`,
 started using the example configuration with a deterministic reviewer, and served the portal, health endpoint and
 authenticated officer endpoint using newly seeded credentials.
 
@@ -173,7 +173,7 @@ evaluation rows give the dates of their committed reports.
 
 | Run | Result |
 |---|---|
-| `npm test` | 679 tests passed across 58 files. The 4 WhatsApp channel contract placeholders were skipped. Telegram tests cover the three-second minimum, fee questions and corrections, bounded history, distinct evidence items, and immediate cancellation when a sender provides bank-transfer details. |
+| `npm test` | 679 tests passed across 58 files. Telegram tests cover the three-second minimum, fee questions and corrections, bounded history, distinct evidence items, and immediate cancellation when a sender provides bank-transfer details. |
 | `npm run typecheck` | Clean. |
 | `npm run test:e2e` | 12 of 12 dashboard flows passed. They include the first visible item, a two-item hold, the immediate bank-details hold, and source-linked officer review. |
 | Synthetic Telegram replies on local Qwen | The 56-case regression replay met 34/41 development and 13/15 held-out criteria. Five misses used the previous first-material silence rule. In fresh worker conversations an English job-fee exchange followed the requested question and acknowledgment. Arabic clarification was inconsistent. |
@@ -194,7 +194,7 @@ instead of waiting forever.
 
 | # | Check | What it shows |
 |---|---|---|
-| 1 | `service_healthy` | `/healthz` answers. `GET /v1/status` reports the reviewer, Telegram readiness, the live connector state and the WhatsApp gate. |
+| 1 | `service_healthy` | `/healthz` answers. `GET /v1/status` reports the reviewer, Telegram readiness and the live connector state. |
 | 2 | `inbound_first_new_inbound` | An inbound-first chat lands in **New inbound** with `First observed: incoming`. |
 | 3 | `officer_first_both_directions` | An officer-first chat shows both directions with `First observed: outgoing`. |
 | 4 | `start_marker_contact_started` | A fixture's start assertion, from the trusted fixture connector, gives `Contact started chat`. |
@@ -301,7 +301,7 @@ different body gets `422 idempotency_key_reused`.
 | `POST /v1/chats/{chatId}/case-references` *(extension)* | officer | Records a merchant's payment confirmation. **Suspected fraud** needs independent merchant confirmation, and this is where the officer enters it. The dashboard's case panel calls it from **Record merchant confirmation** and lists the chat's confirmations. |
 | `POST /v1/captures/{captureId}/retry` *(extension)* | officer | Retries a failed capture: the brief's "retryable capture error". |
 | `GET /v1/me` *(extension)* | officer or connector | Who the token belongs to. The dashboard needs it to know the signed-in officer. |
-| `GET /v1/status` *(extension)* | officer | Service, workers, reviewer reachability, Telegram readiness and the WhatsApp gate: the brief's health and status checks. |
+| `GET /v1/status` *(extension)* | officer | Service, workers, reviewer reachability and Telegram readiness: the brief's health and status checks. |
 | `GET /healthz` *(extension)* | none | Liveness. |
 | `GET /`, `GET /assets/*` | none | The reference dashboard. |
 
@@ -495,16 +495,6 @@ chat are dropped before storage.
 - Rollback: [docs/telegram/rollback.md](docs/telegram/rollback.md).
 - Observed event coverage worksheet: [docs/telegram/event-coverage-worksheet.md](docs/telegram/event-coverage-worksheet.md).
 - Local readiness results: [docs/telegram/readiness.md](docs/telegram/readiness.md). Fixtures: [docs/telegram/fixtures.md](docs/telegram/fixtures.md).
-
-## WhatsApp
-
-For a personally operated hackathon demo, an enrolled tester can send a text to a WhatsApp Business number.
-The owner can open the chat in Mirsad and click **Dispatch** to have Gemini assess that text immediately.
-Setup includes connecting the number through Meta and exposing a dedicated webhook on its own port.
-The demo is off by default. See the [same-number setup and demo walkthrough](docs/whatsapp/demo.md).
-
-The separate evidence import API requires `MIRSAD_WHATSAPP_IMPORT_ENABLED=true` and a verified Telegram
-controlled-test record. See the [data mapping](docs/whatsapp/data-mapping.md) and [import plan](docs/whatsapp/import-plan.md).
 
 ## Local model setup
 
@@ -764,8 +754,7 @@ From design section 18:
     where the platform allows it (Node cannot on Windows).
   - Incoming edits and source deletions preserve original message text as evidence. An explicit officer erasure
     removes the local evidence, including the original.
-- **Channel settings.** Telegram AI replies use `TELEGRAM_AI_REPLIES_ENABLED`. WhatsApp demo replies use
-  `WHATSAPP_DEMO_ENABLED` and the enrolled tester list. Both default to false. The Telegram Bot API client has four read-only calls; replies go through a separate
+- **Channel settings.** Telegram AI replies use `TELEGRAM_AI_REPLIES_ENABLED`, off by default. The Telegram Bot API client has four read-only calls; replies go through a separate
   sender with one method (`sendMessage` on the approved business connection), created only when automated replies
   are on. Manual **Dispatch** records the officer's confirmation of existing participant permission for each selected eligible chat.
 - **Officer-confirmed Telegram deletion.** A separate Bot API client calls `deleteBusinessMessages` only after the officer
@@ -795,7 +784,7 @@ examples/headless-client/   HTTP-only integration example
 fixtures/telegram/          synthetic Telegram-shaped updates
 fixtures/eval/              labelled synthetic evaluation transcripts (dev and held-out)
 assets/fonts/               Noto fonts for captures (SIL Open Font License 1.1)
-docs/                       telegram/, whatsapp/, evaluation/, deployment-notes.md, superpowers/ (brief, design notes, plan)
+docs/                       telegram/, evaluation/, deployment-notes.md, superpowers/ (brief, design notes, plan)
 tests/                      unit/, integration/, contract/, e2e/, helpers/
 openapi.yaml                the generated HTTP contract
 ```

@@ -1,33 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ConfigError, loadConfig } from '../../src/config.ts';
 
 describe('loadConfig', () => {
-  it('requires the enrolled sender and YCloud credentials only when that provider is selected', () => {
-    const env = {
-      WHATSAPP_DEMO_ENABLED: 'true', WHATSAPP_PROVIDER: 'ycloud', WHATSAPP_DEMO_TESTERS: '+12025550123',
-      WHATSAPP_DEMO_OFFICER_ID: 'prn_' + '1'.repeat(32), OPENROUTER_API_KEY: 'synthetic-g',
-      YCLOUD_WABA_ID: '3333333', YCLOUD_BUSINESS_NUMBER: '+12025550199',
-      YCLOUD_API_KEY: 'synthetic-y', YCLOUD_WEBHOOK_SECRET: 'synthetic-signing',
-    };
-    expect(loadConfig(env).whatsappDemo).toMatchObject({ provider: 'ycloud', businessNumber: '+12025550199', wabaId: '3333333' });
-    for (const name of ['YCLOUD_WABA_ID', 'YCLOUD_BUSINESS_NUMBER', 'YCLOUD_API_KEY', 'YCLOUD_WEBHOOK_SECRET']) {
-      const config = loadConfig({ ...env, [name]: '' });
-      expect(config.whatsappDemo).toBeUndefined();
-      expect(config.whatsappDemoInvalidSetting).toBe(name);
-    }
-    expect(loadConfig({ ...env, WHATSAPP_PROVIDER: undefined }).whatsappDemoInvalidSetting).toBe('WHATSAPP_PHONE_NUMBER_ID');
-    expect(loadConfig({ ...env, WHATSAPP_PROVIDER: 'other' }).whatsappDemoInvalidSetting).toBe('WHATSAPP_PROVIDER');
-  });
-  it('keeps Telegram available if the separate WhatsApp demo is enabled with incomplete settings', () => {
-    const config = loadConfig({ WHATSAPP_DEMO_ENABLED: 'true', TELEGRAM_LIVE_ENABLED: 'true' });
-    expect(config.whatsappDemo).toBeUndefined();
-    expect(config.whatsappDemoInvalidSetting).toBe('WHATSAPP_DEMO_TESTERS');
-    expect(config.telegram.liveEnabled).toBe(true);
-  });
   it('accepts only a short, unexpired wording-test window', () => {
     const now = Date.now();
     const end = new Date(now + 5 * 60_000).toISOString();
@@ -72,7 +48,6 @@ describe('loadConfig', () => {
       reviewAllowedCaptureMethods: ['fixture_replay'],
       streamRetention: 5000,
       rateLimitPerMinute: 600,
-      whatsappImportEnabled: false,
       controlledTestRecordPath: fileURLToPath(
         new URL('../../docs/telegram/controlled-test-record.json', import.meta.url),
       ),
@@ -153,18 +128,6 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS: 'telegram_business_live' })).toThrow(
       /MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS/,
     );
-  });
-
-  it('loadConfig rejects MIRSAD_WHATSAPP_IMPORT_ENABLED without a controlled-test record', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mirsad-config-'));
-    try {
-      const missing = path.join(dir, 'controlled-test-record.json');
-      const env = { MIRSAD_WHATSAPP_IMPORT_ENABLED: 'true', MIRSAD_CONTROLLED_TEST_RECORD: missing };
-      expect(() => loadConfig(env)).toThrow(ConfigError);
-      expect(() => loadConfig(env)).toThrow(/MIRSAD_WHATSAPP_IMPORT_ENABLED/);
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
   });
 
   it('loadConfig defaults the reviewer to lmstudio and the model to qwen3.5-9b', () => {

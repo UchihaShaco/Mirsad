@@ -217,12 +217,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
-        "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
         "429":
           description: "Error envelope. `error.code` is one of: `rate_limited`."
           content:
@@ -406,7 +400,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          description: "Error envelope. `error.code` is one of: `direction_required`."
           content:
             application/json:
               schema:
@@ -517,7 +511,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "422":
-          description: "Error envelope. `error.code` is one of: `channel_not_enabled`, `direction_required`."
+          description: "Error envelope. `error.code` is one of: `direction_required`."
           content:
             application/json:
               schema:
@@ -2956,7 +2950,6 @@ components:
       type: string
       enum:
         - telegram
-        - whatsapp
     Direction:
       type: string
       enum:
@@ -3104,7 +3097,6 @@ components:
       enum:
         - fixture_replay
         - telegram_business_live
-        - whatsapp_business_live
         - approved_import
         - host_intake
         - officer_composer
@@ -3226,7 +3218,6 @@ components:
           type: string
           enum:
             - Telegram
-            - WhatsApp
         externalAccountId:
           type: string
         externalChatId:
@@ -4835,24 +4826,8 @@ components:
                 - readiness
                 - readinessRecordedAt
               additionalProperties: false
-            whatsapp:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - not_started
-                    - demo_listening
-                    - demo_unavailable
-                gate:
-                  type: string
-              required:
-                - status
-                - gate
-              additionalProperties: false
           required:
             - telegram
-            - whatsapp
           additionalProperties: false
       required:
         - service
