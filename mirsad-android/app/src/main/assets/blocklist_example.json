@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "issuedAt": "2026-11-24T00:00:00Z",
+  "issuer": "example (synthetic, not a police alert)",
+  "note": "All values are fictional: zero-filled numbers and .example domains.",
+  "numbers": ["+440000000001", "+920000000002"],
+  "domains": ["delivery-fee.example", "bank-update.example"],
+  "fingerprints": []
+}

@@ -15,3 +15,7 @@ local.properties
 captures/
 *.log
 # Keep dist/ and demo/ (committed deliverables)
+
+# The repo root .gitignore ignores dist/ and data/ everywhere; this product commits both.
+!dist/
+!data/

@@ -70,6 +70,16 @@
             android:name=".service.NoticeActionReceiver"
             android:exported="false" />
 
+        <!-- Per-app language (in-app Arabic/English switch) persisted by AppCompat. -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
         <!-- Debug-only demo autopilot (plays the storyboard on a timer). Declared in src/debug. -->
     </application>
 </manifest>
