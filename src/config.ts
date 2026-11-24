@@ -38,6 +38,13 @@ export interface Config {
   streamRetention: number;
   rateLimitPerMinute: number;
   whatsappImportEnabled: boolean;
+  whatsappDemoInvalidSetting?: string;
+  whatsappDemo?: {
+    officerId: string; testerIds: string[]; webhookPort: number; geminiApiKey: string;
+  } & (
+    | { provider?: 'meta'; phoneNumberId: string; accessToken: string; appSecret: string; verifyToken: string; graphVersion: string }
+    | { provider: 'ycloud'; wabaId: string; businessNumber: string; apiKey: string; webhookSecret: string }
+  );
   /** Absolute path of the Telegram controlled-test record that opens the WhatsApp gate. */
   controlledTestRecordPath: string;
   telegram: {
@@ -126,7 +133,7 @@ function reviewMethods(env: Env): ConnectorCaptureMethod[] {
   const raw = value(env, name) === undefined ? ['fixture_replay'] : list(env, name);
   for (const method of raw) {
     const known = (CONNECTOR_CAPTURE_METHODS as readonly string[]).includes(method);
-    if (!known || method === 'telegram_business_live') {
+    if (!known || method === 'telegram_business_live' || method === 'whatsapp_business_live') {
       throw new ConfigError(name, 'contains a capture method that cannot be reviewed');
     }
   }
@@ -136,6 +143,42 @@ function reviewMethods(env: Env): ConnectorCaptureMethod[] {
 function controlledTestRecordPath(env: Env): string {
   const raw = value(env, 'MIRSAD_CONTROLLED_TEST_RECORD') ?? DEFAULT_CONTROLLED_TEST_RECORD;
   return path.resolve(PROJECT_ROOT, raw);
+}
+
+function whatsappDemoSettings(env: Env, portalPort: number): Config['whatsappDemo'] {
+  if (!bool(env, 'WHATSAPP_DEMO_ENABLED', false)) return undefined;
+  function required(name: string, format?: RegExp): string {
+    const setting = value(env, name);
+    if (!setting || (format && !format.test(setting))) throw new ConfigError(name, 'is required in a valid format for the WhatsApp demo');
+    return setting;
+  }
+  const testerIds = [...new Set(list(env, 'WHATSAPP_DEMO_TESTERS').map(id => id.replace(/^\+/, '')))];
+  if (!testerIds.length || testerIds.some(id => !/^[1-9]\d{6,14}$/.test(id))) {
+    throw new ConfigError('WHATSAPP_DEMO_TESTERS', 'enter enrolled tester numbers including country codes');
+  }
+  const webhookPort = int(env, 'WHATSAPP_WEBHOOK_PORT', 8788, 1, MAX_PORT);
+  if (webhookPort === portalPort) throw new ConfigError('WHATSAPP_WEBHOOK_PORT', 'must have its own port');
+  const provider = oneOf(env, 'WHATSAPP_PROVIDER', ['meta', 'ycloud'] as const, 'meta');
+  const common = {
+    testerIds, webhookPort,
+    officerId: required('WHATSAPP_DEMO_OFFICER_ID', /^prn_[a-f0-9]{32}$/),
+    geminiApiKey: required('OPENROUTER_API_KEY'),
+  };
+  if (provider === 'ycloud') {
+    return {
+      ...common, provider, wabaId: required('YCLOUD_WABA_ID', /^[1-9]\d{0,19}$/),
+      businessNumber: required('YCLOUD_BUSINESS_NUMBER', /^\+[1-9]\d{6,14}$/),
+      apiKey: required('YCLOUD_API_KEY', /^\S+$/), webhookSecret: required('YCLOUD_WEBHOOK_SECRET'),
+    };
+  }
+  const graphVersion = value(env, 'WHATSAPP_GRAPH_VERSION') ?? 'v27.0';
+  if (!/^v[1-9]\d?\.0$/.test(graphVersion)) throw new ConfigError('WHATSAPP_GRAPH_VERSION', 'use a Graph API version such as v27.0');
+  return {
+    ...common, provider, graphVersion,
+    phoneNumberId: required('WHATSAPP_PHONE_NUMBER_ID', /^[1-9]\d{0,19}$/),
+    accessToken: required('WHATSAPP_ACCESS_TOKEN'), appSecret: required('WHATSAPP_APP_SECRET'),
+    verifyToken: required('WHATSAPP_VERIFY_TOKEN'),
+  };
 }
 
 export function loadConfig(env: Env): Config {
@@ -155,9 +198,20 @@ export function loadConfig(env: Env): Config {
   if (whatsappImportEnabled && !hasValidControlledTestRecord(recordPath, approvalReference)) {
     throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a verified Telegram controlled-test record');
   }
+  const portalPort = int(env, 'MIRSAD_PORT', 8787, 0, MAX_PORT);
+  let whatsappDemo: Config['whatsappDemo'];
+  let whatsappDemoInvalidSetting: string | undefined;
+  try {
+    whatsappDemo = whatsappDemoSettings(env, portalPort);
+  } catch (error) {
+    if (!(error instanceof ConfigError)) throw error;
+    whatsappDemoInvalidSetting = error.variable;
+  }
   return {
     host,
-    port: int(env, 'MIRSAD_PORT', 8787, 0, MAX_PORT),
+    port: portalPort,
+    ...(whatsappDemo && { whatsappDemo }),
+    ...(whatsappDemoInvalidSetting && { whatsappDemoInvalidSetting }),
     dataDir: path.resolve(value(env, 'MIRSAD_DATA_DIR') ?? './data'),
     demoSeed: bool(env, 'MIRSAD_DEMO_SEED', true),
     reviewer: oneOf(env, 'MIRSAD_REVIEWER', REVIEWER_KINDS, 'lmstudio'),

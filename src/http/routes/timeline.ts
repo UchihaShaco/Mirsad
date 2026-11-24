@@ -6,6 +6,7 @@ export const routes: RouteModule = {
   'GET /v1/chats/{chatId}/timeline': (c, deps) => {
     const officer = principalOf(c);
     const chatId = c.req.param('chatId') ?? '';
-    return c.json(ok(deps.db.transaction((tx) => readTimeline(tx, officer, chatId, deps.config.telegram))));
+    const repliesRunning = deps.telegramLive.running() && deps.telegramLive.repliesRunning();
+    return c.json(ok(deps.db.transaction((tx) => readTimeline(tx, officer, chatId, deps.config.telegram, repliesRunning))));
   },
 };

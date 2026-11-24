@@ -3,13 +3,12 @@
 ## Policy limit
 
 Meta's published Business Messaging Policy (Government and Political Use) prohibits law-enforcement agencies from
-using the WhatsApp Business Platform. Mirsad therefore has no WhatsApp Business Platform or Cloud API connector, no live
-WhatsApp intake and no way to send WhatsApp messages. The WhatsApp phase covers two inputs only: labeled synthetic
-fixtures, and approved evidence imports through the common intake API.
+using the WhatsApp Business Platform. Agency use in this plan covers labeled synthetic fixtures and approved evidence imports.
+The independent hackathon demo has its own [setup](demo.md).
 
 ## Gate
 
-WhatsApp-specific work starts only after the Telegram controlled test is verified (design section 14).
+Evidence imports require the Telegram controlled test to be verified (design section 14).
 
 - Intake refuses `source: "whatsapp"` with `422 channel_not_enabled` unless `MIRSAD_WHATSAPP_IMPORT_ENABLED=true`.
 - That setting is rejected at startup unless `MIRSAD_CONTROLLED_TEST_RECORD` names a record that validates and
@@ -17,8 +16,7 @@ WhatsApp-specific work starts only after the Telegram controlled test is verifie
   approval reference as `TELEGRAM_APPROVAL_REFERENCE` when that is set.
 - `GET /v1/status` reports the gate under `channels.whatsapp.gate`: `closed_until_telegram_controlled_test_verified`,
   then `closed_until_import_enabled` once a verified record exists, then `open`.
-- Until then the repository holds only the shared adapter interface (`src/ports/channel-adapter.ts`), the
-  [data mapping](data-mapping.md), this plan and the skipped WhatsApp block in `tests/contract/channel-contract.test.ts`.
+- The general import contract has a [data mapping](data-mapping.md) and placeholders in `tests/contract/channel-contract.test.ts`.
 
 ## Steps once the gate opens
 
@@ -35,7 +33,7 @@ WhatsApp-specific work starts only after the Telegram controlled test is verifie
    `MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS` (the default allows `fixture_replay` only). That is a decision for the
    approving authority, not a default.
 
-## Not planned
+## Outside the import workflow
 
 - Any connection to the WhatsApp Business Platform or Cloud API.
 - Sending messages, reading receipts or presence.

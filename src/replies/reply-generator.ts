@@ -1,11 +1,12 @@
 /** Shared attribution, context budgeting and local model adapter. Telegram delivery is owned by the worker. */
 import { z } from 'zod';
+import type { TelegramReplyRequestKind } from '../contract/enums.ts';
 import { ALI_PROMPT as REPLY_SYSTEM_PROMPT, currentAliPrompt, type AliPromptSnapshot } from './ali-prompt.ts';
-import { ALI_RESPONSE_FORMAT, MAX_REPLY_CHARS, hasInternalReplyContent, parseAliDecision, publicReplyFromDecision, type AliDecision } from './ali-decision.ts';
-import { ReplyGenerationError } from './reply-errors.ts';
+import { ALI_PUBLIC_REPLY_FORMAT, ALI_RESPONSE_FORMAT, MAX_REPLY_CHARS, hasInternalReplyContent, parseAliDecision, parseAliPublicReply, publicReplyFromDecision, type AliDecision, SILENCE_EXPLANATION_REQUEST } from './ali-decision.ts';
+import { InvalidReplyDraftError, ReplyGenerationError } from './reply-errors.ts';
 import { isReplyGuardRule } from './reply-guard-rules.ts';
 
-export { ReplyGenerationError, REPLY_FAILURE_CODES, type ReplyFailureCode } from './reply-errors.ts';
+export { InvalidReplyDraftError, ReplyGenerationError, REPLY_FAILURE_CODES, type ReplyFailureCode } from './reply-errors.ts';
 export { asksAliName, contactOfferEvents, isArabicReplyTurn, isIdentityCheck, isOfferAcknowledgmentTurn, isUnexplainedWorkFeeTurn } from './reply-context.ts';
 
 /** One earlier message of the chat as the model sees it: who wrote it, and its text. */
@@ -27,11 +28,16 @@ export interface ModelPaymentLinkCandidate {
 }
 
 export interface ReplyInvestigationContext {
+  dispatchIntent?: Exclude<TelegramReplyRequestKind, 'consent_notice' | 'ask_for_text'>;
   dispatchBrief?: string;
   paymentLinks?: readonly ModelPaymentLinkCandidate[];
   meetingArranged?: boolean;
   meetingDayConfirmed?: boolean;
+  /** Types captured on the current sender turn. No attachment contents are sent to the reply model. */
+  attachmentKinds?: readonly string[];
 }
+
+export type ReplyOutputMode = 'decision' | 'public_reply';
 
 export interface ReplyGenerator {
   /** The model ID, recorded with each reply it wrote. */
@@ -42,6 +48,8 @@ export interface ReplyGenerator {
   /** Plain-text compatibility for evaluation tools and stand-ins. A handoff and silence both return null here. */
   generate(history: readonly ReplyTurn[], signal: AbortSignal, correction?: string, currentTurn?: readonly string[],
     memory?: ReplyOfferMemory, context?: ReplyInvestigationContext, prompt?: AliPromptSnapshot): Promise<string | null>;
+  /** Compose the public message after the worker has handled any private warning for this turn. */
+  composePublicReply?(...args: Parameters<ReplyGenerator['generate']>): Promise<string>;
 }
 
 export interface LmStudioReplyOptions {
@@ -58,8 +66,6 @@ export interface LmStudioReplyOptions {
 }
 
 const NO_REPLY = '[NO_REPLY]';
-// Other spellings and a marker mixed with an explanation are invalid model output.
-const NO_REPLY_MARKER = /\[\s*no[\s_-]*reply\b|\bno[\s_-]*reply\s*\]|\bno[_-]reply\b|^no\s+reply[.!]?$/i;
 const ENGLISH_INTRODUCTION = 'I’m Mirsad’s automated assistant.';
 const ARABIC_INTRODUCTION = 'أنا مساعد مرصاد الآلي.';
 
@@ -93,9 +99,11 @@ const SENTENCE_END = /[.!?…。؟](?=\s|$)/g;
 
 const Completion = z.object({
   model: z.unknown().optional(),
+  error: z.null().optional(),
   choices: z.tuple([z.object({
+    error: z.null().optional(),
     finish_reason: z.literal('stop').optional(),
-    message: z.object({ content: z.string().nullable().optional(), refusal: z.null().optional(), tool_calls: z.tuple([]).nullish() }),
+    message: z.object({ role: z.literal('assistant').optional(), content: z.string(), refusal: z.null().optional(), tool_calls: z.tuple([]).nullish() }),
   })]),
 });
 
@@ -103,13 +111,21 @@ type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
 
 /** The application supplies these fields independently of the editable conversation rules. */
 const INVESTIGATION_OUTPUT_INSTRUCTIONS = [
-  'Follow the response schema for the full field list. Set silence_reason to null for READY_FOR_OFFICER_REVIEW and HUMAN_INTERVENTION_REQUIRED, even when should_reply is false. Public replies also use null. For other decisions that omit a public reply, choose the closest silence_reason code.',
+  'Follow the response schema for the full field list. Set silence_reason and silence_explanation to null for a public reply and for READY_FOR_OFFICER_REVIEW and HUMAN_INTERVENTION_REQUIRED, even when should_reply is false.',
+  'Every other decision without a public reply must say precisely why Ali stays silent. Set silence_reason to the one code that matches: no_actionable_question (the sender asked or requested nothing), already_answered (Ali already answered this), ordinary_terms_clear (the terms of the offer are clear and need no question), conversation_closed (the exchange has ended), sender_withdrew (the sender wants to stop), wrong_contact (the message was meant for someone else), transaction_boundary (continuing would commit Ali to a payment, purchase or delivery), no_safe_follow_up (no reply would be safe), awaiting_sender (Ali asked something the sender has not answered yet, or the sender said they would follow up), personal_details_request (answering would give out personal, contact, payment or delivery details), unclear_message (the message cannot be understood), abusive_message (the message is abusive or hostile), automated_message (the message is automated or a broadcast, not written to Ali), unsupported_language (the message is in a language Ali does not use).',
+  'Then set silence_explanation to one plain English sentence for the officer: what in the conversation made Ali stay silent, and why a reply is not needed or not safe. Do not repeat links, phone numbers, account or card numbers, addresses or other contact or payment details in it.',
   'An officer_brief is an unverified lead. Evaluate the actual chat independently, including facts that contradict the brief.',
   'Only the captured sender messages can support a fraud indicator. Keep officer_brief and payment_link_candidates private.',
   'Use payment_link_review only for a supplied candidate linked to an unsupported payment demand or another concrete concern visible in the chat.',
-  'A payment link can be flagged independently of the full case-review threshold. Below that threshold use SUSPICIOUS with an empty review_reasons array; if you choose silence, provide silence_reason.',
+  'Link flags and conversation assessments are private warnings for the officer. Continue the conversation with a safe public reply when appropriate. A link alone or a repeated link does not justify silence or a separate conversation warning. Below the conversation assessment threshold use SUSPICIOUS with an empty review_reasons array for a flagged link.',
   'An unfamiliar host alone is insufficient. Return null if none qualifies. Use its supplied candidate_id and the schema reason. Never visit the link.',
   'If meeting_arranged is true, the contact agreed to an in-person exchange and a time and place were supplied. A calendar day is established only when meeting_day_confirmed is true. Respond naturally to a genuinely new question or concern. For a routine close, a short acknowledgement or silence is enough. Do not re-ask for confirmed details, promise to attend, or disclose this internal assessment.',
+].join('\n');
+
+const PUBLIC_REPLY_INSTRUCTIONS = [
+  'For this writing pass, follow Ali’s conversation instructions and use the ali_public_reply response format. The private assessment is handled separately. Return only external_reply with the message to send.',
+  'Write as Ali in the language of the exchange. Answer what the sender actually said using the conversation so far. For a follow_up dispatch, write a natural follow-up grounded in that exchange.',
+  'Keep warning labels and assessment fields private. Treat a supplied link as unvisited. Do not claim to have opened it, repeat private details, or promise a payment.',
 ].join('\n');
 
 /** Parses the base URL and accepts only http(s) on exactly 127.0.0.1, localhost or [::1]. */
@@ -147,6 +163,7 @@ function fitTurn(text: string, budget: number, latestIncoming: boolean): string 
 
 /** The latest eligible turns that fit the history budget, returned oldest first. */
 function recentTurns(history: readonly ReplyTurn[], maxChars: number): ReplyTurn[] {
+  if (maxChars <= 0) return [];
   const kept: ReplyTurn[] = [];
   let used = 0;
   for (const turn of [...history].reverse()) {
@@ -162,6 +179,19 @@ function recentTurns(history: readonly ReplyTurn[], maxChars: number): ReplyTurn
   return kept.reverse();
 }
 
+/** A follow-up can have many intervening outgoing messages. Keep the sender's own words and the newest replies. */
+function followUpTurns(history: readonly ReplyTurn[], maxChars: number): ReplyTurn[] {
+  const sourceIndex = history.findLastIndex(turn => turn.from === 'contact' && turn.text.trim().length > 0);
+  if (sourceIndex < 0 || sourceIndex === history.length - 1) return recentTurns(history, maxChars);
+  const source = maskProjectName(history[sourceIndex]!.text.trim());
+  const sourceText = fitTurn(source, Math.ceil(maxChars / 2), true);
+  if (!sourceText) return [];
+  const after = recentTurns(history.slice(sourceIndex + 1), maxChars - sourceText.length);
+  const remaining = maxChars - sourceText.length - after.reduce((sum, turn) => sum + turn.text.length, 0);
+  const before = recentTurns(history.slice(0, sourceIndex), remaining);
+  return [...before, { from: 'contact', text: sourceText }, ...after];
+}
+
 
 /** Keep conversation rules from the selected file. Case material stays outside the system instructions. */
 export function buildReplyMessages(
@@ -173,12 +203,25 @@ export function buildReplyMessages(
   currentTurn?: readonly string[],
   memory?: ReplyOfferMemory,
   context?: ReplyInvestigationContext,
+  output: ReplyOutputMode = 'decision',
 ): ChatMessage[] {
   const systemPrompt = typeof prompt === 'string' ? prompt : prompt.text;
   const production = typeof prompt !== 'string' || prompt === REPLY_SYSTEM_PROMPT;
-  const modelInstructions = context && production
-    ? systemPrompt.trimEnd() + '\n\n' + INVESTIGATION_OUTPUT_INSTRUCTIONS
-    : systemPrompt;
+  let modelInstructions = systemPrompt;
+  if (output === 'public_reply') {
+    modelInstructions += '\n\n' + PUBLIC_REPLY_INSTRUCTIONS;
+  } else if (context && production) {
+    modelInstructions = systemPrompt.trimEnd() + '\n\n' + INVESTIGATION_OUTPUT_INSTRUCTIONS;
+  }
+  if (context?.dispatchIntent && production && output === 'decision') {
+    modelInstructions += '\nThe officer requested a message now. For reply or retry, respond to the latest sender turn. A short acknowledgement is enough when there is no question. For follow_up, write a new, natural follow-up to the recent exchange. Choose a public reply when the conversation can continue safely. Keep officer actions private and use the usual review decisions when needed.';
+  }
+  if (correction === SILENCE_EXPLANATION_REQUEST && output === 'decision') {
+    modelInstructions += '\nYour previous decision chose silence without silence_explanation. Decide again. If Ali still should not reply, give the precise silence_reason and a one-sentence silence_explanation for the officer.';
+  }
+  if (context?.attachmentKinds?.length) {
+    modelInstructions += '\nThe latest attachment arrived without a caption. You know only its type. Ask the sender naturally for the information in text, without claiming to have seen or heard the contents.';
+  }
   const messages: ChatMessage[] = [{ role: 'system', content: modelInstructions }];
   let projection = history;
   if (currentTurn?.length) {
@@ -188,17 +231,22 @@ export function buildReplyMessages(
       projection = [...history.slice(0, start), { from: 'owner', text: NO_REPLY }, ...history.slice(start)];
     }
   }
-  const investigationData = context?.dispatchBrief || context?.paymentLinks?.length || context?.meetingArranged
+  const dispatchBrief = output === 'decision' ? context?.dispatchBrief : undefined;
+  const paymentLinks = output === 'decision' ? context?.paymentLinks : undefined;
+  const investigationData = context && (context.dispatchIntent || dispatchBrief || paymentLinks?.length || context.meetingArranged || context.attachmentKinds?.length)
     ? JSON.stringify({
-      officer_brief: context.dispatchBrief && maskProjectName(context.dispatchBrief),
-      payment_link_candidates: context.paymentLinks,
+      officer_dispatch_request: context.dispatchIntent,
+      officer_brief: dispatchBrief && maskProjectName(dispatchBrief),
+      payment_link_candidates: paymentLinks,
+      attachment_kinds: context.attachmentKinds,
       ...(context.meetingArranged && { meeting_arranged: true, meeting_day_confirmed: context.meetingDayConfirmed === true }),
     })
     : '';
   const totalBudget = historyChars ?? historyCharsFor(contextTokens, modelInstructions);
   // A briefing or candidate must never displace the sender's fresh message.
   const budget = Math.max(Math.min(MIN_HISTORY_CHARS, totalBudget), totalBudget - investigationData.length);
-  let kept = recentTurns(projection, budget);
+  const selectTurns = context?.dispatchIntent === 'follow_up' ? followUpTurns : recentTurns;
+  let kept = selectTurns(projection, budget);
   if (memory && production) {
     const source = [memory.offer, ...(memory.correction ? [memory.correction] : [])];
     if (!source.every(excerpt => kept.some(t => t.from === 'contact' && t.text.includes(maskProjectName(excerpt))))) {
@@ -207,7 +255,7 @@ export function buildReplyMessages(
       // Reserve room for the current question even if an embedder requests an unusually small budget.
       if (note.length < budget / 2) {
         messages.push({ role: 'user', content: note });
-        kept = recentTurns(projection, budget - note.length - 1);
+        kept = selectTurns(projection, budget - note.length - 1);
       }
     }
   }
@@ -298,32 +346,32 @@ function completionContent(status: number, body: string, expectedModel?: string)
   if (!completion.success || (expectedModel !== undefined && completion.data.model !== expectedModel)) {
     throw new ReplyGenerationError('invalid_response');
   }
-  return completion.data.choices[0]?.message.content ?? '';
+  return completion.data.choices[0].message.content;
 }
 
 /** An explicit plain-text evaluation prompt uses the legacy text format, outside the production decision path. */
 export function parseGeneratedReply(raw: string): string | null {
   const reply = visibleReply(raw);
-  if (!reply) throw new ReplyGenerationError('empty_reply');
+  if (!reply) throw new InvalidReplyDraftError('empty_reply');
   if (reply === NO_REPLY) return null;
-  if (hasInternalReplyContent(reply)) throw new ReplyGenerationError('invalid_response');
-  if (NO_REPLY_MARKER.test(reply)) throw new ReplyGenerationError('invalid_response');
+  if (hasInternalReplyContent(reply)) throw new InvalidReplyDraftError('invalid_response');
   return shorten(reply);
 }
 
 export function createLmStudioReplyGenerator(options: LmStudioReplyOptions): ReplyGenerator {
   const url = `${loopbackBaseUrl(options.baseUrl)}/chat/completions`;
   const send = options.fetch ?? fetch;
-  const configuredPrompt = options.systemPrompt === REPLY_SYSTEM_PROMPT ? currentAliPrompt() : options.systemPrompt;
+  const configuredPrompt = options.systemPrompt === REPLY_SYSTEM_PROMPT ? undefined : options.systemPrompt;
 
-  const decide: NonNullable<ReplyGenerator['decide']> = async (history, signal, correction, currentTurn, memory, context, turnPrompt = currentAliPrompt()) => {
+  const complete = async (output: ReplyOutputMode, args: Parameters<ReplyGenerator['generate']>) => {
+    const [history, signal, correction, currentTurn, memory, context, turnPrompt = currentAliPrompt()] = args;
     if (signal.aborted) throw new ReplyGenerationError('reply_aborted');
     const prompt = configuredPrompt ?? turnPrompt;
     const timeout = AbortSignal.timeout(options.timeoutMs);
     const body = JSON.stringify({
       model: options.model,
-      messages: buildReplyMessages(history, prompt, undefined, correction, options.contextTokens, currentTurn, memory, context),
-      response_format: typeof prompt === 'string' ? undefined : ALI_RESPONSE_FORMAT,
+      messages: buildReplyMessages(history, prompt, undefined, correction, options.contextTokens, currentTurn, memory, context, output),
+      response_format: output === 'public_reply' ? ALI_PUBLIC_REPLY_FORMAT : typeof prompt === 'string' ? undefined : ALI_RESPONSE_FORMAT,
       temperature: TEMPERATURE,
       max_tokens: MAX_OUTPUT_TOKENS,
       reasoning_effort: 'none',
@@ -341,6 +389,10 @@ export function createLmStudioReplyGenerator(options: LmStudioReplyOptions): Rep
       throw failureOf(error, signal, timeout);
     }
     const content = completionContent(status, text, options.requireModelMatch ? options.model : undefined);
+    return { content, prompt };
+  };
+  const decide: NonNullable<ReplyGenerator['decide']> = async (...args) => {
+    const { content, prompt } = await complete('decision', args);
     if (typeof prompt !== 'string') return parseAliDecision(content, prompt.minimumDistinctIndicators);
     const reply = parseGeneratedReply(content);
     return reply === null ? { kind: 'silence', reason: 'reason_unavailable' } : { kind: 'reply', text: reply };
@@ -350,5 +402,9 @@ export function createLmStudioReplyGenerator(options: LmStudioReplyOptions): Rep
     model: options.model,
     decide,
     generate: async (...args: Parameters<ReplyGenerator['generate']>) => publicReplyFromDecision(await decide(...args)),
+    async composePublicReply(...args: Parameters<ReplyGenerator['generate']>) {
+      const { content } = await complete('public_reply', args);
+      return parseAliPublicReply(content);
+    },
   });
 }

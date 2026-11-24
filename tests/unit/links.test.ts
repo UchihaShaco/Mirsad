@@ -4,8 +4,10 @@ import {
   extractUrlTokens,
   hostOfNormalizedLink,
   lineAt,
+  maskUrls,
   normalizeHost,
   normalizeLink,
+  normalizeTelegramLink,
   urlTokenOffset,
 } from '../../src/domain/links.ts';
 
@@ -93,6 +95,14 @@ describe('extractUrlTokens', () => {
   it('ignores host-like words without a scheme or www., hosts without a dot, and repeats', () => {
     expect(extractUrlTokens('Visit shop.test or https://localhost/pay')).toEqual([]);
     expect(extractUrlTokens('https://pay.shop.test/a then https://pay.shop.test/a again')).toEqual(['https://pay.shop.test/a']);
+  });
+
+  it('recognizes explicit single-label destinations in Telegram and masks them during assessment', () => {
+    const url = 'https://TestShop/order/42';
+    expect(extractUrlTokens('Visit ' + url + '.', normalizeTelegramLink)).toEqual([url]);
+    expect(normalizeTelegramLink(url + '#top')).toBe('testshop/order/42');
+    expect(maskUrls(url, normalizeTelegramLink).trim()).toBe('');
+    expect(extractUrlTokens('TestShop/order/42', normalizeTelegramLink)).toEqual([]);
   });
 });
 

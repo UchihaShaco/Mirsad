@@ -1,6 +1,16 @@
 /** Inbox grouping and the multi-select for Dispatch (pure; types in inbox.d.ts). Inputs are never changed. */
+import { evidenceItemsFor, reviewWarningLabel } from '../format.js';
 
 const compareIds = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+/** The Dispatch API accepts at most this many chats in a single request. */
+export const DISPATCH_LIMIT = 100;
+
+/** Manual Dispatch confirms each selected Telegram participant's existing permission. */
+export function telegramDispatchRequest(target) {
+  const request = { participantPermissionRecorded: true, replyAgain: true };
+  return target ? { ...request, replyToMessageId: target.messageId, replyToHeadPosition: target.headPosition } : request;
+}
 
 /** Most recent activity first; ISO-8601 UTC timestamps of one format compare as strings. */
 function byRecentActivity(a, b) {
@@ -8,9 +18,10 @@ function byRecentActivity(a, b) {
   return a.lastActivityAt < b.lastActivityAt ? 1 : -1;
 }
 
-/** A single captured item can be informational. The service exposes officerReview when a decision is actionable. */
+/** The review filter also includes unacknowledged warnings while automatic replies continue. */
 export function needsOfficerReview(chat) {
-  return chat.telegramReplyHold.officerReview !== null;
+  const hold = chat.telegramReplyHold;
+  return hold.officerReview !== null || evidenceItemsFor(hold).some(item => reviewWarningLabel(item.reason));
 }
 
 function visibleInFilter(chat, filter) {
@@ -37,8 +48,13 @@ export function toggleSelection(selection, chatId, selected) {
 
 /** A resolved review must leave the visible batch selection when the queue refreshes. */
 export function pruneSelection(selection, chats, filter = 'all') {
-  const listed = new Set(chats.filter(chat => visibleInFilter(chat, filter)).map((chat) => chat.id));
+  const listed = selectableChatIds(chats, filter);
   return new Set([...selection].filter((chatId) => listed.has(chatId)));
+}
+
+/** The current listed conversations; historical test entries are separate links without selection controls. */
+export function selectableChatIds(chats, filter = 'all') {
+  return new Set(chats.filter(chat => visibleInFilter(chat, filter)).map(chat => chat.id));
 }
 
 /** Resolve a conversation action against both the route and loaded timeline, even with unrelated batch selections. */

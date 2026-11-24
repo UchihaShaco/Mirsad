@@ -120,7 +120,7 @@ export const ChatWatchlistMatch = z.object({
 });
 export type ChatWatchlistMatch = z.infer<typeof ChatWatchlistMatch>;
 
-const TelegramReviewReason = z.enum(['document', 'location', 'payment_link', 'bank_details', 'conversation_review', 'model_payment_link']);
+const TelegramReviewReason = z.enum(['document', 'location', 'link', 'payment_link', 'bank_details', 'conversation_review', 'model_payment_link']);
 const MeetingSource = z.object({ messageId: id, messageEventId: id });
 const LowerConcern = z.object({
   kind: z.literal('meeting_arranged'), assessedAt: timestamp,
@@ -191,20 +191,52 @@ export const DispatchRequest = z.object({
     .max(LIMITS.dispatchMax)
     .refine((ids) => new Set(ids).size === ids.length, { message: 'chatIds must be unique' }),
   officerContext: OfficerContext.nullable().optional(),
-  participantPermissionRecorded: z.literal(true).optional(),
+  participantPermissionRecorded: z.literal(true).optional().describe('The officer confirms that each selected Telegram participant has already consented in that chat to AI replies, fraud screening and the configured AI provider.'),
   expectedTestMode: z.literal(true).optional(),
+  replyAgain: z.literal(true).optional().describe('Explicitly request a message in each eligible selected chat, including a retry or follow-up if the conversation was already answered.'),
+  replyToMessageId: id.optional().describe('The specific contact message the officer chose to retry or follow up on.'),
+  replyToHeadPosition: z.number().int().positive().optional().describe('The timeline target’s headPosition when the officer chose it, including message changes and officer decisions.'),
 }).refine(({ chatIds, officerContext }) => officerContext === undefined || chatIds.length === 1, {
   path: ['officerContext'], message: 'Select one chat to set or clear an officer briefing.',
-}).refine(body => !body.participantPermissionRecorded || body.chatIds.length === 1, {
-  path: ['participantPermissionRecorded'], message: 'Record participant permission for one selected chat.',
 }).refine(body => !body.expectedTestMode || body.participantPermissionRecorded, {
   path: ['expectedTestMode'], message: 'Test dispatch requires recorded participant permission.',
+}).refine(body => !body.replyToMessageId || body.chatIds.length === 1, {
+  path: ['replyToMessageId'], message: 'Select one chat when specifying a particular message.',
+}).refine(body => !body.replyToMessageId || body.replyAgain, {
+  path: ['replyToMessageId'], message: 'Select a specific message only when asking for another reply.',
+}).refine(body => body.replyToHeadPosition === undefined || body.replyToMessageId !== undefined, {
+  path: ['replyToHeadPosition'], message: 'A conversation position requires a specific reply target.',
 });
 export type DispatchRequest = z.infer<typeof DispatchRequest>;
+
+/**
+ * What a Dispatch did in a chat on the linked live Telegram account. `reply` is `queued` once a reply request is on
+ * record for the reply worker; `sent` is reported later, by the timeline, when Telegram confirmed the message.
+ */
+export const TelegramDispatchOutcome = z.object({
+  permission: z.enum(E.TELEGRAM_AI_PERMISSIONS),
+  /** Whether Ali answers the contact's future messages without another Dispatch, or what stops him. */
+  automaticReplies: z.enum(E.TELEGRAM_AUTOMATIC_STATES),
+  reply: z.enum(['queued', 'none']),
+  kind: z.enum(E.TELEGRAM_REPLY_REQUEST_KINDS).optional(),
+  /** Why no reply was queued; null when one was. */
+  reason: z.enum(E.TELEGRAM_NO_REPLY_REASONS).nullable(),
+  /** True when the officer can still ask for a reply by confirming a deliberate Dispatch (`replyAgain`). */
+  confirmable: z.boolean(),
+  requestId: z.string().nullable(),
+  /** The contact's message the request refers to. */
+  messageId: z.string().nullable(),
+});
+export type TelegramDispatchOutcome = z.infer<typeof TelegramDispatchOutcome>;
+
 export const DispatchResponse = z.object({
   dispatchId: z.string(),
   results: z.array(
-    z.object({ chatId: z.string(), status: z.enum(E.DISPATCH_OUTCOMES), aiMode: AiMode, revision }),
+    z.object({
+      chatId: z.string(), status: z.enum(E.DISPATCH_OUTCOMES), aiMode: AiMode, revision,
+      /** Present only for a chat on the linked live Telegram account. */
+      telegram: TelegramDispatchOutcome.optional(),
+    }),
   ),
 });
 export type DispatchResponse = z.infer<typeof DispatchResponse>;
@@ -377,9 +409,39 @@ export const CaseReferenceRequest = z.object({
 export type CaseReferenceRequest = z.infer<typeof CaseReferenceRequest>;
 export const CaseReferenceResponse = z.object({ caseReference: CaseReference, findingsCreated: z.number().int().min(0) });
 
+/**
+ * Replies in a chat on the linked live Telegram account, as the officer needs them before and after Dispatch: the
+ * permission on record, whether future messages are answered automatically, where the contact's latest message stands,
+ * and the officer's latest reply request with its outcome.
+ */
+export const TelegramReplies = z.object({
+  permission: z.enum(E.TELEGRAM_AI_PERMISSIONS),
+  automatic: z.enum(E.TELEGRAM_AUTOMATIC_STATES),
+  target: z.object({
+    messageId: z.string(), state: z.enum(E.TELEGRAM_REPLY_TARGET_STATES), headPosition: z.number().int().positive(),
+  }).nullable(),
+  /** Why a Dispatch would queue nothing right now even if the officer confirmed it; null when it could. */
+  blocked: z.enum(E.TELEGRAM_NO_REPLY_REASONS).nullable(),
+  request: z.object({
+    id: z.string(),
+    messageId: z.string().nullable(),
+    kind: z.enum(E.TELEGRAM_REPLY_REQUEST_KINDS),
+    status: z.enum(E.TELEGRAM_REPLY_REQUEST_STATUSES),
+    requestedAt: timestamp,
+    requestedBy: PrincipalRef.nullable(),
+    /** The message Telegram confirmed, once `status` is `sent`. */
+    replyMessageId: z.string().nullable(),
+    /** The failure's code, once `status` is `failed`; never message text. */
+    failureCode: z.string().nullable(),
+  }).nullable(),
+});
+export type TelegramReplies = z.infer<typeof TelegramReplies>;
+
 export const Timeline = z.object({
   chat: ChatSummary,
-  telegramAiPermission: z.enum(['approved', 'needed', 'withdrawn']).optional(),
+  telegramAiPermission: z.enum(E.TELEGRAM_AI_PERMISSIONS).optional(),
+  /** Present only for a chat on the linked live Telegram account. */
+  telegramReplies: TelegramReplies.optional(),
   testSession: z.object({ position: z.number().int().positive(), previousMessageIds: z.array(id), previousReferenceIds: z.array(id) }).nullable(),
   messages: z.array(Message),
   messageEvents: z.array(MessageEvent),
@@ -473,7 +535,7 @@ export const Status = z.object({
       readiness: z.enum(E.READINESS_STATES),
       readinessRecordedAt: timestamp.nullable(),
     }),
-    whatsapp: z.object({ status: z.literal('not_started'), gate: z.string() }),
+    whatsapp: z.object({ status: z.enum(['not_started', 'demo_listening', 'demo_unavailable']), gate: z.string() }),
   }),
 });
 export type Status = z.infer<typeof Status>;

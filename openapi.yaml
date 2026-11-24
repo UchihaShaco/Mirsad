@@ -537,11 +537,11 @@ paths:
   /v1/dispatches:
     post:
       operationId: post_v1Dispatches
-      summary: Start AI on selected chats
+      summary: Dispatch selected chats and request eligible Telegram replies
       tags:
         - contract
       security: *a1
-      description: Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.
+      description: Start eligible chats and return one receipt per chat. On live Telegram, participantPermissionRecorded=true is the officer’s attestation that every selected Telegram participant has already agreed to AI replies and screening through the configured provider for that chat. Each eligible chat records the attestation. replyAgain=true requests an immediate reply, retry or follow-up. Missing permission is reported to the officer. Approved chats continue answering eligible DMs. expectedTestMode=true also checks the invitation setting. To pin a particular message and timeline revision, use replyToMessageId and replyToHeadPosition with one chat. Telegram’s reply window, officer controls, opt-outs and review holds apply. A queued request has a requestId. Consult the timeline for delivery. An optional officer briefing applies to one chat. Send null to clear the briefing. Reuse the same Idempotency-Key for transport retries.
       parameters:
         - &a3
           name: Idempotency-Key
@@ -1532,7 +1532,7 @@ paths:
       tags:
         - contract
       security: *a1
-      description: Messages, message events, case actions, findings, case references and the stream cursor, each ordered by `position`.
+      description: Messages, message events, case actions, findings, case references and the stream cursor. Live Telegram chats also report permission, ongoing automatic replies and the most recent Dispatch delivery outcome.
       parameters:
         - name: chatId
           in: path
@@ -2768,11 +2768,26 @@ components:
               maxLength: 500
             - type: "null"
         participantPermissionRecorded:
+          description: The officer confirms that each selected Telegram participant has already consented in that chat to AI replies, fraud screening and the configured AI provider.
           type: boolean
           const: true
         expectedTestMode:
           type: boolean
           const: true
+        replyAgain:
+          description: Explicitly request a message in each eligible selected chat, including a retry or follow-up if the conversation was already answered.
+          type: boolean
+          const: true
+        replyToMessageId:
+          description: The specific contact message the officer chose to retry or follow up on.
+          type: string
+          minLength: 1
+          maxLength: 200
+        replyToHeadPosition:
+          description: The timeline target’s headPosition when the officer chose it, including message changes and officer decisions.
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
       required:
         - chatIds
     DispatchByPhoneRequest:
@@ -3089,6 +3104,7 @@ components:
       enum:
         - fixture_replay
         - telegram_business_live
+        - whatsapp_business_live
         - approved_import
         - host_intake
         - officer_composer
@@ -3286,6 +3302,7 @@ components:
                       enum:
                         - document
                         - location
+                        - link
                         - payment_link
                         - bank_details
                         - conversation_review
@@ -3320,6 +3337,7 @@ components:
                     enum:
                       - document
                       - location
+                      - link
                       - payment_link
                       - bank_details
                       - conversation_review
@@ -3639,6 +3657,85 @@ components:
                 type: integer
                 minimum: 1
                 maximum: 9007199254740991
+              telegram:
+                type: object
+                properties:
+                  permission:
+                    type: string
+                    enum:
+                      - approved
+                      - needed
+                      - withdrawn
+                  automaticReplies:
+                    type: string
+                    enum:
+                      - active
+                      - not_started
+                      - paused
+                      - officer_control
+                      - opted_out
+                      - needs_permission
+                      - review_hold
+                      - replies_off
+                      - replies_offline
+                  reply:
+                    type: string
+                    enum:
+                      - queued
+                      - none
+                  kind:
+                    type: string
+                    enum:
+                      - reply
+                      - retry
+                      - follow_up
+                      - consent_notice
+                      - ask_for_text
+                  reason:
+                    anyOf:
+                      - type: string
+                        enum:
+                          - not_started
+                          - paused
+                          - officer_control
+                          - opted_out
+                          - needs_permission
+                          - awaiting_permission
+                          - review_hold
+                          - replies_off
+                          - replies_offline
+                          - no_message
+                          - latest_not_answerable
+                          - outside_reply_window
+                          - before_reply_scope
+                          - bank_evidence
+                          - left_unanswered
+                          - ai_skipped
+                          - ai_failed
+                          - reviewed
+                          - already_answered
+                          - send_in_progress
+                          - target_changed
+                      - type: "null"
+                  confirmable:
+                    type: boolean
+                  requestId:
+                    type:
+                      - string
+                      - "null"
+                  messageId:
+                    type:
+                      - string
+                      - "null"
+                required:
+                  - permission
+                  - automaticReplies
+                  - reply
+                  - reason
+                  - confirmable
+                  - requestId
+                  - messageId
+                additionalProperties: false
             required:
               - chatId
               - status
@@ -4019,6 +4116,8 @@ components:
             - chat_test_started
             - lower_concern_assessed
             - telegram_dispatch_permission_recorded
+            - telegram_dispatch_approved
+            - telegram_reply_requested
             - dispatch_started
             - control_pause
             - control_take_over
@@ -4221,6 +4320,140 @@ components:
             - approved
             - needed
             - withdrawn
+        telegramReplies:
+          type: object
+          properties:
+            permission:
+              type: string
+              enum:
+                - approved
+                - needed
+                - withdrawn
+            automatic:
+              type: string
+              enum:
+                - active
+                - not_started
+                - paused
+                - officer_control
+                - opted_out
+                - needs_permission
+                - review_hold
+                - replies_off
+                - replies_offline
+            target:
+              anyOf:
+                - type: object
+                  properties:
+                    messageId:
+                      type: string
+                    state:
+                      type: string
+                      enum:
+                        - unanswered
+                        - left_unanswered
+                        - skipped
+                        - failed
+                        - reviewed
+                        - answered
+                    headPosition:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                  required:
+                    - messageId
+                    - state
+                    - headPosition
+                  additionalProperties: false
+                - type: "null"
+            blocked:
+              anyOf:
+                - type: string
+                  enum:
+                    - not_started
+                    - paused
+                    - officer_control
+                    - opted_out
+                    - needs_permission
+                    - awaiting_permission
+                    - review_hold
+                    - replies_off
+                    - replies_offline
+                    - no_message
+                    - latest_not_answerable
+                    - outside_reply_window
+                    - before_reply_scope
+                    - bank_evidence
+                    - left_unanswered
+                    - ai_skipped
+                    - ai_failed
+                    - reviewed
+                    - already_answered
+                    - send_in_progress
+                    - target_changed
+                - type: "null"
+            request:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    messageId:
+                      type:
+                        - string
+                        - "null"
+                    kind:
+                      type: string
+                      enum:
+                        - reply
+                        - retry
+                        - follow_up
+                        - consent_notice
+                        - ask_for_text
+                    status:
+                      type: string
+                      enum:
+                        - queued
+                        - sent
+                        - skipped
+                        - failed
+                        - held
+                        - expired
+                        - superseded
+                    requestedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                    requestedBy:
+                      anyOf:
+                        - $ref: "#/components/schemas/PrincipalRef"
+                        - type: "null"
+                    replyMessageId:
+                      type:
+                        - string
+                        - "null"
+                    failureCode:
+                      type:
+                        - string
+                        - "null"
+                  required:
+                    - id
+                    - messageId
+                    - kind
+                    - status
+                    - requestedAt
+                    - requestedBy
+                    - replyMessageId
+                    - failureCode
+                  additionalProperties: false
+                - type: "null"
+          required:
+            - permission
+            - automatic
+            - target
+            - blocked
+            - request
+          additionalProperties: false
         testSession:
           anyOf:
             - type: object
@@ -4607,7 +4840,10 @@ components:
               properties:
                 status:
                   type: string
-                  const: not_started
+                  enum:
+                    - not_started
+                    - demo_listening
+                    - demo_unavailable
                 gate:
                   type: string
               required:

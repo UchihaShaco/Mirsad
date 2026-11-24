@@ -81,18 +81,27 @@ export function normalizeLink(value: string): string | null {
   return host === null ? null : `${host}${pathAndQueryAsWritten(written)}`;
 }
 
+/** Telegram warnings also cover explicit HTTP(S) links to single-label hosts. No lookup is needed. */
+export function normalizeTelegramLink(value: string): string | null {
+  const written = trimEdgePunctuation(value.trim());
+  const normalized = normalizeLink(written);
+  if (normalized !== null || !WEB_SCHEME.test(written)) return normalized;
+  const host = parseWebUrl(written)?.hostname.replace(TRAILING_DOT, '');
+  return host ? `${host}${pathAndQueryAsWritten(written)}` : null;
+}
+
 export function hostOfNormalizedLink(normalized: string): string {
   const end = normalized.search(/[/\\]/);
   return end < 0 ? normalized : normalized.slice(0, end);
 }
 
-const isUrlToken = (token: string): boolean => URL_START.test(token) && normalizeHost(token) !== null;
+const isUrlToken = (token: string, normalize: typeof normalizeLink): boolean => URL_START.test(token) && normalize(token) !== null;
 
 /** http, https and www. URLs written as whole tokens, without edge punctuation, each once, in order. */
-export function extractUrlTokens(text: string): string[] {
+export function extractUrlTokens(text: string, normalize = normalizeLink): string[] {
   const urls = tokenize(text)
     .map((token) => trimEdgePunctuation(token.text))
-    .filter(isUrlToken);
+    .filter(token => isUrlToken(token, normalize));
   return [...new Set(urls)];
 }
 
@@ -102,9 +111,9 @@ export function urlTokenOffset(text: string, url: string): number {
 }
 
 /** The text with every URL token blanked out (same length), so cues and numbers inside links are not read as prose. */
-export function maskUrls(text: string): string {
+export function maskUrls(text: string, normalize = normalizeLink): string {
   return tokenize(text)
-    .filter((token) => isUrlToken(trimEdgePunctuation(token.text)))
+    .filter((token) => isUrlToken(trimEdgePunctuation(token.text), normalize))
     .reduce((masked, token) => masked.slice(0, token.start) + ' '.repeat(token.end - token.start) + masked.slice(token.end), text);
 }
 

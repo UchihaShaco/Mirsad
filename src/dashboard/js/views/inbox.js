@@ -1,8 +1,15 @@
-/** The inbox: the New inbound queue on top, then the open chats, each with a checkbox for Dispatch. */
+/**
+ * The inbox: the New inbound queue on top, then the open chats, each with a checkbox for Dispatch. A row says who holds
+ * the chat (its mark and mode) and what is waiting for the officer, in the words the conversation header uses.
+ */
 import { bdi, clear, h, withFocus } from '../dom.js';
-import { AI_MODE_LABELS, evidenceCountLabel, evidenceItemsFor, formatTime } from '../format.js';
-import { briefingChatId, groupInbox, needsOfficerReview } from '../state/inbox.js';
+import { AI_MODE_LABELS, evidenceCountLabel, formatTime, reviewWarningLabel } from '../format.js';
+import { controlState, reviewQueue } from '../state/attention.js';
+import { briefingChatId, DISPATCH_LIMIT, groupInbox, needsOfficerReview } from '../state/inbox.js';
 import { chatHref } from '../state/route.js';
+
+/** Short channel marks for the dense list; the full channel name stays in the row for assistive tools. */
+const CHANNEL_CODES = { telegram: 'TG', whatsapp: 'WA' };
 
 /** The checkbox names itself from the chat label, so every assistive tool announces which chat it selects. */
 function selector(chat, state, handlers) {
@@ -25,28 +32,55 @@ function activityTime(iso, today) {
   return h('time', { className: 'chat-activity', datetime: iso, title: fullTime, 'aria-label': `Last activity ${fullTime}`, text });
 }
 
-function chatItem(chat, state, handlers, today) {
+function channelMark(chat) {
+  const code = CHANNEL_CODES[chat.source] ?? chat.channelLabel.slice(0, 2).toUpperCase();
+  return h('span', { className: 'channel', title: chat.channelLabel, dataset: { code } }, [h('span', { className: 'visually-hidden', text: chat.channelLabel })]);
+}
+
+function contactMark(label, rowNumber) {
+  const words = label.match(/\p{L}[\p{L}\p{M}]*/gu) ?? [];
+  const initials = [words[0], words.length > 1 ? words.at(-1) : '']
+    .map(word => word?.match(/^\p{L}\p{M}*/u)?.[0] ?? '').join('').toLocaleUpperCase();
+  return h('span', { className: 'chat-row-mark', 'aria-hidden': 'true' }, [
+    h('span', { className: 'contact-mark', dir: 'auto', text: initials }),
+    h('span', { className: 'chat-row-number', dir: 'ltr', text: String(rowNumber).padStart(2, '0') }),
+  ]);
+}
+
+/** Who holds the chat. Replies held for review is its own state: the AI is active but waiting for the officer. */
+function controlChips(chat, control, me) {
+  if (control === 'ai_held') return [h('span', { className: 'ai-mode mode-held', text: 'Replies held' })];
+  const mode = h('span', { className: `ai-mode mode-${chat.aiMode}`, text: AI_MODE_LABELS[chat.aiMode] ?? chat.aiMode });
+  if (chat.aiMode !== 'officer_control' || chat.controller === null) return [mode];
+  const mine = Boolean(me) && chat.controller.id === me.id;
+  return [mode, h('span', { className: 'chat-controller' }, [mine ? h('span', { text: 'you' }) : bdi(chat.controller.displayName)])];
+}
+
+function chatItem(chat, state, handlers, today, rowNumber) {
   const current = chat.id === state.selectedChatId;
-  const evidence = evidenceItemsFor(chat.telegramReplyHold);
-  const hasPaymentFlag = evidence.some(item => item.reason === 'model_payment_link');
+  const control = controlState(chat, state.me);
+  const { items, blocking } = reviewQueue(chat.telegramReplyHold);
+  const warnings = items.map(item => reviewWarningLabel(item.reason)).filter(Boolean);
   const link = h('a', { href: chatHref(chat.id), className: 'chat-link', 'aria-current': current ? 'page' : null, dataset: { focusKey: `open:${chat.id}` } }, [
     bdi(chat.displayLabel),
   ]);
-  const heading = h('div', { className: 'chat-item-heading' }, [link, activityTime(chat.lastActivityAt, today)]);
-  const repliesHeld = chat.aiMode === 'ai_active' && needsOfficerReview(chat);
+  const heading = h('div', { className: 'chat-item-heading' }, [link, activityTime(chat.lastActivityAt, today), selector(chat, state, handlers)]);
   const meta = h('p', { className: 'chat-meta' }, [
-    h('span', { className: 'badge', text: chat.channelLabel }),
-    repliesHeld ? h('span', { className: 'flag', text: 'Replies held' })
-      : h('span', { className: `ai-mode mode-${chat.aiMode}`, text: AI_MODE_LABELS[chat.aiMode] ?? chat.aiMode }),
+    channelMark(chat),
+    ...controlChips(chat, control, state.me),
     chat.telegramReplyHold.contactOptedOut ? h('span', { className: 'flag', text: 'Contact opted out' }) : null,
-    hasPaymentFlag ? h('span', { className: 'payment-review-flag', text: 'Payment link needs review' }) : null,
-    chat.lowerConcern ? h('span', { className: 'lower-concern-badge', text: 'Lower concern' }) : null,
-    evidence.length > 0 && !hasPaymentFlag ? h('span', { className: 'flag', text: evidenceCountLabel(evidence.length) }) : null,
+    warnings.length ? h('span', { className: 'evidence-warning', text: warnings.length === 1 ? warnings[0] : `${warnings.length} warnings` }) : null,
+    items.length > warnings.length
+      ? h('span', { className: blocking ? 'review-chip review-chip-blocking' : 'review-chip', text: evidenceCountLabel(items.length) }) : null,
     chat.watchlistMatches.length ? h('span', { className: 'badge badge-match', text: 'Watchlist match' }) : null,
+    chat.lowerConcern ? h('span', { className: 'lower-concern-badge', text: 'Lower concern' }) : null,
     chat.review.state === 'unavailable' ? h('span', { className: 'review-note-unavailable', text: 'Review unavailable' }) : null,
   ]);
   const body = h('div', { className: 'chat-item-body' }, [heading, meta]);
-  return h('li', { className: current ? 'chat-item current' : 'chat-item', dataset: { chatId: chat.id } }, [selector(chat, state, handlers), body]);
+  return h('li', {
+    className: current ? 'chat-item current' : 'chat-item',
+    dataset: { chatId: chat.id, control, review: blocking ? 'blocking' : items.length > 0 ? 'captured' : 'none' },
+  }, [contactMark(chat.displayLabel, rowNumber), body]);
 }
 
 export function renderDispatchTools(refs, state) {
@@ -68,10 +102,29 @@ export function renderDispatchTools(refs, state) {
   refs.generateOpener.disabled = busy;
 }
 
-function fillList(list, chats, state, handlers, today, emptyText) {
+function fillList(list, chats, state, handlers, today, firstNumber, emptyText) {
   clear(list);
+  list.start = firstNumber;
   if (chats.length === 0) list.append(h('li', { className: 'empty', text: emptyText }));
-  for (const chat of chats) list.append(chatItem(chat, state, handlers, today));
+  for (const [index, chat] of chats.entries()) list.append(chatItem(chat, state, handlers, today, firstNumber + index));
+  const count = list.closest('.queue')?.querySelector('.queue-count');
+  if (count) count.textContent = state.inboxLoaded ? String(chats.length) : '';
+}
+
+/**
+ * A filter is its label and, once the inbox has loaded, a count. `urgent` marks a count that is waiting on the officer;
+ * `earlier` adds the previous tests kept under Lower concern.
+ */
+function fillFilter(button, label, count, { urgent = false, earlier = 0 } = {}) {
+  button.replaceChildren(h('span', { text: label }));
+  if (count === null) return;
+  // The spaces keep the label and the counts apart in the button's accessible name.
+  button.append(document.createTextNode(' '), h('span', { className: urgent ? 'count count-urgent' : 'count', text: String(count) }));
+  if (earlier > 0) {
+    button.append(document.createTextNode(' '), h('span', { className: 'count count-earlier' }, [
+      h('span', { 'aria-hidden': 'true', text: `+${earlier}` }), h('span', { className: 'visually-hidden', text: `and ${earlier} previous` }),
+    ]));
+  }
 }
 
 export function renderInbox(refs, state, handlers) {
@@ -85,17 +138,26 @@ export function renderInbox(refs, state, handlers) {
   const reviewCount = state.chats.filter(needsOfficerReview).length;
   const today = new Date().toISOString().slice(0, 10);
   withFocus(refs.inbox, () => {
-    fillList(refs.newInboundList, newInbound, state, handlers, today, state.inboxLoaded ? 'No chats waiting.' : 'Loading…');
-    fillList(refs.openList, open, state, handlers, today, state.inboxLoaded ? 'No open chats.' : 'Loading…');
+    fillList(refs.newInboundList, newInbound, state, handlers, today, 1, state.inboxLoaded ? 'No chats waiting.' : 'Loading…');
+    fillList(refs.openList, open, state, handlers, today, newInbound.length + 1, state.inboxLoaded ? 'No open chats.' : 'Loading…');
     clear(refs.previousTestList);
-    for (const chat of previous) {
+    refs.previousTestList.start = newInbound.length + open.length + 1;
+    for (const [index, chat] of previous.entries()) {
       const { agreement } = chat.previousLowerConcern.sources;
       const link = h('a', { className: 'chat-link', href: chatHref(chat.id, agreement.messageId, agreement.messageEventId),
         dataset: { focusKey: `previous:${chat.id}` } }, [bdi(chat.displayLabel)]);
-      refs.previousTestList.append(h('li', { className: 'chat-item' }, [h('div', { className: 'chat-item-body' }, [
-        link, h('span', { className: 'hint', text: `Meeting arrangement · ${formatTime(chat.previousLowerConcern.assessedAt)}` }),
-      ])]));
+      refs.previousTestList.append(h('li', { className: 'chat-item chat-item-archived' }, [
+        contactMark(chat.displayLabel, refs.previousTestList.start + index),
+        h('div', { className: 'chat-item-body' }, [
+          link, h('span', { className: 'hint', text: `Meeting arrangement · ${formatTime(chat.previousLowerConcern.assessedAt)}` }),
+        ]),
+      ]));
     }
+    const loaded = state.inboxLoaded;
+    fillFilter(refs.inboxFilterAll, 'All chats', loaded ? state.chatsTotal : null);
+    fillFilter(refs.inboxFilterReview, 'Needs review', loaded ? reviewCount : null, { urgent: reviewCount > 0 });
+    fillFilter(refs.inboxFilterLowerConcern, 'Lower concern', loaded ? lowerCount : null, { earlier: previousCount });
+    refs.inboxFilterLowerConcern.title = previousCount ? `${lowerCount} current · ${previousCount} in previous tests` : '';
   });
   refs.previousTestQueue.hidden = previous.length === 0;
   refs.newInboundList.closest('.queue').hidden = (lower || reviewing) && newInbound.length === 0;
@@ -103,10 +165,6 @@ export function renderInbox(refs, state, handlers) {
   refs.inboxFilterAll.setAttribute('aria-pressed', String(!reviewing && !lower));
   refs.inboxFilterReview.setAttribute('aria-pressed', String(reviewing));
   refs.inboxFilterLowerConcern.setAttribute('aria-pressed', String(lower));
-  refs.inboxFilterAll.textContent = state.inboxLoaded ? `All chats (${state.chatsTotal})` : 'All chats';
-  refs.inboxFilterReview.textContent = state.inboxLoaded ? `Needs review (${reviewCount})` : 'Needs review';
-  const periods = previousCount ? `${lowerCount} current · ${previousCount} previous` : lowerCount;
-  refs.inboxFilterLowerConcern.textContent = state.inboxLoaded ? `Lower concern (${periods})` : 'Lower concern';
   refs.inboxFilterLowerConcern.disabled = state.pending !== null;
   refs.inboxFilterAll.disabled = state.pending !== null;
   refs.inboxFilterReview.disabled = state.pending !== null;
@@ -117,7 +175,13 @@ export function renderInbox(refs, state, handlers) {
   refs.queueScope.textContent = scope.join(' ');
   refs.queueScope.hidden = scope.length === 0;
   const selected = state.selection.size;
-  refs.batchTools.hidden = selected === 0;
-  refs.dispatchButton.disabled = selected === 0 || state.pending !== null;
-  refs.selectionCount.textContent = selected ? `${selected} selected` : '';
+  const selectable = newInbound.length + open.length;
+  const tooMany = selected > DISPATCH_LIMIT;
+  refs.selectAllChats.checked = selectable > 0 && selected === selectable;
+  refs.selectAllChats.indeterminate = selected > 0 && selected < selectable;
+  refs.selectAllChats.disabled = !state.inboxLoaded || selectable === 0 || state.pending !== null;
+  refs.dispatchButton.disabled = selected === 0 || tooMany || state.pending !== null;
+  refs.selectionCount.textContent = tooMany
+    ? `${selected} selected. Deselect ${selected - DISPATCH_LIMIT} or more to dispatch up to ${DISPATCH_LIMIT} at once.`
+    : selected ? `${selected} selected` : '';
 }

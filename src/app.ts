@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createBotSender, createTelegramEraser, isWellFormedBotToken, type BotApi, type BotSender, type TelegramEraser } from './adapters/telegram/bot-api.ts';
 import { createLiveConnector, LiveConnectorGateError, type LiveConnector } from './adapters/telegram/live-connector.ts';
+import type { WhatsAppSender } from './adapters/whatsapp/cloud.ts';
+import { startWhatsAppDemo, type WhatsAppDemo } from './adapters/whatsapp/demo.ts';
 import { createDefaultRenderer } from './capture/index.ts';
 import type { Config } from './config.ts';
 import { createHttpApp, startServer, type RunningServer } from './http/server.ts';
@@ -44,6 +46,7 @@ export interface AppOptions {
   /** Sender for opt-in Telegram replies; defaults to the real Bot API with the configured token. */
   telegramBotSender?: BotSender;
   telegramEraser?: TelegramEraser;
+  whatsappSender?: WhatsAppSender;
   /** Overrides the default reply generator for tests. */
   replyGenerator?: ReplyGenerator;
   /** How often the reply worker looks for a message to answer besides being woken. Tests set it long, so a missing wake shows. */
@@ -69,13 +72,14 @@ export interface AppDeps {
   streamKeepAliveMs: number;
   startedAt: string;
   telegramLive: { running(): boolean; repliesRunning(): boolean; forgetChat?(chatId: string): void };
+  whatsappDemoRunningFor?: (officerId: string) => boolean;
   telegramEraser?: TelegramEraser;
 }
 
 export interface App {
   readonly config: Config;
   fetch(request: Request): Promise<Response>;
-  listen(): Promise<{ url: string; port: number }>;
+  listen(): Promise<{ url: string; port: number; whatsappWebhookPort?: number }>;
   /** Resolves when both workers are idle and no woken work remains. */
   drain(): Promise<void>;
   close(): Promise<void>;
@@ -211,29 +215,54 @@ export async function createApp(options: AppOptions): Promise<App> {
   const filesPending = await flushErasedEvidence(deps.db, deps.evidenceStore);
   if (filesPending) logger.warn('erased_evidence_cleanup_pending', { count: filesPending });
   let server: RunningServer | null = null;
+  let whatsapp: WhatsAppDemo | null = null;
+  deps.whatsappDemoRunningFor = officerId => whatsapp?.officerId === officerId;
+  const wakeReview = deps.workers.review.wake;
+  deps.workers.review.wake = () => {
+    wakeReview();
+    whatsapp?.worker.wake();
+  };
   const http = createHttpApp(deps, () => server?.port ?? config.port);
   // Work left over from a previous run (pending captures and reviews) starts at once.
   workers.capture.wake();
   workers.review.wake();
   startLiveConnector(liveConnector, logger);
   startAiReplies(aiReplies, logger, deps.db);
-  const allIdle = (): boolean => workers.capture.isIdle() && workers.review.isIdle() && (aiReplies?.isIdle() ?? true);
+  const allIdle = (): boolean => workers.capture.isIdle() && workers.review.isIdle() && (aiReplies?.isIdle() ?? true)
+    && (whatsapp?.worker.isIdle() ?? true);
 
   return {
     config,
     fetch: async (request) => http.fetch(request),
     async listen() {
-      if (server) return { url: server.url, port: server.port };
+      if (server) return { url: server.url, port: server.port, ...(whatsapp && { whatsappWebhookPort: whatsapp.port }) };
       server = await startServer(http, config.host, config.port);
+      if (config.whatsappDemoInvalidSetting) {
+        logger.warn('whatsapp_demo_start_failed', { code: 'invalid_setting', setting: config.whatsappDemoInvalidSetting });
+      }
+      if (config.whatsappDemo) {
+        try {
+          whatsapp = await startWhatsAppDemo(deps, config.whatsappDemo, {
+            ...(options.whatsappSender && { sender: options.whatsappSender }),
+            ...(options.replyGenerator && { generator: options.replyGenerator }),
+          });
+          logger.info('whatsapp_demo_started', { port: whatsapp.port });
+        } catch (error) {
+          logger.warn('whatsapp_demo_start_failed', { code: (error as NodeJS.ErrnoException)?.code === 'EADDRINUSE'
+            ? 'webhook_port_in_use' : 'demo_setup_failed' });
+        }
+      }
       logger.info('server_listening', { host: config.host, port: server.port });
-      return { url: server.url, port: server.port };
+      return { url: server.url, port: server.port, ...(whatsapp && { whatsappWebhookPort: whatsapp.port }) };
     },
     async drain() {
       while (!allIdle()) {
-        await Promise.all([workers.capture.idle(), workers.review.idle(), aiReplies?.idle()]);
+        await Promise.all([workers.capture.idle(), workers.review.idle(), aiReplies?.idle(), whatsapp?.worker.idle()]);
       }
     },
     async close() {
+      await whatsapp?.close();
+      whatsapp = null;
       await liveConnector?.stop();
       await aiReplies?.stop();
       if (server) await server.close();

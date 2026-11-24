@@ -1,13 +1,9 @@
-# WhatsApp data mapping (preparation only)
+# WhatsApp fixture and import data mapping
 
-No WhatsApp code exists yet. This page fixes how a WhatsApp chat, from a labeled synthetic fixture or from an approved
-evidence import of a chat export, will map onto Mirsad's common intake event, so that the WhatsApp phase can start from
-it once its gate opens ([import-plan.md](import-plan.md)). Every WhatsApp event goes through the same intake API as
-Telegram: `POST /v1/ingest` and `POST /v1/chats/{chatId}/events` (design section 7), and through the shared adapter
-interface `ChannelAdapter.normalize(raw) -> IntakeEnvelope[]` (`src/ports/channel-adapter.ts`).
-
-There is no WhatsApp Business Platform connector: Meta's Business Messaging Policy prohibits law-enforcement agencies
-from using the platform, so this phase covers fixture replay and approved imports only.
+This mapping covers labeled synthetic fixtures and approved chat exports. The [import plan](import-plan.md) defines
+their verification gate. Imports use the common intake API and the shared `ChannelAdapter` interface.
+The [personal hackathon demo](demo.md) accepts signed callbacks on a dedicated listener and records those messages
+with `whatsapp_business_live` provenance.
 
 ## Source and capture method are separate
 

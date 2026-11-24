@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 14;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -59,6 +59,7 @@ export interface OpenDatabaseOptions {
 const SCHEMA_SQL = fs.readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
 const EVIDENCE_SOURCES_SQL = fs.readFileSync(new URL('./telegram-evidence-sources.sql', import.meta.url), 'utf8');
 const OFFICER_PASSWORDS_SQL = fs.readFileSync(new URL('./officer-passwords.sql', import.meta.url), 'utf8');
+const WHATSAPP_DEMO_SQL = fs.readFileSync(new URL('./whatsapp-demo.sql', import.meta.url), 'utf8');
 
 type Bindable = string | number | bigint | null | Uint8Array;
 
@@ -83,8 +84,11 @@ function plain<T>(row: unknown): T {
 function migrate(db: DatabaseSync): void {
   const version = db.prepare('PRAGMA user_version');
   if (Number(version.get()?.user_version) >= SCHEMA_VERSION) return;
-  db.exec('BEGIN IMMEDIATE');
+  // v11 rebuilds the referenced principals table to extend its CHECK constraint. Foreign keys
+  // must be disabled before BEGIN and the rebuilt database checked before publishing the change.
+  db.exec('PRAGMA foreign_keys = OFF');
   try {
+    db.exec('BEGIN IMMEDIATE');
     const current = Number(version.get()?.user_version);
     if (current === 0) db.exec(SCHEMA_SQL);
     if (current < 2) db.exec(EVIDENCE_SOURCES_SQL);
@@ -150,11 +154,28 @@ function migrate(db: DatabaseSync): void {
       );
       CREATE INDEX message_events_message_type_connector ON message_events(message_id,type,connector_id);
     `);
+    if (current < 11) {
+      db.exec(WHATSAPP_DEMO_SQL);
+      if (db.prepare('PRAGMA foreign_key_check').get()) throw new Error('migration_foreign_key_check_failed');
+    }
+    if (current < 12) db.exec(`
+      ALTER TABLE messages ADD COLUMN telegram_edit_is_direct INTEGER CHECK (telegram_edit_is_direct IN (0,1));
+    `);
+    if (current < 13) db.exec(`
+      ALTER TABLE telegram_pending_sends ADD COLUMN notice_policy_key TEXT;
+    `);
+    if (current < 14) db.exec(`
+      CREATE INDEX case_actions_chat_type_position ON case_actions(chat_id,type,position);
+      CREATE INDEX telegram_review_resolutions ON case_actions(chat_id,json_extract(detail,'$.reviewActionId'))
+        WHERE type='telegram_officer_review_resolved';
+    `);
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {
     if (db.isTransaction) db.exec('ROLLBACK');
     throw error;
+  } finally {
+    db.exec('PRAGMA foreign_keys = ON');
   }
 }
 

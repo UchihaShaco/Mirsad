@@ -360,7 +360,7 @@ describe('reply quiet period', () => {
     }
   });
 
-  it.each(['document', 'location', 'bank_details', 'stop'] as const)('cancels active generation on a handoff or contact opt-out (%s)', async (kind) => {
+  it.each(['document', 'location', 'bank_details', 'stop'] as const)('rechecks a pending reply when the contact supplies new material or opts out (%s)', async (kind) => {
     const stand = standIns();
     const generate = vi.spyOn(stand.generator, 'generate');
     const h = await Harness.start({ ...LIVE_ENV, TELEGRAM_AI_AUTO_START: 'true' }, stand);
@@ -388,11 +388,12 @@ describe('reply quiet period', () => {
       stand.generator.releaseHeld();
       stand.clock.advance(3_000);
       await h.app.drain();
-      expect(stand.sender.sent).toHaveLength(0);
+      expect(stand.sender.sent).toHaveLength(kind === 'location' ? 1 : 0);
       expect(await h.caseActionsOf(CHATS.a, 'ai_reply_failed')).toHaveLength(0);
       if (kind !== 'stop') {
         const hold = (await h.chatFor(CHATS.a))?.telegramReplyHold;
-        expect(hold.officerReview).toBeTruthy();
+        if (kind === 'bank_details') expect(hold.officerReview?.reason).toBe('bank_details');
+        else expect(hold.officerReview).toBeNull();
         expect(hold.evidenceItems.map((item: Json) => item.reason).sort())
           .toEqual(kind === 'bank_details' ? ['bank_details'] : ['document', 'location']);
         if (kind === 'bank_details') expect(h.logs.join('\n')).not.toContain('0000000000123456');

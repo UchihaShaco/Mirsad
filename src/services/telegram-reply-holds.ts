@@ -1,6 +1,6 @@
 /** Contact consent and officer review are independent, durable decisions. All writes share the intake transaction. */
 import { createHash } from 'node:crypto';
-import { extractUrlTokens, maskUrls, normalizeLink } from '../domain/links.ts';
+import { extractUrlTokens, maskUrls, normalizeTelegramLink } from '../domain/links.ts';
 import type { AliDecision, ModelPaymentLinkReview } from '../replies/ali-decision.ts';
 import { paymentLinkKey, type PaymentLinkSource } from '../replies/payment-link-candidates.ts';
 import { REPLY_FRESHNESS_MS, REPLY_QUIET_MS } from '../replies/reply-timing.ts';
@@ -8,7 +8,7 @@ import type { Tx } from '../storage/db.ts';
 import { readChatTestBoundary } from './chat-test-session.ts';
 import { record } from '../storage/repos/case-actions.ts';
 
-type MaterialReason = 'document' | 'location' | 'payment_link' | 'bank_details';
+type MaterialReason = 'document' | 'location' | 'link' | 'payment_link' | 'bank_details';
 type ReviewReason = MaterialReason | 'conversation_review' | 'model_payment_link';
 type ConsentDecision = 'telegram_contact_opted_out' | 'telegram_contact_opted_in';
 type ReviewItem = { actionId: string; messageId: string; reason: ReviewReason };
@@ -19,16 +19,70 @@ export interface TelegramReplyHold {
   evidenceItems: EvidenceItem[];
 }
 
+export function isTelegramLinkWarning(reason: string): boolean {
+  return reason === 'link' || reason === 'payment_link' || reason === 'model_payment_link';
+}
+
+// Earlier versions stored the indicator set in model order. Keep equivalent decisions comparable after restart.
+function indicatorSetSql(alias: string): string {
+  const value = `json_extract(${alias}.detail,'$.indicators')`;
+  return `(SELECT group_concat(indicator.value,',' ORDER BY indicator.value)
+    FROM json_each('['||replace(json_quote(${value}),',','","')||']') indicator)`;
+}
+
+/** The reason governs both old and new items. Only verified bank details require an officer before replying. */
+export function blockingReviewRequestSql(alias: string): string {
+  return `(${alias}.type='telegram_officer_review_requested' AND json_extract(${alias}.detail,'$.reason')='bank_details')`;
+}
+
+export function blockingReviewResolutionSql(alias: string): string {
+  return `(${alias}.type='telegram_officer_review_resolved' AND EXISTS (
+    SELECT 1 FROM case_actions flag WHERE flag.id=json_extract(${alias}.detail,'$.reviewActionId')
+      AND flag.chat_id=${alias}.chat_id AND ${blockingReviewRequestSql('flag')}))`;
+}
+
 export function reviewedModelPaymentLinkKeys(tx: Tx, chatId: string, afterPosition = readChatTestBoundary(tx, chatId)): string[] {
   return tx.all<{ itemKey: string }>(
     `SELECT json_extract(detail,'$.itemKey') AS itemKey FROM case_actions
-     WHERE chat_id=:chatId AND position>:afterPosition AND type='telegram_officer_review_requested' AND json_extract(detail,'$.reason')='model_payment_link'`,
+     WHERE chat_id=:chatId AND position>:afterPosition AND type='telegram_officer_review_requested' AND json_extract(detail,'$.reason')='model_payment_link'
+     UNION SELECT s.item_key FROM telegram_evidence_sources s JOIN case_actions f ON f.id=s.action_id
+       WHERE s.chat_id=:chatId AND s.reason IN ('link','payment_link','reviewed_link') AND f.position>:afterPosition AND EXISTS (
+         SELECT 1 FROM case_actions done WHERE done.chat_id=s.chat_id AND done.type='telegram_officer_review_resolved'
+           AND json_extract(done.detail,'$.reviewActionId')=f.id)`,
     { chatId, afterPosition },
   ).map(({ itemKey }) => itemKey);
 }
 
+/** Earlier clients could review the source message before it had a dedicated link warning.
+ * Only an unambiguous URL in that exact, officer-reviewed source event inherits the acknowledgment.
+ */
+export function rememberReviewedTelegramLink(tx: Tx, chatId: string, actionId: string): void {
+  const source = tx.get<{ messageId: string; reason: string; text: string }>(
+    `SELECT m.id AS messageId,json_extract(f.detail,'$.reason') AS reason,e.text
+     FROM case_actions f JOIN chats c ON c.id=f.chat_id JOIN messages m ON m.id=f.message_id AND m.chat_id=c.id
+     JOIN message_events e ON e.id=json_extract(f.detail,'$.messageEventId') AND e.message_id=m.id AND e.chat_id=c.id
+     WHERE f.id=:actionId AND f.chat_id=:chatId AND f.type='telegram_officer_review_requested'
+       AND json_extract(f.detail,'$.reason') IN ('conversation_review','location')
+       AND EXISTS (SELECT 1 FROM case_actions done JOIN principals p ON p.id=done.actor_id AND p.kind='officer'
+         WHERE done.chat_id=c.id AND done.type='telegram_officer_review_resolved' AND json_extract(done.detail,'$.reviewActionId')=f.id)
+       AND m.direction='incoming' AND m.origin='source' AND m.sender_external_id=c.external_chat_id
+       AND m.original_captured=1 AND m.deleted_at_source=0 AND m.capture_method='telegram_business_live'
+       AND e.type IN ('recorded','edited') AND e.text IS NOT NULL AND e.capture_method='telegram_business_live'
+       AND NOT EXISTS (SELECT 1 FROM json_each(m.unsupported_content) WHERE value IN ('forwarded','blockquote'))
+       AND NOT EXISTS (SELECT 1 FROM message_events conflict WHERE conflict.message_id=m.id AND conflict.type='conflicting_copy')`,
+    { chatId, actionId });
+  if (!source) return;
+  const links = new Set(extractUrlTokens(source.text, normalizeTelegramLink).map(normalizeTelegramLink).filter((url): url is string => url !== null));
+  const [link] = links;
+  if (links.size !== 1 || !link || (source.reason === 'location' && !isMapPin(link))) return;
+  tx.run(`INSERT OR IGNORE INTO telegram_evidence_sources(chat_id,message_id,reason,item_key,action_id)
+    VALUES (?,?,'reviewed_link',?,?)`, [chatId, source.messageId, paymentLinkKey(chatId, link), actionId]);
+}
+
+interface ReviewTrigger { chatId: string; workspaceId: string; messageId: string; requestId?: string }
+
 /** Stores a model assessment linked to an exact visible source. The link itself stays in the incoming message. */
-export function recordModelPaymentLinkReview(tx: Tx, trigger: { chatId: string; workspaceId: string; messageId: string },
+export function recordModelPaymentLinkReview(tx: Tx, trigger: ReviewTrigger,
   candidate: PaymentLinkSource, reason: ModelPaymentLinkReview['reason'], model: string): void {
   const { chatId, workspaceId } = trigger;
   const { messageId, messageEventId, itemKey } = candidate;
@@ -43,35 +97,40 @@ export function recordModelPaymentLinkReview(tx: Tx, trigger: { chatId: string; 
          AND latest.type IN ('edited','recorded') ORDER BY (latest.type='edited') DESC, latest.position DESC LIMIT 1)`,
     { chatId, workspaceId, messageId, messageEventId },
   );
-  const matches = source && extractUrlTokens(source.text).some(url => {
-    const normalized = normalizeLink(url);
+  const matches = source && extractUrlTokens(source.text, normalizeTelegramLink).some(url => {
+    const normalized = normalizeTelegramLink(url);
     return normalized !== null && paymentLinkKey(chatId, normalized) === itemKey;
   });
   if (!matches || reviewedModelPaymentLinkKeys(tx, chatId).includes(itemKey)) return;
   record(tx, {
     chatId, workspaceId, messageId, actorId: null, type: 'telegram_officer_review_requested',
     detail: { reason: 'model_payment_link', indicators: reason, model, itemKey, messageEventId,
-      triggerMessageId: trigger.messageId, holdsReplies: true },
+      triggerMessageId: trigger.messageId, holdsReplies: false, ...(trigger.requestId && { requestId: trigger.requestId }) },
   });
 }
 
-/** A local review of the conversation. Only a local source-version link and fixed assessment codes are persisted. */
+/** A conversation assessment can recur on successive messages. Keep its first source in the current test episode. */
 export function recordConversationReview(
-  tx: Tx, source: { chatId: string; workspaceId: string; messageId: string },
+  tx: Tx, source: ReviewTrigger,
   decision: Extract<AliDecision, { kind: 'review' }>, model: string,
 ): void {
   const { chatId, workspaceId, messageId } = source;
-  // A resolved assessment of this source must survive restarts and duplicate deliveries.
-  if (tx.get(`SELECT 1 FROM case_actions WHERE chat_id=:chatId AND message_id=:messageId
-    AND type='telegram_officer_review_requested' AND json_extract(detail,'$.reason')='conversation_review' LIMIT 1`, { chatId, messageId })) return;
-  // historyFor uses the newest non-null edit, then the original. Conflicting copies never supply the draft text.
-  const event = tx.get<{ id: string }>(`SELECT id FROM message_events WHERE chat_id=:chatId AND message_id=:messageId
-    AND type IN ('edited','recorded') AND text IS NOT NULL ORDER BY (type='edited') DESC, position DESC LIMIT 1`, { chatId, messageId });
+  const event = tx.get<{ id: string }>(`SELECT e.id FROM message_events e JOIN messages m ON m.id=e.message_id AND m.chat_id=e.chat_id
+    WHERE e.chat_id=:chatId AND e.message_id=:messageId AND m.workspace_id=:workspaceId
+      AND m.direction='incoming' AND m.origin='source' AND m.original_captured=1 AND m.deleted_at_source=0
+      AND e.capture_method='telegram_business_live' AND e.type IN ('edited','recorded') AND e.text IS NOT NULL
+    ORDER BY (e.type='edited') DESC,e.position DESC LIMIT 1`, { chatId, messageId, workspaceId });
   if (!event) throw new Error('conversation_review_source_missing');
+  const indicators = [...decision.reasons].sort().join(',');
+  const prior = tx.get(`SELECT 1 FROM case_actions flag WHERE flag.chat_id=:chatId AND flag.type='telegram_officer_review_requested'
+    AND flag.position>:boundary AND json_extract(flag.detail,'$.reason')='conversation_review'
+    AND json_extract(flag.detail,'$.reviewStatus')=:status AND ${indicatorSetSql('flag')}=:indicators LIMIT 1`,
+    { chatId, boundary: readChatTestBoundary(tx, chatId), status: decision.status, indicators });
+  if (prior) return;
   record(tx, {
     chatId, workspaceId, messageId, actorId: null, type: 'telegram_officer_review_requested',
-    detail: { reason: 'conversation_review', reviewStatus: decision.status, indicators: decision.reasons.join(','),
-      model, messageEventId: event.id, holdsReplies: true },
+    detail: { reason: 'conversation_review', reviewStatus: decision.status, indicators,
+      model, messageEventId: event.id, holdsReplies: false, ...(source.requestId && { requestId: source.requestId }) },
   });
 }
 
@@ -83,32 +142,50 @@ function lastConsent(tx: Tx, chatId: string): ConsentDecision | undefined {
 }
 
 export function getTelegramReplyHold(tx: Tx, chatId: string): TelegramReplyHold {
-  // A model flag makes the same payment link an active review. Keep other links and later edits in the queue.
-  const open = tx.all<EvidenceItem & { position: number }>(
-    `SELECT request.id AS actionId, request.message_id AS messageId, request.position,
-       json_extract(request.detail, '$.messageEventId') AS messageEventId, json_extract(request.detail, '$.reason') AS reason
-     FROM case_actions request WHERE request.chat_id = :chatId AND request.type = 'telegram_officer_review_requested'
-     AND NOT EXISTS (SELECT 1 FROM case_actions done WHERE done.chat_id = request.chat_id
-       AND done.type = 'telegram_officer_review_resolved' AND json_extract(done.detail, '$.reviewActionId') = request.id)
-     AND NOT EXISTS (SELECT 1 FROM telegram_evidence_sources local
-       JOIN case_actions model ON model.chat_id=local.chat_id AND model.message_id=local.message_id
-         AND model.type='telegram_officer_review_requested' AND json_extract(model.detail,'$.reason')='model_payment_link'
-         AND json_extract(model.detail,'$.itemKey')=local.item_key
-       WHERE local.chat_id=request.chat_id AND local.action_id=request.id AND local.reason='payment_link'
-         AND NOT EXISTS (SELECT 1 FROM telegram_evidence_sources other WHERE other.chat_id=local.chat_id
-           AND other.action_id=local.action_id AND other.reason=local.reason AND other.item_key<>local.item_key))
-     ORDER BY request.position`, { chatId },
-  );
-  const first = open[0];
-  // Legacy requests always held replies. A two-item handoff stays active through partial review, in either order.
-  const held = first && (open.length >= 2 || tx.get(
-    `SELECT 1 FROM case_actions WHERE chat_id=:chatId AND type='telegram_officer_review_requested' AND position>=:first
-     AND coalesce(json_extract(detail,'$.holdsReplies'),1)=1 LIMIT 1`, { chatId, first: first.position }));
+  // Collapse local and model warnings by normalized URL. A resolution wins over any legacy
+  // duplicate, then the more specific model assessment wins over an open local warning.
+  const open = tx.all<EvidenceItem & { blocking: number }>(
+    `WITH flags AS (
+       SELECT flag.id AS actionId, flag.message_id AS messageId, flag.position, flag.detail,
+         json_extract(flag.detail,'$.messageEventId') AS messageEventId, json_extract(flag.detail,'$.reason') AS reason,
+         ${blockingReviewRequestSql('flag')} AS blocking,
+         EXISTS (SELECT 1 FROM case_actions done WHERE done.chat_id=flag.chat_id AND done.type='telegram_officer_review_resolved'
+           AND json_extract(done.detail,'$.reviewActionId')=flag.id) AS resolved,
+         coalesce((SELECT max(t.position) FROM case_actions t WHERE t.chat_id=flag.chat_id AND t.type='chat_test_started'
+           AND t.position<flag.position),0) AS episode
+       FROM case_actions flag WHERE flag.chat_id=:chatId AND flag.type='telegram_officer_review_requested'
+     ), identities AS (
+       SELECT f.actionId, s.item_key AS itemKey FROM flags f JOIN telegram_evidence_sources s ON s.action_id=f.actionId
+         WHERE s.chat_id=:chatId AND s.reason IN ('link','payment_link','reviewed_link')
+       UNION SELECT f.actionId,json_extract(f.detail,'$.itemKey') FROM flags f
+         WHERE f.reason='model_payment_link' AND json_extract(f.detail,'$.itemKey') IS NOT NULL
+       UNION SELECT f.actionId,json_array('conversation_review',json_extract(f.detail,'$.reviewStatus'),${indicatorSetSql('f')})
+         FROM flags f WHERE f.reason='conversation_review' AND json_extract(f.detail,'$.reviewStatus') IS NOT NULL
+     ), ranked AS (
+       SELECT i.actionId, row_number() OVER (PARTITION BY f.episode,i.itemKey
+         ORDER BY f.resolved DESC,(f.reason='model_payment_link') DESC,f.position) AS priority
+       FROM identities i JOIN flags f ON f.actionId=i.actionId
+     )
+     SELECT f.actionId,f.messageId,f.messageEventId,f.reason,f.blocking FROM flags f WHERE f.resolved=0 AND (
+       NOT EXISTS (SELECT 1 FROM ranked r WHERE r.actionId=f.actionId)
+       OR EXISTS (SELECT 1 FROM ranked r WHERE r.actionId=f.actionId AND r.priority=1))
+     ORDER BY f.position`, { chatId });
+  const held = open.find(item => item.blocking);
   return {
     contactOptedOut: lastConsent(tx, chatId) === 'telegram_contact_opted_out',
-    officerReview: held ? { actionId: first.actionId, messageId: first.messageId, reason: first.reason } : null,
-    evidenceItems: open.map(({ position: _position, ...item }) => item),
+    officerReview: held ? { actionId: held.actionId, messageId: held.messageId, reason: held.reason } : null,
+    evidenceItems: open.map(({ blocking: _blocking, ...item }) => item),
   };
+}
+
+const BEFORE_OPT_IN = `a.type = 'telegram_contact_opted_in' AND NOT EXISTS (
+  SELECT 1 FROM messages m WHERE m.id = a.message_id AND m.position = :messagePosition
+    AND json_extract(a.detail, '$.contactReopened') = 1)`;
+
+/** A manual retry may reopen an officer's decision, but must respect the contact's later opt-in boundary. */
+export function predatesTelegramOptIn(tx: Tx, chatId: string, messagePosition: number): boolean {
+  return tx.get(`SELECT 1 FROM case_actions a WHERE a.chat_id=:chatId AND a.position>=:messagePosition
+    AND ${BEFORE_OPT_IN} LIMIT 1`, { chatId, messagePosition }) !== undefined;
 }
 
 export function isTelegramReplyHeld(tx: Tx, chatId: string, messagePosition?: number): boolean {
@@ -117,9 +194,7 @@ export function isTelegramReplyHeld(tx: Tx, chatId: string, messagePosition?: nu
   if (messagePosition === undefined) return false;
   return tx.get(
     `SELECT 1 FROM case_actions a WHERE a.chat_id = :chatId AND a.position >= :messagePosition
-     AND (a.type = 'telegram_officer_review_resolved' OR (a.type = 'telegram_contact_opted_in' AND NOT EXISTS (
-       SELECT 1 FROM messages m WHERE m.id = a.message_id AND m.position = :messagePosition
-       AND json_extract(a.detail, '$.contactReopened') = 1))) LIMIT 1`, { chatId, messagePosition },
+     AND (${blockingReviewResolutionSql('a')} OR (${BEFORE_OPT_IN})) LIMIT 1`, { chatId, messagePosition },
   ) !== undefined;
 }
 
@@ -260,7 +335,7 @@ const BANK_LABEL = /\b(?:iban|payee account|beneficiary account|bank account)\b|
 
 /** Route a clearly supplied recipient account to the officer. Do not copy its value into a review item. */
 function paymentRecipient(part: string): string | null {
-  const words = normalized(maskUrls(part)).replace(/[٠-٩۰-۹]/gu, c => String(c.charCodeAt(0) % 16));
+  const words = normalized(maskUrls(part, normalizeTelegramLink)).replace(/[٠-٩۰-۹]/gu, c => String(c.charCodeAt(0) % 16));
   if (!PAYEE_CONTEXT.test(words) || BANK_EXCLUSION.test(words) || /[*•]|x{3,}/iu.test(words)) return null;
   const iban = words.match(IBAN_NUMBER)?.[1]?.replace(/[ -]/gu, '').toUpperCase();
   if (iban && iban.length >= 15 && iban.length <= 34) {
@@ -275,39 +350,44 @@ function paymentRecipient(part: string): string | null {
 export function sharedTelegramMaterial(text: string, media: readonly string[], messageId: string): EvidenceKey[] {
   if (media.includes('forwarded') || media.includes('blockquote')) return [];
   const items: EvidenceKey[] = [];
+  const links = new Map<string, 'link' | 'payment_link'>();
+  for (const token of extractUrlTokens(text, normalizeTelegramLink)) {
+    const link = normalizeTelegramLink(token);
+    if (link) links.set(link, 'link');
+  }
   if (media.includes('document')) items.push({ reason: 'document', value: messageId });
   let location: string | undefined;
   const plain = text.replace(QUOTED_WORDS, ' ');
   let reported = false;
   let precedingPaymentLabel = false;
   for (const part of plain.split(/(?<=[.!?؟])\s+|[;؛\n]+/u)) {
-    const prose = normalized(maskUrls(part));
+    const prose = normalized(maskUrls(part, normalizeTelegramLink));
     if (prose) reported = REPORTED_MATERIAL.test(prose) || /[?؟]/u.test(prose) || prose.startsWith('>');
     if (reported) continue;
     const bank = paymentRecipient(part);
     if (bank) items.push({ reason: 'bank_details', value: bank });
-    const urls = extractUrlTokens(part);
+    const urls = extractUrlTokens(part, normalizeTelegramLink);
     let end = 0;
     let previousLinkWasPayment = false;
     for (const url of urls) {
       const offset = part.indexOf(url, end);
       const label = normalized(part.slice(end, offset));
       end = offset + url.length;
-      const link = normalizeLink(url);
+      const link = normalizeTelegramLink(url);
       if (!link) continue;
       const paymentLabel = PAYMENT_HANDOFF.test(label) || (urls.length === 1 && PAYMENT_HANDOFF.test(prose))
         || (precedingPaymentLabel && !label) || (previousLinkWasPayment && /^(?:[,،]?\s*(?:and|or|و)?\s*)$/u.test(label));
-      if (isMapPin(link)) location ??= link;
-      else if (!INFORMATION_PAGE.test(link.slice(link.indexOf('/') + 1)) && (paymentLabel || PAYMENT_TARGET.test(link))) {
-        items.push({ reason: 'payment_link', value: link });
+      if (!isMapPin(link) && !INFORMATION_PAGE.test(link.slice(link.indexOf('/') + 1)) && (paymentLabel || PAYMENT_TARGET.test(link))) {
+        links.set(link, 'payment_link');
         previousLinkWasPayment = true;
         continue;
       }
       previousLinkWasPayment = false;
     }
     precedingPaymentLabel = !urls.length && PAYMENT_HANDOFF.test(prose) && /[:：]\s*$/u.test(prose);
-    location ??= locationInStatement(part) ?? undefined;
+    location ??= locationInStatement(maskUrls(part, normalizeTelegramLink)) ?? undefined;
   }
+  for (const [value, reason] of links) items.push({ reason, value });
   if (location || media.includes('location') || media.includes('venue')) items.push({ reason: 'location', value: location ?? messageId });
   return items;
 }
@@ -362,10 +442,19 @@ function recordEvidenceItems(tx: Tx, input: HoldInput, items: EvidenceKey[]): vo
     FROM case_actions WHERE message_id=:messageId AND type='telegram_officer_review_requested'
     UNION SELECT action_id, reason FROM telegram_evidence_sources WHERE message_id=:messageId`, { messageId });
   const distinct = new Map<string, { itemKey: string; reason: ReviewReason; actionId?: string }>();
+  const testBoundary = readChatTestBoundary(tx, chatId);
   for (const { reason, value } of items) {
-    const itemKey = createHash('sha256').update(JSON.stringify([chatId, reason, value])).digest('hex');
+    const link = isTelegramLinkWarning(reason);
+    const itemKey = link ? paymentLinkKey(chatId, value) : createHash('sha256').update(JSON.stringify([chatId, reason, value])).digest('hex');
     if (distinct.has(itemKey)) continue;
-    const match = tx.get<{ actionId: string }>(`SELECT s.action_id AS actionId FROM telegram_evidence_sources s
+    const match = link ? tx.get<{ actionId: string }>(`SELECT s.action_id AS actionId FROM telegram_evidence_sources s
+      JOIN case_actions a ON a.id=s.action_id WHERE s.chat_id=:chatId AND a.position>:testBoundary AND
+        ((s.reason IN ('link','payment_link','reviewed_link') AND s.item_key=:itemKey) OR (s.reason='location' AND s.item_key=:mapKey))
+      UNION ALL SELECT id FROM case_actions WHERE chat_id=:chatId AND position>:testBoundary AND type='telegram_officer_review_requested'
+        AND json_extract(detail,'$.reason')='model_payment_link' AND json_extract(detail,'$.itemKey')=:itemKey LIMIT 1`,
+      { chatId, testBoundary, itemKey,
+        mapKey: isMapPin(value) ? createHash('sha256').update(JSON.stringify([chatId, 'location', value])).digest('hex') : null })
+      : tx.get<{ actionId: string }>(`SELECT s.action_id AS actionId FROM telegram_evidence_sources s
       JOIN case_actions a ON a.id=s.action_id WHERE s.chat_id=:chatId AND s.reason=:reason AND s.item_key=:itemKey
       AND (s.message_id=:messageId OR a.position>:cycleStart) ORDER BY (s.message_id=:messageId) DESC, a.position LIMIT 1`,
       { chatId, reason, itemKey, messageId, cycleStart });
@@ -373,10 +462,11 @@ function recordEvidenceItems(tx: Tx, input: HoldInput, items: EvidenceKey[]): vo
   }
   const used = new Set([...distinct.values()].map(item => item.actionId));
   for (const { reason, itemKey, actionId: matched } of distinct.values()) {
-    // Keep unchanged values in their slots first; an edit replacing a URL is another source version of that item.
-    let actionId = matched ?? prior.find(slot => slot.reason === reason && !used.has(slot.actionId))?.actionId;
+    // Documents and locations keep their slots across edits. Different URLs and bank accounts require their own items.
+    const reuseSourceSlot = reason === 'document' || reason === 'location';
+    let actionId = matched ?? (reuseSourceSlot ? prior.find(slot => slot.reason === reason && !used.has(slot.actionId))?.actionId : undefined);
     if (!actionId) {
-      const holdsReplies = reason === 'bank_details' || getTelegramReplyHold(tx, chatId).evidenceItems.length > 0;
+      const holdsReplies = reason === 'bank_details';
       actionId = record(tx, { workspaceId, chatId, messageId, actorId: null, type: 'telegram_officer_review_requested',
         detail: { messageEventId, reason, holdsReplies } }).id;
     }
@@ -397,6 +487,14 @@ export function markTelegramHoldIntakeStart(tx: Tx, connectorId: string, positio
 /** Replay live contact preferences once per enrolled chat. Only fresh pending legacy evidence can open a historical review. */
 export function backfillTelegramReplyHolds(tx: Tx, accountId: string, approvedChatIds: readonly string[], freshnessWindowMs: number, connectorId: string): void {
   const now = tx.now();
+  if (tx.run(`INSERT OR IGNORE INTO connector_state(connector_id,key,value,updated_at) VALUES (?,?,'done',?)`,
+    [connectorId, 'reviewed_source_links_v2:' + accountId, now]).changes) {
+    const reviewed = tx.all<{ chatId: string; actionId: string }>(`SELECT DISTINCT done.chat_id AS chatId,f.id AS actionId
+      FROM chats c JOIN case_actions done ON done.chat_id=c.id AND done.type='telegram_officer_review_resolved'
+      JOIN case_actions f ON f.id=json_extract(done.detail,'$.reviewActionId') AND f.chat_id=c.id
+      WHERE c.channel_account_id=? AND json_extract(f.detail,'$.reason') IN ('conversation_review','location')`, [accountId]);
+    for (const item of reviewed) rememberReviewedTelegramLink(tx, item.chatId, item.actionId);
+  }
   const threshold = new Date(Date.parse(now) - freshnessWindowMs).toISOString();
   const intakeStart = tx.get<{ value: string }>('SELECT value FROM connector_state WHERE connector_id = :connectorId AND key = :key',
     { connectorId, key: INTAKE_START_KEY });

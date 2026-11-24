@@ -1,5 +1,5 @@
 /** The number and briefing live only in form controls. Only an officer's explicit draft handoff opens Telegram. */
-import { describeError } from '../format.js';
+import { describeError, telegramDispatchReceipt } from '../format.js';
 import { chatHref } from '../state/route.js';
 
 // The server rejects ambiguous international numbers, including changes to the digits during normalization.
@@ -12,7 +12,7 @@ function telegramRecipient(raw) {
 
 function receipt(status) {
   if (status === 'requires_resume') return 'This chat is paused or under officer control. Open the conversation to review its controls.';
-  return 'Dispatch accepted for the verified conversation. If its latest DM is unanswered and eligible, Ali will assess it now.';
+  return 'Dispatch accepted for the verified conversation. Open it to see the reply status.';
 }
 
 export function bindPhoneDispatch(ctx, openOpener) {
@@ -67,7 +67,7 @@ export function bindPhoneDispatch(ctx, openOpener) {
       if (result.outcome === 'dispatched') {
         const item = result.dispatch.results.find(row => row.chatId === result.chatId);
         if (!item) throw new Error('The dispatch response was incomplete.');
-        refs.phoneStatus.textContent = receipt(item.status);
+        refs.phoneStatus.textContent = item.telegram ? telegramDispatchReceipt(item.telegram) : receipt(item.status);
         refs.phoneChat.href = chatHref(result.chatId);
         refs.phoneChat.hidden = false;
         ctx.refreshers.inbox.request();

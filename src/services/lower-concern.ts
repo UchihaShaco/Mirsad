@@ -1,5 +1,8 @@
 import type { Tx } from '../storage/db.ts';
 import { record, type CaseActionDetail } from '../storage/repos/case-actions.ts';
+import { directTelegramTextSql } from '../storage/repos/messages.ts';
+import { verifiedTelegramSourceSql } from '../adapters/telegram/message-proof.ts';
+import type { SourceScope } from '../workers/offer-memory.ts';
 import { currentTestMessageSql, readChatTestWindow } from './chat-test-session.ts';
 import { getTelegramReplyHold } from './telegram-reply-holds.ts';
 import { permittedDispatchSourceSql } from './telegram-dispatch-permission.ts';
@@ -7,20 +10,20 @@ import { matchMeeting, type MeetingEvidence, type MeetingTurn } from './meeting-
 
 export { isRepeatedMeetingQuestion } from './meeting-evidence.ts';
 
-interface ConsentScope { chatId: string; firstPosition: number; enrolledSecond: number; afterTelegramId: number | null; officerPermission?: boolean }
 export interface MeetingAssessment { sources: MeetingEvidence; throughPosition: number; firstPosition: number }
 export interface LowerConcern { kind: 'meeting_arranged'; assessedAt: string; sources: MeetingEvidence }
 
 function hasContraryEvidence(tx: Tx, chatId: string, firstPosition: number): boolean {
   const hold = getTelegramReplyHold(tx, chatId);
-  if (hold.contactOptedOut || hold.officerReview || hold.evidenceItems.some(item => item.reason !== 'location')) return true;
+  if (hold.contactOptedOut || hold.officerReview ||
+    hold.evidenceItems.some(item => item.reason !== 'location' && item.reason !== 'link')) return true;
   if (tx.get("SELECT 1 FROM watchlist_matches m JOIN watchlist_entries e ON e.id=m.entry_id WHERE m.chat_id=? AND e.status='approved' LIMIT 1", [chatId])) return true;
   return !!tx.get("SELECT 1 FROM findings f JOIN messages m ON m.id=f.message_id WHERE f.chat_id=? AND f.kind='suspected_fraud' AND m.position>=? LIMIT 1", [chatId, firstPosition]);
 }
 
 /** The caller supplies the actual enrollment window. The reset boundary is also enforced locally for a manual assessment.
  * Untrusted sources are empty turns (episode barriers), never citations. No source details are logged or duplicated. */
-export function assessMeeting(tx: Tx, scope: ConsentScope): MeetingAssessment | null {
+export function assessMeeting(tx: Tx, scope: SourceScope): MeetingAssessment | null {
   const window = readChatTestWindow(tx, scope.chatId);
   const firstPosition = Math.max(scope.firstPosition, window.position + 1);
   if (hasContraryEvidence(tx, scope.chatId, firstPosition)) return null;
@@ -29,7 +32,8 @@ export function assessMeeting(tx: Tx, scope: ConsentScope): MeetingAssessment | 
     'unixepoch(coalesce(m.sent_at,m.received_at)) AS at, CASE WHEN ' +
     "m.original_captured=1 AND m.deleted_at_source=0 AND m.origin='source' AND e.type IN ('recorded','edited') " +
     "AND (m.direction='outgoing' OR (m.direction='incoming' AND m.sender_external_id=c.external_chat_id)) " +
-    "AND NOT EXISTS (SELECT 1 FROM json_each(m.unsupported_content) WHERE value IN ('forwarded','blockquote')) " +
+    `AND ${directTelegramTextSql} ` +
+    (scope.sourceProof ? `AND ${verifiedTelegramSourceSql} ` : '') +
     "AND NOT EXISTS (SELECT 1 FROM telegram_evidence_sources b WHERE b.message_id=m.id AND b.reason='bank_details') " +
     "THEN coalesce(e.text,'') ELSE '' END AS text FROM messages m JOIN chats c ON c.id=m.chat_id " +
     'JOIN message_events e ON e.id=(SELECT id FROM message_events WHERE message_id=m.id ORDER BY position DESC LIMIT 1) ' +
@@ -37,7 +41,7 @@ export function assessMeeting(tx: Tx, scope: ConsentScope): MeetingAssessment | 
     'AND m.position>=:firstPosition AND unixepoch(coalesce(m.sent_at,m.received_at))>=:enrolledSecond ' +
     "AND (:afterTelegramId IS NULL OR (m.source_message_id GLOB 'tg:[0-9]*' AND CAST(substr(m.source_message_id,4) AS INTEGER)>:afterTelegramId)) " +
     'AND ' + currentTestMessageSql + (scope.officerPermission ? ' AND ' + permittedDispatchSourceSql : '') + ' ORDER BY m.position DESC LIMIT 32', {
-      chatId: scope.chatId, firstPosition, enrolledSecond: scope.enrolledSecond, afterTelegramId: scope.afterTelegramId, ...window,
+      chatId: scope.chatId, firstPosition, enrolledSecond: scope.enrolledSecond, afterTelegramId: scope.afterTelegramId, ...window, ...scope.sourceProof,
     },
   );
   const sources = matchMeeting(rows.reverse());

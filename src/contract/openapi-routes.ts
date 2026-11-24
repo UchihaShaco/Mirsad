@@ -104,9 +104,9 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     errors: ['validation_failed', 'payload_too_large', ...CHAT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/dispatches': {
-    summary: 'Start AI on selected chats',
+    summary: 'Dispatch selected chats and request eligible Telegram replies',
     description:
-      'Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.',
+      'Start eligible chats and return one receipt per chat. On live Telegram, participantPermissionRecorded=true is the officer’s attestation that every selected Telegram participant has already agreed to AI replies and screening through the configured provider for that chat. Each eligible chat records the attestation. replyAgain=true requests an immediate reply, retry or follow-up. Missing permission is reported to the officer. Approved chats continue answering eligible DMs. expectedTestMode=true also checks the invitation setting. To pin a particular message and timeline revision, use replyToMessageId and replyToHeadPosition with one chat. Telegram’s reply window, officer controls, opt-outs and review holds apply. A queued request has a requestId. Consult the timeline for delivery. An optional officer briefing applies to one chat. Send null to clear the briefing. Reuse the same Idempotency-Key for transport retries.',
     request: 'DispatchRequest',
     idempotencyKey: true,
     success: [{ status: 200, description: 'Per-chat dispatch results.', schema: 'DispatchResponse', replayHeader: true }],
@@ -152,7 +152,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   },
   'GET /v1/chats/{chatId}/timeline': {
     summary: 'Read a chat timeline',
-    description: 'Messages, message events, case actions, findings, case references and the stream cursor, each ordered by `position`.',
+    description: 'Messages, message events, case actions, findings, case references and the stream cursor. Live Telegram chats also report permission, ongoing automatic replies and the most recent Dispatch delivery outcome.',
     success: [{ status: 200, description: 'The timeline snapshot.', schema: 'Timeline' }],
     errors: [...CHAT],
   },

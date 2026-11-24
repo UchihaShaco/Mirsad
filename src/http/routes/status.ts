@@ -5,12 +5,15 @@ import { principalOf, type RouteModule } from '../context.ts';
 
 export const routes: RouteModule = {
   'GET /v1/status': async (c, deps) => {
+    const officer = principalOf(c);
+    const demoOwner = deps.config.whatsappDemo?.officerId === officer.id;
     const status = await readStatus({
       config: deps.config,
       db: deps.db,
       reviewer: deps.reviewer,
       startedAt: deps.startedAt,
-      workspaceId: principalOf(c).workspaceId,
+      workspaceId: officer.workspaceId,
+      ...(demoOwner && { whatsappDemoStatus: deps.whatsappDemoRunningFor?.(officer.id) ? 'demo_listening' : 'demo_unavailable' }),
       liveConnectorRunning: deps.telegramLive.running(),
     });
     return c.json(ok(status));

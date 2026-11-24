@@ -1,10 +1,14 @@
 /**
  * The selected chat's timeline: messages in both directions with source, capture method, receipt time, capture and
  * review status; edits, deletions and conflicting copies as their own entries; findings as one compact note each. Case
- * actions go to the case log beside it. Message text is plain text in a dir="auto" element.
+ * actions go to the case log beside it. Message text is plain text in a dir="auto" element. An entry that is the source
+ * of evidence for officer review carries that reason, so the message that explains an interruption stands out.
  */
 import { bdi, clear, h, timeEl, withFocus } from '../dom.js';
-import { CAPTURE_METHOD_LABELS, DIRECTION_LABELS, evidenceItemsFor, formatTime, reviewStatusLabel, silenceSummary } from '../format.js';
+import {
+  CAPTURE_METHOD_LABELS, DIRECTION_LABELS, formatClock, formatDay, formatTime, reviewWarningLabel, reviewStatusLabel, silenceExplanation, silenceSummary, TELEGRAM_EVIDENCE_LABELS,
+} from '../format.js';
+import { evidenceSources } from '../state/attention.js';
 import { canCompose } from '../state/composer.js';
 import { chatHref } from '../state/route.js';
 import { senderPhoneOf, timelineEntries } from '../state/timeline.js';
@@ -13,9 +17,6 @@ import { renderCapture } from './capture.js';
 const BOTTOM_SLACK_PX = 40;
 const EVENT_TITLES = { edited: 'Edited at source', deleted: 'Deleted at source', conflicting_copy: 'Conflicting copy received' };
 const view = { chatId: null, focusedEntry: null };
-const COMPACT_TIME = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
-});
 
 function fact(label, value) {
   return [h('dt', { text: label }), h('dd', {}, [value instanceof Node ? value : h('span', { text: value })])];
@@ -30,24 +31,25 @@ function messageText(text, missingText) {
   return h('p', { className: 'message-text', dir: 'auto', text });
 }
 
+/** Who wrote the message, then how it reached the timeline. */
 function heading(message, replySource) {
   const composerSent = message.origin === 'officer_composer';
   const who = composerSent ? message.author?.displayName : (message.sender?.displayName ?? message.sender?.externalId);
   const direction = DIRECTION_LABELS[message.direction ?? 'unknown'];
-  const title = replySource ? `${direction} automated reply` : composerSent ? `${direction} reply` : direction;
-  const parts = [h('strong', { text: title })];
-  if (who) parts.push(h('span', { text: ' from ' }), bdi(who));
-  if (!replySource && !composerSent && message.direction === 'outgoing') parts.push(h('span', { text: ' (observed at the source)' }));
-  return h('p', { className: 'entry-heading' }, parts);
+  let role = direction;
+  if (replySource) role = `${direction} automated reply`;
+  else if (composerSent) role = `${direction} reply`;
+  else if (message.direction === 'outgoing') role = `${direction}, observed at the source`;
+  return h('p', { className: 'entry-heading' }, [
+    who ? h('strong', { className: 'entry-who' }, [bdi(who)]) : null,
+    h('span', { className: 'entry-role', text: role }),
+  ]);
 }
 
 function entryTop(label, receivedAt) {
   const fullTime = formatTime(receivedAt);
   return h('div', { className: 'message-top' }, [
-    label, h('time', {
-      className: 'message-time', datetime: receivedAt, title: fullTime, 'aria-label': fullTime,
-      text: `${COMPACT_TIME.format(new Date(receivedAt))} UTC`,
-    }),
+    label, h('time', { className: 'message-time', datetime: receivedAt, title: fullTime, 'aria-label': fullTime, text: formatClock(receivedAt) }),
   ]);
 }
 
@@ -109,14 +111,40 @@ function messageFlags(message) {
   return flags.map((text) => h('p', { className: 'flag', text }));
 }
 
-function paymentReviewFlag(sourceId, ctx) {
-  if (!ctx.paymentReviewSources.has(sourceId)) return null;
-  return h('p', { className: 'payment-review-flag', text: 'Payment link needs review' });
+/**
+ * Why this entry matters to the open review, one line per reason: the payment link the model flagged, material that
+ * holds replies until it is reviewed, or material that was captured while replies continue.
+ */
+function sourceMarkers(sourceId, ctx) {
+  const reasons = new Map((ctx.evidenceSources.get(sourceId) ?? []).map((source) => [source.reason, source]));
+  return [...reasons.values()].map(({ reason, blocking }) => {
+    const warning = reviewWarningLabel(reason);
+    if (warning) return h('p', { className: 'evidence-warning', text: warning });
+    const subject = `shared ${TELEGRAM_EVIDENCE_LABELS[reason] ?? 'item'}`;
+    return h('p', { className: 'source-marker', dataset: { blocking: String(blocking) } }, [
+      h('strong', { text: blocking ? 'Review required' : 'Captured' }),
+      h('span', { text: `: ${subject}` }),
+    ]);
+  });
+}
+
+/** The entry's part in the open review, for its outline: holding replies, captured, or none. */
+function evidenceRole(sourceId, ctx) {
+  const sources = ctx.evidenceSources.get(sourceId);
+  if (!sources) return 'none';
+  return sources.some((source) => source.blocking) ? 'blocking' : 'captured';
 }
 
 function meetingAgreement(sourceId, ctx) {
   return sourceId === ctx.meetingSource ? h('p', { className: 'lower-concern-badge',
     text: ctx.previous ? 'Previous test · Lower concern · Meeting agreed' : 'Lower concern · Meeting agreed' }) : null;
+}
+
+/** Whose words these are, for the entry's colour: the contact, the automated reply, an officer, or the account itself. */
+function authorOf(message, replySource) {
+  if (message.origin === 'officer_composer') return 'officer';
+  if (replySource) return 'ai';
+  return message.direction === 'outgoing' ? 'account' : 'contact';
 }
 
 function messageEntry(message, ctx) {
@@ -130,14 +158,18 @@ function messageEntry(message, ctx) {
     className: `entry message ${direction}`,
     id: `message-${message.id}`,
     tabIndex: -1,
-    dataset: { kind: 'message', direction, origin: message.origin, messageId: message.id, focusKey: `message:${message.id}` },
+    dataset: {
+      kind: 'message', direction, origin: message.origin, messageId: message.id, focusKey: `message:${message.id}`,
+      author: authorOf(message, replySource), evidence: evidenceRole(message.id, ctx),
+    },
   }, [
     entryTop(heading(message, replySource), message.receivedAt),
     messageText(message.text, missing),
-    paymentReviewFlag(message.id, ctx),
+    ...sourceMarkers(message.id, ctx),
     meetingAgreement(message.id, ctx),
-    skipped ? h('p', { className: 'skipped-reply' }, [
-      h('strong', { text: 'No automated reply. ' }), h('span', { text: skipped }),
+    skipped ? h('div', { className: 'skipped-reply' }, [
+      h('p', {}, [h('strong', { text: 'No automated reply. ' }), h('span', { text: skipped.reason })]),
+      skipped.why ? h('p', { className: 'skipped-why' }, [h('span', { className: 'why-label', text: 'Why: ' }), h('q', { dir: 'auto', text: skipped.why })]) : null,
     ]) : null,
     ...messageFlags(message),
     message.unsupportedContent.length ? h('p', { className: 'hint', text: `Not captured: ${message.unsupportedContent.join(', ')}` }) : null,
@@ -154,14 +186,17 @@ function eventEntry(event, ctx) {
   const facts = [...sourceFact(ctx.chat, event.captureMethod), ...fact('Received', timeEl(event.receivedAt))];
   if (event.sourceOccurredAt !== null) facts.push(...fact('At the source', timeEl(event.sourceOccurredAt)));
   const deleted = event.type === 'deleted';
-  return h('article', { className: `entry message-event event-${event.type}`, id: `event-${event.id}`, tabIndex: -1, dataset: { kind: 'message_event', eventType: event.type, messageId: event.messageId, focusKey: `event:${event.id}` } }, [
+  return h('article', {
+    className: `entry message-event event-${event.type}`, id: `event-${event.id}`, tabIndex: -1,
+    dataset: { kind: 'message_event', eventType: event.type, messageId: event.messageId, focusKey: `event:${event.id}`, evidence: evidenceRole(event.id, ctx) },
+  }, [
     entryTop(h('p', { className: 'entry-heading' }, [
       h('strong', { text: title }),
       h('span', { text: ' ' }),
       h('a', { href: chatHref(event.chatId, event.messageId), text: 'Go to the original message', dataset: { focusKey: `original:${event.id}` } }),
     ]), event.receivedAt),
     deleted ? h('p', { className: 'hint', text: 'Mirsad keeps the text and evidence it already captured.' }) : messageText(event.text, 'No text.'),
-    paymentReviewFlag(event.id, ctx),
+    ...sourceMarkers(event.id, ctx),
     meetingAgreement(event.id, ctx),
     ...captureAndDetails(`event:${event.id}`, h('dl', { className: 'facts' }, facts),
       deleted ? null : event.capture, deleted ? null : event.review, `the ${title.toLowerCase()} event received ${formatTime(event.receivedAt)}`, ctx),
@@ -179,6 +214,8 @@ function findingEntry(finding) {
 }
 
 const RENDERERS = { message: messageEntry, message_event: eventEntry, finding: (finding) => findingEntry(finding) };
+/** When each entry reached Mirsad, for the day headings; a finding stays under the day of the entry before it. */
+const RECEIVED_AT = { message: (item) => item.receivedAt, message_event: (item) => item.receivedAt, finding: () => null };
 
 /** Each send keeps its model attribution even after the configured provider changes. */
 function replySourcesOf(timeline) {
@@ -195,14 +232,6 @@ function replySourcesOf(timeline) {
 function artifactIdsOf(timeline) {
   const captures = [...timeline.messages, ...timeline.messageEvents].map((item) => item.capture);
   return new Set(captures.filter((capture) => capture !== null && capture.artifactId !== null).map((capture) => capture.artifactId));
-}
-
-/** Original Telegram captures render as messages. An edit has its own entry in the timeline. */
-function paymentReviewSourcesOf(timeline) {
-  const eventIds = new Set(timeline.messageEvents.map(({ id }) => id));
-  return new Set(evidenceItemsFor(timeline.chat.telegramReplyHold)
-    .filter(({ reason }) => reason === 'model_payment_link')
-    .map(({ messageId, messageEventId }) => eventIds.has(messageEventId) ? messageEventId : messageId));
 }
 
 function focusRequestedMessage(container, messageId, eventId) {
@@ -240,17 +269,25 @@ export function renderTimeline(container, state, handlers, captures) {
       selecting: !state.previous && canCompose(timeline.chat, state.me),
       replyTargetId: state.replyTargetId,
       replySources: replySourcesOf(timeline),
-      paymentReviewSources: paymentReviewSourcesOf(timeline),
+      evidenceSources: evidenceSources(timeline),
       previous: state.previous,
       meetingSource: timeline.messageEvents.some(e => e.id === agreement?.messageEventId) ? agreement.messageEventId : agreement?.messageId,
       skippedReasons: new Map(timeline.caseActions
         .filter(action => action.type === 'ai_reply_skipped' && action.messageId !== null)
-        .map(action => [action.messageId, silenceSummary(action.detail)])),
+        .map(action => [action.messageId, { reason: silenceSummary(action.detail), why: silenceExplanation(action.detail) }])),
     };
     const entries = timelineEntries(timeline).filter((entry) => entry.kind !== 'case_action');
     if (entries.length === 0) container.append(h('p', { className: 'placeholder', text:
       timeline.testSession && !state.previous ? 'Waiting for the first message in this test.' : 'No messages observed yet.' }));
-    for (const entry of entries) container.append(RENDERERS[entry.kind](entry.item, ctx));
+    let day = '';
+    for (const entry of entries) {
+      const received = RECEIVED_AT[entry.kind](entry.item);
+      if (received && received.slice(0, 10) !== day) {
+        day = received.slice(0, 10);
+        container.append(h('h3', { className: 'day-divider' }, [h('time', { datetime: day, text: formatDay(received) }), h('span', { text: ' · times in UTC' })]));
+      }
+      container.append(RENDERERS[entry.kind](entry.item, ctx));
+    }
     captures.retainOnly(artifactIdsOf(timeline));
   });
   // A successful capture retry removes its button. Keep the officer at the evidence they acted on.

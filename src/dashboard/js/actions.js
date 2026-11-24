@@ -2,10 +2,11 @@
  * Officer actions. Each one calls a single route and then reloads what it changed; the service decides every rule and
  * answers a stale or refused request with an error, which becomes the notice. Only one action runs at a time.
  */
-import { describeCaseReference, describeDispatch, describeError } from './format.js';
+import { describeCaseReference, describeDispatch, describeError, telegramDispatchReceipt } from './format.js';
+import { refreshBatchReceipts } from './loaders.js';
 import { caseReferenceRequest, initialCaseReferenceDraft } from './state/case-reference.js';
 import { updateComposer } from './state/composer.js';
-import { briefingChatId, currentDispatchChatId, pruneSelection, toggleSelection } from './state/inbox.js';
+import { briefingChatId, currentDispatchChatId, DISPATCH_LIMIT, pruneSelection, selectableChatIds, telegramDispatchRequest, toggleSelection } from './state/inbox.js';
 
 /** Errors that mean the dashboard's copy of the chat is out of date: show the error, then reload. */
 const STALE_VIEW_ERRORS = new Set(['revision_conflict', 'not_controller', 'not_in_takeover', 'invalid_transition', 'capture_not_retryable']);
@@ -38,21 +39,62 @@ async function run(ctx, name, action) {
   }
 }
 
-async function finishDispatch(ctx, chatIds, result, receipt) {
-  info(ctx, receipt ?? describeDispatch(result.results));
+async function finishDispatch(ctx, chatIds, result) {
+  if (result.results.some(item => item.telegram)) {
+    const chats = ctx.getState().chats;
+    const rows = result.results.map(item => ({
+      chatId: item.chatId, label: chats.find(chat => chat.id === item.chatId)?.displayLabel ?? item.chatId,
+      text: item.telegram ? telegramDispatchReceipt(item.telegram) : describeDispatch([item]),
+      requestId: item.telegram?.requestId ?? null, kind: item.telegram?.kind, pending: item.telegram?.reply === 'queued',
+    }));
+    ctx.setState({ notice: { tone: 'info', text: rows.map(row => row.text).join(' '), dispatchRows: rows } });
+    // Delivery can finish before the HTTP receipt reaches the browser, ahead of its live-event subscription.
+    void refreshBatchReceipts(ctx);
+  } else if (chatIds.length === 1 && ctx.getState().timeline?.chat.id === chatIds[0] &&
+      ctx.getState().timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live')) {
+    info(ctx, 'Dispatch returned without a Telegram delivery receipt. Check the chat timeline. The running service must support reply requests to show their status.');
+  } else if (chatIds.length === 1 && ctx.getState().timeline?.chat.id === chatIds[0] &&
+      ctx.getState().timeline.messages.some(message => message.source.captureMethod === 'whatsapp_business_live') &&
+      result.results[0]?.status !== 'requires_resume') {
+    info(ctx, 'Dispatch accepted. The AI will assess the latest eligible unanswered message.');
+  } else {
+    info(ctx, describeDispatch(result.results));
+  }
   try {
     await ctx.load.inbox();
     if (chatIds.includes(ctx.getState().selectedChatId)) await ctx.load.timeline();
   } catch (error) {
-    // The server already accepted the dispatch. A read failure must not invite a repeat submission.
-    ctx.showError(error);
+    // The server already returned the receipts. A failed reload must keep them on screen.
+    const notice = ctx.getState().notice;
+    if (notice?.dispatchRows) {
+      ctx.setState({ notice: { ...notice, refreshNote: 'Dispatch was accepted. Refresh the inbox to see the latest delivery status.' } });
+    } else {
+      ctx.showError(error);
+    }
+  }
+}
+
+// Keep the same key after an uncertain network result. A confirmed result completes that deliberate action.
+async function submitDispatch(ctx, chatIds, officerContext, permission) {
+  const fingerprint = JSON.stringify({ chatIds, officerContext, ...permission });
+  const keys = ctx.dispatchKeys;
+  const key = keys.get(fingerprint) ?? crypto.randomUUID();
+  keys.set(fingerprint, key);
+  try {
+    const response = await ctx.api.dispatch(chatIds, key, officerContext, permission);
+    keys.delete(fingerprint);
+    return response;
+  } catch (error) {
+    if (error.status >= 400 && error.status < 500) keys.delete(fingerprint);
+    throw error;
   }
 }
 
 async function dispatchSelected(ctx) {
   const state = ctx.getState();
-  const chatIds = [...pruneSelection(state.selection, state.chats, state.inboxFilter)];
-  if (chatIds.length === 0) return;
+  const selected = pruneSelection(state.selection, state.chats, state.inboxFilter);
+  const chatIds = [...selected];
+  if (chatIds.length === 0 || chatIds.length > DISPATCH_LIMIT) return;
   const brief = state.dispatchBrief;
   const officerContext = brief !== null && brief.chatId === briefingChatId(state)
     ? (brief.clear ? null : brief.text.trim() || undefined) : undefined;
@@ -61,27 +103,26 @@ async function dispatchSelected(ctx) {
     const current = ctx.getState();
     if (ctx.listeners.signal.aborted || current.selectedChatId !== state.selectedChatId
       || current.view !== 'inbox' || current.selection.size !== 1 || !current.selection.has(chatIds[0])) return;
-    if (timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live')
+    if ((timeline.telegramReplies || timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live'))
       && ['not_started', 'ai_active'].includes(timeline.chat.aiMode)) {
       return { timeline, officerContext };
     }
   }
-  const result = await ctx.api.dispatch(chatIds, crypto.randomUUID(), officerContext);
+  const includesTelegram = state.chats.some(chat => selected.has(chat.id) && chat.source === 'telegram');
+  const result = await submitDispatch(ctx, chatIds, officerContext, includesTelegram ? telegramDispatchRequest() : undefined);
   ctx.setState({ selection: new Set(), dispatchBrief: null });
   await finishDispatch(ctx, chatIds, result);
 }
 
-function dispatchCurrent(ctx, officerContext, expectedChatId, permission, live) {
+function dispatchCurrent(ctx, officerContext, expectedChatId, permission) {
   const chatId = currentDispatchChatId(ctx.getState(), expectedChatId);
   if (chatId === null) return Promise.resolve(false);
   return run(ctx, 'dispatch_current', async () => {
-    const result = await ctx.api.dispatch([chatId], crypto.randomUUID(), officerContext, permission);
-    if (permission && ctx.getState().selection.size === 1 && ctx.getState().selection.has(chatId)) {
+    const result = await submitDispatch(ctx, [chatId], officerContext, permission);
+    if (ctx.getState().selection.size === 1 && ctx.getState().selection.has(chatId)) {
       ctx.setState({ selection: new Set(), dispatchBrief: null });
     }
-    const receipt = live && result.results.some(item => item.chatId === chatId && item.status !== 'requires_resume')
-      ? 'Dispatch accepted. If the latest DM is unanswered and eligible, Ali will assess it now. Check the conversation for the outcome.' : undefined;
-    await finishDispatch(ctx, [chatId], result, receipt);
+    await finishDispatch(ctx, [chatId], result);
     return result.results.some(item => item.chatId === chatId && item.status !== 'requires_resume')
       && currentDispatchChatId(ctx.getState(), chatId) === chatId;
   });
@@ -229,19 +270,24 @@ function toggleTelegramSetting(ctx, name, save) {
 
 export function createActions(ctx) {
   const { getState, setState } = ctx;
+  function setSelection(state, selection, inboxFilter = state.inboxFilter) {
+    const eligibleId = briefingChatId({ ...state, selection });
+    setState({ inboxFilter, selection, dispatchBrief: state.dispatchBrief?.chatId === eligibleId ? state.dispatchBrief : null });
+  }
   return {
     onInboxFilter: (filter) => {
       const state = getState();
       if (filter === state.inboxFilter || !['all', 'review', 'lower_concern'].includes(filter)) return;
-      const selection = pruneSelection(state.selection, state.chats, filter);
-      const eligibleId = briefingChatId({ ...state, selection });
-      setState({ inboxFilter: filter, selection, dispatchBrief: state.dispatchBrief?.chatId === eligibleId ? state.dispatchBrief : null });
+      setSelection(state, pruneSelection(state.selection, state.chats, filter), filter);
+    },
+    onSelectAll: (selected) => {
+      const state = getState();
+      if (state.pending !== null || !state.inboxLoaded) return;
+      setSelection(state, selected ? selectableChatIds(state.chats, state.inboxFilter) : new Set());
     },
     onToggleSelect: (chatId, selected) => {
       const state = getState();
-      const selection = toggleSelection(state.selection, chatId, selected);
-      const eligibleId = briefingChatId({ ...state, selection });
-      setState({ selection, dispatchBrief: state.dispatchBrief?.chatId === eligibleId ? state.dispatchBrief : null });
+      setSelection(state, toggleSelection(state.selection, chatId, selected));
     },
     onDispatchBriefInput: (text, clear) => {
       const chatId = briefingChatId(getState());
@@ -251,7 +297,7 @@ export function createActions(ctx) {
       const review = await run(ctx, 'dispatch', () => dispatchSelected(ctx));
       if (review && !ctx.listeners.signal.aborted) ctx.openQueuedDispatch(review.timeline, review.officerContext);
     },
-    onDispatchCurrent: (officerContext, expectedChatId, permission, live) => dispatchCurrent(ctx, officerContext, expectedChatId, permission, live),
+    onDispatchCurrent: (officerContext, expectedChatId, permission) => dispatchCurrent(ctx, officerContext, expectedChatId, permission),
     onGenerateOpener: () => generateOpener(ctx),
     onCopyOpener: () => copyOpener(ctx.refs),
     onSetDmReplies: () => toggleTelegramSetting(ctx, 'dmReplies', ctx.api.setDmReplies),

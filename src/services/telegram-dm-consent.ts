@@ -14,22 +14,57 @@ type ConsentState = {
   noticeSeen: boolean;
   /** Telegram message IDs are ordered inside one private chat, even within a single second. */
   noticeTelegramId: number | null;
+  /** Which live connection delivered the invitation, and whether an officer selected this chat. */
+  noticePolicyKey?: string;
+  officerInvited?: true;
   acceptanceTelegramId?: number;
   withdrawalTelegramId?: number;
 };
 
 type ConsentTurn = { action: 'notice' | 'reply' | 'wait'; enrolledAfter: number; enrolledSecond: number; afterTelegramId?: number };
 
-export function recordedDmConsent(tx: Tx, connector: string, chat: string): ConsentState | undefined {
+export const officerDispatchScopeSql = `a.type='telegram_dispatch_approved'
+  AND json_extract(a.detail,'$.connectorId')=:connector AND json_extract(a.detail,'$.policyKey')=:policyKey`;
+
+export function hasOfficerDispatchApproval(tx: Tx, chatId: string, connector: string, policyKey: string): boolean {
+  return !!tx.get(`SELECT 1 FROM case_actions a WHERE a.chat_id=:chatId AND ${officerDispatchScopeSql} LIMIT 1`,
+    { chatId, connector, policyKey });
+}
+
+/** Dispatch can confirm a participant who originally accepted an automatic invitation on this connection. */
+export function isOfficerEnrolledConsent(tx: Tx, consent: ConsentState | undefined, chatId: string,
+  connector: string, policyKey?: string): boolean {
+  return consent?.officerInvited === true ||
+    (consent?.status === 'accepted' && !!policyKey && hasOfficerDispatchApproval(tx, chatId, connector, policyKey));
+}
+
+export function recordedDmConsent(tx: Tx, connector: string, chat: string, policyKey?: string): ConsentState | undefined {
   const row = tx.get<{ value: string }>('SELECT value FROM connector_state WHERE connector_id=? AND key=?',
     [connector, 'dm_ai_consent_v1:' + chat]);
-  return row && JSON.parse(row.value) as ConsentState;
+  const state = row && JSON.parse(row.value) as ConsentState;
+  if (!policyKey || !state) return state;
+  const sameNotice = state.noticePolicyKey ? state.noticePolicyKey === policyKey
+    : provenConsentMessage(tx, connector, chat, policyKey, state.noticeTelegramId, true);
+  // A changed connection never inherits acceptance or a delivered invitation. Keep an existing opt-out.
+  if (!sameNotice) return state.status === 'withdrawn' ? { ...state, noticeSeen: false, officerInvited: undefined } : undefined;
+  if (state.noticePolicyKey) return state;
+  if (state.status === 'accepted' && !provenConsentMessage(tx, connector, chat, policyKey, state.acceptanceTelegramId, false)) return undefined;
+  return { ...state, noticePolicyKey: policyKey };
 }
 
 function write(tx: Tx, connector: string, chat: string, state: ConsentState): void {
   tx.run(`INSERT INTO connector_state(connector_id,key,value,updated_at) VALUES (?,?,?,?)
     ON CONFLICT(connector_id,key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`,
     [connector, 'dm_ai_consent_v1:' + chat, JSON.stringify(state), tx.now()]);
+}
+
+/** Legacy invitations stored the Telegram message id before they also stored the connection identity. */
+function provenConsentMessage(tx: Tx, connector: string, chat: string, policyKey: string, telegramId: number | null | undefined, ownSend: boolean): boolean {
+  return !!telegramId && !!tx.get(
+    `SELECT 1 FROM messages m JOIN telegram_message_proofs p ON p.message_id=m.id
+     WHERE m.chat_id=? AND p.message_number=? AND p.connector_id=? AND p.connection_hash=substr(?,-64)
+       AND p.content_kind='normal' AND p.own_send=? AND m.direction=?`,
+    [chat, telegramId, connector, policyKey, Number(ownSend), ownSend ? 'outgoing' : 'incoming']);
 }
 
 function accepts(text: string): boolean {
@@ -46,25 +81,27 @@ function source(tx: Tx, chatId: string, messageId: string) {
 }
 
 /** Only after Telegram accepts our invitation can an incoming message grant permission. */
-export function markDmConsentNotice(tx: Tx, connectorId: string, chatId: string, messageId: string, outgoingId?: string): void {
+export function markDmConsentNotice(tx: Tx, connectorId: string, chatId: string, messageId: string, outgoingId?: string,
+  policyKey?: string, officerInvited = false): void {
   const trigger = source(tx, chatId, messageId);
   if (!trigger) return;
-  const previous = recordedDmConsent(tx, connectorId, chatId);
+  const previous = recordedDmConsent(tx, connectorId, chatId, policyKey);
   if (previous && (previous.noticeSeen || previous.position >= trigger.position)) return;
   const notice = outgoingId ? source(tx, chatId, outgoingId) : undefined;
   write(tx, connectorId, chatId, {
     status: 'invited', position: trigger.position,
     second: notice?.second ?? Math.floor(Date.parse(tx.now()) / 1000),
     noticeSeen: true, noticeTelegramId: notice?.telegram ?? null,
+    ...(policyKey && { noticePolicyKey: policyKey }), ...(officerInvited && { officerInvited: true }),
   });
 }
 
 /** Called at intake for an original message authored by the contact. An edit, quote or forward cannot grant consent. */
 export function observeDmConsent(tx: Tx, connectorId: string, chatId: string, messageId: string, position: number,
-  text: string, allowAcceptance = true): boolean {
+  text: string, allowAcceptance = true, policyKey?: string): boolean {
   const withdraws = isTelegramContactOptOut(text);
   if (!withdraws && (!allowAcceptance || !accepts(text))) return false;
-  const previous = recordedDmConsent(tx, connectorId, chatId);
+  const previous = recordedDmConsent(tx, connectorId, chatId, policyKey);
   if (previous && position <= previous.position) return false;
   if (!withdraws && (!previous?.noticeSeen || previous.status === 'accepted')) return false;
   const turn = source(tx, chatId, messageId);
@@ -74,6 +111,8 @@ export function observeDmConsent(tx: Tx, connectorId: string, chatId: string, me
   write(tx, connectorId, chatId, {
     status: withdraws ? 'withdrawn' : 'accepted', position, second: Math.max(turn.second, previous?.second ?? 0),
     noticeSeen: previous?.noticeSeen ?? false, noticeTelegramId: previous?.noticeTelegramId ?? null,
+    ...(previous?.noticePolicyKey && { noticePolicyKey: previous.noticePolicyKey }),
+    ...(previous?.officerInvited && { officerInvited: true }),
     ...(!withdraws && turn.telegram !== null ? { acceptanceTelegramId: turn.telegram } : {}),
     ...(withdraws && { withdrawalTelegramId: Math.max(turn.telegram ?? 0, previous?.withdrawalTelegramId ?? 0) }),
   });
@@ -82,13 +121,15 @@ export function observeDmConsent(tx: Tx, connectorId: string, chatId: string, me
 
 /** Both recent history and longer-term offer memory must start strictly after the acceptance message. */
 export function dmConsentForTurn(tx: Tx, connectorId: string, chatId: string, messageId: string, position: number,
-  text: string): ConsentTurn {
-  const consent = recordedDmConsent(tx, connectorId, chatId);
+  text: string, policyKey?: string, nativeIncoming = false): ConsentTurn {
+  const consent = recordedDmConsent(tx, connectorId, chatId, policyKey);
   const result = { enrolledAfter: consent?.position ?? 0, enrolledSecond: consent?.second ?? 0 };
   if (consent?.status === 'accepted') {
     const telegram = source(tx, chatId, messageId)?.telegram;
     const afterTelegramId = consent.acceptanceTelegramId;
-    const newer = position > consent.position && telegram != null && afterTelegramId !== undefined && telegram > afterTelegramId;
+    const sameConnection = !isOfficerEnrolledConsent(tx, consent, chatId, connectorId, policyKey) || nativeIncoming || (!!policyKey &&
+      provenConsentMessage(tx, connectorId, chatId, policyKey, telegram, false));
+    const newer = sameConnection && position > consent.position && telegram != null && afterTelegramId !== undefined && telegram > afterTelegramId;
     return { ...result, ...(afterTelegramId === undefined ? {} : { afterTelegramId }), action: newer && !accepts(text) ? 'reply' : 'wait' };
   }
   if (!consent || (!consent.noticeSeen && position > consent.position && accepts(text))) return { ...result, action: 'notice' };

@@ -1,6 +1,7 @@
 import { expect, it, onTestFinished, vi } from 'vitest';
 import { Harness, incoming, LIVE_BASE_ENV, standIns, WAIT } from '../helpers/telegram-live-harness.ts';
 import { aliReplyContent } from '../helpers/ali-reply-content.ts';
+import { currentAliPrompt } from '../../src/replies/ali-prompt.ts';
 
 it.each([
   { model: 'google/gemini-3.8-flash', useDefault: true },
@@ -9,17 +10,23 @@ it.each([
   const chatId = 6000000041;
   const stand = standIns();
   const network = globalThis.fetch;
-  const requests: { url: string; model: string; authorization: string | null }[] = [];
+  const linkedQuestion = 'The booking fee is due today. Does the shelf fit your room? https://seller.example.test/shelf';
+  const publicAnswer = 'What is the width of the shelf?';
+  const requests: { url: string; model: string; authorization: string | null; format: string; hasActivePrompt: boolean; hasQuestion: boolean }[] = [];
   const api = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = new URL(String(input));
     if (url.hostname === '127.0.0.1' && url.pathname.startsWith('/v1/chats')) return network(input, init);
     const request = JSON.parse(String(init?.body));
-    requests.push({ url: url.href, model: request.model, authorization: new Headers(init?.headers).get('authorization') });
+    requests.push({ url: url.href, model: request.model, authorization: new Headers(init?.headers).get('authorization'),
+      format: request.response_format.json_schema.name,
+      hasActivePrompt: request.messages[0].role === 'system' && request.messages[0].content.includes(currentAliPrompt().text.trimEnd()),
+      hasQuestion: request.messages.some((m: { role: string; content: string }) => m.role === 'user' && m.content.includes(linkedQuestion)) });
     if (url.href !== 'https://openrouter.ai/api/v1/chat/completions') return new Response(null, { status: 404 });
     const content = requests.length === 3 ? JSON.stringify({
       case_status: 'READY_FOR_OFFICER_REVIEW', should_reply: false, external_reply: null,
       review_reasons: ['upfront_fee', 'payment_pressure', 'contradictory_terms', 'unverified_payment_request'], silence_reason: null,
-    }) : aliReplyContent(requests.length === 1 ? 'How tall is it?' : 'اسمي علي.');
+    }) : request.response_format.json_schema.name === 'ali_public_reply' ? JSON.stringify({ external_reply: publicAnswer })
+      : aliReplyContent(requests.length === 1 ? 'How tall is it?' : 'اسمي علي.');
     return Response.json({ model: request.model, choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }] });
   });
   onTestFinished(() => { api.mockRestore(); });
@@ -32,21 +39,26 @@ it.each([
     for (const [index, message] of ['I have a bookshelf for sale.', 'شو اسمك؟'].entries()) {
       await h.receive(chatId, message);
       await vi.waitFor(() => expect(requests.length).toBeGreaterThan(index), WAIT);
-      expect(requests[index]).toEqual({ url: 'https://openrouter.ai/api/v1/chat/completions', model, authorization: 'Bearer synthetic-key' });
+      expect(requests[index]).toMatchObject({ url: 'https://openrouter.ai/api/v1/chat/completions', model, authorization: 'Bearer synthetic-key' });
       await vi.waitFor(() => expect(stand.sender.to(chatId)).toHaveLength(index + 1), WAIT);
     }
-    const triggering = await h.receive(chatId, 'Pay me an upfront fee in the next five minutes or I withdraw the offer.');
+    const triggering = await h.receive(chatId, linkedQuestion);
     await vi.waitFor(async () => {
       const reviews = await h.caseActionsOf(chatId, 'telegram_officer_review_requested');
       expect(reviews).toContainEqual(expect.objectContaining({
         messageId: triggering.id, detail: expect.objectContaining({
-          model, holdsReplies: true, reviewStatus: 'READY_FOR_OFFICER_REVIEW', reason: 'conversation_review',
+          model, holdsReplies: false, reviewStatus: 'READY_FOR_OFFICER_REVIEW', reason: 'conversation_review',
         }),
       }));
     }, WAIT);
-    expect(stand.sender.to(chatId).map(({ reply }) => reply.text)).toEqual(['How tall is it?', 'اسمي علي.']);
+    await h.app.drain();
+    expect(requests.slice(2)).toMatchObject([
+      { model, format: 'ali_decision', hasActivePrompt: true, hasQuestion: true },
+      { model, format: 'ali_public_reply', hasActivePrompt: true, hasQuestion: true },
+    ]);
+    expect(stand.sender.to(chatId).map(({ reply }) => reply.text)).toEqual(['How tall is it?', 'اسمي علي.', publicAnswer]);
     const actions = await h.caseActionsOf(chatId, 'ai_reply_sent');
-    expect(actions.map(action => action.detail.model)).toEqual([model, model]);
+    expect(actions.map(action => action.detail.model)).toEqual([model, model, model]);
     expect(h.logs.join('\n')).not.toContain('synthetic-key');
   } finally {
     await h.stop();
@@ -126,5 +138,51 @@ it.each(['first DM after dispatch', 'unanswered DM 19 minutes before dispatch'] 
     await h.app.drain();
     expect(requests).toHaveLength(1);
     expect(stand.sender.sent).toHaveLength(1);
+  } finally { await h.stop(); }
+});
+
+it.each([
+  { failure: 'wrong model', code: 'invalid_response' },
+  { failure: 'refusal', code: 'gemini_blocked' },
+  { failure: 'malformed model text', code: null },
+])('keeps the link warning and handles a provider $failure according to its source', async ({ failure, code }) => {
+  const chatId = 6000000042;
+  const model = 'google/gemini-3.8-flash';
+  const localFetch = globalThis.fetch;
+  const formats: string[] = [];
+  const fetchStub = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = new URL(String(input));
+    if (url.hostname === '127.0.0.1' && url.pathname.startsWith('/v1/')) return localFetch(input, init);
+    if (url.href !== 'https://openrouter.ai/api/v1/chat/completions') throw new Error('unexpected_test_transport');
+    const body = JSON.parse(String(init?.body));
+    const format = body.response_format.json_schema.name;
+    formats.push(format);
+    let content = aliReplyContent('Unaccepted draft.');
+    if (failure === 'malformed model text') {
+      content = format === 'ali_decision' ? 'invalid model text' : JSON.stringify({ external_reply: 'How wide is the shelf?' });
+    }
+    return Response.json({
+      model: failure === 'wrong model' ? 'synthetic/substituted' : model,
+      choices: [{ finish_reason: 'stop', message: { role: 'assistant', content,
+        ...(failure === 'refusal' && { refusal: 'synthetic refusal' }) } }],
+    });
+  });
+  onTestFinished(() => { fetchStub.mockRestore(); });
+  const stand = standIns();
+  const h = await Harness.start({ ...LIVE_BASE_ENV, TELEGRAM_APPROVED_CHAT_IDS: String(chatId), TELEGRAM_AI_AUTO_START: 'true',
+    MIRSAD_REPLY_PROVIDER: 'openrouter', OPENROUTER_API_KEY: 'synthetic-key' }, stand, undefined, true);
+  try {
+    const trigger = await h.receive(chatId, 'Is this the shelf you wanted? https://shop.example.test/shelf');
+    await h.app.drain();
+    if (code === null) {
+      expect(formats).toEqual(['ali_decision', 'ali_public_reply']);
+      expect(stand.sender.sent.map(sent => sent.reply.text)).toEqual(['How wide is the shelf?']);
+      expect(await h.caseActionsOf(chatId, 'ai_reply_failed')).toEqual([]);
+    } else {
+      expect(formats).toEqual(['ali_decision']);
+      expect(await h.caseActionsOf(chatId, 'ai_reply_failed')).toMatchObject([{ messageId: trigger.id, detail: { code } }]);
+      expect(stand.sender.sent).toEqual([]);
+    }
+    expect((await h.chatFor(chatId))!.telegramReplyHold).toMatchObject({ officerReview: null, evidenceItems: [{ reason: 'link' }] });
   } finally { await h.stop(); }
 });

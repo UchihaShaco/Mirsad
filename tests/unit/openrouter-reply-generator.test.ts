@@ -28,8 +28,10 @@ describe('selecting an OpenRouter reply model', () => {
     expect(await generator.generate(contact('There are two different terms.'), signal())).toBeNull();
   });
 
-  it('passes the officer brief and captured payment candidate as data apart from Ali’s rules', async () => {
-    const send = vi.fn<typeof fetch>().mockResolvedValue(Response.json(complete(aliReplyContent('What is it for?'))));
+  it('keeps the officer brief and payment annotation in the assessment while the public writer sees the sender’s message', async () => {
+    const send = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json(complete(aliReplyContent('What is it for?'))))
+      .mockResolvedValueOnce(Response.json(complete(JSON.stringify({ external_reply: 'Which item is in the listing?' }))));
     const generator = make(send);
     const brief = 'Report mentions a deposit for a sample item.';
     const payment = { id: 1, host: 'pay.example.test', excerpt: 'The sender calls this an advance payment.' };
@@ -42,6 +44,14 @@ describe('selecting an OpenRouter reply model', () => {
     expect(body.messages[0].content).not.toContain(payment.host);
     expect(body.messages.at(-1).content).toContain('I am offering a sample item.');
     expect(body.messages.at(-1).content).toContain(JSON.stringify({ officer_brief: brief, payment_link_candidates: [payment] }));
+    const message = 'Here is the sample listing: https://pay.example.test/item';
+    expect(await generator.composePublicReply(contact(message), signal(), undefined, [message], undefined,
+      { dispatchBrief: brief, paymentLinks: [payment] })).toBe('Which item is in the listing?');
+    const publicRequest = JSON.parse(String(send.mock.calls[1]?.[1]?.body));
+    expect(publicRequest.messages.at(-1).content).toContain(message);
+    const visible = JSON.stringify(publicRequest.messages);
+    expect(visible.includes(brief)).toBe(false);
+    expect(visible.includes(payment.excerpt)).toBe(false);
   });
 
   it('retains Gemini as the default and permits exactly the two named models', () => {

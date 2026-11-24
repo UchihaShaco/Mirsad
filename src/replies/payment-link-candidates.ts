@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { extractUrlTokens, hostOfNormalizedLink, maskUrls, normalizeLink, urlTokenOffset } from '../domain/links.ts';
+import { extractUrlTokens, hostOfNormalizedLink, maskUrls, normalizeTelegramLink, urlTokenOffset } from '../domain/links.ts';
 import type { ModelPaymentLinkCandidate } from './reply-generator.ts';
 
 const MAX_CANDIDATES = 8;
@@ -36,11 +36,11 @@ export function candidatePaymentLinks(chatId: string, sources: readonly SourceTe
   const seen = new Set(alreadyFlagged);
   const candidates: PaymentLinkCandidate[] = [];
   for (const { messageId, messageEventId, text } of sources) {
-    const urls = extractUrlTokens(text);
+    const urls = extractUrlTokens(text, normalizeTelegramLink);
     if (urls.length === 0) continue;
-    const masked = maskUrls(text);
+    const masked = maskUrls(text, normalizeTelegramLink);
     for (const url of urls) {
-      const normalized = normalizeLink(url);
+      const normalized = normalizeTelegramLink(url);
       if (!normalized) continue;
       const itemKey = paymentLinkKey(chatId, normalized);
       if (seen.has(itemKey)) continue;

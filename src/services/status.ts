@@ -61,6 +61,7 @@ export interface StatusDeps {
   workspaceId: string;
   /** True only while the Telegram live connector is polling. */
   liveConnectorRunning: boolean;
+  whatsappDemoStatus?: 'demo_listening' | 'demo_unavailable';
   /** Defaults to DEFAULT_READINESS_FILE. */
   readinessFile?: string;
 }
@@ -168,7 +169,7 @@ export async function readStatus(deps: StatusDeps): Promise<Status> {
         liveConnector: deps.liveConnectorRunning ? 'enabled' : 'disabled',
         ...readiness(config, deps.readinessFile ?? DEFAULT_READINESS_FILE),
       },
-      whatsapp: { status: 'not_started', gate: whatsappGate(config) },
+      whatsapp: { status: deps.whatsappDemoStatus ?? 'not_started', gate: whatsappGate(config) },
     },
   };
 }

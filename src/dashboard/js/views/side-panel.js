@@ -3,7 +3,7 @@
  * its internal case log, oldest first. Everything an officer or a source wrote is set as plain text.
  */
 import { bdi, clear, h, timeEl, withFocus } from '../dom.js';
-import { AI_MODE_LABELS, AI_REPLY_FAILURE_NOTES, CASE_ACTION_LABELS, conversationReviewSummary, silenceSummary, TELEGRAM_EVIDENCE_LABELS } from '../format.js';
+import { AI_MODE_LABELS, AI_REPLY_FAILURE_NOTES, CASE_ACTION_LABELS, conversationReviewSummary, reviewWarningLabel, silenceExplanation, silenceSummary, TELEGRAM_EVIDENCE_LABELS } from '../format.js';
 import { caseReferenceRequest } from '../state/case-reference.js';
 import { chatHref } from '../state/route.js';
 import { matchList } from './matches.js';
@@ -53,7 +53,11 @@ function aiReplyNote(action) {
     return meetingSources(action.chatId, sources, action.id, false);
   }
   if (action.type === 'ai_reply_skipped') {
-    return h('span', { className: 'case-log-meta', text: silenceSummary(detail) });
+    const why = silenceExplanation(detail);
+    return h('span', { className: 'case-log-meta' }, [
+      h('span', { text: silenceSummary(detail) }),
+      why ? h('span', { className: 'case-log-why' }, [h('span', { className: 'why-label', text: ' Why: ' }), h('q', { dir: 'auto', text: why })]) : null,
+    ]);
   }
   if (action.type === 'telegram_officer_review_requested') {
     const text = detail.reason === 'conversation_review' ? conversationReviewSummary(detail)
@@ -90,6 +94,9 @@ function meetingSources(chatId, sources, focusScope, showExplanation) {
 }
 
 function aiReplyFailureText(detail) {
+  if (detail.code === 'store_failed' && detail.telegramMessageId != null) {
+    return 'Telegram confirmed the send. Mirsad could not save the reply. Check Telegram before retrying.';
+  }
   const note = Object.hasOwn(AI_REPLY_FAILURE_NOTES, detail.code) ? AI_REPLY_FAILURE_NOTES[detail.code] : null;
   const rule = typeof detail.rule === 'string' ? ` (${detail.rule})` : '';
   if (note !== null) return `${note}${rule}.`;
@@ -99,9 +106,10 @@ function aiReplyFailureText(detail) {
 
 function caseLogEntry(action) {
   const meta = [timeEl(action.occurredAt)];
+  const warning = action.type === 'telegram_officer_review_requested' && reviewWarningLabel(action.detail?.reason);
   if (action.actor !== null) meta.unshift(bdi(action.actor.displayName), h('span', { text: ', ' }));
   return h('li', { className: 'case-log-entry', dataset: { actionType: action.type } }, [
-    h('strong', { text: CASE_ACTION_LABELS[action.type] ?? action.type }),
+    h('strong', { text: warning ? `${warning} recorded` : CASE_ACTION_LABELS[action.type] ?? action.type }),
     modeChange(action),
     aiReplyNote(action),
     h('span', { className: 'case-log-meta' }, meta),
@@ -118,6 +126,8 @@ function drawSidePanel(refs, state) {
   clear(refs.caseLog);
   clear(refs.meetingSources);
   const { timeline } = state;
+  // Where the panel covers the conversation, its heading still says whose case this is.
+  refs.evidenceChatLabel.textContent = timeline?.chat.displayLabel ?? '';
   const assessment = state.previous ? timeline?.chat.previousLowerConcern : timeline?.chat.lowerConcern;
   refs.assessmentPanel.hidden = !assessment;
   if (assessment) refs.meetingSources.append(meetingSources(timeline.chat.id, assessment.sources, 'summary', true));

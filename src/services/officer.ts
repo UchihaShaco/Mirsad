@@ -15,8 +15,9 @@ import * as messages from '../storage/repos/messages.ts';
 import { findChannelAccountById } from '../storage/repos/principals.ts';
 import type { CaseActionRow, ChatRow, MessageRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
+import { readChatTestBoundary } from './chat-test-session.ts';
 import { assertRevision } from './control.ts';
-import { getTelegramReplyHold } from './telegram-reply-holds.ts';
+import { getTelegramReplyHold, isTelegramLinkWarning, rememberReviewedTelegramLink } from './telegram-reply-holds.ts';
 import { principalLookup, toCaseAction, toMessage } from './mappers.ts';
 import { appendStreamEvent } from './stream.ts';
 
@@ -99,11 +100,19 @@ function markReviewed(tx: Tx, officer: Principal, chatId: string, reviewActionId
   if (existing) return { caseAction: toCaseAction(existing, principalLookup(tx)), created: false };
   assertRevision(chat, revision);
   const hold = getTelegramReplyHold(tx, chat.id);
-  if (!hold.officerReview) throw AppError.of('invalid_transition', 'Evidence has not reached the review threshold.');
+  const item = hold.evidenceItems.find(candidate => candidate.actionId === flag.id);
+  // Gemini can add a payment assessment while the officer is reading the original link warning.
+  const reason = flag.detail && (JSON.parse(flag.detail) as { reason?: string }).reason;
+  if (!item && !(reason && isTelegramLinkWarning(reason) && flag.position > readChatTestBoundary(tx, chat.id))) {
+    throw AppError.of('invalid_transition', 'This item is no longer pending. Refresh the evidence list.');
+  }
+  const lastHold = item?.reason === 'bank_details' &&
+    !hold.evidenceItems.some(other => other.actionId !== flag.id && other.reason === 'bank_details');
   const row = caseActions.record(tx, {
     chatId: chat.id, workspaceId: chat.workspace_id, type: 'telegram_officer_review_resolved', actorId: officer.id,
-    messageId: flag.message_id, revision, detail: { reviewActionId: flag.id, cycleComplete: hold.evidenceItems.length === 1 },
+    messageId: flag.message_id, revision, detail: { reviewActionId: flag.id, cycleComplete: lastHold || (item !== undefined && hold.evidenceItems.length === 1) },
   });
+  rememberReviewedTelegramLink(tx, chat.id, flag.id);
   return { caseAction: toCaseAction(row, principalLookup(tx)), created: true };
 }
 

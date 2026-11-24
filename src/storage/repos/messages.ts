@@ -6,6 +6,14 @@ import type { Direction, MessageEventType, ReviewStatus } from '../../contract/e
 import type { Tx } from '../db.ts';
 import type { MessageEventRow, MessageRow } from '../rows.ts';
 
+export function hasTelegramQuote(kinds: readonly string[]): boolean {
+  return kinds.includes('forwarded') || kinds.includes('blockquote');
+}
+
+/** Originals keep their own metadata. For an edited message only use its text when the latest edit was classified. */
+export const directTelegramTextSql = `(m.edited_at_source=0 OR m.telegram_edit_is_direct IS 1)
+  AND NOT EXISTS (SELECT 1 FROM json_each(m.unsupported_content) WHERE value IN ('forwarded','blockquote'))`;
+
 export function findMessageById(tx: Tx, messageId: string): MessageRow | undefined {
   return tx.get<MessageRow>('SELECT * FROM messages WHERE id = :messageId', { messageId });
 }
@@ -138,8 +146,9 @@ export function fillPlaceholder(tx: Tx, messageId: string, content: SourceConten
   return row;
 }
 
-export function markEditedAtSource(tx: Tx, messageId: string): MessageRow {
-  const row = tx.get<MessageRow>('UPDATE messages SET edited_at_source = 1 WHERE id = :messageId RETURNING *', { messageId });
+export function markEditedAtSource(tx: Tx, messageId: string, telegramEditIsDirect: boolean | null): MessageRow {
+  const row = tx.get<MessageRow>('UPDATE messages SET edited_at_source=1, telegram_edit_is_direct=? WHERE id=? RETURNING *',
+    [telegramEditIsDirect, messageId]);
   if (!row) throw new Error('message_update_failed');
   return row;
 }
