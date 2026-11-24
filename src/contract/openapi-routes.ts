@@ -24,6 +24,8 @@ export interface RouteDoc {
   request?: string;
   /** The zod query schema is described through this marker; see `listChatsQuery` in openapi.ts. */
   listChatsQuery?: boolean;
+  /** Same, for `GET /v1/places/search` (`placesSearchQuery` in openapi.ts). */
+  placesSearchQuery?: boolean;
   idempotencyKey?: boolean;
   success: SuccessDoc[];
   errors: ErrorCode[];
@@ -240,6 +242,25 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     request: 'ConsentPromptRequest',
     success: [{ status: 200, description: 'Saved invitation setting.', schema: 'ConsentPromptResponse' }],
     errors: ['account_not_found', 'validation_failed'],
+  },
+  'GET /v1/places/search': {
+    summary: 'Search the Abu Dhabi places directory',
+    description: 'Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), up to 200 per page with an opaque cursor.',
+    success: [{ status: 200, description: 'Matching places, the distinct categories of all matches, and the next page cursor.', schema: 'PlacesSearchResponse', paginated: true }],
+    errors: ['validation_failed'],
+    placesSearchQuery: true,
+  },
+  'GET /v1/places/{placeId}': {
+    summary: 'Read one place from the directory',
+    success: [{ status: 200, description: 'The place for the map details panel.', schema: 'PlacesDetailResponse' }],
+    errors: ['not_found'],
+  },
+  'GET /v1/map/tiles/{z}/{x}/{y}': {
+    summary: 'Proxied map tile for the places map',
+    description: 'Raster tiles are served from our own origin with a disk cache, so the dashboard Content-Security-Policy stays same-origin. Map data: OpenStreetMap contributors.',
+    kind: 'png',
+    success: [{ status: 200, description: 'PNG tile bytes.' }],
+    errors: ['validation_failed'],
   },
   'GET /healthz': {
     summary: 'Liveness check',

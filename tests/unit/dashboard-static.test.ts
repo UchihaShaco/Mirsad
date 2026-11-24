@@ -61,6 +61,8 @@ describe('dashboard static files', () => {
       ['/assets/styles.css', 'text/css; charset=utf-8'],
       ['/assets/js/main.js', 'text/javascript; charset=utf-8'],
       ['/assets/js/state/composer.js', 'text/javascript; charset=utf-8'],
+      ['/assets/js/views/places-map.js', 'text/javascript; charset=utf-8'],
+      ['/assets/js/map-slippy.js', 'text/javascript; charset=utf-8'],
       ['/assets/icon.svg', 'image/svg+xml'],
     ];
     for (const [target, contentType] of expected) {

@@ -19,6 +19,7 @@ import { createLmStudioReplyGenerator, type ReplyGenerator } from './replies/rep
 import { createOpenRouterReplyGenerator } from './replies/openrouter-reply-generator.ts';
 import { createReviewer } from './review/reviewer-factory.ts';
 import { createStreamBus, type StreamBus } from './services/stream.ts';
+import { PLACES_FILE, loadPlaces, type PlaceRecord } from './places/store.ts';
 import { DATABASE_FILE, openDatabase, type Db } from './storage/db.ts';
 import { createLocalEvidenceStore } from './storage/local-evidence-store.ts';
 import { flushErasedEvidence } from './services/erased-evidence.ts';
@@ -46,6 +47,10 @@ export interface AppOptions {
   telegramEraser?: TelegramEraser;
   /** Overrides the default reply generator for tests. */
   replyGenerator?: ReplyGenerator;
+  /** Places directory entries; tests pass a small array, otherwise they load from the data directory. */
+  places?: PlaceRecord[];
+  /** Raster tile provider base URL; tests point it at a local stub. */
+  mapTileUpstream?: string;
   /** How often the reply worker looks for a message to answer besides being woken. Tests set it long, so a missing wake shows. */
   aiReplyPollIntervalMs?: number;
 }
@@ -68,6 +73,10 @@ export interface AppDeps {
   workers: { capture: { wake(): void }; review: { wake(): void } };
   streamKeepAliveMs: number;
   startedAt: string;
+  /** Abu Dhabi places directory; empty when the data file has not been fetched yet. */
+  places: readonly PlaceRecord[];
+  /** Base URL of the raster tile provider proxied for the places map. */
+  mapTileUpstream: string;
   telegramLive: { running(): boolean; repliesRunning(): boolean; forgetChat?(chatId: string): void };
   telegramEraser?: TelegramEraser;
 }
@@ -93,6 +102,17 @@ interface Runtime {
 function senderFor(config: Config): BotSender | null {
   const token = config.telegram.botToken;
   return token && isWellFormedBotToken(token) ? createBotSender({ token }) : null;
+}
+
+/** Loads the Abu Dhabi places file; a missing file leaves the directory empty, a corrupt one fails startup. */
+function readPlaces(dataDir: string, logger: Logger, override?: PlaceRecord[]): PlaceRecord[] {
+  if (override) return override;
+  const file = path.join(dataDir, PLACES_FILE);
+  if (!fs.existsSync(file)) {
+    logger.warn('places_file_missing', {});
+    return [];
+  }
+  return loadPlaces(file);
 }
 
 function aiReplyWorkerFor(options: AppOptions, deps: AppDeps): AiReplyWorker | null {
@@ -158,6 +178,8 @@ function buildRuntime(options: AppOptions): Runtime {
     },
     streamKeepAliveMs: options.streamKeepAliveMs ?? DEFAULT_STREAM_KEEP_ALIVE_MS,
     startedAt: clock.now().toISOString(),
+    places: readPlaces(config.dataDir, logger, options.places),
+    mapTileUpstream: options.mapTileUpstream ?? 'https://tile.openstreetmap.org',
     telegramLive: {
       running: () => live?.stats().running ?? false,
       repliesRunning: () => aiReplies?.running() ?? false,

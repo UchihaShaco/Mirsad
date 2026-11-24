@@ -22,6 +22,8 @@ import { routes as ingest } from './ingest.ts';
 import { routes as investigationOpeners } from './investigation-openers.ts';
 import { routes as me } from './me.ts';
 import { routes as officer } from './officer.ts';
+import { routes as places } from './places.ts';
+import { routes as mapTiles } from './map-tiles.ts';
 import { routes as status } from './status.ts';
 import { routes as timeline } from './timeline.ts';
 import { routes as telegramDmReplies } from './telegram-dm-replies.ts';
@@ -70,6 +72,9 @@ export const ROUTES: readonly RouteSpec[] = [
   route('GET', '/v1/watchlist', 'officer'),
   route('POST', '/v1/watchlist/{entryId}/review', 'officer'),
   route('POST', '/v1/chats/{chatId}/scammer-flags', 'officer', true),
+  route('GET', '/v1/places/search', 'officer', true),
+  route('GET', '/v1/places/{placeId}', 'officer', true),
+  route('GET', '/v1/map/tiles/{z}/{x}/{y}', 'officer', true),
   route('POST', '/v1/chats/{chatId}/case-references', 'officer', true),
   route('POST', '/v1/captures/{captureId}/retry', 'officer', true),
   route('GET', '/v1/me', 'any', true),
@@ -87,6 +92,7 @@ export const ROUTES: readonly RouteSpec[] = [
 const MODULES: RouteModule[] = [
   chats, ingest, chatEvents, dispatches, timeline, artifacts, captures, control, erasure, telegramErase,
   officer, eventsStream, watchlist, scammerFlags, caseReferences, status, health, me, dashboardStatic, telegramDmReplies, investigationOpeners,
+  places, mapTiles,
 ];
 
 const GUARDS: Record<RouteAuth, MiddlewareHandler<AppEnv> | null> = {

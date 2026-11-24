@@ -1,0 +1,16 @@
+{
+  "source": "overture",
+  "overture_release": "2026-11-18.0",
+  "bbox": [
+    54.2,
+    24.2,
+    54.7,
+    24.65
+  ],
+  "built_at": "2026-11-24T20:46:29.144301Z",
+  "records": 26040,
+  "with_urls": 13930,
+  "with_phones": 20794,
+  "sha256": "240f4f132aabfc2c411b8960fd049ebc965447b5402894d31af1028e4d07608a",
+  "generator": "scripts/build-places-json.py"
+}

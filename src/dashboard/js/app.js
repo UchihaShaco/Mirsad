@@ -16,6 +16,7 @@ import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
 import { bindCaseReferenceForm } from './views/side-panel.js';
 import { createWatchlistView } from './views/watchlist.js';
+import { createPlacesView } from './views/places-map.js';
 import { bindWorkspace, DOCKED_EVIDENCE, resetCaseTools } from './views/workspace.js';
 import { bindPhoneDispatch } from './views/phone-dispatch.js';
 import { bindScammerFlag } from './views/scammer-flag.js';
@@ -59,6 +60,12 @@ function applyRoute(ctx) {
     resetCaseTools(ctx.refs);
     ctx.setState({ view: 'watchlist', evidenceOpen: false });
     void ctx.load.watchlist();
+    return;
+  }
+  if (route.view === 'places') {
+    resetCaseTools(ctx.refs);
+    ctx.setState({ view: 'places', evidenceOpen: false });
+    ctx.placesView.refresh();
     return;
   }
   // History may point back to a message while the phone is displaying its evidence pane.
@@ -237,11 +244,13 @@ function stop(ctx) {
 
 export function startDashboard({ api, me, token, refs, onSessionEnded }) {
   let state = initialState(me);
+  const listeners = new AbortController();
   const ctx = {
     api, refs, token, onSessionEnded,
-    listeners: new AbortController(),
+    listeners,
     captures: createCaptureCache(api),
     watchlistView: createWatchlistView(refs.watchlist),
+    placesView: createPlacesView(refs, api, listeners.signal),
     tickets: { inbox: 0, timeline: 0, watchlist: 0, dmReplies: 0, consentPrompt: 0 },
     stream: null, queueScroll: 0, dispatchKeys: new Map(), dispatchExpiry: null,
     render: () => undefined,

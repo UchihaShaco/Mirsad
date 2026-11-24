@@ -571,6 +571,52 @@ export const Status = z.object({
 });
 export type Status = z.infer<typeof Status>;
 
+// ---- Places directory (Abu Dhabi) ----
+
+/** Only http(s) URLs may enter the directory: rows land in clickable hrefs, so javascript:/data: schemes must fail closed. */
+const httpUrl = z
+  .string()
+  .url()
+  .max(2000)
+  .refine((url) => /^https?:\/\//i.test(url), { message: 'Only http and https URLs are accepted.' });
+
+export const PlaceRecord = z.object({
+  id: z.string().min(1).max(200),
+  name: z.string().min(1).max(300),
+  name_ar: z.string().max(300).nullable(),
+  location_link: httpUrl,
+  urls: z.array(httpUrl).max(50),
+  phones: z.array(z.string().min(1).max(32)).max(20),
+  description: z.string().min(1).max(1000),
+  category: z.string().min(1).max(120),
+  address: z.string().max(500).nullable(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  confidence: z.number().min(0).max(1).nullable(),
+  source: z.enum(['overture', 'osm', 'google']),
+  updated_at: z.iso.datetime(),
+});
+export type PlaceRecord = z.infer<typeof PlaceRecord>;
+
+export const PlacesSearchQuery = z.object({
+  q: z.string().trim().max(200).optional(),
+  category: z.string().trim().max(120).optional(),
+  /** Visible map area as minLng,minLat,maxLng,maxLat. */
+  bbox: z.string().trim().max(120).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(100),
+  cursor: z.string().max(200).optional(),
+});
+export type PlacesSearchQuery = z.infer<typeof PlacesSearchQuery>;
+export const PlacesSearchResponse = z.object({
+  places: z.array(PlaceRecord),
+  nextCursor: z.string().nullable(),
+  /** Distinct categories of the whole match set, so the filter dropdown never depends on the visible page. */
+  categories: z.array(z.string()),
+});
+export type PlacesSearchResponse = z.infer<typeof PlacesSearchResponse>;
+export const PlacesDetailResponse = z.object({ place: PlaceRecord });
+export type PlacesDetailResponse = z.infer<typeof PlacesDetailResponse>;
+
 // ---- Envelopes ----
 
 export const ErrorEnvelope = z.object({
@@ -589,6 +635,7 @@ export const CONTRACT_SCHEMAS = {
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
   WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, MeResponse,
+  PlaceRecord, PlacesSearchResponse, PlacesDetailResponse,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
   DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,
 } as const;

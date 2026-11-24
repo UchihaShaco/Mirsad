@@ -8,6 +8,7 @@ import { createDefaultRenderer } from '../../src/capture/index.ts';
 import { createDeterministicReviewer } from '../../src/review/deterministic-reviewer.ts';
 import { createJsonLogger } from '../../src/logging/json-logger.ts';
 import { openDatabase, DATABASE_FILE } from '../../src/storage/db.ts';
+import type { PlaceRecord } from '../../src/places/store.ts';
 import { FakeClock } from './fake-clock.ts';
 import { ControllableRenderer } from './controllable-renderer.ts';
 import { ScriptedReviewer } from './scripted-reviewer.ts';
@@ -51,6 +52,10 @@ export interface HarnessOverrides {
   config?: Partial<Config>;
   streamKeepAliveMs?: number;
   startAt?: string;
+  /** Places directory entries served by the instance; defaults to an empty directory. */
+  places?: PlaceRecord[];
+  /** Raster tile provider base URL; defaults to OpenStreetMap. */
+  mapTileUpstream?: string;
 }
 
 async function send(baseUrl: string, token: string | null, method: string, urlPath: string, body: unknown, headers: Record<string, string> = {}): Promise<ApiResponse> {
@@ -117,6 +122,8 @@ export async function startHarness(overrides: HarnessOverrides = {}): Promise<Te
       renderer,
       reviewer,
       logger,
+      places: overrides.places,
+      mapTileUpstream: overrides.mapTileUpstream,
       streamKeepAliveMs: overrides.streamKeepAliveMs ?? TEST_KEEP_ALIVE_MS,
     });
     const { url, port } = await app.listen();

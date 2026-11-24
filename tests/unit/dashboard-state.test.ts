@@ -392,6 +392,7 @@ describe('URL fragment', () => {
     expect(parseRoute('#/unknown/place')).toEqual(inbox);
     expect(parseRoute('#/chats')).toEqual(inbox);
     expect(parseRoute('#/watchlist')).toEqual({ view: 'watchlist', chatId: null, messageId: null });
+    expect(parseRoute('#/places')).toEqual({ view: 'places', chatId: null, messageId: null });
     expect(parseRoute('#/chats/chat_1')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: null });
     expect(parseRoute('#/chats/chat_1/messages/msg_1')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: 'msg_1' });
     expect(parseRoute('#chats/chat_1/')).toEqual({ view: 'inbox', chatId: 'chat_1', messageId: null });
