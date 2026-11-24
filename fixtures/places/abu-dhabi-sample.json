@@ -1,0 +1,103 @@
+[
+  {
+    "id": "2ca3aec0-e67f-4199-99f4-a98ef0cefb79",
+    "name": "Aesop",
+    "name_ar": null,
+    "location_link": "https://www.google.com/maps/search/?api=1&query=24.488819,54.608689",
+    "urls": [
+      "https://www.aesop.ae/"
+    ],
+    "phones": [
+      "+97126429176"
+    ],
+    "description": "Beauty supply store, in Abu Dhabi — Ground Floor, G-154",
+    "category": "beauty_supply_store",
+    "address": "Ground Floor, G-154, Abu Dhabi, AE",
+    "lat": 24.488819,
+    "lng": 54.608689,
+    "confidence": 1.0,
+    "source": "overture",
+    "updated_at": "2026-11-24T20:46:29.144301Z"
+  },
+  {
+    "id": "c2e77fb3-9236-46d0-9d0a-d14cacee4001",
+    "name": "Rentokil",
+    "name_ar": null,
+    "location_link": "https://www.google.com/maps/search/?api=1&query=24.451425,54.642122",
+    "urls": [
+      "https://www.rentokil-boecker.com/ae/",
+      "https://www.rentokil-boecker.com/ae/about/locations/abu-dhabi"
+    ],
+    "phones": [
+      "+97125599789"
+    ],
+    "description": "Pest control service, in Abu Dhabi — AL Fahim Building, 4th Floor, Office 424",
+    "category": "pest_control_service",
+    "address": "AL Fahim Building, 4th Floor, Office 424, Abu Dhabi, AE",
+    "lat": 24.451425,
+    "lng": 54.642122,
+    "confidence": 1.0,
+    "source": "overture",
+    "updated_at": "2026-11-24T20:46:29.144301Z"
+  },
+  {
+    "id": "051caae6-ac27-4026-9575-80745afd0c18",
+    "name": "Burberry",
+    "name_ar": null,
+    "location_link": "https://www.google.com/maps/search/?api=1&query=24.5012497,54.38852051",
+    "urls": [
+      "https://ae.burberry.com/store-locator/united-arab-emirates/the-galleria-at-sowwah-square-abu-dhabi/1032/?utm_source=Yext&utm_medium=organic&utm_campaign=AE1032&y_source=1_MzMyODQ2Ny01NTktbG9jYXRpb24ud2Vic2l0ZQ%3D%3D"
+    ],
+    "phones": [
+      "+97125864155"
+    ],
+    "description": "Clothing store, in أبوظبي — The Galleria Al Maryah Island Unit SU126, LV1 The Galleria Al Maryah Island",
+    "category": "clothing_store",
+    "address": "The Galleria Al Maryah Island Unit SU126, LV1 The Galleria Al Maryah Island, أبوظبي, AE",
+    "lat": 24.5012497,
+    "lng": 54.38852051,
+    "confidence": 0.9999868025061488,
+    "source": "overture",
+    "updated_at": "2026-11-24T20:46:29.144301Z"
+  },
+  {
+    "id": "7656c392-09ae-4f4d-ba3f-263c227eb638",
+    "name": "H&M",
+    "name_ar": null,
+    "location_link": "https://www.google.com/maps/search/?api=1&query=24.48845232,54.60871884",
+    "urls": [
+      "https://ae.hm.com/ar?utm_source=facebook_location&utm_medium=organic&utm_campaign=AE0273"
+    ],
+    "phones": [
+      "+97124926530"
+    ],
+    "description": "Clothing store, in أبوظبي — Yas Mall",
+    "category": "clothing_store",
+    "address": "Yas Mall, أبوظبي, AE",
+    "lat": 24.48845232,
+    "lng": 54.60871884,
+    "confidence": 0.999974957768321,
+    "source": "overture",
+    "updated_at": "2026-11-24T20:46:29.144301Z"
+  },
+  {
+    "id": "b04e2226-2589-474d-9dba-91e6d4358a63",
+    "name": "H&M",
+    "name_ar": null,
+    "location_link": "https://www.google.com/maps/search/?api=1&query=24.33308135,54.52373198",
+    "urls": [
+      "https://ae.hm.com/ar?utm_source=facebook_location&utm_medium=organic&utm_campaign=AE0440"
+    ],
+    "phones": [
+      "+97126120630"
+    ],
+    "description": "Clothing store, in أبوظبي — Dalma Mall Musaffah Road Abu Dhabi",
+    "category": "clothing_store",
+    "address": "Dalma Mall Musaffah Road Abu Dhabi, أبوظبي, AE",
+    "lat": 24.33308135,
+    "lng": 54.52373198,
+    "confidence": 0.9999725868672132,
+    "source": "overture",
+    "updated_at": "2026-11-24T20:46:29.144301Z"
+  }
+]
