@@ -24,7 +24,7 @@ const RATE_LIMITED = { success: false, data: null, error: { code: 'rate_limited'
 const CONFIRMATION_NOTE = 'The merchant confirmed its payment page by phone.';
 
 type Account = { source: 'telegram'; externalAccountId: string };
-type InboxRegion = 'New messages' | 'Open chats';
+type InboxRegion = 'New messages' | 'Suspects' | 'Open chats';
 
 interface Dashboard {
   page: Page;
@@ -1070,6 +1070,53 @@ describe('reference dashboard', () => {
     await inboxItem(page, 'Open chats', 'First Contact A').filter({ hasText: 'AI active' }).waitFor();
     expect(await inboxItem(page, 'Open chats', 'First Contact A').locator('.first-contact').count()).toBe(0);
     expect(problems).toEqual([]);
+  });
+
+  it('flags a contact as a scammer: the number goes to the phone watchlist and the chat moves to Suspects', async () => {
+    const seeded = await seedChat(h.accounts.intake, 'Flag Contact', 'Pay the fee first, then I ship.');
+    await h.drain();
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await openChat(page, 'Flag Contact');
+    const open = button(page, 'Flag as scammer');
+    await open.click();
+    const dialog = page.getByRole('dialog', { name: 'Flag as scammer' });
+    await dialog.getByText('Flag Contact', { exact: true }).waitFor();
+    await dialog.getByLabel('Their phone number').fill('07700 900321');
+    await dialog.getByLabel('Why are they a scammer?').fill('Asked for an upfront fee before shipping.');
+    await dialog.getByRole('button', { name: 'Flag and add to watchlist' }).click();
+    await dialog.getByText('Enter the number in international format, starting with + or 00.', { exact: true }).waitFor();
+    await dialog.getByLabel('Their phone number').fill('+44 7700 900321');
+    await dialog.getByRole('button', { name: 'Flag and add to watchlist' }).click();
+    await dialog.waitFor({ state: 'hidden' });
+
+    const header = page.locator('#chat-header');
+    await header.locator('.signal-suspect').getByText('+44 7700 900321', { exact: true }).waitFor();
+    expect(await open.isHidden()).toBe(true);
+    const row = inboxItem(page, 'Suspects', 'Flag Contact');
+    await row.getByText('Suspect', { exact: true }).waitFor();
+    expect(await inboxItem(page, 'New messages', 'Flag Contact').count()).toBe(0);
+    expect(await inboxItem(page, 'Open chats', 'Flag Contact').count()).toBe(0);
+    await page.locator('#inbox-filter-suspects').click();
+    await row.waitFor();
+    expect(await page.getByRole('region', { name: 'Open chats', exact: true }).isHidden()).toBe(true);
+
+    // Only the number is on the watchlist, approved, with the officer's flag as its evidence.
+    const entry = (await h.http(h.tokens.officerA).get('/v1/watchlist')).body.data.entries
+      .find((e: { number: { e164: string } }) => e.number.e164 === '+447700900321');
+    expect(entry).toMatchObject({ status: 'approved', evidence: [{ chatId: seeded.chatId, origin: 'officer_flag' }] });
+    await header.getByRole('link', { name: 'Open watchlist' }).click();
+    await page.locator('#watchlist-view').getByText('+44 7700 900321').first().waitFor();
+    await page.locator('#watchlist-view').getByText('Flagged by an officer').first().waitFor();
+
+    // Clearing the number on the watchlist moves the chat back.
+    const cleared = await h.http(h.tokens.officerA).post(`/v1/watchlist/${entry.id}/review`,
+      { decision: 'clear', reason: 'Entered the wrong number.', expectedRevision: entry.revision });
+    expect(cleared.status, cleared.text).toBe(200);
+    await page.goto(`${h.baseUrl}/#/chats/${seeded.chatId}`);
+    await button(page, 'Flag as scammer').waitFor();
+    expect(await page.getByRole('region', { name: 'Suspects', exact: true }).isHidden()).toBe(true);
+    // The one refused request is the local-format number, which the dialog explained.
+    expect(problems.filter((text) => !text.includes('status of 422'))).toEqual([]);
   });
 
   it('dispatches a briefing only for its selected chat and opens an editable local draft for a new contact', async () => {

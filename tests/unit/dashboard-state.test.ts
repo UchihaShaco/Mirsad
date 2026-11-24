@@ -38,7 +38,7 @@ function chatSummary(overrides: Partial<ChatSummary> = {}): ChatSummary {
     acknowledgementTemplate: null,
     review: { state: 'idle', pending: 0, unavailable: 0 },
     telegramReplyHold: { contactOptedOut: false, officerReview: null, evidenceItems: [] },
-    lowerConcern: null, previousLowerConcern: null, firstContact: null,
+    lowerConcern: null, previousLowerConcern: null, firstContact: null, suspect: null,
     watchlistMatches: [],
     messageCount: 1,
     lastActivityAt: AT,
@@ -280,13 +280,32 @@ describe('inbox grouping', () => {
       chatSummary({ id: 'chat_new_a', inboxStatus: 'new_inbound', lastActivityAt: '2026-11-21T08:02:00.000Z' }),
       chatSummary({ id: 'chat_new_b', inboxStatus: 'new_inbound', lastActivityAt: '2026-11-21T08:01:00.000Z' }),
     ];
-    expect(INBOX_FILTERS).toEqual(['all', 'new_messages', 'review', 'lower_concern']);
+    expect(INBOX_FILTERS).toEqual(['all', 'new_messages', 'suspects', 'review', 'lower_concern']);
     const groups = groupInbox(chats, 'new_messages');
     expect(groups.newInbound.map(chat => chat.id)).toEqual(['chat_new_a', 'chat_new_b']);
     expect(groups.open).toEqual([]);
     expect([...selectableChatIds(chats, 'new_messages')].sort()).toEqual(['chat_new_a', 'chat_new_b']);
     // Switching to New messages drops an open chat from the batch, so Dispatch acts only on what the officer sees.
     expect([...pruneSelection(new Set(['chat_open', 'chat_new_b']), chats, 'new_messages')]).toEqual(['chat_new_b']);
+  });
+
+  it('a flagged chat moves to Suspects from New messages or the open list, and only there', () => {
+    const suspect = { watchlistEntryId: 'wle_1', numberDisplay: '+44 7700 900123', flaggedAt: AT, flaggedBy: OFFICER_A };
+    const chats = [
+      chatSummary({ id: 'chat_open' }),
+      chatSummary({ id: 'chat_open_flagged', suspect, lastActivityAt: '2026-11-21T08:02:00.000Z' }),
+      chatSummary({ id: 'chat_new_flagged', inboxStatus: 'new_inbound', suspect, lastActivityAt: '2026-11-21T08:01:00.000Z' }),
+      chatSummary({ id: 'chat_new', inboxStatus: 'new_inbound' }),
+    ];
+    const all = groupInbox(chats);
+    expect(all.newInbound.map(chat => chat.id)).toEqual(['chat_new']);
+    expect(all.suspects.map(chat => chat.id)).toEqual(['chat_open_flagged', 'chat_new_flagged']);
+    expect(all.open.map(chat => chat.id)).toEqual(['chat_open']);
+    const filtered = groupInbox(chats, 'suspects');
+    expect([filtered.newInbound, filtered.open]).toEqual([[], []]);
+    expect(filtered.suspects.map(chat => chat.id)).toEqual(['chat_open_flagged', 'chat_new_flagged']);
+    expect([...selectableChatIds(chats, 'suspects')].sort()).toEqual(['chat_new_flagged', 'chat_open_flagged']);
+    expect(groupInbox(chats, 'new_messages').newInbound.map(chat => chat.id)).toEqual(['chat_new']);
   });
 });
 

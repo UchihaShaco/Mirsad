@@ -182,6 +182,14 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     success: [{ status: 200, description: 'The updated entry.', schema: 'WatchlistReviewResponse' }],
     errors: ['validation_failed', 'watchlist_entry_not_found', 'evidence_access_required', 'revision_conflict', 'invalid_transition'],
   },
+  'POST /v1/chats/{chatId}/scammer-flags': {
+    summary: 'Flag the chat’s contact as a scammer',
+    description: 'Puts the contact’s number on the phone watchlist as Approved, with the officer’s reason, and matches every chat from that number. The chat lists under Suspects while the number stays approved; clearing the number on the watchlist withdraws it. Flagging the same message with the same number again returns 200 and changes nothing.',
+    request: 'ScammerFlagRequest',
+    success: [{ status: 201, description: 'Flag recorded.', schema: 'ScammerFlagResponse' },
+      { status: 200, description: 'Already flagged with this number.', schema: 'ScammerFlagResponse' }],
+    errors: ['validation_failed', ...CHAT, 'phone_invalid', 'message_not_found'],
+  },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',
     request: 'CaseReferenceRequest',

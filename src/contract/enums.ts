@@ -84,6 +84,7 @@ export const CASE_ACTION_TYPES = [
   'case_reference_recorded',
   'capture_retry_requested',
   'watchlist_match',
+  'scammer_flagged',
   'text_conflict_recorded',
   'ai_reply_sent',
   'ai_reply_failed',
@@ -178,7 +179,8 @@ export type WatchlistStatus = (typeof WATCHLIST_STATUSES)[number];
 export const WATCHLIST_DECISIONS = ['approve', 'clear', 'reopen'] as const;
 export type WatchlistDecision = (typeof WATCHLIST_DECISIONS)[number];
 
-export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention'] as const;
+/** `officer_flag`: an officer flagged the chat's contact as a scammer and supplied the contact's number. */
+export const OBSERVATION_ORIGINS = ['sender_metadata', 'message_mention', 'officer_flag'] as const;
 export type ObservationOrigin = (typeof OBSERVATION_ORIGINS)[number];
 
 export const INGEST_RESULTS = ['recorded', 'duplicate_event', 'duplicate_message', 'conflicting_copy'] as const;

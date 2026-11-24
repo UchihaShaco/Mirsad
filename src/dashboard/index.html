@@ -66,13 +66,14 @@
         <div class="queue-filters" role="group" aria-label="Filter conversations">
           <button type="button" id="inbox-filter-all" aria-pressed="true">All chats</button>
           <button type="button" id="inbox-filter-new" aria-pressed="false">New messages</button>
+          <button type="button" id="inbox-filter-suspects" aria-pressed="false">Suspects</button>
           <button type="button" id="inbox-filter-review" aria-pressed="false">Needs review</button>
           <button type="button" id="inbox-filter-lower-concern" aria-pressed="false">Lower concern</button>
         </div>
         <p id="queue-scope" class="hint"></p>
         <div id="batch-tools" class="inbox-toolbar" role="group" aria-label="Select conversations">
           <label class="select-all-chats">
-            <input type="checkbox" id="select-all-chats" aria-controls="new-inbound-list open-list" disabled>
+            <input type="checkbox" id="select-all-chats" aria-controls="new-inbound-list suspect-list open-list" disabled>
             Select all
           </label>
           <span id="selection-count" role="status"></span>
@@ -89,6 +90,10 @@
           <section class="queue" aria-labelledby="new-inbound-heading">
             <div class="queue-head"><h2 id="new-inbound-heading">New messages</h2><span class="queue-count" aria-hidden="true"></span></div>
             <ol id="new-inbound-list" class="chat-list"></ol>
+          </section>
+          <section id="suspect-queue" class="queue queue-suspects" aria-labelledby="suspects-heading" hidden>
+            <div class="queue-head"><h2 id="suspects-heading">Suspects</h2><span class="queue-count" aria-hidden="true"></span></div>
+            <ol id="suspect-list" class="chat-list"></ol>
           </section>
           <section class="queue" aria-labelledby="open-chats-heading">
             <div class="queue-head"><h2 id="open-chats-heading">Open chats</h2><span class="queue-count" aria-hidden="true"></span></div>
@@ -107,6 +112,7 @@
           <span class="conversation-label">Conversation</span>
           <button type="button" id="open-chat-dispatch" aria-haspopup="dialog" data-focus-key="control:dispatch" hidden>Dispatch this chat</button>
           <button type="button" id="open-evidence" aria-controls="side-panel" aria-expanded="false">Evidence</button>
+          <button type="button" id="open-flag-scammer" class="flag-action" aria-haspopup="dialog" hidden>Flag as scammer</button>
           <button type="button" id="reset-this-chat" class="erase-action quiet" aria-haspopup="dialog">Reset this chat</button>
         </div>
         <div id="chat-header" class="chat-header"></div>
@@ -278,6 +284,25 @@
   <a id="phone-dispatch-chat" hidden>Open conversation</a>
   <button type="button" id="phone-dispatch-draft" hidden>Draft first message</button>
   <form method="dialog" class="dialog-footer"><button type="submit">Close</button></form>
+</dialog>
+<dialog id="flag-dialog" class="opener-dialog dispatch-dialog" aria-labelledby="flag-heading">
+  <h2 id="flag-heading">Flag as scammer</h2>
+  <p class="dispatch-target">Conversation with <bdi id="flag-target"></bdi></p>
+  <form id="flag-form" autocomplete="off">
+    <label for="flag-number">Their phone number</label>
+    <input id="flag-number" type="tel" inputmode="tel" dir="ltr" maxlength="40" aria-describedby="flag-number-hint" required>
+    <p id="flag-number-hint" class="hint">Include the country code, starting with + or 00. Only the number goes to the phone watchlist.</p>
+    <label for="flag-reason">Why are they a scammer?</label>
+    <textarea id="flag-reason" rows="3" minlength="3" maxlength="500" dir="auto" aria-describedby="flag-reason-hint" required></textarea>
+    <p id="flag-reason-hint" class="hint">Kept with the watchlist decision. Use a short summary without personal details.</p>
+    <section class="consequence" data-tone="alert" aria-labelledby="flag-effect-title">
+      <h3 id="flag-effect-title">The number is approved on the phone watchlist</h3>
+      <p>This chat moves to Suspects, and every chat from this number shows a watchlist match. Ali’s replies stay as they are. Clearing the number on the watchlist moves the chat back.</p>
+    </section>
+    <p id="flag-status" role="status" class="error"></p>
+    <button id="flag-submit" type="submit" class="primary danger">Flag and add to watchlist</button>
+  </form>
+  <form method="dialog" class="dialog-footer"><button type="submit">Cancel</button></form>
 </dialog>
 <dialog id="capture-dialog" class="capture-dialog" aria-labelledby="capture-dialog-title">
   <h2 id="capture-dialog-title">Mirsad-rendered capture</h2>

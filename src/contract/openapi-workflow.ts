@@ -26,7 +26,7 @@ const chat = (overrides: Record<string, unknown>) => ({
   displayLabel: 'Test Contact',
   inboxStatus: 'open',
   telegramReplyHold: { contactOptedOut: false, officerReview: null, evidenceItems: [] },
-  lowerConcern: null, previousLowerConcern: null, firstContact: null,
+  lowerConcern: null, previousLowerConcern: null, firstContact: null, suspect: null,
   aiMode: 'not_started',
   revision: 1,
   controller: null,

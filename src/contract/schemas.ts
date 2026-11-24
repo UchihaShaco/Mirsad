@@ -140,6 +140,14 @@ const FirstContact = z.object({
   incomingCount: z.number().int().min(1),
 });
 
+/** A contact an officer flagged as a scammer, while the flagged number stays approved on the phone watchlist. */
+const Suspect = z.object({
+  watchlistEntryId: id,
+  numberDisplay: z.string(),
+  flaggedAt: timestamp,
+  flaggedBy: PrincipalRef.nullable(),
+});
+
 export const ChatSummary = z.object({
   id: z.string(),
   source: Source,
@@ -171,6 +179,7 @@ export const ChatSummary = z.object({
   lowerConcern: LowerConcern.nullable(),
   previousLowerConcern: LowerConcern.nullable(),
   firstContact: FirstContact.nullable(),
+  suspect: Suspect.nullable(),
   messageCount: z.number().int().min(0),
   lastActivityAt: timestamp,
   createdAt: timestamp,
@@ -498,6 +507,15 @@ export const WatchlistReviewRequest = z.object({
 export type WatchlistReviewRequest = z.infer<typeof WatchlistReviewRequest>;
 export const WatchlistReviewResponse = z.object({ entry: WatchlistEntry });
 
+export const ScammerFlagRequest = z.object({
+  phone: z.string().trim().min(1).max(40)
+    .describe('The contact’s number in international format, starting with + or 00.'),
+  reason: z.string().trim().min(LIMITS.reasonMin).max(LIMITS.reasonMax)
+    .describe('Why the officer judges the contact a scammer; kept with the watchlist decision.'),
+});
+export type ScammerFlagRequest = z.infer<typeof ScammerFlagRequest>;
+export const ScammerFlagResponse = z.object({ entry: WatchlistEntry, created: z.boolean() });
+
 // ---- Extensions: me, status, health ----
 
 export const MeResponse = z.object({
@@ -570,7 +588,7 @@ export const CONTRACT_SCHEMAS = {
   InvestigationOpenerRequest, InvestigationOpenerResponse,
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
-  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, MeResponse,
+  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, MeResponse,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
   DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,
 } as const;

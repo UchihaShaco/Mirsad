@@ -18,6 +18,7 @@ import { bindCaseReferenceForm } from './views/side-panel.js';
 import { createWatchlistView } from './views/watchlist.js';
 import { bindWorkspace, DOCKED_EVIDENCE, resetCaseTools } from './views/workspace.js';
 import { bindPhoneDispatch } from './views/phone-dispatch.js';
+import { bindScammerFlag } from './views/scammer-flag.js';
 import { bindErase } from './views/erase.js';
 
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
@@ -162,6 +163,7 @@ function bindPage(ctx) {
   };
   refs.openOpener.addEventListener('click', () => openOpener(), { signal });
   bindPhoneDispatch(ctx, openOpener);
+  bindScammerFlag(ctx);
   refs.openerDialog.addEventListener('close', () => {
     if (refs.openerDialog.open) return;
     refs.openerForm.reset();

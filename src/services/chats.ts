@@ -61,6 +61,7 @@ function toSummary(tx: Tx, chat: ChatRow, account: ChannelAccountRow, matches: C
     lowerConcern: readLowerConcern(tx, chat.id),
     previousLowerConcern: readPreviousLowerConcern(tx, chat.id),
     firstContact: readFirstContact(tx, chat),
+    suspect: watchlist.readSuspect(tx, chat.id),
     messageCount: countMessages(tx, chat.id),
     lastActivityAt: chat.updated_at,
     createdAt: chat.created_at,

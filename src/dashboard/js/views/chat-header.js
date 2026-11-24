@@ -284,11 +284,27 @@ function reviewNotice(timeline, busy, handlers, key) {
 /** Standing signals of the conversation, each with a way to its source: watchlist matches, the assessment, findings. */
 function signals(state, handlers) {
   const { chat, findings } = state.timeline;
-  const rows = chat.watchlistMatches.map((match) => {
+  const suspect = state.previous ? null : chat.suspect;
+  const rows = [];
+  if (suspect) {
+    rows.push(h('li', { className: 'signal signal-suspect' }, [
+      h('strong', { className: 'suspect-chip', text: 'Suspect' }),
+      // One sentence in one span, so the signal's flex gap does not split it around the names.
+      h('span', {}, [
+        document.createTextNode(suspect.flaggedBy ? 'Flagged as a scammer by ' : 'Flagged as a scammer. '),
+        suspect.flaggedBy ? bdi(suspect.flaggedBy.displayName) : null,
+        document.createTextNode(suspect.flaggedBy ? '. ' : ''),
+        h('bdi', { dir: 'ltr', text: suspect.numberDisplay }),
+        document.createTextNode(' is on the phone watchlist.'),
+      ]),
+      h('a', { href: '#/watchlist', text: 'Open watchlist', dataset: { focusKey: 'signal-suspect' } }),
+    ]));
+  }
+  rows.push(...chat.watchlistMatches.filter(match => match.entryId !== suspect?.watchlistEntryId).map((match) => {
     const open = h('button', { type: 'button', className: 'quiet', text: 'Show evidence', dataset: { focusKey: `signal-match:${match.entryId}` } });
     open.addEventListener('click', () => handlers.onShowEvidence());
     return h('li', { className: 'signal signal-match' }, [h('strong', { className: 'badge badge-match', text: 'Watchlist match' }), bdi(match.numberDisplay), open]);
-  });
+  }));
   if (!state.previous && chat.lowerConcern) {
     const { agreement } = chat.lowerConcern.sources;
     rows.push(h('li', { className: 'signal signal-lower lower-concern-note' }, [

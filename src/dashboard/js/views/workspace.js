@@ -111,6 +111,9 @@ export function renderWorkspace(refs, state) {
   if (replies || (chat?.source === 'telegram' && state.timeline.messages.some(message => message.source.captureMethod === 'telegram_business_live'))) refs.openChatDispatch.removeAttribute('aria-haspopup');
   else refs.openChatDispatch.setAttribute('aria-haspopup', 'dialog');
   refs.resetThisChat.disabled = !chat || state.pending !== null;
+  // A suspect's header says so instead; clearing the number on the watchlist brings the button back.
+  refs.openFlagScammer.hidden = !chat || state.previous || Boolean(chat.suspect);
+  refs.openFlagScammer.disabled = state.pending !== null;
   refs.eraseInbox.disabled = state.pending !== null;
   refs.replyPrompt.hidden = !state.consentPrompt?.available;
   refs.reloadReplyPrompt.disabled = state.pending !== null;
@@ -132,6 +135,7 @@ export function bindWorkspace(ctx) {
   const options = { signal: ctx.listeners.signal };
   refs.inboxFilterAll.addEventListener('click', () => handlers.onInboxFilter('all'), options);
   refs.inboxFilterNew.addEventListener('click', () => handlers.onInboxFilter('new_messages'), options);
+  refs.inboxFilterSuspects.addEventListener('click', () => handlers.onInboxFilter('suspects'), options);
   refs.inboxFilterReview.addEventListener('click', () => handlers.onInboxFilter('review'), options);
   refs.inboxFilterLowerConcern.addEventListener('click', () => handlers.onInboxFilter('lower_concern'), options);
   refs.openSettings.addEventListener('click', () => {

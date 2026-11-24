@@ -79,6 +79,7 @@ export const CASE_ACTION_LABELS = {
   case_reference_recorded: 'Merchant confirmation recorded',
   capture_retry_requested: 'Capture retry requested',
   watchlist_match: 'Watchlist match',
+  scammer_flagged: 'Flagged as a scammer; number added to the phone watchlist',
   text_conflict_recorded: 'Conflicting copy recorded',
   ai_reply_sent: 'Automated reply sent',
   ai_reply_failed: 'AI reply failed',
@@ -157,7 +158,7 @@ export function silenceExplanation(detail) {
   return text && text.length <= 400 ? text : null;
 }
 
-export const OBSERVATION_ORIGIN_LABELS = { sender_metadata: 'Sender metadata', message_mention: 'Mentioned in a message' };
+export const OBSERVATION_ORIGIN_LABELS = { sender_metadata: 'Sender metadata', message_mention: 'Mentioned in a message', officer_flag: 'Flagged by an officer' };
 
 const ERROR_TEXT = {
   revision_conflict: 'The chat changed since it was loaded. It has been refreshed; check it and try again.',
@@ -166,6 +167,7 @@ const ERROR_TEXT = {
   invalid_transition: "That action is not available in the chat's current mode.",
   chat_not_found: 'That chat is not available.',
   message_not_found: 'That message is not available.',
+  phone_invalid: 'Enter the number in international format, starting with + or 00.',
   capture_not_retryable: 'That capture is not waiting for a retry.',
   evidence_access_required: 'Reviewing this entry needs access to at least one chat with its evidence.',
   watchlist_entry_not_found: 'That watchlist entry is not available.',

@@ -25,6 +25,7 @@ export const ERROR_STATUS = {
   payload_too_large: 413,
   idempotency_key_reused: 422,
   direction_required: 422,
+  phone_invalid: 422,
   reply_prompt_unavailable: 422,
   rate_limited: 429,
   internal_error: 500,

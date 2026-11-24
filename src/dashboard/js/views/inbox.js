@@ -1,12 +1,12 @@
 /**
- * The inbox: the New messages queue on top, then the open chats, each with a checkbox for Dispatch. A row says who holds
+ * The inbox: the New messages queue on top, then Suspects, then the open chats, each with a checkbox for Dispatch. A row says who holds
  * the chat (its mark and mode) and what is waiting for the officer, in the words the conversation header uses. A first-time
  * contact's row also previews its first message, masked, so the officer can choose whom to dispatch.
  */
 import { bdi, clear, h, withFocus } from '../dom.js';
 import { AI_MODE_LABELS, evidenceCountLabel, formatTime, reviewWarningLabel } from '../format.js';
 import { controlState, reviewQueue } from '../state/attention.js';
-import { briefingChatId, DISPATCH_LIMIT, groupInbox, isNewMessage, needsOfficerReview } from '../state/inbox.js';
+import { briefingChatId, DISPATCH_LIMIT, groupInbox, isNewMessage, isSuspect, needsOfficerReview } from '../state/inbox.js';
 import { chatHref } from '../state/route.js';
 
 /** Short channel marks for the dense list; the full channel name stays in the row for assistive tools. */
@@ -79,6 +79,17 @@ function waitingCount(chat) {
   return count > 1 ? h('span', { className: 'first-contact-more', text: `${count} messages` }) : null;
 }
 
+/** Who flagged the suspect and the number now on the watchlist. */
+function suspectLine(suspect) {
+  return h('p', { className: 'suspect-line' }, [
+    h('span', { text: suspect.flaggedBy ? 'Flagged by ' : 'Flagged' }),
+    suspect.flaggedBy ? bdi(suspect.flaggedBy.displayName) : null,
+    h('span', { text: ' · ' }),
+    h('bdi', { dir: 'ltr', text: suspect.numberDisplay }),
+    h('span', { text: ' on the watchlist' }),
+  ]);
+}
+
 function chatItem(chat, state, handlers, today, rowNumber) {
   const current = chat.id === state.selectedChatId;
   const control = controlState(chat, state.me);
@@ -90,19 +101,21 @@ function chatItem(chat, state, handlers, today, rowNumber) {
   const heading = h('div', { className: 'chat-item-heading' }, [link, activityTime(chat.lastActivityAt, today), selector(chat, state, handlers)]);
   const meta = h('p', { className: 'chat-meta' }, [
     channelMark(chat),
+    isSuspect(chat) ? h('span', { className: 'suspect-chip', text: 'Suspect' }) : null,
     ...controlChips(chat, control, state.me),
     waitingCount(chat),
     chat.telegramReplyHold.contactOptedOut ? h('span', { className: 'flag', text: 'Contact opted out' }) : null,
     warnings.length ? h('span', { className: 'evidence-warning', text: warnings.length === 1 ? warnings[0] : `${warnings.length} warnings` }) : null,
     items.length > warnings.length
       ? h('span', { className: blocking ? 'review-chip review-chip-blocking' : 'review-chip', text: evidenceCountLabel(items.length) }) : null,
-    chat.watchlistMatches.length ? h('span', { className: 'badge badge-match', text: 'Watchlist match' }) : null,
+    chat.watchlistMatches.length && !isSuspect(chat) ? h('span', { className: 'badge badge-match', text: 'Watchlist match' }) : null,
     chat.lowerConcern ? h('span', { className: 'lower-concern-badge', text: 'Lower concern' }) : null,
     chat.review.state === 'unavailable' ? h('span', { className: 'review-note-unavailable', text: 'Review unavailable' }) : null,
   ]);
-  const body = h('div', { className: 'chat-item-body' }, [heading, meta, isNewMessage(chat) ? firstContactLine(chat.firstContact) : null]);
+  const body = h('div', { className: 'chat-item-body' }, [heading, meta,
+    isNewMessage(chat) ? firstContactLine(chat.firstContact) : null, isSuspect(chat) ? suspectLine(chat.suspect) : null]);
   return h('li', {
-    className: current ? 'chat-item current' : 'chat-item',
+    className: (current ? 'chat-item current' : 'chat-item') + (isSuspect(chat) ? ' chat-item-suspect' : ''),
     dataset: { chatId: chat.id, control, review: blocking ? 'blocking' : items.length > 0 ? 'captured' : 'none' },
   }, [contactMark(chat.displayLabel, rowNumber), body]);
 }
@@ -155,20 +168,23 @@ export function renderInbox(refs, state, handlers) {
   const reviewing = state.inboxFilter === 'review';
   const lower = state.inboxFilter === 'lower_concern';
   const fresh = state.inboxFilter === 'new_messages';
+  const suspecting = state.inboxFilter === 'suspects';
   const filtered = state.inboxFilter !== 'all';
   const newCount = state.chats.filter(isNewMessage).length;
+  const suspectCount = state.chats.filter(isSuspect).length;
   const lowerCount = state.chats.filter(chat => chat.lowerConcern).length;
   const previousCount = state.chats.filter(chat => chat.previousLowerConcern).length;
   const previous = lower ? state.chats.filter(chat => chat.previousLowerConcern)
     .sort((a, b) => b.previousLowerConcern.assessedAt.localeCompare(a.previousLowerConcern.assessedAt)) : [];
-  const { newInbound, open } = groupInbox(state.chats, state.inboxFilter);
+  const { newInbound, suspects, open } = groupInbox(state.chats, state.inboxFilter);
   const reviewCount = state.chats.filter(needsOfficerReview).length;
   const today = new Date().toISOString().slice(0, 10);
   withFocus(refs.inbox, () => {
     fillList(refs.newInboundList, newInbound, state, handlers, today, 1, state.inboxLoaded ? 'No new messages.' : 'Loading…');
-    fillList(refs.openList, open, state, handlers, today, newInbound.length + 1, state.inboxLoaded ? 'No open chats.' : 'Loading…');
+    fillList(refs.suspectList, suspects, state, handlers, today, newInbound.length + 1, 'No suspects.');
+    fillList(refs.openList, open, state, handlers, today, newInbound.length + suspects.length + 1, state.inboxLoaded ? 'No open chats.' : 'Loading…');
     clear(refs.previousTestList);
-    refs.previousTestList.start = newInbound.length + open.length + 1;
+    refs.previousTestList.start = newInbound.length + suspects.length + open.length + 1;
     for (const [index, chat] of previous.entries()) {
       const { agreement } = chat.previousLowerConcern.sources;
       const link = h('a', { className: 'chat-link', href: chatHref(chat.id, agreement.messageId, agreement.messageEventId),
@@ -183,31 +199,37 @@ export function renderInbox(refs, state, handlers) {
     const loaded = state.inboxLoaded;
     fillFilter(refs.inboxFilterAll, 'All chats', loaded ? state.chatsTotal : null);
     fillFilter(refs.inboxFilterNew, 'New messages', loaded ? newCount : null, { urgent: newCount > 0 });
+    fillFilter(refs.inboxFilterSuspects, 'Suspects', loaded ? suspectCount : null);
     fillFilter(refs.inboxFilterReview, 'Needs review', loaded ? reviewCount : null, { urgent: reviewCount > 0 });
     fillFilter(refs.inboxFilterLowerConcern, 'Lower concern', loaded ? lowerCount : null, { earlier: previousCount });
     refs.inboxFilterLowerConcern.title = previousCount ? `${lowerCount} current · ${previousCount} in previous tests` : '';
   });
   refs.previousTestQueue.hidden = previous.length === 0;
   refs.newInboundList.closest('.queue').hidden = filtered && newInbound.length === 0;
+  refs.suspectQueue.hidden = suspects.length === 0;
   refs.openList.closest('.queue').hidden = filtered && open.length === 0;
   refs.inboxFilterAll.setAttribute('aria-pressed', String(!filtered));
   refs.inboxFilterNew.setAttribute('aria-pressed', String(fresh));
+  refs.inboxFilterSuspects.setAttribute('aria-pressed', String(suspecting));
   refs.inboxFilterReview.setAttribute('aria-pressed', String(reviewing));
   refs.inboxFilterLowerConcern.setAttribute('aria-pressed', String(lower));
   refs.inboxFilterLowerConcern.disabled = state.pending !== null;
   refs.inboxFilterAll.disabled = state.pending !== null;
   refs.inboxFilterNew.disabled = state.pending !== null;
+  refs.inboxFilterSuspects.disabled = state.pending !== null;
   refs.inboxFilterReview.disabled = state.pending !== null;
   const scope = [];
   if (state.chatsTotal > state.chats.length) scope.push(`Counts cover the ${state.chats.length} listed chats out of ${state.chatsTotal}.`);
   if (lower && state.inboxLoaded) scope.push(`${lowerCount} current · ${previous.length} previous`);
   if (reviewing && reviewCount === 0) scope.push(state.inboxLoaded ? 'No listed chats need officer review.' : 'Loading chats…');
   if (fresh && newCount === 0) scope.push(state.inboxLoaded ? 'No first-time messages are waiting.' : 'Loading chats…');
+  if (suspecting && suspectCount === 0) scope.push(state.inboxLoaded ? 'No chats are flagged as scammers.' : 'Loading chats…');
+  if (suspecting && suspectCount > 0) scope.push('Contacts an officer flagged as scammers. Clearing the number on the phone watchlist moves a chat back.');
   if (fresh && newCount > 0) scope.push('First-time contacts nobody has answered yet. Select whom to dispatch; one selected chat can take a briefing.');
   refs.queueScope.textContent = scope.join(' ');
   refs.queueScope.hidden = scope.length === 0;
   const selected = state.selection.size;
-  const selectable = newInbound.length + open.length;
+  const selectable = newInbound.length + suspects.length + open.length;
   const tooMany = selected > DISPATCH_LIMIT;
   refs.selectAllChats.checked = selectable > 0 && selected === selectable;
   refs.selectAllChats.indeterminate = selected > 0 && selected < selectable;

@@ -1,12 +1,13 @@
 /** Types for inbox.js (the browser loads the JavaScript; tests and typecheck read this declaration). */
 import type { ChatSummary, DispatchRequest, TelegramReplies } from '../../../contract/schemas.ts';
 
-export type InboxChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'lastActivityAt' | 'telegramReplyHold' | 'lowerConcern'>;
-export type InboxFilter = 'all' | 'new_messages' | 'review' | 'lower_concern';
-type SelectableChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'telegramReplyHold' | 'lowerConcern'>;
+export type InboxChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'lastActivityAt' | 'telegramReplyHold' | 'lowerConcern' | 'suspect'>;
+export type InboxFilter = 'all' | 'new_messages' | 'suspects' | 'review' | 'lower_concern';
+type SelectableChat = Pick<ChatSummary, 'id' | 'inboxStatus' | 'telegramReplyHold' | 'lowerConcern' | 'suspect'>;
 
 export const INBOX_FILTERS: readonly InboxFilter[];
-export function isNewMessage(chat: Pick<ChatSummary, 'inboxStatus'>): boolean;
+export function isSuspect(chat: Pick<ChatSummary, 'suspect'>): boolean;
+export function isNewMessage(chat: Pick<ChatSummary, 'inboxStatus' | 'suspect'>): boolean;
 
 export const DISPATCH_LIMIT: 100;
 export function telegramDispatchRequest(target?: TelegramReplies['target']): Pick<DispatchRequest,
@@ -14,6 +15,7 @@ export function telegramDispatchRequest(target?: TelegramReplies['target']): Pic
 
 export interface InboxGroups<T extends InboxChat> {
   newInbound: T[];
+  suspects: T[];
   open: T[];
 }
 

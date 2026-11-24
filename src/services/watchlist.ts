@@ -6,8 +6,8 @@
 import type { Concern, ObservationOrigin, WatchlistDecision, WatchlistStatus } from '../contract/enums.ts';
 import { AppError } from '../contract/errors.ts';
 import { WATCHLIST_STATUS_LABELS } from '../contract/labels.ts';
-import type { ChatSummary, EvidenceRef, WatchlistEntry, WatchlistReviewRequest } from '../contract/schemas.ts';
-import { normalizePhone, watchlistMatchKey } from '../domain/phone.ts';
+import type { ChatSummary, EvidenceRef, ScammerFlagRequest, WatchlistEntry, WatchlistReviewRequest } from '../contract/schemas.ts';
+import { dispatchPhoneNumber, normalizePhone, watchlistMatchKey } from '../domain/phone.ts';
 import type { Principal } from '../ports/identity.ts';
 import type { PhoneMention } from '../ports/reviewer.ts';
 import type { Tx } from '../storage/db.ts';
@@ -16,6 +16,7 @@ import { setContactPhoneE164 } from '../storage/repos/chats.ts';
 import * as repo from '../storage/repos/watchlist.ts';
 import type { ChatRow, MessageEventRow, MessageRow } from '../storage/rows.ts';
 import { canAccessChat } from './access.ts';
+import { currentTestMessageSql, readChatTestWindow } from './chat-test-session.ts';
 import { appendStreamEvent } from './stream.ts';
 
 export interface PhoneInput {
@@ -46,6 +47,7 @@ const MENTION_REASONS: Record<Concern, string> = {
 };
 const SENDER_OF_INBOUND_CHAT = 'Sender of an inbound chat';
 const SENDER_OF_SUSPECTED_FRAUD = 'Sender of a message with a Suspected fraud finding';
+const FLAGGED_BY_OFFICER = 'Flagged as a scammer by an officer';
 
 /** Design section 11: approve from Needs review; clear from Needs review or Approved; reopen from Approved or Cleared. */
 const TRANSITIONS: Record<WatchlistDecision, { from: readonly WatchlistStatus[]; to: WatchlistStatus }> = {
@@ -390,4 +392,91 @@ export function reviewEntry(tx: Tx, officer: Principal, entryId: string, request
   const [updated] = entriesAsSeenBy(tx, officer, [decided]);
   if (!updated) throw new Error('watchlist_entry_missing');
   return updated;
+}
+
+export interface ScammerFlagResult {
+  entry: WatchlistEntry;
+  created: boolean;
+}
+
+/** The contact's latest message in the current test, with its latest recorded or edited version: where a flag points. */
+function flagSource(tx: Tx, chat: ChatRow): { message: MessageRow; messageEvent: MessageEventRow } | null {
+  const message = tx.get<MessageRow>(
+    `SELECT m.* FROM messages m WHERE m.chat_id=:chatId AND m.direction='incoming' AND m.origin='source' AND ${currentTestMessageSql}
+     ORDER BY m.position DESC LIMIT 1`,
+    { chatId: chat.id, ...readChatTestWindow(tx, chat.id) },
+  );
+  if (!message) return null;
+  const messageEvent = tx.get<MessageEventRow>(
+    `SELECT * FROM message_events WHERE message_id=? ORDER BY (type IN ('recorded','edited')) DESC, position DESC LIMIT 1`, [message.id]);
+  return messageEvent ? { message, messageEvent } : null;
+}
+
+/** A match for each chat whose contact already supplied this number, so the officer sees every chat from the same person. */
+function matchKnownChats(tx: Tx, entry: repo.WatchlistEntryRow, flaggedChat: ChatRow, display: string): void {
+  if (!tx.get('SELECT 1 FROM watchlist_matches WHERE entry_id=? AND chat_id=?', [entry.id, flaggedChat.id])) {
+    repo.insertMatch(tx, { workspaceId: entry.workspace_id, entryId: entry.id, chatId: flaggedChat.id, matchedE164: entry.e164!, sourceRepresentation: display });
+    appendStreamEvent(tx, { workspaceId: entry.workspace_id, type: 'watchlist.match', chatId: flaggedChat.id,
+      watchlistEntryId: entry.id, data: { watchlistEntryId: entry.id } });
+  }
+  const others = tx.all<ChatRow>(`SELECT c.* FROM chats c WHERE c.workspace_id=:workspaceId AND c.contact_phone_e164=:e164
+      AND c.id<>:chatId AND NOT EXISTS (SELECT 1 FROM watchlist_matches m WHERE m.entry_id=:entryId AND m.chat_id=c.id)`,
+    { workspaceId: entry.workspace_id, e164: entry.e164, chatId: flaggedChat.id, entryId: entry.id });
+  for (const chat of others) {
+    const source = flagSource(tx, chat);
+    if (source) recordMatch(tx, { chat, ...source }, entry, entry.e164!, chat.contact_phone_raw ?? display);
+  }
+}
+
+/**
+ * An officer flags a chat's contact as a scammer with the contact's number. Only the number goes to the watchlist: its
+ * entry (new or existing) gains an officer-flag observation at the contact's latest message and is approved with the
+ * officer's reason, and every chat from that number shows a watchlist match. The chat itself is a suspect while that
+ * entry stays approved (readSuspect); clearing the number on the watchlist withdraws it. Flagging the same message with
+ * the same number again changes nothing (created: false).
+ */
+export function flagContactAsScammer(tx: Tx, officer: Principal, chat: ChatRow, request: ScammerFlagRequest): ScammerFlagResult {
+  const e164 = dispatchPhoneNumber(request.phone);
+  if (e164 === null) throw AppError.of('phone_invalid', 'Enter the number in international format, starting with + or 00.');
+  const source = flagSource(tx, chat);
+  if (!source) throw AppError.of('message_not_found', 'This chat has no message from the contact to flag yet.');
+  const display = request.phone.trim();
+  const now = tx.now();
+  const existing = repo.findEntryByKey(tx, chat.workspace_id, e164);
+  let entry = existing ?? repo.insertEntry(tx, { workspaceId: chat.workspace_id, matchKey: e164, e164, display, seenAt: now });
+  const added = repo.insertObservation(tx, {
+    entryId: entry.id, workspaceId: chat.workspace_id, chatId: chat.id, messageId: source.message.id, messageEventId: source.messageEvent.id,
+    findingId: null, origin: 'officer_flag', sourceRepresentation: display, reason: FLAGGED_BY_OFFICER, observedAt: now,
+  });
+  const created = added || entry.status !== 'approved';
+  if (created) {
+    if (added && existing) entry = repo.markObserved(tx, entry.id, now);
+    const revision = entry.revision + 1;
+    repo.insertReview(tx, { entryId: entry.id, decision: 'approve', reason: request.reason, officerId: officer.id,
+      fromStatus: entry.status, toStatus: 'approved', revision });
+    entry = repo.updateEntryStatus(tx, entry.id, 'approved', revision);
+    publishEntryUpdated(tx, entry, existing ? 'reviewed' : 'created');
+    caseActions.record(tx, { chatId: chat.id, workspaceId: chat.workspace_id, type: 'scammer_flagged', actorId: officer.id,
+      messageId: source.message.id, detail: { watchlistEntryId: entry.id } });
+  }
+  matchKnownChats(tx, entry, chat, display);
+  const [visible] = entriesAsSeenBy(tx, officer, [entry]);
+  if (!visible) throw new Error('watchlist_entry_missing');
+  return { entry: visible, created };
+}
+
+/** The chat is a suspect while a number an officer flagged in it stays approved on the watchlist. */
+export function readSuspect(tx: Tx, chatId: string): ChatSummary['suspect'] {
+  const row = tx.get<{ entry_id: string; display: string; flagged_at: string; officer_id: string | null; officer_name: string | null }>(
+    `SELECT o.entry_id, o.source_representation AS display, o.observed_at AS flagged_at, a.actor_id AS officer_id, p.display_name AS officer_name
+     FROM watchlist_observations o JOIN watchlist_entries e ON e.id=o.entry_id AND e.status='approved'
+     LEFT JOIN case_actions a ON a.id=(SELECT f.id FROM case_actions f WHERE f.chat_id=o.chat_id AND f.type='scammer_flagged'
+       AND json_extract(f.detail,'$.watchlistEntryId')=o.entry_id ORDER BY f.position DESC LIMIT 1)
+     LEFT JOIN principals p ON p.id=a.actor_id
+     WHERE o.chat_id=? AND o.origin='officer_flag' ORDER BY o.observed_at DESC, o.rowid DESC LIMIT 1`, [chatId]);
+  if (!row) return null;
+  return {
+    watchlistEntryId: row.entry_id, numberDisplay: row.display, flaggedAt: row.flagged_at,
+    flaggedBy: row.officer_id && row.officer_name ? { id: row.officer_id, displayName: row.officer_name } : null,
+  };
 }

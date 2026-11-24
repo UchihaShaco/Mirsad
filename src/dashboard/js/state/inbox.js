@@ -24,27 +24,34 @@ export function needsOfficerReview(chat) {
   return hold.officerReview !== null || evidenceItemsFor(hold).some(item => reviewWarningLabel(item.reason));
 }
 
-/** A first-time contact: the contact wrote first and neither Ali nor an officer has acted on the chat yet. */
+/** An officer flagged the contact as a scammer and the number stays approved on the phone watchlist. */
+export function isSuspect(chat) {
+  return Boolean(chat.suspect);
+}
+
+/** A first-time contact: the contact wrote first and neither Ali nor an officer has acted on the chat yet. A suspect moves out. */
 export function isNewMessage(chat) {
-  return chat.inboxStatus === 'new_inbound';
+  return chat.inboxStatus === 'new_inbound' && !isSuspect(chat);
 }
 
 /** The inbox filters, in the order the officer sees them. */
-export const INBOX_FILTERS = ['all', 'new_messages', 'review', 'lower_concern'];
+export const INBOX_FILTERS = ['all', 'new_messages', 'suspects', 'review', 'lower_concern'];
 
 function visibleInFilter(chat, filter) {
   if (filter === 'new_messages') return isNewMessage(chat);
+  if (filter === 'suspects') return isSuspect(chat);
   if (filter === 'review') return needsOfficerReview(chat);
   if (filter === 'lower_concern') return Boolean(chat.lowerConcern);
   return true;
 }
 
-/** Splits the visible chats into the New messages queue and the open list. */
+/** Splits the visible chats into the New messages queue, the Suspects queue and the open list; each chat is in one. */
 export function groupInbox(chats, filter = 'all') {
   const sorted = chats.filter(chat => visibleInFilter(chat, filter)).sort(byRecentActivity);
   return {
     newInbound: sorted.filter(isNewMessage),
-    open: sorted.filter((chat) => !isNewMessage(chat)),
+    suspects: sorted.filter(isSuspect),
+    open: sorted.filter((chat) => !isNewMessage(chat) && !isSuspect(chat)),
   };
 }
 

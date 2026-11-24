@@ -1841,6 +1841,105 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/scammer-flags:
+    post:
+      operationId: post_v1ChatsChatIdScammer-flags
+      summary: Flag the chat’s contact as a scammer
+      tags:
+        - extension
+      security: *a1
+      description: Puts the contact’s number on the phone watchlist as Approved, with the officer’s reason, and matches every chat from that number. The chat lists under Suspects while the number stays approved; clearing the number on the watchlist withdraws it. Flagging the same message with the same number again returns 200 and changes nothing.
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScammerFlagRequest"
+      responses:
+        "200":
+          description: Already flagged with this number.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ScammerFlagResponse"
+                  error:
+                    type: "null"
+        "201":
+          description: Flag recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ScammerFlagResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `phone_invalid`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /v1/chats/{chatId}/case-references:
     post:
       operationId: post_v1ChatsChatIdCase-references
@@ -2923,6 +3022,22 @@ components:
         - decision
         - reason
         - expectedRevision
+    ScammerFlagRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: The contact’s number in international format, starting with + or 00.
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: Why the officer judges the contact a scammer; kept with the watchlist decision.
+      required:
+        - phone
+        - reason
     OfficerLoginRequest:
       type: object
       properties:
@@ -3188,6 +3303,7 @@ components:
           enum:
             - sender_metadata
             - message_mention
+            - officer_flag
         sourceRepresentation:
           type: string
         reason:
@@ -3597,6 +3713,31 @@ components:
                 - incomingCount
               additionalProperties: false
             - type: "null"
+        suspect:
+          anyOf:
+            - type: object
+              properties:
+                watchlistEntryId:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                numberDisplay:
+                  type: string
+                flaggedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                flaggedBy:
+                  anyOf:
+                    - $ref: "#/components/schemas/PrincipalRef"
+                    - type: "null"
+              required:
+                - watchlistEntryId
+                - numberDisplay
+                - flaggedAt
+                - flaggedBy
+              additionalProperties: false
+            - type: "null"
         messageCount:
           type: integer
           minimum: 0
@@ -3632,6 +3773,7 @@ components:
         - lowerConcern
         - previousLowerConcern
         - firstContact
+        - suspect
         - messageCount
         - lastActivityAt
         - createdAt
@@ -4154,6 +4296,7 @@ components:
             - case_reference_recorded
             - capture_retry_requested
             - watchlist_match
+            - scammer_flagged
             - text_conflict_recorded
             - ai_reply_sent
             - ai_reply_failed
@@ -4680,6 +4823,17 @@ components:
       required:
         - entry
       additionalProperties: false
+    ScammerFlagResponse:
+      type: object
+      properties:
+        entry:
+          $ref: "#/components/schemas/WatchlistEntry"
+        created:
+          type: boolean
+      required:
+        - entry
+        - created
+      additionalProperties: false
     MeResponse:
       type: object
       properties:
@@ -4993,6 +5147,7 @@ x-workflow-example:
             lowerConcern: null
             previousLowerConcern: null
             firstContact: null
+            suspect: null
             aiMode: not_started
             revision: 1
             controller: null
@@ -5092,6 +5247,7 @@ x-workflow-example:
             lowerConcern: null
             previousLowerConcern: null
             firstContact: null
+            suspect: null
             aiMode: ai_active
             revision: 2
             controller: null
@@ -5207,6 +5363,7 @@ x-workflow-example:
             lowerConcern: null
             previousLowerConcern: null
             firstContact: null
+            suspect: null
             aiMode: officer_control
             revision: 3
             controller: *a6

@@ -407,8 +407,8 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .inbox-contact-actions button { min-height: 31px; padding-inline: 11px; font-size: 12px; }
 .inbox-contact-actions #open-opener:not(:disabled) { background: transparent; border-color: transparent; color: var(--ink-2); }
 .inbox-contact-actions #open-opener:hover:not(:disabled) { background: var(--sunken); color: var(--ink); }
-/* The four queues as counters: the number first, its name under it. */
-.queue-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
+/* The five queues as counters: the number first, its name under it. */
+.queue-filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; margin: 0 4px 8px; padding: 4px; border-radius: var(--radius-card); background: var(--sunken); }
 .queue-filters button {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -427,6 +427,10 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
   text-align: start;
 }
 .queue-filters button > span:first-child { grid-area: label; align-self: end; }
+/* Until the inbox reaches its widest (22.5rem) the five counters take two rows, so no label is clipped or crowded. */
+@media (min-width: 761px) and (max-width: 1439px) {
+  .queue-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .queue-filters button:hover:not(:disabled) { background: var(--pane); color: var(--ink); }
 .queue-filters button[aria-pressed="true"] { background: var(--raised); color: var(--you-ink); font-weight: 650; box-shadow: var(--shadow-soft); }
 .queue-filters button:disabled { background: transparent; color: var(--disabled-ink); }
@@ -502,6 +506,12 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .first-contact q { color: var(--ink); quotes: "“" "”" "‘" "’"; unicode-bidi: isolate; }
 .first-contact-note { font-style: italic; }
 .first-contact-more { color: var(--ink-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
+/* Suspects: contacts an officer flagged as scammers. One red mark; the row stays as calm as any other. */
+.suspect-chip { display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; background: var(--alert-solid);
+  color: var(--on-alert); font-size: 12px; font-weight: 650; line-height: 20px; white-space: nowrap; }
+.chat-item-suspect { box-shadow: inset 3px 0 0 var(--alert-solid); }
+.suspect-line { margin: 0; color: var(--ink-2); font-size: 12.5px; overflow-wrap: anywhere; }
+.suspect-line bdi[dir="ltr"] { color: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
 .empty { list-style: none; padding: 8px 14px 10px; color: var(--ink-3); font-size: 13px; }
 
 /* Conversation */
@@ -647,6 +657,9 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .signal time { color: var(--ink-2); font-size: 12px; }
 .signal button { min-height: 24px; padding-inline: 6px; color: var(--you); }
 .signal-match { background: var(--alert-tint); }
+.signal-suspect { gap: 4px; background: var(--alert-tint); color: var(--alert-ink); }
+.signal-suspect bdi[dir="ltr"] { font-family: var(--font-mono); font-weight: 600; }
+.signal-suspect a { color: var(--alert-ink); }
 .signal-match bdi { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
 .signal-match .badge-match { background: transparent; box-shadow: none; padding: 0; }
 .signal-lower { background: var(--ok-tint); }
@@ -950,6 +963,9 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .consequence[data-tone="held"] { background: var(--attn-tint); }
 .consequence[data-tone="held"] h3 { color: var(--attn-ink); }
 .consequence[data-tone="held"] h3::before { border-radius: 1px; background: var(--attn-solid); transform: rotate(45deg); }
+.consequence[data-tone="alert"] { background: var(--alert-tint); }
+.consequence[data-tone="alert"] h3 { color: var(--alert-ink); }
+.consequence[data-tone="alert"] h3::before { background: var(--alert-solid); box-shadow: 0 0 0 3px var(--alert-line); }
 .consequence[data-tone="blocked"] { background: var(--sunken); }
 .consequence[data-tone="blocked"] h3::before { border: 2px solid var(--ink-3); background: transparent; }
 .dispatch-permission { display: grid; gap: 6px; margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--line-soft); }
@@ -990,6 +1006,10 @@ button[role="switch"]:disabled { opacity: 0.6; }
 .inbox-storage { display: grid; justify-items: start; gap: 8px; margin-top: 12px; padding: 16px; border-radius: var(--radius-card); background: var(--sunken); }
 .inbox-storage h3, .erase-choice h3 { color: var(--ink-2); }
 .erase-action:not(:disabled) { border-color: var(--alert-line); color: var(--alert); }
+.flag-action:not(:disabled) { border-color: var(--alert-line); color: var(--alert); font-weight: 600; }
+.flag-action:hover:not(:disabled) { border-color: var(--alert-solid); background: var(--alert-tint); color: var(--alert-ink); }
+button.primary.danger { border-color: var(--alert-solid); background: var(--alert-solid); color: var(--on-alert); }
+button.primary.danger:hover:not(:disabled) { border-color: var(--alert-ink); background: var(--alert-ink); color: #ffffff; }
 .erase-action.quiet:not(:disabled) { border-color: transparent; }
 .erase-action:hover:not(:disabled) { border-color: var(--alert-solid); background: var(--alert-tint); color: var(--alert-ink); }
 .erase-choice { display: grid; justify-items: start; gap: 6px; padding-block: 10px; border-top: 1px solid var(--line); }

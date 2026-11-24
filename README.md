@@ -131,8 +131,11 @@ in the **New messages** queue. Replay any other file in `fixtures/telegram/`; [d
 says what each one exercises. **New messages** lists first-time contacts that neither Ali nor an officer has answered yet,
 each with a masked preview of its first message (links, numbers, e-mail addresses and handles hidden) and how many messages
 are waiting. Select whom to dispatch there; with one chat selected, **Dispatch briefing** tells Ali what to keep in mind.
-A chat leaves New messages once it is dispatched or an officer takes control. **Needs review** filters the queue to
-conversations waiting for an officer’s decision.
+A chat leaves New messages once it is dispatched or an officer takes control. **Flag as scammer** in a conversation asks
+for the contact’s number (international format) and a reason: only the number goes to the **Phone watchlist**, approved,
+with the officer and reason as its decision, and every chat from that number shows a watchlist match. The flagged chat
+moves to **Suspects** while the number stays approved; clearing the number on the watchlist moves it back. Ali’s replies
+are not changed. **Needs review** filters the queue to conversations waiting for an officer’s decision.
 Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
 For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
 Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose

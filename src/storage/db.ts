@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 15;
+const SCHEMA_VERSION = 16;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -171,6 +171,23 @@ function migrate(db: DatabaseSync): void {
         if (exists && !db.prepare(`SELECT 1 FROM ${table} LIMIT 1`).get()) db.exec(`DROP TABLE ${table}`);
       }
     }
+    // v16 lets an officer's scammer flag be a watchlist observation: SQLite changes a CHECK only by rebuilding the table.
+    if (current < 16) db.exec(`
+      CREATE TABLE watchlist_observations_v16 (
+        id TEXT PRIMARY KEY, entry_id TEXT NOT NULL REFERENCES watchlist_entries(id), workspace_id TEXT NOT NULL,
+        chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT NOT NULL REFERENCES messages(id),
+        message_event_id TEXT NOT NULL REFERENCES message_events(id), finding_id TEXT REFERENCES findings(id),
+        origin TEXT NOT NULL CHECK (origin IN ('sender_metadata','message_mention','officer_flag')),
+        source_representation TEXT NOT NULL, reason TEXT NOT NULL, observed_at TEXT NOT NULL,
+        UNIQUE (entry_id, message_event_id, origin)
+      );
+      INSERT INTO watchlist_observations_v16 (rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+        origin, source_representation, reason, observed_at)
+        SELECT rowid, id, entry_id, workspace_id, chat_id, message_id, message_event_id, finding_id,
+          origin, source_representation, reason, observed_at FROM watchlist_observations;
+      DROP TABLE watchlist_observations;
+      ALTER TABLE watchlist_observations_v16 RENAME TO watchlist_observations;
+    `);
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {
