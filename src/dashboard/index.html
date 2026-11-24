@@ -11,7 +11,7 @@
 </head>
 <body>
 <header class="topbar">
-  <p class="brand"><img class="brand-mark" src="/assets/icon.svg" alt="" width="28" height="28"><span class="brand-name">Mirsad</span> <span class="brand-note">Reference dashboard</span></p>
+  <p class="brand"><img class="brand-mark" src="/assets/icon.svg" alt="" width="28" height="28"><span class="brand-name">Mirsad</span></p>
   <nav id="view-nav" class="view-nav" aria-label="Views" hidden>
     <a id="nav-inbox" href="#/">Inbox</a>
     <a id="nav-watchlist" href="#/watchlist">Phone watchlist</a>
@@ -19,17 +19,28 @@
   <div id="session" class="session" hidden>
     <span id="connection-status" class="connection"></span>
     <span class="signed-in">Signed in as <bdi id="officer-name"></bdi></span>
+    <button type="button" id="open-settings" aria-haspopup="dialog">Settings</button>
     <button type="button" id="sign-out">Sign out</button>
   </div>
 </header>
 <main>
   <section id="signin" class="signin" aria-labelledby="signin-heading" hidden>
     <h1 id="signin-heading">Sign in</h1>
-    <p>Paste an officer token. It is kept for this browser tab only and is sent only in the Authorization header.</p>
-    <form id="signin-form" autocomplete="off">
-      <label for="token-input">Officer token</label>
-      <input id="token-input" name="token" type="password" autocomplete="off" spellcheck="false" required>
-      <button type="submit" class="primary">Sign in</button>
+    <form id="signin-form" method="post" action="/v1/auth/login">
+      <label for="username-input">Username</label>
+      <input id="username-input" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="password-input">Password</label>
+      <input id="password-input" name="password" type="password" autocomplete="current-password" required>
+      <button id="signin-submit" type="submit" class="primary">Sign in</button>
+    </form>
+    <form id="password-change-form" method="post" action="/v1/auth/login" hidden>
+      <p id="password-change-hint" class="hint">Choose a new password of 12–128 characters to open the portal.</p>
+      <label for="new-password-input">New password</label>
+      <input id="new-password-input" name="newPassword" type="password" autocomplete="new-password" aria-describedby="password-change-hint" required>
+      <label for="confirm-password-input">Confirm new password</label>
+      <input id="confirm-password-input" type="password" autocomplete="new-password" required>
+      <button id="password-change-submit" type="submit" class="primary">Save password and sign in</button>
+      <button id="cancel-password-change" type="button">Back to sign in</button>
     </form>
     <p id="signin-message" role="status"></p>
   </section>
@@ -38,10 +49,30 @@
     <p id="notice" class="notice" role="status" aria-live="polite"></p>
     <div id="inbox-view" class="columns">
       <section id="inbox" class="inbox" aria-label="Inbox">
-        <div class="inbox-toolbar">
-          <button type="button" id="dispatch-button" class="primary" disabled>Dispatch</button>
-          <span id="selection-count" class="hint"></span>
+        <div class="inbox-heading">
+          <h1>Inbox</h1>
+          <div class="inbox-contact-actions">
+            <button type="button" id="open-phone-dispatch" class="primary" aria-haspopup="dialog">Dispatch a number</button>
+            <button type="button" id="open-opener" aria-haspopup="dialog">Draft first message</button>
+          </div>
         </div>
+        <div class="queue-filters" role="group" aria-label="Filter conversations">
+          <button type="button" id="inbox-filter-all" aria-pressed="true">All chats</button>
+          <button type="button" id="inbox-filter-review" aria-pressed="false">Needs review</button>
+          <button type="button" id="inbox-filter-lower-concern" aria-pressed="false">Lower concern</button>
+        </div>
+        <p id="queue-scope" class="hint"></p>
+        <div id="batch-tools" class="inbox-toolbar" hidden>
+          <span id="selection-count" role="status"></span>
+          <button type="button" id="dispatch-button" class="primary" disabled>Dispatch</button>
+        </div>
+        <details id="dispatch-brief" class="dispatch-brief" hidden>
+          <summary>Dispatch briefing</summary>
+          <label for="dispatch-brief-text">What should Ali keep in mind?</label>
+          <textarea id="dispatch-brief-text" rows="2" maxlength="500" dir="auto" aria-describedby="dispatch-brief-hint"></textarea>
+          <p id="dispatch-brief-hint" class="hint">Ali replies when there’s a fresh eligible message and checks the conversation for evidence. Leave blank to keep a saved briefing.</p>
+          <label class="dispatch-brief-clear"><input type="checkbox" id="dispatch-brief-clear"> Clear saved briefing</label>
+        </details>
         <div class="inbox-lists">
           <section class="queue" aria-labelledby="new-inbound-heading">
             <h2 id="new-inbound-heading">New inbound</h2>
@@ -51,11 +82,25 @@
             <h2 id="open-chats-heading">Open chats</h2>
             <ul id="open-list" class="chat-list"></ul>
           </section>
+          <section id="previous-test-queue" class="queue" aria-labelledby="previous-tests-heading" hidden>
+            <h2 id="previous-tests-heading">Previous tests</h2>
+            <ul id="previous-test-list" class="chat-list"></ul>
+          </section>
         </div>
       </section>
 
       <section id="chat-panel" class="chat-panel" aria-label="Selected chat">
+        <div id="chat-tools" class="chat-tools" hidden>
+          <a id="back-to-inbox" href="#/">Back to inbox</a>
+          <span class="conversation-label">Conversation</span>
+          <button type="button" id="open-chat-dispatch" aria-haspopup="dialog" hidden>Dispatch this chat</button>
+          <button type="button" id="open-evidence" aria-controls="side-panel" aria-expanded="false">Evidence</button>
+          <button type="button" id="reset-this-chat" class="erase-action" aria-haspopup="dialog">Reset this chat</button>
+        </div>
         <div id="chat-header" class="chat-header"></div>
+        <div id="archive-notice" class="archive-notice" hidden>
+          <strong>Previous conversation</strong> <a id="current-conversation" href="#/">Return to current test</a>
+        </div>
         <div id="timeline" class="timeline"></div>
         <section id="composer" class="composer" aria-labelledby="composer-heading" hidden>
           <h2 id="composer-heading">Takeover composer</h2>
@@ -71,7 +116,18 @@
         </section>
       </section>
 
-      <aside id="side-panel" class="side-panel" aria-label="Case details">
+      <aside id="side-panel" class="side-panel" aria-labelledby="evidence-heading" hidden>
+        <div class="evidence-heading">
+          <h2 id="evidence-heading">Case evidence</h2>
+          <button type="button" id="close-evidence" aria-label="Close evidence">Close</button>
+        </div>
+        <section id="assessment-panel" aria-labelledby="assessment-heading" hidden>
+          <h2 id="assessment-heading">Lower concern</h2>
+          <div id="meeting-sources"></div>
+        </section>
+        <section id="previous-conversation-section" aria-label="Conversation archive" hidden>
+          <a id="previous-conversation" href="#/">Previous conversation</a>
+        </section>
         <section aria-labelledby="matches-heading">
           <h2 id="matches-heading">Watchlist matches</h2>
           <div id="matches"></div>
@@ -79,6 +135,8 @@
         <section aria-labelledby="case-references-heading">
           <h2 id="case-references-heading">Merchant confirmations</h2>
           <ul id="case-references" class="case-references"></ul>
+          <details id="add-confirmation" class="add-confirmation">
+          <summary>Add merchant confirmation</summary>
           <form id="case-reference-form" class="case-reference-form" aria-label="Record merchant confirmation" hidden>
             <label for="case-reference-hosts">Payment hosts (comma or newline separated)</label>
             <textarea id="case-reference-hosts" rows="2" dir="ltr" spellcheck="false" autocomplete="off"></textarea>
@@ -87,6 +145,7 @@
             <button type="submit" id="case-reference-submit">Record merchant confirmation</button>
             <p class="hint">A payment link whose host no confirmation of this chat lists is marked Suspected fraud.</p>
           </form>
+          </details>
         </section>
         <section aria-labelledby="case-log-heading">
           <h2 id="case-log-heading">Case log</h2>
@@ -102,10 +161,127 @@
   </div>
 </main>
 
+<dialog id="settings-dialog" class="opener-dialog" aria-labelledby="settings-heading">
+  <h2 id="settings-heading">Telegram settings</h2>
+  <div id="dm-replies" class="dm-replies" hidden>
+    <div class="dm-replies-setting">
+      <span id="dm-replies-label">Auto-reply to every Telegram DM</span>
+      <button id="dm-replies-switch" type="button" role="switch" aria-checked="false" aria-labelledby="dm-replies-label" aria-describedby="dm-replies-hint">Off</button>
+    </div>
+    <p id="dm-replies-hint" class="hint"></p>
+  </div>
+  <div id="test-mode" class="dm-replies" hidden>
+    <div class="dm-replies-setting">
+      <span id="test-mode-label">Test mode</span>
+      <button id="test-mode-switch" type="button" role="switch" aria-checked="false" aria-labelledby="test-mode-label" aria-describedby="test-mode-hint">Off</button>
+    </div>
+    <p id="test-mode-hint" class="hint"></p>
+  </div>
+  <div id="reply-prompt" class="dm-replies" hidden>
+    <button type="button" id="reload-reply-prompt" aria-describedby="reply-prompt-hint">Reload Ali’s prompt</button>
+    <p class="hint" id="reply-prompt-hint">Save your edits in <code>prompts/ali.md</code> before reloading.</p>
+  </div>
+  <p id="settings-unavailable" class="hint" hidden></p>
+  <p id="settings-status" role="status" class="hint"></p>
+  <section class="inbox-storage" aria-labelledby="local-inbox-heading">
+    <h3 id="local-inbox-heading">Local inbox history</h3>
+    <button type="button" id="erase-entire-inbox" class="erase-action" aria-haspopup="dialog">Erase entire inbox</button>
+  </section>
+  <form method="dialog" class="dialog-footer"><button type="submit">Close</button></form>
+</dialog>
+<dialog id="erase-dialog" class="opener-dialog" aria-labelledby="erase-heading" aria-describedby="erase-description">
+  <h2 id="erase-heading"></h2>
+  <p id="erase-description"></p>
+  <p id="erase-chat-line">Conversation with <bdi id="erase-chat-label"></bdi></p>
+  <form id="erase-form" method="post" autocomplete="off">
+    <div id="erase-typed-field" hidden>
+      <label for="erase-typed">Type ERASE to confirm</label>
+      <input id="erase-typed" type="text" spellcheck="false" autocapitalize="characters" autocomplete="off">
+    </div>
+    <p class="hint" id="erase-status" role="status"></p>
+    <section class="erase-choice" aria-labelledby="erase-telegram-heading">
+      <h3 id="erase-telegram-heading">Telegram history</h3>
+      <p class="hint">Request deletion for both people, then review Telegram’s result before erasing the local copy.</p>
+      <button type="button" id="erase-telegram" class="erase-telegram-action" disabled>Delete from Telegram for both</button>
+      <div id="erase-telegram-result" class="erase-receipt" role="status" aria-label="Telegram deletion result" hidden></div>
+    </section>
+    <section class="erase-choice" aria-labelledby="erase-local-heading">
+      <h3 id="erase-local-heading">Local Mirsad history</h3>
+      <p class="hint">Permanently erase the conversations’ messages, case history and captures from Mirsad. Erasing the local copy also removes the message IDs Mirsad needs to request Telegram deletion later.</p>
+      <button type="button" id="erase-confirm" class="erase-action" disabled>Erase</button>
+    </section>
+    <div class="dialog-footer"><button type="button" id="erase-cancel" autofocus>Cancel</button></div>
+  </form>
+</dialog>
+<dialog id="chat-dispatch-dialog" class="opener-dialog" aria-labelledby="chat-dispatch-heading">
+  <h2 id="chat-dispatch-heading">Dispatch this chat</h2>
+  <p class="dispatch-target">Conversation with <bdi id="chat-dispatch-target"></bdi></p>
+  <form id="chat-dispatch-form">
+    <div id="chat-dispatch-brief-fields" class="chat-dispatch-brief-fields">
+    <label for="chat-dispatch-context">Officer briefing (optional)</label>
+    <textarea id="chat-dispatch-context" rows="3" maxlength="500" dir="auto" aria-describedby="chat-dispatch-hint"></textarea>
+    <p id="chat-dispatch-hint" class="hint">Leave blank to keep the saved briefing.</p>
+    <label><input id="chat-dispatch-clear" type="checkbox"> Clear saved briefing</label>
+    </div>
+    <section id="chat-dispatch-permission-section" class="dispatch-permission" aria-labelledby="chat-dispatch-mode" hidden>
+      <h3 id="chat-dispatch-mode"></h3>
+      <p id="chat-dispatch-mode-hint"></p>
+      <label id="chat-dispatch-permission-label" hidden><input type="checkbox" id="chat-dispatch-permission"> I already have this participant’s permission to send this chat to Gemini through OpenRouter for replies and fraud screening.</label>
+      <p id="chat-dispatch-record" class="hint" hidden></p>
+      <p id="chat-dispatch-eligibility" class="hint"></p>
+    </section>
+    <p id="chat-dispatch-status" role="status" class="error"></p>
+    <div class="dialog-footer">
+      <button type="button" id="cancel-chat-dispatch">Cancel</button>
+      <button type="submit" id="confirm-chat-dispatch" class="primary">Dispatch</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="phone-dispatch-dialog" class="opener-dialog" aria-labelledby="phone-dispatch-heading">
+  <h2 id="phone-dispatch-heading">Dispatch a number</h2>
+  <form id="phone-dispatch-form" method="post" autocomplete="off">
+    <label for="phone-dispatch-number">Phone number</label>
+    <input id="phone-dispatch-number" type="tel" inputmode="tel" dir="ltr" maxlength="64" aria-describedby="phone-dispatch-hint" required autofocus>
+    <p id="phone-dispatch-hint" class="hint">Include the country code, starting with + or 00.</p>
+    <label for="phone-dispatch-brief">Officer briefing (optional)</label>
+    <textarea id="phone-dispatch-brief" rows="2" maxlength="500" dir="auto"></textarea>
+    <button id="phone-dispatch-submit" type="submit" class="primary">Dispatch</button>
+  </form>
+  <p id="phone-dispatch-status" role="status" class="phone-receipt"></p>
+  <a id="phone-dispatch-chat" hidden>Open conversation</a>
+  <button type="button" id="phone-dispatch-draft" hidden>Draft first message</button>
+  <form method="dialog" class="dialog-footer"><button type="submit">Close</button></form>
+</dialog>
 <dialog id="capture-dialog" class="capture-dialog" aria-labelledby="capture-dialog-title">
   <h2 id="capture-dialog-title">Mirsad-rendered capture</h2>
   <img id="capture-dialog-image" class="capture-full" alt="">
   <form method="dialog"><button type="submit">Close</button></form>
+</dialog>
+<dialog id="opener-dialog" class="opener-dialog" aria-labelledby="opener-dialog-title">
+  <h2 id="opener-dialog-title">Draft a first message</h2>
+  <form id="opener-form">
+    <label for="opener-context">Officer briefing</label>
+    <textarea id="opener-context" rows="3" maxlength="500" dir="auto" aria-describedby="opener-context-hint" required autofocus></textarea>
+    <p id="opener-context-hint" class="hint">Describe the offer or the detail you want to clarify. Use a short summary without personal details.</p>
+    <label for="opener-language">Language</label>
+    <select id="opener-language">
+      <option value="english">English</option>
+      <option value="arabic">Emirati Arabic</option>
+    </select>
+    <button type="submit" id="generate-opener" class="primary">Generate draft</button>
+  </form>
+  <div id="opener-result" class="opener-result" hidden>
+    <label for="opener-draft">Opening message draft</label>
+    <textarea id="opener-draft" rows="3" dir="auto"></textarea>
+    <p class="hint" id="opener-manual-hint">Review and edit this local draft, then copy it into Telegram when you’re ready to send.</p>
+    <button type="button" id="open-telegram-draft" hidden>Open draft in Telegram</button>
+  </div>
+  <p id="opener-recipient" class="hint" hidden>Telegram recipient <bdi id="opener-recipient-number" dir="ltr"></bdi></p>
+  <p id="opener-status" class="hint" role="status"></p>
+  <form method="dialog" class="opener-actions">
+    <button type="button" id="copy-opener" hidden>Copy draft</button>
+    <button type="submit">Close</button>
+  </form>
 </dialog>
 </body>
 </html>

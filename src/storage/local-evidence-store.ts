@@ -91,5 +91,23 @@ export function createLocalEvidenceStore(root: string, options: LocalEvidenceSto
       const buffer = await fs.readFile(resolveKey(root, key));
       return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
     },
+    async remove(key: string): Promise<void> {
+      const file = resolveKey(root, key);
+      const dir = path.dirname(file);
+      const prefix = path.basename(file) + '.';
+      const tempName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.tmp$/i;
+      try {
+        const names = await fs.readdir(dir);
+        for (const name of names) {
+          if (name.startsWith(prefix) && tempName.test(name.slice(prefix.length))) {
+            await fs.rm(path.join(dir, name), { force: true });
+          }
+        }
+        await fs.rm(file, { force: true });
+        await flushDirectory(dir, logger);
+      } catch (error) {
+        if (errorCode(error) !== 'ENOENT') throw error;
+      }
+    },
   };
 }

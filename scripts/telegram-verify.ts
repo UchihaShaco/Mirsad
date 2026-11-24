@@ -10,7 +10,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { BotApiError, createBotApi, type BotApi } from '../src/adapters/telegram/bot-api.ts';
+import { BotApiError, createBotApi, isWellFormedBotToken, type BotApi } from '../src/adapters/telegram/bot-api.ts';
 import { findLiveBindings } from '../src/adapters/telegram/live-connector.ts';
 import { discoverConnections, verifyConnection, type ConnectionDiscovery, type VerificationReport } from '../src/adapters/telegram/verify.ts';
 import { ConfigError, loadConfig, type Config } from '../src/config.ts';
@@ -44,7 +44,8 @@ function missingSettings(telegram: Config['telegram']): string {
   const unset = [
     telegram.botToken === null ? 'TELEGRAM_BOT_TOKEN (required to call the Bot API)' : null,
     telegram.approvedConnectionId === null ? 'TELEGRAM_APPROVED_CONNECTION_ID' : null,
-    telegram.approvedChatIds.length === 0 ? 'TELEGRAM_APPROVED_CHAT_IDS' : null,
+    telegram.chatScope === 'approved' && telegram.approvedChatIds.length === 0 ? 'TELEGRAM_APPROVED_CHAT_IDS' : null,
+    telegram.chatScope === 'all_private' && telegram.allChatsReference === null ? 'TELEGRAM_ALL_CHATS_REFERENCE' : null,
     telegram.approvalReference === null ? 'TELEGRAM_APPROVAL_REFERENCE' : null,
   ].filter((line): line is string => line !== null);
   return `Telegram verification cannot run. Not set:\n${unset.map((line) => `  - ${line}`).join('\n')}\nSee docs/telegram/setup.md.\n`;
@@ -81,6 +82,10 @@ export async function runVerify(options: VerifyRunOptions): Promise<number> {
     options.write(missingSettings(config.telegram));
     return 1;
   }
+  if (!isWellFormedBotToken(token)) {
+    options.write('Telegram verification failed: bot_token_malformed\n');
+    return 1;
+  }
   try {
     const api = options.botApi ?? createBotApi({ token });
     if (options.argv.includes(DISCOVER_FLAG)) {
@@ -91,7 +96,7 @@ export async function runVerify(options: VerifyRunOptions): Promise<number> {
     options.write(formatReport(report));
     return report.ready ? 0 : 1;
   } catch (error) {
-    const reason = error instanceof BotApiError ? error.message : error instanceof Error ? error.message : 'unknown error';
+    const reason = error instanceof BotApiError ? error.message : 'unexpected_error';
     options.write(`Telegram verification failed: ${reason}\n`);
     return 1;
   }

@@ -1,6 +1,7 @@
 /** The selected chat's header: label, channel, origin label, AI mode and the Pause AI / Take over / Resume AI controls. */
 import { append, bdi, clear, h, withFocus } from '../dom.js';
-import { AI_MODE_LABELS } from '../format.js';
+import { AI_MODE_LABELS, conversationReviewSummary, evidenceCountLabel, evidenceItemsFor, TELEGRAM_EVIDENCE_LABELS } from '../format.js';
+import { chatHref } from '../state/route.js';
 
 const REVIEW_SUMMARY = {
   active: (review) => `Review in progress (${review.pending} pending).`,
@@ -46,6 +47,46 @@ function placeholder(state) {
   return h('p', { className: 'placeholder', text: 'Loading the chat…' });
 }
 
+function reviewNotice(timeline, busy, handlers) {
+  const { chat } = timeline;
+  const hold = chat.telegramReplyHold;
+  const items = evidenceItemsFor(hold);
+  if (items.length === 0) return null;
+  const held = hold.officerReview !== null;
+  const rows = items.map((item) => {
+    const paymentReview = item.reason === 'model_payment_link';
+    const source = h('a', {
+      href: chatHref(chat.id, item.messageId, item.messageEventId),
+      text: item.reason === 'conversation_review' ? 'View the message that triggered review'
+        : paymentReview ? 'View payment link source' : `Review shared ${TELEGRAM_EVIDENCE_LABELS[item.reason] ?? 'item'}`,
+      dataset: { focusKey: `review-source:${item.actionId}` },
+    });
+    let description = source;
+    if (item.reason === 'conversation_review') {
+      const report = timeline.caseActions.find(action => action.id === item.actionId);
+      description = h('div', {}, [h('div', { text: conversationReviewSummary(report?.detail) }), source]);
+    }
+    if (paymentReview) description = h('div', {}, [
+      h('strong', { text: 'Payment link needs review' }),
+      h('p', { text: 'Ali flagged an unverified payment request.' }),
+      source,
+    ]);
+    const row = h('li', { className: paymentReview ? 'review-item review-item-payment' : 'review-item' }, [description]);
+    if (held) {
+      const button = h('button', { type: 'button', text: 'Mark reviewed', disabled: busy, dataset: { focusKey: `review:${item.actionId}` } });
+      button.addEventListener('click', () => handlers.onMarkReviewed(chat.id, item.actionId, chat.revision));
+      row.append(button);
+    }
+    return row;
+  });
+  return h('section', { className: 'review-notice', 'aria-label': 'Evidence for officer review' }, [
+    h('strong', { text: evidenceCountLabel(items.length) }),
+    held ? h('span', { className: 'flag', text: 'Automated replies held for evidence review.' })
+      : chat.aiMode === 'ai_active' && !hold.contactOptedOut ? h('span', { text: 'Automated replies can continue.' }) : null,
+    h('ul', { className: 'review-items' }, rows),
+  ]);
+}
+
 export function renderChatHeader(container, state, handlers) {
   withFocus(container, () => {
     clear(container);
@@ -64,7 +105,15 @@ export function renderChatHeader(container, state, handlers) {
         h('span', { text: `Revision ${chat.revision}` }),
       ]),
       summary ? h('p', { className: 'hint', text: summary(chat.review) }) : null,
-      controls(chat, state, handlers),
+      chat.telegramReplyHold.contactOptedOut ? h('p', { className: 'flag', text: 'Contact opted out of automated replies. They can start a new exchange by asking for a reply.' }) : null,
+      reviewNotice(state.wholeTimeline ?? state.timeline, state.pending !== null, handlers),
+      !state.previous && chat.lowerConcern ? h('p', { className: 'lower-concern-note' }, [
+        h('strong', { className: 'lower-concern-badge', text: 'Lower concern' }),
+        h('span', { text: ' Meeting arranged. ' }),
+        h('a', { href: chatHref(chat.id, chat.lowerConcern.sources.agreement.messageId, chat.lowerConcern.sources.agreement.messageEventId),
+          text: 'See agreement' }),
+      ]) : null,
+      state.previous ? null : controls(chat, state, handlers),
     ]);
   });
 }

@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createBotApi, type BotApi } from '../../src/adapters/telegram/bot-api.ts';
+import { BotApiError, createBotApi, type BotApi } from '../../src/adapters/telegram/bot-api.ts';
 import { createLiveConnector, findLiveBindings, LiveConnectorGateError, type LiveConnector } from '../../src/adapters/telegram/live-connector.ts';
 import { discoverConnections, verifyConnection } from '../../src/adapters/telegram/verify.ts';
 import { createApp } from '../../src/app.ts';
@@ -17,7 +17,7 @@ import { createDemoIdentity } from '../../src/identity/demo-identity.ts';
 import { provisionPrincipal, provisionWorkspace } from '../../src/identity/provision.ts';
 import { createJsonLogger } from '../../src/logging/json-logger.ts';
 import { DATABASE_FILE, openDatabase, type Db } from '../../src/storage/db.ts';
-import { hasGrant } from '../../src/storage/repos/principals.ts';
+import { grantAccount, hasGrant } from '../../src/storage/repos/principals.ts';
 import { LIVE_CREDENTIALS_FILE, provisionLiveConnector, runProvision } from '../../scripts/telegram-provision.ts';
 import { runVerify } from '../../scripts/telegram-verify.ts';
 import { queryRows, storeSnapshot } from '../helpers/db-read.ts';
@@ -281,16 +281,19 @@ async function liveChatId(externalChatId: number): Promise<string> {
 }
 
 /** A full app on its own data directory (one workspace, Officer A, a provisioned live connector) wired to the fake. */
-async function startWiredApp(env: Record<string, string>) {
+async function startWiredApp(env: Record<string, string | undefined>) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mirsad-live-app-'));
   const seed = openDatabase(path.join(dataDir, DATABASE_FILE));
   let officerToken = '';
+  let connectorToken: string;
   try {
     officerToken = seed.transaction((tx) => {
       const workspace = provisionWorkspace(tx, { name: 'Test Workspace' });
       return provisionPrincipal(tx, { workspaceId: workspace.id, kind: 'officer', displayName: 'Officer A' }).token;
     });
-    provisionLiveConnector(seed, { ownerUserId: String(OWNER_ID), officers: ['Officer A'] });
+    const binding = provisionLiveConnector(seed, { ownerUserId: String(OWNER_ID), officers: ['Officer A'] });
+    if (!binding.token) throw new Error('missing test connector token');
+    connectorToken = binding.token;
   } finally {
     seed.close();
   }
@@ -304,6 +307,12 @@ async function startWiredApp(env: Record<string, string>) {
   };
   return {
     app,
+    dataDir,
+    post: (route: string, body: unknown, actor: 'officer' | 'connector') => fetch(url + route, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${actor === 'officer' ? officerToken : connectorToken}`, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
     logs: appLogs,
     get,
     telegramStatus: async () => ((await get('/v1/status')).channels as Json).telegram as Json,
@@ -360,6 +369,73 @@ afterAll(async () => {
 });
 
 describe('step 5: telegram live connector', () => {
+  it('refuses fixture provenance on a provisioned Business account even when the fixture connector has a grant', async () => {
+    const [binding] = db.transaction((tx) => findLiveBindings(tx));
+    if (!binding) throw new Error('missing test binding');
+    const token = db.transaction((tx) => {
+      const connector = provisionPrincipal(tx, { workspaceId: binding.account.workspace_id, kind: 'connector', displayName: 'Test fixture importer', captureMethod: 'fixture_replay' });
+      grantAccount(tx, connector.principal.id, binding.account.id);
+      return connector.token;
+    });
+    const account = { source: 'telegram' as const, externalAccountId: String(OWNER_ID) };
+    const body = envelope(account, '6000000902', recorded({ messageId: 1, text: 'Test private message' }));
+    const before = storeSnapshot(h.dataDir);
+    const res = await h.http(token).post('/v1/ingest', body);
+    expect(res.status).toBe(403);
+    expect(storeSnapshot(h.dataDir)).toEqual(before);
+  });
+
+  it.each([
+    { condition: 'disabled intake', env: { TELEGRAM_LIVE_ENABLED: 'false' }, id: '6000000101' },
+    { condition: 'missing approval', env: { TELEGRAM_APPROVAL_REFERENCE: '' }, id: '6000000101' },
+    { condition: 'listed service chat', env: { TELEGRAM_APPROVED_CHAT_IDS: '777000' }, id: '777000' },
+    { condition: 'excluded chat', env: { TELEGRAM_EXCLUDED_CHAT_IDS: '6000000101' }, id: '6000000101' },
+    { condition: 'unlisted chat', env: {}, id: '6000000901' },
+    { condition: 'all-private data without raw sender metadata', env: { TELEGRAM_CHAT_SCOPE: 'all_private', TELEGRAM_ALL_CHATS_REFERENCE: 'TEST' }, id: '6000000101' },
+  ] as const)('rejects $condition on both HTTP intake routes before storage', async ({ env, id }) => {
+    const wired = await startWiredApp({ ...LIVE_ENV, ...env });
+    try {
+      const account = { source: 'telegram' as const, externalAccountId: String(OWNER_ID) };
+      const event = recorded({ messageId: 1, text: 'private-http-canary' });
+      const before = storeSnapshot(wired.dataDir);
+      const first = await wired.post('/v1/ingest', envelope(account, id, event), 'connector');
+      expect(first.status).toBe(403);
+      expect(storeSnapshot(wired.dataDir)).toEqual(before);
+
+      const registered = await wired.post('/v1/chats', { ...account, externalChatId: id, displayLabel: 'Test Contact' }, 'officer');
+      expect(registered.status).toBe(201);
+      const { data } = await registered.json() as { data: { chat: { id: string } } };
+      const afterRegistration = storeSnapshot(wired.dataDir);
+      const next = await wired.post(`/v1/chats/${data.chat.id}/events`, event, 'connector');
+      expect(next.status).toBe(403);
+      expect(storeSnapshot(wired.dataDir)).toEqual(afterRegistration);
+      expect(wired.logs.join('\n')).not.toContain('private-http-canary');
+    } finally {
+      await wired.close();
+    }
+  });
+
+  it('accepts normalized HTTP intake from a provisioned connector on an approved chat', async () => {
+    const wired = await startWiredApp(LIVE_ENV);
+    try {
+      const account = { source: 'telegram' as const, externalAccountId: String(OWNER_ID) };
+      const first = await wired.post('/v1/ingest', envelope(account, '6000000101', recorded({ messageId: 1 })), 'connector');
+      expect(first.status).toBe(201);
+      const { data } = await first.json() as { data: { chatId: string } };
+      const route = `/v1/chats/${data.chatId}/events`;
+      expect((await wired.post(route, recorded({ messageId: 2 }), 'connector')).status).toBe(201);
+
+      fake.queue({ update_id: nextUpdateId++, business_connection: { ...DEFAULT_CONNECTION, is_enabled: false } });
+      await vi.waitFor(async () => expect((await wired.telegramStatus()).liveConnector).toBe('disabled'), WAIT);
+      await wired.app.drain();
+      const before = storeSnapshot(wired.dataDir);
+      expect((await wired.post(route, recorded({ messageId: 3 }), 'connector')).status).toBe(403);
+      expect(storeSnapshot(wired.dataDir)).toEqual(before);
+    } finally {
+      await wired.close();
+    }
+  });
+
   it('the connector refuses to start unless enabled, token, approved connection, approved chats and approval reference are all set', async () => {
     const gates = {
       TELEGRAM_LIVE_ENABLED: 'false',
@@ -439,6 +515,77 @@ describe('step 5: telegram live connector', () => {
     }
   });
 
+  it('an all-private deletion only marks messages already observed through live intake', async () => {
+    const unseen = 6000000311;
+    const contact = 6000000312;
+    const updates = [
+      deletion(unseen, [21]),
+      edit({ chatId: contact, messageId: 22, fromId: contact, text: 'First seen as an edit' }),
+      deletion(contact, [21, 22]),
+    ];
+    const connector = connectorFor(liveConfig({ TELEGRAM_CHAT_SCOPE: 'all_private', TELEGRAM_ALL_CHATS_REFERENCE: 'TEST-ALL' }));
+    const processed = fake.nextPoll((offset) => offset === updateIdOf(updates.at(-1)) + 1);
+    fake.queue(...updates);
+    connector.start();
+    await processed;
+
+    const chatIds = queryRows<{ external_chat_id: string }>(h.dataDir, 'SELECT external_chat_id FROM chats');
+    expect(chatIds.map((c) => c.external_chat_id)).not.toContain(String(unseen));
+    const rows = queryRows(h.dataDir, 'SELECT source_message_id, edited_at_source, deleted_at_source FROM messages WHERE chat_id = :id', {
+      id: await liveChatId(contact),
+    });
+    expect(rows).toEqual([{ source_message_id: 'tg:22', edited_at_source: 1, deleted_at_source: 1 }]);
+    expect(connector.stats()).toMatchObject({ stored: 2, dropped: { other: 2 } });
+    expect(logs.join('\n')).not.toContain(String(unseen));
+  });
+
+  it('retains an unseen-message deletion as a placeholder in an explicitly approved chat', async () => {
+    const contact = 6000000314;
+    const update = deletion(contact, [25]);
+    const connector = connectorFor(liveConfig({ TELEGRAM_APPROVED_CHAT_IDS: String(contact) }));
+    const processed = fake.nextPoll((offset) => offset === updateIdOf(update) + 1);
+    fake.queue(update);
+    connector.start();
+    await processed;
+
+    const rows = queryRows(h.dataDir, 'SELECT source_message_id, original_captured, deleted_at_source FROM messages WHERE chat_id = :id', {
+      id: await liveChatId(contact),
+    });
+    expect(rows).toEqual([{ source_message_id: 'tg:25', original_captured: 0, deleted_at_source: 1 }]);
+  });
+
+  it('all-private intake drops an edit whose sender cannot be identified', async () => {
+    const contact = 6000000313;
+    const edited = messageBody({ chatId: contact, messageId: 23, fromId: contact, text: 'Synthetic unidentified edit' });
+    delete edited.from;
+    const update = { update_id: nextUpdateId++, edited_business_message: edited };
+    const before = storeSnapshot(h.dataDir);
+    const connector = connectorFor(liveConfig({ TELEGRAM_CHAT_SCOPE: 'all_private', TELEGRAM_ALL_CHATS_REFERENCE: 'TEST-ALL' }));
+    const processed = fake.nextPoll((offset) => offset === update.update_id + 1);
+    fake.queue(update);
+    connector.start();
+    await processed;
+
+    expect(storeSnapshot(h.dataDir)).toEqual(before);
+    expect(connector.stats()).toMatchObject({ stored: 0, dropped: { otherChat: 1 } });
+    expect(logs.join('\n')).not.toContain(edited.text);
+  });
+
+  it('drops an ambiguous update carrying two business event types before intake', async () => {
+    const contact = 6000000101;
+    const body = messageBody({ chatId: contact, messageId: 24, fromId: contact, text: 'Synthetic ambiguous event' });
+    const update = { update_id: nextUpdateId++, business_message: body, edited_business_message: body };
+    const before = storeSnapshot(h.dataDir);
+    const connector = connectorFor(liveConfig());
+    const processed = fake.nextPoll((offset) => offset === update.update_id + 1);
+    fake.queue(update);
+    connector.start();
+    await processed;
+
+    expect(storeSnapshot(h.dataDir)).toEqual(before);
+    expect(connector.stats()).toMatchObject({ stored: 0, dropped: { other: 1 } });
+  });
+
   it('the update offset is persisted and redelivered updates create nothing new', async () => {
     const [chatA] = APPROVED_CHATS as [number];
     const updates = [
@@ -453,8 +600,8 @@ describe('step 5: telegram live connector', () => {
     first.start();
     await processed;
     await first.stop();
-    const state = queryRows<{ value: string }>(h.dataDir, 'SELECT value FROM connector_state');
-    expect(state.map((row) => row.value)).toContain(String(next));
+    const state = queryRows<{ value: string }>(h.dataDir, "SELECT value FROM connector_state WHERE key = 'telegram_update_offset'");
+    expect(state.map((row) => row.value)).toEqual([String(next)]);
 
     // A new connector (as after a restart) resumes from the stored offset.
     const before = storeSnapshot(h.dataDir);
@@ -502,7 +649,7 @@ describe('step 5: telegram live connector', () => {
       expect(connector.stats()).toMatchObject({ stoppedReason: reason, stored: 0 });
       expect(storeSnapshot(h.dataDir)).toEqual(before);
       // The update after the change is not confirmed, so Telegram keeps it until intake is approved again.
-      expect(queryRows<{ value: string }>(h.dataDir, 'SELECT value FROM connector_state').map((r) => r.value)).toEqual([
+      expect(queryRows<{ value: string }>(h.dataDir, "SELECT value FROM connector_state WHERE key = 'telegram_update_offset'").map((r) => r.value)).toEqual([
         String(updateIdOf(change) + 1),
       ]);
       expect(logs.some((line) => line.includes('telegram_live_connector_stopped') && line.includes(reason))).toBe(true);
@@ -597,11 +744,13 @@ describe('step 5: telegram live connector', () => {
   it('verification reports bot and connection state without the token or any message content', async () => {
     // A business message is waiting on Telegram's side; verification must not pull it.
     fake.queue(message({ chatId: 6000000101, messageId: 801, fromId: 6000000101, text: 'canary waiting message' }));
+    fake.me = { ...DEFAULT_ME, username: 'canary_private_username_bot' };
+    fake.webhook = { ...DEFAULT_WEBHOOK, last_error_message: 'canary private webhook error', allowed_updates: ['business_connection', 'canary'] };
     const report = await verifyConnection(fakeBotApi(), liveConfig(), { provisionedOwnerUserId: String(OWNER_ID) });
     expect(report).toMatchObject({
       ready: true,
-      bot: { id: 5000000999, username: 'mirsad_test_bot', canConnectToBusiness: true },
-      webhook: { set: false, pendingUpdateCount: 0 },
+      bot: { id: 5000000999, canConnectToBusiness: true },
+      webhook: { set: false, pendingUpdateCount: 0, allowedUpdateCount: 2 },
       connection: { id: CONNECTION_ID, ownerUserId: String(OWNER_ID), enabled: true, rightsGranted: [] },
     });
     expect(report.checks.filter((c) => !c.passed)).toEqual([]);
@@ -616,7 +765,7 @@ describe('step 5: telegram live connector', () => {
     // than the provisioned account each fail their own check. The webhook URL is not echoed.
     fake.me = { ...DEFAULT_ME, can_connect_to_business: false };
     fake.webhook = { ...DEFAULT_WEBHOOK, url: 'https://hooks.example.test/telegram/path', pending_update_count: 3 };
-    fake.connection = { ...DEFAULT_CONNECTION, is_enabled: false, rights: { can_reply: true, can_read_messages: false } };
+    fake.connection = { ...DEFAULT_CONNECTION, is_enabled: false, rights: { can_reply: true, can_read_messages: false, 'canary private right': true } };
     const failing = await verifyConnection(fakeBotApi(), liveConfig(), { provisionedOwnerUserId: '5000000002' });
     expect(failing.ready).toBe(false);
     expect(failing.checks.filter((c) => !c.passed).map((c) => c.id).sort()).toEqual([
@@ -626,8 +775,13 @@ describe('step 5: telegram live connector', () => {
       'connection_rights_none',
       'polling_transport',
     ]);
-    expect(failing.connection?.rightsGranted).toEqual(['can_reply']);
+    expect(failing.connection?.rightsGranted).toContain('can_reply');
     expect(JSON.stringify(failing)).not.toContain('hooks.example.test');
+    expect(JSON.stringify(failing)).not.toContain('canary private right');
+    // With only the unfamiliar grant left, it must still fail the rights check.
+    fake.connection = { ...DEFAULT_CONNECTION, rights: { 'canary private right': true } };
+    const unknownRight = await verifyConnection(fakeBotApi(), liveConfig(), { provisionedOwnerUserId: String(OWNER_ID) });
+    expect(unknownRight.checks.find((c) => c.id === 'connection_rights_none')?.passed).toBe(false);
 
     // A token Telegram rejects: reported, nothing else checked, and the rejected token is not echoed either.
     const wrongToken = '5000000999:TEST_wrong_token_0123456789abcdef';
@@ -744,10 +898,18 @@ describe('step 5: telegram live connector', () => {
 
     out.length = 0;
     const env = { MIRSAD_DATA_DIR: h.dataDir, ...LIVE_ENV };
+    const malformed = { ...env, TELEGRAM_BOT_TOKEN: 'canary-malformed-token' };
+    expect(await runVerify({ env: malformed, argv: [], write, botApi: fakeBotApi() })).toBe(1);
+    expect(out.join('')).toContain('bot_token_malformed');
+    expect(out.join('')).not.toContain('canary-malformed-token');
+    expect(fake.calls).toEqual([]);
+
+    out.length = 0;
     expect(await runVerify({ env, argv: [], write, botApi: fakeBotApi() })).toBe(0);
     const printed = out.join('');
     expect(printed).toMatch(/PASS\s+connection_owner_provisioned/);
     expect(printed).not.toContain(BOT_TOKEN.split(':')[1]);
+    expect(printed).not.toContain('mirsad_test_bot');
 
     out.length = 0;
     fake.webhook = { ...DEFAULT_WEBHOOK, url: 'https://hooks.example.test/x' };
@@ -761,15 +923,52 @@ describe('step 5: telegram live connector', () => {
     expect(out.join('')).toContain(String(OWNER_ID));
   });
 
+  it('reports the Telegram method, error code and status without upstream free text', async () => {
+    const api: BotApi = {
+      ...fakeBotApi(),
+      async getBusinessConnection() {
+        throw new BotApiError('getBusinessConnection', 'api_error', 403, 'canary private API error');
+      },
+    };
+    const report = await verifyConnection(api, liveConfig(), { provisionedOwnerUserId: String(OWNER_ID) });
+    const failed = report.checks.find((c) => c.id === 'connection_enabled');
+    expect(failed?.passed).toBe(false);
+    expect(failed?.detail).toMatch(/getBusinessConnection.*api_error.*403/);
+    expect(JSON.stringify(report)).not.toContain('canary private API error');
+  });
+
+  it('keeps unexpected errors out of verification output', async () => {
+    const api: BotApi = {
+      ...fakeBotApi(),
+      async getMe() {
+        throw new Error('canary private exception');
+      },
+    };
+    const output: string[] = [];
+    const status = await runVerify({ env: { ...LIVE_ENV, MIRSAD_DATA_DIR: h.dataDir }, argv: [], write: (s) => output.push(s), botApi: api });
+    expect(status).toBe(1);
+    expect(output.join('')).toContain('verification failed');
+    expect(output.join('')).not.toContain('canary private exception');
+  });
+
+  it('identifies the invalid configuration field without printing its rejected value', async () => {
+    const env = { ...LIVE_ENV, MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS: 'canary-private-setting' };
+    const output: string[] = [];
+    const status = await runVerify({ env, argv: [], write: (s) => output.push(s), botApi: fakeBotApi() });
+    expect(status).toBe(1);
+    expect(output.join('')).toContain('MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS');
+    expect(output.join('')).not.toContain('canary-private-setting');
+  });
+
   it('connection discovery lists business connections without reading or confirming message updates', async () => {
     fake.queue(
       { update_id: nextUpdateId++, business_connection: { ...DEFAULT_CONNECTION, is_enabled: false } },
       message({ chatId: 6000000101, messageId: 1201, fromId: 6000000101, text: 'canary queued before approval' }),
-      { update_id: nextUpdateId++, business_connection: DEFAULT_CONNECTION },
+      { update_id: nextUpdateId++, business_connection: { ...DEFAULT_CONNECTION, rights: { can_reply: true, 'canary discovery right': true } } },
     );
     const discovery = await discoverConnections(fakeBotApi());
     expect(discovery).toEqual({
-      connections: [{ id: CONNECTION_ID, ownerUserId: String(OWNER_ID), enabled: true, rightsGranted: [] }],
+      connections: [{ id: CONNECTION_ID, ownerUserId: String(OWNER_ID), enabled: true, rightsGranted: ['can_reply', 'unrecognized_right'] }],
       otherUpdates: 1,
     });
     // A short poll with no offset confirms nothing, so updates already queued stay for the live connector. Telegram keeps

@@ -124,6 +124,15 @@ export function normalizePhone(raw: string, hint: PhoneHint = {}): NormalizedPho
   return { e164: null, digits };
 }
 
+/** An officer-entered international number whose written digits can also safely form a Telegram phone link. */
+export function dispatchPhoneNumber(raw: string): string | null {
+  const written = parseableText(raw).replace(BRACKET_BEFORE_PREFIX, '');
+  if (!isPhoneText(written) || !/^(?:\+|00)[^+]+$/.test(written)) return null;
+  const { e164, digits } = normalizePhone(written);
+  const internationalDigits = written.startsWith('00') ? digits.slice(2) : digits;
+  return e164 === `+${internationalDigits}` ? e164 : null;
+}
+
 /** The hint for a reviewer's country hint (ISO alpha-2 in any case, or null when unknown). */
 export function phoneHintFor(countryHint: string | null): PhoneHint {
   return countryHint === null ? {} : { country: countryHint.toUpperCase() };

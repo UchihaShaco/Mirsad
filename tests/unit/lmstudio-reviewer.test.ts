@@ -455,6 +455,29 @@ describe('LM Studio reviewer', () => {
 });
 
 describe('reviewer factory, lmstudio branch', () => {
+  it.each([
+    { label: 'the requested general model', returnedModel: 'review-general', finishReason: 'stop', accepted: true },
+    { label: 'a missing model id', returnedModel: undefined, finishReason: 'stop', accepted: false },
+    { label: 'a different model on a complete answer', returnedModel: 'reply-arabic', finishReason: 'stop', accepted: false },
+    { label: 'a different model on a cut-off answer', returnedModel: 'reply-arabic', finishReason: 'length', accepted: false },
+  ])('checks $label when an Arabic reply model is configured', async ({ returnedModel, finishReason, accepted }) => {
+    const server = await fakeLmStudio(() => ({
+      json: { model: returnedModel, choices: [{ message: { content: '{"items":[]}' }, finish_reason: finishReason }] },
+    }));
+    const config = loadConfig({
+      MIRSAD_REVIEWER: 'lmstudio',
+      MIRSAD_LMSTUDIO_BASE_URL: server.url,
+      MIRSAD_LMSTUDIO_MODEL: 'review-general',
+      MIRSAD_LMSTUDIO_ARABIC_MODEL: 'reply-arabic',
+    });
+    const reviewer = createReviewer(config, createJsonLogger({ write: () => {} }));
+    const result = reviewer.review(request('This synthetic text is long enough to split if a model reports a cut-off answer.'), signal());
+
+    if (accepted) await expect(result).resolves.toEqual({ items: [] });
+    else expect(await unavailableCode(result)).toBe('lmstudio_invalid_response');
+    expect(server.requests.map((sent) => bodyOf(sent).model)).toEqual(['review-general']);
+  });
+
   it('builds the LM Studio reviewer from the configured URL, model and context size', async () => {
     const server = await fakeLmStudio(() => answer([]));
     const config = loadConfig({

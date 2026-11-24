@@ -99,5 +99,6 @@ export function createWatchlistView(container) {
     clearDraft(entryId) {
       drafts.delete(entryId);
     },
+    clearDrafts() { drafts.clear(); },
   };
 }

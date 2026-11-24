@@ -57,6 +57,7 @@ export function withIdempotency(
     { principalId: principal.id, scope, key },
   );
   if (stored) {
+    if (stored.status_code === 410) throw AppError.of('history_erased', 'The history for this operation was erased.');
     if (stored.request_sha256 !== requestSha256) {
       throw AppError.of('idempotency_key_reused', 'This Idempotency-Key was already used with a different request body.');
     }

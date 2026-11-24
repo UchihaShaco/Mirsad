@@ -21,7 +21,7 @@ function describeTarget(state) {
 
 export function renderComposer(refs, state) {
   const chat = state.timeline === null ? null : state.timeline.chat;
-  const offered = chat !== null && canCompose(chat, state.me);
+  const offered = !state.previous && chat !== null && canCompose(chat, state.me);
   refs.composer.hidden = !offered;
   if (!offered) return;
   if (refs.composerText.value !== state.composer.text) refs.composerText.value = state.composer.text;

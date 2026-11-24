@@ -4,7 +4,10 @@
  */
 import { tokenFromFragment } from './state/route.js';
 
-const TOKEN_KEY = 'mirsad.officerToken';
+const TOKEN_KEY = 'mirsad.officerSession.v2';
+
+// Before password sign-in, the tab could hold a long-lived demo credential. Upgrading requires a fresh sign-in.
+try { window.sessionStorage.removeItem('mirsad.officerToken'); } catch { /* Storage may be disabled. */ }
 
 /** The stored token, or null; storage can be unavailable (a privacy mode), which behaves like an empty store. */
 export function readStoredToken() {

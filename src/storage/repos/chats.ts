@@ -109,13 +109,15 @@ export interface ListChatsFilter {
   offset: number;
 }
 
+export const visibleInboxChatSql = 'NOT EXISTS (SELECT 1 FROM chat_erasure_fences f WHERE f.chat_id=chats.id AND f.hidden=1)';
+
 function filterSql(filter: ListChatsFilter): { where: string; params: Record<string, string | number> } {
   const params: Record<string, string | number> = { workspaceId: filter.workspaceId };
   const accountParams = filter.channelAccountIds.map((id, i) => {
     params[`acct${i}`] = id;
     return `:acct${i}`;
   });
-  let where = `workspace_id = :workspaceId AND channel_account_id IN (${accountParams.join(', ')})`;
+  let where = `workspace_id = :workspaceId AND channel_account_id IN (${accountParams.join(', ')}) AND ${visibleInboxChatSql}`;
   if (filter.inboxStatus) {
     where += ' AND inbox_status = :inboxStatus';
     params.inboxStatus = filter.inboxStatus;

@@ -27,6 +27,23 @@ export function timelineEntries(timeline) {
 
 const isIncomingSource = (message) => message.direction === 'incoming' && message.origin === 'source';
 
+/** An edit or late finding belongs to the test in which its source message was captured. */
+export function timelineForPeriod(timeline, previous) {
+  const marker = timeline.testSession;
+  if (!marker) return timeline;
+  const oldMessages = new Set(marker.previousMessageIds);
+  const oldReferences = new Set(marker.previousReferenceIds);
+  return {
+    ...timeline,
+    messages: timeline.messages.filter(m => oldMessages.has(m.id) === previous),
+    messageEvents: timeline.messageEvents.filter(e => oldMessages.has(e.messageId) === previous),
+    findings: timeline.findings.filter(f => oldMessages.has(f.messageId) === previous),
+    caseActions: timeline.caseActions.filter(a => a.type !== 'chat_test_started'
+      && (oldMessages.has(a.messageId) || oldMessages.has(a.detail?.inReplyTo) || a.position < marker.position) === previous),
+    caseReferences: timeline.caseReferences.filter(r => oldReferences.has(r.id) === previous),
+  };
+}
+
 /** The newest incoming message from the source: the default selection for Leave unanswered. */
 export function latestIncomingMessageId(timeline) {
   let latest = null;

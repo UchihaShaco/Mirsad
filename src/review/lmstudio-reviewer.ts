@@ -21,6 +21,7 @@ export interface LmStudioReviewerOptions {
   model: string;
   timeoutMs: number;
   contextTokens: number;
+  requireModelMatch?: boolean;
   fetch?: typeof fetch;
 }
 
@@ -60,7 +61,7 @@ const Choice = z.object({
   finish_reason: z.string().nullable(),
   message: z.object({ content: z.string().nullable().optional() }),
 });
-const Completion = z.object({ choices: z.tuple([Choice], Choice) });
+const Completion = z.object({ model: z.unknown().optional(), choices: z.tuple([Choice], Choice) });
 type CompletionChoice = z.infer<typeof Choice>;
 
 /** Reviews one part of the message: its items, or null when max_tokens cut the answer off. */
@@ -152,9 +153,11 @@ function parseJson(text: string): unknown {
 }
 
 /** The first choice of a chat completion; a body that is not one is lmstudio_invalid_response. */
-function choiceOf(reply: HttpReply): CompletionChoice {
+function choiceOf(reply: HttpReply, expectedModel?: string): CompletionChoice {
   const completion = Completion.safeParse(parseJson(reply.text));
-  if (!completion.success) throw new ReviewerUnavailableError('lmstudio_invalid_response');
+  if (!completion.success || (expectedModel !== undefined && completion.data.model !== expectedModel)) {
+    throw new ReviewerUnavailableError('lmstudio_invalid_response');
+  }
   const [choice] = completion.data.choices;
   return choice;
 }
@@ -232,7 +235,7 @@ export function createLmStudioReviewer(options: LmStudioReviewerOptions): Review
     const reply = isRetryable(first) ? await post(send, completionsUrl, body, deadline) : first;
     if (isContextOverflow(reply)) throw new ReviewerUnavailableError('lmstudio_context_overflow');
     if (reply.status < HTTP_OK_MIN || reply.status > HTTP_OK_MAX) throw new ReviewerUnavailableError('lmstudio_http_error');
-    const choice = choiceOf(reply);
+    const choice = choiceOf(reply, options.requireModelMatch ? options.model : undefined);
     return choice.finish_reason === CUT_OFF_REASON ? null : itemsOf(contentOf(choice));
   }
 

@@ -25,8 +25,8 @@ export function createReviewer(config: Config, _logger: Logger): Reviewer {
     case 'disabled':
       return createDisabledReviewer();
     case 'lmstudio': {
-      const { baseUrl, model, timeoutMs, contextTokens } = config.lmStudio;
-      return createLmStudioReviewer({ baseUrl, model, timeoutMs, contextTokens });
+      const { baseUrl, model, timeoutMs, contextTokens, arabicReply } = config.lmStudio;
+      return createLmStudioReviewer({ baseUrl, model, timeoutMs, contextTokens, requireModelMatch: Boolean(arabicReply) });
     }
   }
 }

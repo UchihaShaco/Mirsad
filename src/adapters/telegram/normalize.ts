@@ -37,6 +37,7 @@ function hiddenContentOf(msg: TelegramMessage, text: string, mediaKinds: readonl
     ['text_link', entities.some((entity) => entity.type === 'text_link')],
     ['inline_keyboard', (msg.reply_markup?.inline_keyboard ?? []).some((row) => row.length > 0)],
     ['forwarded', msg.forward_origin !== undefined && msg.forward_origin !== null],
+    ['blockquote', entities.some(entity => entity.type === 'blockquote' || entity.type === 'expandable_blockquote')],
     ['other', text === '' && mediaKinds.length === 0],
   ];
   return markers.filter(([, present]) => present).map(([marker]) => marker);
@@ -92,6 +93,8 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
   // alone changed, say) cannot be listed; docs/telegram/fixtures.md records this limit.
   const edited = (updateId: number, msg: TelegramMessage): IntakeEnvelope => {
     const editStamp = msg.edit_date ?? msg.date;
+    const reviewAttachments = [...mediaKindsOf(msg), ...hiddenContentOf(msg, msg.text ?? msg.caption ?? '', [])]
+      .filter(kind => kind === 'document' || kind === 'location' || kind === 'venue' || kind === 'forwarded' || kind === 'blockquote');
     return envelope(msg.chat, {
       type: 'message.edited',
       sourceEventId: `tg:u${updateId}:m${msg.message_id}:e${editStamp}`,
@@ -99,6 +102,7 @@ export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelA
       text: msg.text ?? msg.caption ?? '',
       editedAt: toIso(editStamp),
       direction: directionOf(msg, options.businessUserId),
+      ...(reviewAttachments.length ? { reviewAttachments } : {}),
     });
   };
 

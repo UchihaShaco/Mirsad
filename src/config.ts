@@ -1,4 +1,4 @@
-/** Configuration from environment variables (design section 15). Rejects anything that is not loopback. */
+/** The service and LM Studio bind to loopback. Telegram replies can opt in to a fixed OpenRouter endpoint. */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -8,8 +8,15 @@ import {
   type ReviewerKind,
 } from './contract/enums.ts';
 import { DEFAULT_CONTROLLED_TEST_RECORD, hasValidControlledTestRecord } from './contract/controlled-test-record.ts';
+import { GEMINI_REPLY_MODEL, OPENROUTER_REPLY_MODELS, type OpenRouterReplyModel } from './replies/openrouter-reply-generator.ts';
 
 export const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '::1'] as const;
+/**
+ * Which Telegram chats the live connector stores and the reply worker answers (design section 13): only the approved
+ * list, or every private chat of the connected account (the owner's decision, with its own reference).
+ */
+export const TELEGRAM_CHAT_SCOPES = ['approved', 'all_private'] as const;
+export type TelegramChatScope = (typeof TELEGRAM_CHAT_SCOPES)[number];
 const LOOPBACK_URL_HOSTNAMES = ['127.0.0.1', 'localhost', '[::1]'];
 const MAX_PORT = 65_535;
 /** Relative MIRSAD_CONTROLLED_TEST_RECORD paths resolve against the project root, not the working directory. */
@@ -21,7 +28,11 @@ export interface Config {
   dataDir: string;
   demoSeed: boolean;
   reviewer: ReviewerKind;
-  lmStudio: { baseUrl: string; model: string; contextTokens: number; timeoutMs: number };
+  replyProvider: { kind: 'lmstudio' } | { kind: 'openrouter'; apiKey: string; model: OpenRouterReplyModel };
+  lmStudio: {
+    baseUrl: string; model: string; contextTokens: number; timeoutMs: number;
+    arabicReply?: { baseUrl: string; model: string; contextTokens: number };
+  };
   reviewConcurrency: number;
   reviewAllowedCaptureMethods: ConnectorCaptureMethod[];
   streamRetention: number;
@@ -33,8 +44,20 @@ export interface Config {
     liveEnabled: boolean;
     botToken: string | null;
     approvedConnectionId: string | null;
+    /** `approved` (the default): only `approvedChatIds`. `all_private`: every private chat, with `allChatsReference`. */
+    chatScope: TelegramChatScope;
     approvedChatIds: string[];
+    /** The reference of the owner's recorded decision to cover every private chat; required for `all_private`. */
+    allChatsReference: string | null;
+    /** Chats never stored or answered, in either scope. */
+    excludedChatIds: string[];
     approvalReference: string | null;
+    /**
+     * Opt-in model replies in explicitly approved, AI-active live chats (design section 20). Off by
+     * default; it also needs the reference of the recorded consent. With `autoStart`, a chat that was never started is
+     * started by the worker when the contact's message there is one it would answer.
+     */
+    aiReplies: { enabled: boolean; consentReference: string | null; autoStart: boolean; wordingUntilMs?: number };
   };
 }
 
@@ -104,7 +127,7 @@ function reviewMethods(env: Env): ConnectorCaptureMethod[] {
   for (const method of raw) {
     const known = (CONNECTOR_CAPTURE_METHODS as readonly string[]).includes(method);
     if (!known || method === 'telegram_business_live') {
-      throw new ConfigError(name, `capture method ${method} cannot be reviewed`);
+      throw new ConfigError(name, 'contains a capture method that cannot be reviewed');
     }
   }
   return raw as ConnectorCaptureMethod[];
@@ -123,6 +146,12 @@ export function loadConfig(env: Env): Config {
   const whatsappImportEnabled = bool(env, 'MIRSAD_WHATSAPP_IMPORT_ENABLED', false);
   const recordPath = controlledTestRecordPath(env);
   const approvalReference = value(env, 'TELEGRAM_APPROVAL_REFERENCE');
+  const baseUrl = loopbackUrl(env, 'MIRSAD_LMSTUDIO_BASE_URL', 'http://127.0.0.1:1234/v1');
+  const contextTokens = int(env, 'MIRSAD_LMSTUDIO_CONTEXT_TOKENS', 4096, 512);
+  const arabicModel = value(env, 'MIRSAD_LMSTUDIO_ARABIC_MODEL');
+  const replyProvider = oneOf(env, 'MIRSAD_REPLY_PROVIDER', ['lmstudio', 'openrouter'] as const, 'lmstudio');
+  const now = Date.now();
+  const wordingUntilMs = Date.parse(value(env, 'MIRSAD_TEST_WORDING_UNTIL') ?? '');
   if (whatsappImportEnabled && !hasValidControlledTestRecord(recordPath, approvalReference)) {
     throw new ConfigError('MIRSAD_WHATSAPP_IMPORT_ENABLED', 'requires a verified Telegram controlled-test record');
   }
@@ -132,10 +161,21 @@ export function loadConfig(env: Env): Config {
     dataDir: path.resolve(value(env, 'MIRSAD_DATA_DIR') ?? './data'),
     demoSeed: bool(env, 'MIRSAD_DEMO_SEED', true),
     reviewer: oneOf(env, 'MIRSAD_REVIEWER', REVIEWER_KINDS, 'lmstudio'),
+    replyProvider: replyProvider === 'openrouter'
+      ? {
+        kind: 'openrouter', apiKey: value(env, 'OPENROUTER_API_KEY') ?? '',
+        model: oneOf(env, 'MIRSAD_OPENROUTER_MODEL', OPENROUTER_REPLY_MODELS, GEMINI_REPLY_MODEL),
+      }
+      : { kind: 'lmstudio' },
     lmStudio: {
-      baseUrl: loopbackUrl(env, 'MIRSAD_LMSTUDIO_BASE_URL', 'http://127.0.0.1:1234/v1'),
+      baseUrl,
       model: value(env, 'MIRSAD_LMSTUDIO_MODEL') ?? 'qwen3.5-9b',
-      contextTokens: int(env, 'MIRSAD_LMSTUDIO_CONTEXT_TOKENS', 4096, 512),
+      contextTokens,
+      ...(arabicModel && { arabicReply: {
+        model: arabicModel,
+        baseUrl: loopbackUrl(env, 'MIRSAD_LMSTUDIO_ARABIC_BASE_URL', baseUrl),
+        contextTokens: int(env, 'MIRSAD_LMSTUDIO_ARABIC_CONTEXT_TOKENS', contextTokens, 512),
+      } }),
       timeoutMs: int(env, 'MIRSAD_LMSTUDIO_TIMEOUT_MS', 120_000, 1),
     },
     reviewConcurrency: int(env, 'MIRSAD_REVIEW_CONCURRENCY', 2, 1, 64),
@@ -148,8 +188,17 @@ export function loadConfig(env: Env): Config {
       liveEnabled: bool(env, 'TELEGRAM_LIVE_ENABLED', false),
       botToken: value(env, 'TELEGRAM_BOT_TOKEN') ?? null,
       approvedConnectionId: value(env, 'TELEGRAM_APPROVED_CONNECTION_ID') ?? null,
+      chatScope: oneOf(env, 'TELEGRAM_CHAT_SCOPE', TELEGRAM_CHAT_SCOPES, 'approved'),
       approvedChatIds: list(env, 'TELEGRAM_APPROVED_CHAT_IDS'),
+      allChatsReference: value(env, 'TELEGRAM_ALL_CHATS_REFERENCE') ?? null,
+      excludedChatIds: list(env, 'TELEGRAM_EXCLUDED_CHAT_IDS'),
       approvalReference: value(env, 'TELEGRAM_APPROVAL_REFERENCE') ?? null,
+      aiReplies: {
+        ...(wordingUntilMs > now && wordingUntilMs <= now + 15 * 60_000 && { wordingUntilMs }),
+        enabled: bool(env, 'TELEGRAM_AI_REPLIES_ENABLED', false),
+        consentReference: value(env, 'TELEGRAM_AI_REPLY_CONSENT_REFERENCE') ?? null,
+        autoStart: bool(env, 'TELEGRAM_AI_AUTO_START', false),
+      },
     },
   };
 }

@@ -1,7 +1,8 @@
 /**
  * The steps every control change takes (design section 8, "Every change"): revision + 1, inbox status open,
  * a case action with the operator, a `chat.control_changed` stream event, and review requeue on entering ai_active.
- * Used by dispatch now and by the control service (pause, take over, resume).
+ * Used by dispatch, by the control service (pause, take over, resume) and, with no operator (`actor` null), by the AI
+ * reply worker's automatic start of a new chat (design section 20).
  */
 import type { AiMode } from '../contract/enums.ts';
 import type { CaseAction } from '../contract/schemas.ts';
@@ -17,7 +18,7 @@ export function applyModeChange(
   tx: Tx,
   chat: ChatRow,
   next: { aiMode: AiMode; controllerId: string | null },
-  actor: Principal,
+  actor: Principal | null,
   actionType: CaseAction['type'],
 ): ChatRow {
   const revision = chat.revision + 1;
@@ -26,7 +27,7 @@ export function applyModeChange(
     chatId: chat.id,
     workspaceId: chat.workspace_id,
     type: actionType,
-    actorId: actor.id,
+    actorId: actor?.id ?? null,
     fromMode: chat.ai_mode,
     toMode: next.aiMode,
     revision,

@@ -70,6 +70,9 @@ export type Concern = (typeof CONCERNS)[number];
 
 export const CASE_ACTION_TYPES = [
   'chat_registered',
+  'chat_test_started',
+  'lower_concern_assessed',
+  'telegram_dispatch_permission_recorded',
   'dispatch_started',
   'control_pause',
   'control_take_over',
@@ -80,6 +83,14 @@ export const CASE_ACTION_TYPES = [
   'capture_retry_requested',
   'watchlist_match',
   'text_conflict_recorded',
+  'ai_reply_sent',
+  'ai_reply_failed',
+  'ai_auto_started',
+  'ai_reply_skipped',
+  'telegram_contact_opted_out',
+  'telegram_contact_opted_in',
+  'telegram_officer_review_requested',
+  'telegram_officer_review_resolved',
 ] as const;
 export type CaseActionType = (typeof CASE_ACTION_TYPES)[number];
 

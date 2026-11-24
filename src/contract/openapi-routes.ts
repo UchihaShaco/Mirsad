@@ -33,8 +33,38 @@ export interface RouteDoc {
 const ACCOUNT: ErrorCode[] = ['account_not_authorized'];
 const REVISION: ErrorCode[] = ['revision_conflict', 'invalid_transition'];
 const CHAT: ErrorCode[] = ['chat_not_found'];
+const erasePreview = (summary: string): RouteDoc => ({
+  summary, success: [{ status: 200, description: 'Number of conversations and a snapshot for confirmation.', schema: 'ErasePreview' }],
+  errors: CHAT,
+});
+const erase = (summary: string): RouteDoc => ({
+  summary, request: 'EraseRequest', idempotencyKey: true,
+  success: [{ status: 200, description: 'Local erasure receipt with count of capture files still awaiting cleanup.', schema: 'EraseResponse', replayHeader: true }],
+  errors: [...CHAT, ...REVISION, 'not_controller', 'validation_failed', 'idempotency_key_required', 'idempotency_key_reused'],
+});
 
 export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
+  'POST /v1/chats/{chatId}/erase-telegram': { ...erase('Delete eligible captured messages on Telegram for both participants'),
+    success: [{ status: 200, description: 'Telegram deletion counts for the confirmed chat.', schema: 'TelegramEraseResponse', replayHeader: true }] },
+  'POST /v1/inbox/erase-telegram': { ...erase('Delete eligible captured Telegram messages for both participants across this inbox'),
+    success: [{ status: 200, description: 'Telegram deletion counts for the confirmed inbox.', schema: 'TelegramEraseResponse', replayHeader: true }] },
+  'GET /v1/chats/{chatId}/erase-preview': erasePreview('Preview erasure of one local conversation'),
+  'POST /v1/chats/{chatId}/erase': erase('Erase the selected local conversation and all its previous tests'),
+  'GET /v1/inbox/erase-preview': erasePreview('Preview erasure across the officer’s local inbox'),
+  'POST /v1/inbox/erase': erase('Erase the confirmed conversations in the officer’s local inbox'),
+  'POST /v1/auth/login': {
+    summary: 'Sign in to the officer dashboard',
+    description: 'A temporary password returns passwordChangeRequired. Submit the username and temporary password again with a different newPassword (12–128 characters) to receive a session. Pass the returned session token in the Authorization bearer header. Responses use Cache-Control: no-store. Browser requests must use the same origin and send JSON.',
+    request: 'OfficerLoginRequest',
+    success: [{ status: 200, description: 'Officer session issued or first-login password change required.', schema: 'OfficerLoginResponse' }],
+    errors: ['unauthenticated', 'validation_failed', 'origin_not_allowed', 'payload_too_large'],
+  },
+  'POST /v1/auth/logout': {
+    summary: 'Revoke the current officer session',
+    description: 'Requires the password session to revoke. Browser requests must use the same origin.',
+    success: [{ status: 200, description: 'Officer session revoked.', schema: 'OfficerLogoutResponse' }],
+    errors: ['origin_not_allowed', 'payload_too_large'],
+  },
   'POST /v1/chats': {
     summary: 'Register an existing conversation',
     description:
@@ -61,7 +91,7 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'channel_not_enabled', 'direction_required', 'message_not_found'],
+    errors: ['validation_failed', 'payload_too_large', ...ACCOUNT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/chats/{chatId}/events': {
     summary: 'Submit an intake event to a registered chat',
@@ -71,16 +101,31 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 201, description: 'Event recorded.', schema: 'IngestResult' },
       { status: 200, description: 'Duplicate event or message; nothing new stored.', schema: 'IngestResult' },
     ],
-    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'channel_not_enabled', 'direction_required', 'message_not_found'],
+    errors: ['validation_failed', 'payload_too_large', ...CHAT, 'channel_not_enabled', 'direction_required', 'message_not_found', 'history_erased'],
   },
   'POST /v1/dispatches': {
-    summary: 'Start AI review on selected chats',
+    summary: 'Start AI on selected chats',
     description:
-      'Access to the whole selection is validated before any chat changes. An officer-controlled chat needs an explicit resume. Requires `Idempotency-Key`.',
+      'Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.',
     request: 'DispatchRequest',
     idempotencyKey: true,
     success: [{ status: 200, description: 'Per-chat dispatch results.', schema: 'DispatchResponse', replayHeader: true }],
-    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', ...CHAT],
+    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', 'revision_conflict', 'invalid_transition', 'history_erased', ...CHAT],
+  },
+  'POST /v1/dispatches/by-phone': {
+    summary: 'Dispatch an existing Telegram private chat by verified phone number',
+    description: 'Matches the latest self-shared contact card on an authorized live account. A unique match uses normal Dispatch controls. Missing or ambiguous matches return only an outcome, allowing officer-led contact without creating a chat or sending a message. Enter a complete international number with + or 00 and the exact international dialling digits.',
+    request: 'DispatchByPhoneRequest',
+    idempotencyKey: true,
+    success: [{ status: 200, description: 'Dispatch result or an unresolved match.', schema: 'DispatchByPhoneResponse', replayHeader: true }],
+    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', 'invalid_transition', 'history_erased', ...CHAT],
+  },
+  'POST /v1/investigation-opener': {
+    summary: 'Draft an opening question for officer review',
+    description: 'Returns a local suggested question in the selected language. The officer can review and copy it.',
+    request: 'InvestigationOpenerRequest',
+    success: [{ status: 200, description: 'A draft for the officer.', schema: 'InvestigationOpenerResponse' }],
+    errors: ['validation_failed'],
   },
   'POST /v1/chats/{chatId}/control': {
     summary: 'Pause, take over or resume a chat',
@@ -94,16 +139,16 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     request: 'OfficerMessageRequest',
     idempotencyKey: true,
     success: [{ status: 201, description: 'The stored message.', schema: 'OfficerMessageResponse', replayHeader: true }],
-    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', ...CHAT, 'not_in_takeover', 'not_controller', 'revision_conflict'],
+    errors: ['validation_failed', 'idempotency_key_required', 'idempotency_key_reused', ...CHAT, 'not_in_takeover', 'not_controller', 'revision_conflict', 'history_erased'],
   },
   'POST /v1/chats/{chatId}/officer-decisions': {
-    summary: 'Record a decision on an incoming message',
+    summary: 'Leave an incoming message unanswered or mark one Telegram evidence item reviewed',
     request: 'OfficerDecisionRequest',
     success: [
       { status: 201, description: 'Decision recorded.', schema: 'OfficerDecisionResponse' },
       { status: 200, description: 'The decision already existed.', schema: 'OfficerDecisionResponse' },
     ],
-    errors: ['validation_failed', ...CHAT, 'message_not_found', 'not_in_takeover', 'not_controller', 'revision_conflict'],
+    errors: ['validation_failed', ...CHAT, 'message_not_found', 'not_found', 'not_in_takeover', 'not_controller', 'revision_conflict'],
   },
   'GET /v1/chats/{chatId}/timeline': {
     summary: 'Read a chat timeline',
@@ -157,6 +202,36 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
     summary: 'Service, worker, reviewer and channel status',
     success: [{ status: 200, description: 'Current status.', schema: 'Status' }],
     errors: [],
+  },
+  'GET /v1/telegram/dm-replies': {
+    summary: 'Read the connected account’s automatic DM reply setting',
+    success: [{ status: 200, description: 'Reply mode and whether this officer can switch it.', schema: 'DmRepliesResponse' }],
+    errors: [],
+  },
+  'POST /v1/telegram/dm-replies': {
+    summary: 'Enable or stop automatic replies for eligible private Telegram chats',
+    description: 'Requires a grant on the linked account. Enabling starts with fresh incoming messages. When consent prompts are enabled, new contacts can opt in directly in Telegram. Disabling automated replies stops new automated sends and leaves intake active.',
+    request: 'DmRepliesRequest',
+    success: [{ status: 200, description: 'Current account reply setting.', schema: 'DmRepliesResponse' }],
+    errors: ['account_not_found', 'invalid_transition', 'validation_failed'],
+  },
+  'GET /v1/telegram/consent-prompt': {
+    summary: 'Read the private-chat consent invitation setting',
+    success: [{ status: 200, description: 'Saved invitation setting and whether the officer can change it.', schema: 'ConsentPromptResponse' }],
+    errors: [],
+  },
+  'POST /v1/telegram/reply-prompt/reload': {
+    summary: 'Reload the saved Ali reply prompt',
+    description: 'An officer with access to the linked Telegram account can reload prompts/ali.md for subsequent replies. Send an empty POST. If the file cannot be read or validated, the previous prompt stays active.',
+    success: [{ status: 200, description: 'Active content version and whether it changed.', schema: 'ReplyPromptReloadResponse' }],
+    errors: ['origin_not_allowed', 'account_not_found', 'validation_failed', 'reply_prompt_unavailable'],
+  },
+  'POST /v1/telegram/consent-prompt': {
+    summary: 'Turn Telegram consent invitations on or off',
+    description: 'Requires officer access to the linked account. With all-DM replies enabled, enabled=false turns on Test mode. A new private message written by either the owner or the contact automatically activates an eligible chat locally. The model can reply only to an eligible incoming message with participant permission. Setting enabled=true stops new automatic dispatches and enables local opt-in invitations. The selection persists across restarts.',
+    request: 'DmRepliesRequest',
+    success: [{ status: 200, description: 'Saved invitation setting.', schema: 'ConsentPromptResponse' }],
+    errors: ['account_not_found', 'validation_failed'],
   },
   'GET /healthz': {
     summary: 'Liveness check',

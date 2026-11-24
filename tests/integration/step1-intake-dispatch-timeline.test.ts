@@ -2,6 +2,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ConnectorCaptureMethod } from '../../src/contract/enums.ts';
 import { provisionPrincipal } from '../../src/identity/provision.ts';
+import { readDispatchBrief } from '../../src/services/dispatch.ts';
 import * as watchlist from '../../src/services/watchlist.ts';
 import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
 import { grantAccount } from '../../src/storage/repos/principals.ts';
@@ -306,6 +307,51 @@ describe('step 1: intake, registry, dispatch and timeline', () => {
     expect(res.body.error).toMatchObject({ code: 'chat_not_found', details: { chatIds: [officerChat, 'chat_00000000000000000000000000000000'] } });
     expect(storeSnapshot(h.dataDir)).toEqual(before);
     expect((await timeline(intakeChat)).body.data.chat).toMatchObject({ aiMode: 'not_started', revision: 1, inboxStatus: 'new_inbound' });
+  });
+
+  it('records one chat briefing privately, rejects saving on paused chats, and clears it explicitly', async () => {
+    const first = (await register(uniqueId('brief-'))).body.data.chat.id;
+    const other = (await register(uniqueId('brief-'))).body.data.chat.id;
+    const note = 'The officer was told the offer involves an upfront charge.';
+    const submit = (chatIds: string[], officerContext: string | null, token = h.tokens.officerA) =>
+      h.http(token).post('/v1/dispatches', { chatIds, officerContext }, { 'Idempotency-Key': uniqueId('brief-key-') });
+    const storedBrief = (chatId: string) => {
+      const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
+      try { return db.transaction((tx) => readDispatchBrief(tx, chatId)); }
+      finally { db.close(); }
+    };
+    expect((await submit([first, other], note)).status).toBe(400);
+    expect((await submit([first], note, h.tokens.outsider)).status).toBe(404);
+    expect(storedBrief(first)).toBeNull();
+    const assigned = await submit([first], '  ' + note + '  ');
+    expect(assigned.status).toBe(200);
+    expect(storedBrief(first)).toBe(note);
+    expect(storedBrief(other)).toBeNull();
+    expect(JSON.stringify(assigned.body)).not.toContain(note);
+    expect(JSON.stringify((await timeline(first)).body)).not.toContain(note);
+    expect((await dispatch([first])).status).toBe(200);
+    expect(storedBrief(first)).toBe(note);
+    expect((await submit([first], null)).status).toBe(200);
+    expect(storedBrief(first)).toBeNull();
+    expect((await officerA().post('/v1/chats/' + first + '/control', { action: 'pause', expectedRevision: 2 })).status).toBe(200);
+    expect((await submit([first], note)).status).toBe(409);
+    expect(storedBrief(first)).toBeNull();
+  });
+
+  it('creates a localized review-only opening draft and rejects an outbound destination', async () => {
+    const route = '/v1/investigation-opener';
+    const request = { officerContext: 'Example: a reported upfront fee with ref SYNTHETIC-MARKER.', language: 'english' };
+    expect((await connector().post(route, request)).status).toBe(403);
+    expect((await officerA().post(route, { ...request, recipient: 'synthetic-target' })).status).toBe(400);
+    const before = await settledSnapshot();
+    const english = await officerA().post(route, request);
+    expect(english.status).toBe(200);
+    expect(english.body.data.draft).toContain('upfront costs');
+    expect(english.body.data.draft).not.toContain('SYNTHETIC-MARKER');
+    const arabic = await officerA().post(route, { ...request, language: 'arabic' });
+    expect(arabic.status).toBe(200);
+    expect(arabic.body.data.draft).toContain('رسوم');
+    expect(await settledSnapshot()).toEqual(before);
   });
 
   it('dispatch reports started and already_active per chat and records the operator', async () => {

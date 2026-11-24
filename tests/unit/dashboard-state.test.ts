@@ -10,9 +10,9 @@ import {
   initialComposer,
   updateComposer,
 } from '../../src/dashboard/js/state/composer.js';
-import { groupInbox } from '../../src/dashboard/js/state/inbox.js';
+import { currentDispatchChatId, groupInbox, pruneSelection } from '../../src/dashboard/js/state/inbox.js';
 import { chatHref, parseRoute, tokenFromFragment } from '../../src/dashboard/js/state/route.js';
-import { latestIncomingMessageId, replyTargetAfterReload, senderPhoneOf, timelineEntries } from '../../src/dashboard/js/state/timeline.js';
+import { latestIncomingMessageId, replyTargetAfterReload, senderPhoneOf, timelineEntries, timelineForPeriod } from '../../src/dashboard/js/state/timeline.js';
 
 const AT = '2026-11-21T08:00:00.000Z';
 const OFFICER_A = { id: 'prn_officer_a', displayName: 'Demo Officer 1' };
@@ -37,6 +37,8 @@ function chatSummary(overrides: Partial<ChatSummary> = {}): ChatSummary {
     intakeAccount: false,
     acknowledgementTemplate: null,
     review: { state: 'idle', pending: 0, unavailable: 0 },
+    telegramReplyHold: { contactOptedOut: false, officerReview: null, evidenceItems: [] },
+    lowerConcern: null, previousLowerConcern: null,
     watchlistMatches: [],
     messageCount: 1,
     lastActivityAt: AT,
@@ -134,6 +136,39 @@ function finding(id: string, messageId: string, position: number): Finding {
   };
 }
 
+describe('fresh test history', () => {
+  it('keeps late edits and findings with the original archived message and excludes old actions from the new test', () => {
+    const whole = {
+      chat: chatSummary(), cursor: '20',
+      testSession: { position: 8, previousMessageIds: ['old'], previousReferenceIds: [] },
+      messages: [message('old', 2), message('fresh', 12)],
+      messageEvents: [messageEvent('late-old-edit', 'old', 14)],
+      findings: [finding('late-old-finding', 'old', 15)],
+      caseActions: [caseAction('old-action', 3), caseAction('current-action', 13)],
+      caseReferences: [],
+    };
+    const current = timelineForPeriod(whole, false);
+    expect(current.messages.map(m => m.id)).toEqual(['fresh']);
+    expect(current.messageEvents).toEqual([]);
+    expect(current.findings).toEqual([]);
+    expect(current.caseActions.map(a => a.id)).toEqual(['current-action']);
+    const archive = timelineForPeriod(whole, true);
+    expect(archive.messageEvents.map(e => e.id)).toEqual(['late-old-edit']);
+    expect(archive.findings.map(f => f.id)).toEqual(['late-old-finding']);
+    expect(archive.messages.map(m => m.id)).toEqual(['old']);
+  });
+  it('keeps historical lower-concern outcomes out of active batch selection', () => {
+    const ref = { messageId: 'm1', messageEventId: 'e1' };
+    const assessment = { kind: 'meeting_arranged' as const, assessedAt: AT, sources: { agreement: ref, time: ref, place: ref } };
+    const old = chatSummary({ id: 'old', previousLowerConcern: assessment });
+    const current = chatSummary({ id: 'current', lowerConcern: assessment });
+    const other = chatSummary({ id: 'other' });
+    const chats = [old, current, other];
+    expect(groupInbox(chats, 'lower_concern').open.map(c => c.id)).toEqual(['current']);
+    expect([...pruneSelection(new Set(chats.map(c => c.id)), chats, 'lower_concern')]).toEqual(['current']);
+  });
+});
+
 describe('composer state', () => {
   it('inserting the acknowledgement fills the composer and creates no request', () => {
     const chat = intakeChatUnderA();
@@ -199,6 +234,30 @@ describe('composer state', () => {
 });
 
 describe('inbox grouping', () => {
+  it('shows actionable officer holds and removes cleared or informational chats from the selected review queue', () => {
+    const item = { actionId: 'act_pending', messageId: 'msg_pending', messageEventId: null, reason: 'bank_details' } as const;
+    const held = chatSummary({ id: 'chat_held', telegramReplyHold: { contactOptedOut: false, officerReview: item, evidenceItems: [item] } });
+    const informational = chatSummary({ id: 'chat_information', telegramReplyHold: { contactOptedOut: false, officerReview: null, evidenceItems: [item] } });
+    const background = chatSummary({ id: 'chat_processing', review: { state: 'active', pending: 1, unavailable: 0 } });
+    const chats = [held, informational, background];
+    const selected = new Set(chats.map(chat => chat.id));
+    expect(groupInbox(chats, 'review').open.map(chat => chat.id)).toEqual([held.id]);
+    expect(pruneSelection(selected, chats, 'review')).toEqual(new Set([held.id]));
+    expect(pruneSelection(selected, chats, 'all')).toEqual(selected);
+    expect(pruneSelection(selected, [informational, background], 'review').size).toBe(0);
+  });
+
+  it('scopes a conversation dispatch to the open chat and refuses a stale briefing after navigation', () => {
+    const current = chatSummary({ id: 'chat_current' });
+    const other = chatSummary({ id: 'chat_batch' });
+    const state = { view: 'inbox', selectedChatId: current.id, timeline: { chat: current }, selection: new Set([other.id]) };
+    expect(currentDispatchChatId(state, current.id)).toBe(current.id);
+    expect(currentDispatchChatId(state, other.id)).toBeNull();
+    expect(currentDispatchChatId({ ...state, selectedChatId: other.id }, current.id)).toBeNull();
+    expect(currentDispatchChatId({ ...state, view: 'watchlist' }, current.id)).toBeNull();
+    expect(currentDispatchChatId({ ...state, timeline: null }, current.id)).toBeNull();
+  });
+
   it('inbox grouping puts new_inbound chats in the New inbound queue', () => {
     const chats = [
       chatSummary({ id: 'chat_open_older', inboxStatus: 'open', lastActivityAt: '2026-11-21T08:00:00.000Z' }),
@@ -311,5 +370,8 @@ describe('URL fragment', () => {
     expect(chatHref('chat_1')).toBe('#/chats/chat_1');
     expect(chatHref('chat/1', 'msg 1')).toBe('#/chats/chat%2F1/messages/msg%201');
     expect(parseRoute(chatHref('chat/1', 'msg 1'))).toEqual({ view: 'inbox', chatId: 'chat/1', messageId: 'msg 1' });
+    const editedSource = chatHref('chat/1', 'msg 1', 'edit/1');
+    expect(editedSource).toBe('#/chats/chat%2F1/messages/msg%201/events/edit%2F1');
+    expect(parseRoute(editedSource)).toEqual({ view: 'inbox', chatId: 'chat/1', messageId: 'msg 1', eventId: 'edit/1' });
   });
 });

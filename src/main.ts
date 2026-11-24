@@ -19,8 +19,9 @@ function loadEnvFile(): void {
 }
 
 async function main(): Promise<void> {
+  const wordingUntil = process.env.MIRSAD_TEST_WORDING_UNTIL;
   loadEnvFile();
-  const config = loadConfig(process.env);
+  const config = loadConfig({ ...process.env, MIRSAD_TEST_WORDING_UNTIL: wordingUntil });
   const app = await createApp({ config, logger });
   const { url } = await app.listen();
   logger.info('mirsad_started', { url });

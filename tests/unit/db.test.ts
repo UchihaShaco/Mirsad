@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { openDatabase, type Db } from '../../src/storage/db.ts';
 import { createJsonLogger } from '../../src/logging/json-logger.ts';
 
@@ -36,9 +37,10 @@ describe('storage/db', () => {
       tx.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"),
     );
     expect(tables.map((t) => t.name)).toEqual(
-      expect.arrayContaining(['workspaces', 'principals', 'chats', 'messages', 'stream_events', 'connector_state']),
+      expect.arrayContaining(['workspaces', 'principals', 'chats', 'messages', 'stream_events', 'connector_state', 'telegram_evidence_sources', 'officer_passwords', 'officer_sessions', 'dispatch_briefs']),
     );
-    expect(tables).toHaveLength(21);
+    expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['telegram_dispatch_contacts', 'chat_erasure_fences', 'telegram_message_proofs']));
+    expect(tables).toHaveLength(32);
     expect(() =>
       db!.transaction((tx) =>
         tx.run(
@@ -48,6 +50,44 @@ describe('storage/db', () => {
         ),
       ),
     ).toThrow(/FOREIGN KEY/);
+  });
+
+  it('upgrades a populated v1 database and enforces foreign keys on evidence sources', () => {
+    const old = new DatabaseSync(file());
+    try {
+      old.exec(fs.readFileSync(new URL('../../src/storage/schema.sql', import.meta.url), 'utf8'));
+      old.exec("INSERT INTO workspaces (id,name,created_at) VALUES ('legacy-workspace','Legacy','2026-01-01'); PRAGMA user_version = 1");
+    } finally { old.close(); }
+    db = openDatabase(file());
+    const snapshot = db.transaction(tx => ({
+      workspace: tx.get('SELECT name FROM workspaces WHERE id=?', ['legacy-workspace']),
+      version: tx.get('PRAGMA user_version'),
+      references: tx.all<{table:string}>('PRAGMA foreign_key_list(telegram_evidence_sources)').map(row => row.table).sort(),
+    }));
+    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 10 }, references: ['case_actions','chats','messages'] });
+    expect(() => db!.transaction(tx => tx.run("INSERT INTO telegram_evidence_sources VALUES ('c','m','document','opaque','a')"))).toThrow(/FOREIGN KEY/);
+  });
+
+  it('adds password accounts to a populated v2 database while preserving existing credentials and grants', () => {
+    const old = new DatabaseSync(file());
+    try {
+      old.exec(fs.readFileSync(new URL('../../src/storage/schema.sql', import.meta.url), 'utf8'));
+      old.exec(fs.readFileSync(new URL('../../src/storage/telegram-evidence-sources.sql', import.meta.url), 'utf8'));
+      old.exec(`INSERT INTO workspaces(id,name,created_at) VALUES('ws','Migrated','2026-01-01');
+        INSERT INTO principals(id,workspace_id,kind,display_name,token_sha256,created_at)
+        VALUES('officer','ws','officer','Existing','previous-hash','2026-01-01');
+        INSERT INTO channel_accounts(id,workspace_id,source,external_account_id,label,created_at)
+        VALUES('account','ws','telegram','synthetic','Existing account','2026-01-01');
+        INSERT INTO account_grants VALUES('officer','account'); PRAGMA user_version = 2;`);
+    } finally { old.close(); }
+    db = openDatabase(file());
+    db.transaction(tx => {
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 10 });
+      expect(tx.get('SELECT token_sha256 FROM principals WHERE id=?', ['officer'])).toEqual({ token_sha256: 'previous-hash' });
+      expect(tx.get('SELECT channel_account_id FROM account_grants WHERE principal_id=?', ['officer'])).toEqual({ channel_account_id: 'account' });
+      expect(tx.all('SELECT * FROM officer_passwords')).toEqual([]);
+      expect(tx.all('SELECT * FROM officer_sessions')).toEqual([]);
+    });
   });
 
   it('a failed transaction leaves no rows', () => {

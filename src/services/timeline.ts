@@ -15,6 +15,7 @@ import { listReviewsForChat } from '../storage/repos/reviews.ts';
 import type { CaseReferenceRow, ChatRow, FindingRow, MessageEventRow, MessageRow, ReviewRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
 import { currentCursor, summaryOf } from './chats.ts';
+import { currentTestMessageIds, readChatTestWindow } from './chat-test-session.ts';
 import {
   principalLookup,
   toCapture,
@@ -111,15 +112,21 @@ export function readTimeline(tx: Tx, principal: Principal, chatId: string): Time
   const lookup = principalLookup(tx);
   const { messages, messageEvents } = readEvidence(tx, chat, summary.source, lookup);
   const params = { chatId: chat.id };
+  const references = tx.all<CaseReferenceRow>('SELECT * FROM case_references WHERE chat_id = :chatId ORDER BY position, id', params);
+  const window = readChatTestWindow(tx, chatId);
+  const currentIds = window.position > 0 ? currentTestMessageIds(tx, chatId, window) : null;
   return {
     chat: summary,
+    testSession: currentIds ? {
+      position: window.position,
+      previousMessageIds: messages.filter(m => !currentIds.has(m.id)).map(m => m.id),
+      previousReferenceIds: references.filter(r => r.position <= window.position).map(r => r.id),
+    } : null,
     messages,
     messageEvents,
     caseActions: listCaseActionsForChat(tx, chat.id).map((a) => toCaseAction(a, lookup)),
     findings: tx.all<FindingRow>('SELECT * FROM findings WHERE chat_id = :chatId ORDER BY position, id', params).map(toFinding),
-    caseReferences: tx
-      .all<CaseReferenceRow>('SELECT * FROM case_references WHERE chat_id = :chatId ORDER BY position, id', params)
-      .map((r) => toCaseReference(r, lookup)),
+    caseReferences: references.map((r) => toCaseReference(r, lookup)),
     cursor,
   };
 }

@@ -13,8 +13,8 @@ export const routes: RouteModule = {
     deps.db.transaction((tx) => requireChat(tx, officer, chatId));
     const body = await parseJsonBody(c, ControlRequest);
     const result = deps.db.transaction((tx) => applyControl(tx, officer, chatId, body.action, body.expectedRevision));
-    // Resuming queued the chat's reviews again.
-    if (result.chat.aiMode === 'ai_active') deps.workers.review.wake();
+    // Resume can queue reviews; Pause and Take over invalidate any active reply draft immediately.
+    deps.workers.review.wake();
     return c.json(ok(result));
   },
 };

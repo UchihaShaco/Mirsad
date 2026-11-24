@@ -1,8 +1,9 @@
 /**
  * Telegram live connector (design section 13): long-polls the Bot API for business updates and stores only those for
- * the approved connection and chats, through the same intake function as every other connector. Everything else is
- * dropped before storage and only counted. It refuses to start unless every gate is set, and it has no way to send
- * anything. Its principal's capture method is telegram_business_live, so its content is never reviewed (section 10).
+ * the approved connection and the chats in scope (the approved list, or every private chat by the owner's decision; see
+ * chat-scope.ts), through the same intake function as every other connector. Everything else is dropped before storage
+ * and only counted. It refuses to start unless every gate is set, and it has no way to send anything. Its principal's
+ * capture method is telegram_business_live, so its content is never reviewed for findings (section 10).
  */
 import type { Config } from '../../config.ts';
 import { AppError } from '../../contract/errors.ts';
@@ -14,9 +15,11 @@ import type { Db, Tx } from '../../storage/db.ts';
 import { findChannelAccountById, grantedAccountIds, toPrincipal } from '../../storage/repos/principals.ts';
 import type { ChannelAccountRow, PrincipalRow } from '../../storage/rows.ts';
 import { BotApiError, BUSINESS_UPDATE_TYPES, createBotApi, isWellFormedBotToken, type BotApi, type RawUpdate } from './bot-api.ts';
+import { chatScopeOf, isChatInScope, isTelegramChatId, type ChatScope } from './chat-scope.ts';
 import { telegramUpdateSchema } from './fixture-schema.ts';
 import { createTelegramAdapter } from './normalize.ts';
-import type { TelegramBusinessConnection, TelegramUpdate } from './types.ts';
+import { connectionHash, nativeContentKind, rememberMessageProof } from './message-proof.ts';
+import type { TelegramBusinessConnection, TelegramChat, TelegramMessage, TelegramUpdate } from './types.ts';
 
 /** What each gate is called in a refusal: the environment variable, or the provisioned connector principal. */
 export const LIVE_GATES = {
@@ -24,6 +27,8 @@ export const LIVE_GATES = {
   token: 'TELEGRAM_BOT_TOKEN',
   connection: 'TELEGRAM_APPROVED_CONNECTION_ID',
   chats: 'TELEGRAM_APPROVED_CHAT_IDS',
+  allChats: 'TELEGRAM_ALL_CHATS_REFERENCE',
+  excluded: 'TELEGRAM_EXCLUDED_CHAT_IDS',
   approval: 'TELEGRAM_APPROVAL_REFERENCE',
   principal: 'live connector principal',
 } as const;
@@ -45,7 +50,7 @@ const MAX_RETRY_DELAY_MS = 60_000;
 const TOKEN_REJECTED_STATUSES: readonly number[] = [401, 404];
 /** A Telegram user ID: the owner account's `externalAccountId` (design section 19.8). */
 const TELEGRAM_USER_ID = /^[1-9]\d{0,15}$/;
-const TELEGRAM_CHAT_ID = /^-?\d{1,20}$/;
+const PRIVATE_CHAT_TYPE = 'private';
 
 /** start() refused: `missing` names every gate that is not set (or not valid), never a value. */
 export class LiveConnectorGateError extends Error {
@@ -84,7 +89,7 @@ export interface LiveConnectorStats {
   duplicates: number;
   /** Intake events refused by validation or intake. */
   rejected: number;
-  /** Updates dropped before storage: another connection, a chat not on the approved list, or not a business message. */
+  /** Updates dropped wholly or in part before storage: another connection, a chat out of scope, or another intake exclusion. */
   dropped: Record<DropReason, number>;
 }
 
@@ -105,12 +110,14 @@ export interface LiveConnectorDeps {
   retryDelayMs?: number;
   /** Called after a commit that stored new events, so the capture and review workers can be woken. */
   onEvidenceStored?: () => void;
+  /** Immediately withdraws access from consumers that depend on this live connection. */
+  onStopped?: () => void;
 }
 
 interface ApprovedScope {
   token: string;
   connectionId: string;
-  chatIds: ReadonlySet<string>;
+  chats: ChatScope;
 }
 
 /** The offset to poll from: null when none is stored or the stored one is stale (`stale` says which). */
@@ -162,21 +169,30 @@ export function findLiveBindings(tx: Tx): LiveBinding[] {
   );
 }
 
-function approvedScope(telegram: Config['telegram']): { scope: ApprovedScope | null; missing: string[] } {
-  const chatsValid = telegram.approvedChatIds.length > 0 && telegram.approvedChatIds.every((id) => TELEGRAM_CHAT_ID.test(id));
+/**
+ * The live gates that are not set or not valid, by name (never a value); the AI reply worker checks the same ones. The
+ * approved scope needs a valid TELEGRAM_APPROVED_CHAT_IDS; the all-private scope needs TELEGRAM_ALL_CHATS_REFERENCE
+ * instead. TELEGRAM_EXCLUDED_CHAT_IDS, if set, must hold chat IDs only.
+ */
+export function missingLiveGates(telegram: Config['telegram']): string[] {
+  const allPrivate = telegram.chatScope === 'all_private';
+  const approvedListValid = telegram.approvedChatIds.length > 0 && telegram.approvedChatIds.every(isTelegramChatId);
   const gates: (string | null)[] = [
     telegram.liveEnabled ? null : LIVE_GATES.enabled,
     telegram.botToken && isWellFormedBotToken(telegram.botToken) ? null : LIVE_GATES.token,
     telegram.approvedConnectionId ? null : LIVE_GATES.connection,
-    chatsValid ? null : LIVE_GATES.chats,
+    allPrivate || approvedListValid ? null : LIVE_GATES.chats,
+    !allPrivate || telegram.allChatsReference ? null : LIVE_GATES.allChats,
+    telegram.excludedChatIds.every(isTelegramChatId) ? null : LIVE_GATES.excluded,
     telegram.approvalReference ? null : LIVE_GATES.approval,
   ];
-  const missing = gates.filter((gate): gate is string => gate !== null);
+  return gates.filter((gate): gate is string => gate !== null);
+}
+
+function approvedScope(telegram: Config['telegram']): { scope: ApprovedScope | null; missing: string[] } {
+  const missing = missingLiveGates(telegram);
   if (missing.length > 0 || !telegram.botToken || !telegram.approvedConnectionId) return { scope: null, missing };
-  return {
-    scope: { token: telegram.botToken, connectionId: telegram.approvedConnectionId, chatIds: new Set(telegram.approvedChatIds) },
-    missing,
-  };
+  return { scope: { token: telegram.botToken, connectionId: telegram.approvedConnectionId, chats: chatScopeOf(telegram) }, missing };
 }
 
 /** Checks every gate; throws LiveConnectorGateError naming each one that is missing. */
@@ -211,16 +227,28 @@ function classifyConnection(connection: TelegramBusinessConnection, scope: Appro
   return ownerMatches ? { kind: 'stop', reason: 'connection_changed' } : { kind: 'drop', reason: 'otherConnection' };
 }
 
-/** Pure: whether an update belongs to the approved connection and chats. */
+/**
+ * In all-private mode a message must have a human sender or come from the business account.
+ * A deletion has no sender; its individual message IDs are checked against previously observed live evidence.
+ */
+function chatInScope(scope: ChatScope, chat: TelegramChat, message: TelegramMessage | undefined, ownerUserId: number): boolean {
+  if (!isChatInScope(scope, String(chat.id), ownerUserId)) return false;
+  if (scope.mode === 'approved') return true;
+  if (chat.type !== PRIVATE_CHAT_TYPE) return false;
+  return !message || message.from?.is_bot === false || message.from?.id === ownerUserId || message.sender_business_bot !== undefined;
+}
+
+/** Pure: whether an update belongs to the approved connection and a chat in scope. */
 function classify(update: TelegramUpdate, scope: ApprovedScope, ownerUserId: number): Decision {
+  if (BUSINESS_UPDATE_TYPES.filter((type) => update[type] !== undefined).length !== 1) return { kind: 'drop', reason: 'other' };
   if (update.business_connection) return classifyConnection(update.business_connection, scope, ownerUserId);
   const message = update.business_message ?? update.edited_business_message;
   const removed = update.deleted_business_messages;
   const connectionId = message?.business_connection_id ?? removed?.business_connection_id;
-  const chatId = message?.chat.id ?? removed?.chat.id;
-  if (connectionId === undefined || chatId === undefined) return { kind: 'drop', reason: 'other' };
+  const chat = message?.chat ?? removed?.chat;
+  if (connectionId === undefined || chat === undefined) return { kind: 'drop', reason: 'other' };
   if (connectionId !== scope.connectionId) return { kind: 'drop', reason: 'otherConnection' };
-  if (!scope.chatIds.has(String(chatId))) return { kind: 'drop', reason: 'otherChat' };
+  if (!chatInScope(scope.chats, chat, message, ownerUserId)) return { kind: 'drop', reason: 'otherChat' };
   return { kind: 'ingest' };
 }
 
@@ -270,7 +298,7 @@ class TelegramLiveConnector implements LiveConnector {
     const session = openSession(this.deps);
     this.controller = new AbortController();
     this.state = { ...this.state, running: true, stoppedReason: null, offset: session.stored.offset };
-    this.deps.logger.info('telegram_live_connector_started', { principalId: session.binding.principal.id });
+    this.deps.logger.info('telegram_live_connector_started', { principalId: session.binding.principal.id, chatScope: session.scope.chats.mode });
     if (session.stored.stale) this.logStaleOffset(session);
     this.loop = this.poll(session, this.controller.signal);
   }
@@ -288,6 +316,7 @@ class TelegramLiveConnector implements LiveConnector {
     if (!this.state.running) return;
     this.state = { ...this.state, running: false, stoppedReason: reason };
     this.controller?.abort();
+    this.deps.onStopped?.();
     if (reason === 'stopped') this.deps.logger.info('telegram_live_connector_stopped', { reason });
     else this.deps.logger.warn('telegram_live_connector_stopped', { reason });
   }
@@ -327,11 +356,65 @@ class TelegramLiveConnector implements LiveConnector {
     this.state = { ...this.state, dropped: { ...this.state.dropped, [reason]: this.state.dropped[reason] + 1 } };
   }
 
-  private ingestEnvelope(session: Session, tx: Tx, envelope: IntakeEnvelope): IngestResult {
+  /** Deletions have no sender or original content. In all-private scope they cannot establish that an unseen message was eligible. */
+  private mayStoreEnvelope(session: Session, tx: Tx, envelope: IntakeEnvelope): boolean {
+    if (session.scope.chats.mode !== 'all_private' || envelope.event.type !== 'message.deleted') return true;
+    const observed = tx.get<{ present: number }>(
+      `SELECT 1 AS present FROM chats c
+       JOIN messages m ON m.chat_id = c.id
+       JOIN message_events e ON e.message_id = m.id
+       WHERE c.channel_account_id = :account AND c.external_chat_id = :chat AND m.source_message_id = :message
+         AND e.capture_method = 'telegram_business_live' AND e.type IN ('recorded', 'edited') LIMIT 1`,
+      { account: session.binding.account.id, chat: envelope.externalChatId, message: envelope.event.sourceMessageId },
+    );
+    return observed !== undefined;
+  }
+
+  private ingestEnvelope(session: Session, tx: Tx, envelope: IntakeEnvelope, update: TelegramUpdate): IngestResult {
     const parsed = IngestRequest.safeParse(envelope);
     if (!parsed.success) throw AppError.of('validation_failed', 'The normalized update is not a valid intake event.');
     const { event, ...target } = parsed.data;
-    return ingest(tx, session.binding.principal, target, event, this.deps.config);
+    const original = update.business_message;
+    const privateHumanMessage = original?.chat.type === 'private' && original.from?.is_bot === false
+      && !original.sender_business_bot && event.type === 'message.recorded'
+      && original.from.id === (event.direction === 'incoming' ? original.chat.id : session.binding.ownerUserId);
+    const result = ingest(tx, session.binding.principal, target, event, privateHumanMessage
+      ? { ...this.deps.config, nativePrivateMessageId: original.message_id } : this.deps.config);
+    const native = original ?? update.edited_business_message;
+    const removed = update.deleted_business_messages;
+    if (removed?.chat.type === 'private' && event.type === 'message.deleted' && String(removed.chat.id) === target.externalChatId) {
+      const number = Number(event.sourceMessageId.slice(3));
+      if (removed.message_ids.includes(number)) {
+        rememberMessageProof(tx, result.messageId, session.binding.principal.id, removed.business_connection_id,
+          removed.chat.id, number, 1, false, 'unsupported');
+        tx.run("UPDATE telegram_message_proofs SET removal='removed' WHERE message_id=? AND connector_id=? AND connection_hash=? AND chat_number=? AND message_number=?",
+          [result.messageId, session.binding.principal.id, connectionHash(removed.business_connection_id), removed.chat.id, number]);
+      }
+    }
+    if (native?.chat.type === 'private' && native.business_connection_id && (event.type === 'message.recorded' || event.type === 'message.edited')
+        && event.sourceMessageId === `tg:${native.message_id}` && String(native.chat.id) === target.externalChatId) {
+      const sentByConnectedBot = native.sender_business_bot?.id === Number(session.scope.token.split(':', 1)[0]) && native.from?.id === session.binding.ownerUserId;
+      rememberMessageProof(tx, result.messageId, session.binding.principal.id, native.business_connection_id,
+        native.chat.id, native.message_id, native.date, sentByConnectedBot, nativeContentKind(native));
+    }
+    // Only an original Bot API update has the private-chat, human-sender and self-contact fields.
+    // HTTP intake and historical normalized evidence cannot attest to those fields.
+    if (privateHumanMessage && event.direction === 'incoming' && event.sender?.phone
+        && !event.unsupportedContent?.some(kind => kind === 'forwarded' || kind === 'blockquote')) {
+      const matching = tx.get<{ id: string }>(`SELECT m.id FROM messages m JOIN message_events e ON e.message_id = m.id
+        WHERE m.id = :message AND m.chat_id = :chat AND m.source_message_id = :source AND m.origin = 'source'
+          AND m.direction = 'incoming' AND m.original_captured = 1 AND m.sender_external_id = :sender
+          AND m.sender_phone_raw = :phone AND e.type = 'recorded' AND e.capture_method = 'telegram_business_live'
+          AND e.connector_id = :connector`, { message: result.messageId, chat: result.chatId, source: event.sourceMessageId,
+        sender: target.externalChatId, phone: event.sender.phone.raw, connector: session.binding.principal.id });
+      // A conflicting newer original invalidates the previous association even if it cannot be used itself.
+      tx.run(`INSERT INTO telegram_dispatch_contacts (chat_id, connector_id, telegram_message_id, verified_message_id)
+        VALUES (?, ?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET connector_id = excluded.connector_id,
+          telegram_message_id = excluded.telegram_message_id, verified_message_id = excluded.verified_message_id
+        WHERE excluded.telegram_message_id >= telegram_dispatch_contacts.telegram_message_id`,
+      [result.chatId, session.binding.principal.id, original.message_id, matching?.id ?? null]);
+    }
+    return result;
   }
 
   /** The update's events and its offset commit together, so a crash in between can only cause a redelivery. */
@@ -340,12 +423,19 @@ class TelegramLiveConnector implements LiveConnector {
     if (envelopes.length === 0) return this.drop(session, 'other', update.update_id);
     try {
       const { results, offset } = this.deps.db.transaction((tx) => ({
-        results: envelopes.map((e) => this.ingestEnvelope(session, tx, e)),
+        results: envelopes.filter((e) => this.mayStoreEnvelope(session, tx, e)).flatMap(e => {
+          try { return [this.ingestEnvelope(session, tx, e, update)]; }
+          catch (error) {
+            if (error instanceof AppError && error.code === 'history_erased') return [];
+            throw error;
+          }
+        }),
         offset: this.commitOffset(session, tx, update.update_id),
       }));
       const stored = results.filter((r) => r.messageEventId !== null).length;
       const { state } = this;
-      this.state = { ...state, offset, stored: state.stored + stored, duplicates: state.duplicates + results.length - stored };
+      const dropped = { ...state.dropped, other: state.dropped.other + Number(results.length < envelopes.length) };
+      this.state = { ...state, offset, stored: state.stored + stored, duplicates: state.duplicates + results.length - stored, dropped };
       if (stored > 0) this.deps.onEvidenceStored?.();
     } catch (error) {
       if (!(error instanceof AppError)) throw error;

@@ -11,6 +11,7 @@ export const LIMITS = {
   sourceIdMax: 200,
   dispatchMin: 1,
   dispatchMax: 100,
+  officerContextMax: 500,
   listLimitDefault: 100,
   listLimitMax: 500,
   paymentHostsMax: 20,
@@ -58,6 +59,8 @@ export const MessageEditedEvent = z.object({
   text: z.string().max(LIMITS.messageTextMax),
   editedAt: timestampIn.optional(),
   direction: Direction.optional(),
+  /** Present attachment kinds used to route a live edit for officer review. The file or pin payload is never imported. */
+  reviewAttachments: z.array(z.enum(['document', 'location', 'venue', 'forwarded', 'blockquote'])).max(5).optional(),
 });
 export const MessageDeletedEvent = z.object({
   type: z.literal('message.deleted'),
@@ -117,6 +120,13 @@ export const ChatWatchlistMatch = z.object({
 });
 export type ChatWatchlistMatch = z.infer<typeof ChatWatchlistMatch>;
 
+const TelegramReviewReason = z.enum(['document', 'location', 'payment_link', 'bank_details', 'conversation_review', 'model_payment_link']);
+const MeetingSource = z.object({ messageId: id, messageEventId: id });
+const LowerConcern = z.object({
+  kind: z.literal('meeting_arranged'), assessedAt: timestamp,
+  sources: z.object({ agreement: MeetingSource, time: MeetingSource, place: MeetingSource, date: MeetingSource.optional() }),
+});
+
 export const ChatSummary = z.object({
   id: z.string(),
   source: Source,
@@ -134,12 +144,19 @@ export const ChatSummary = z.object({
   firstObservedDirection: Direction.nullable(),
   intakeAccount: z.boolean(),
   acknowledgementTemplate: z.literal(LABELS.acknowledgementTemplate).nullable(),
+  telegramReplyHold: z.object({
+    contactOptedOut: z.boolean(),
+    officerReview: z.object({ actionId: id, messageId: id, reason: TelegramReviewReason }).nullable(),
+    evidenceItems: z.array(z.object({ actionId: id, messageId: id, messageEventId: id.nullable(), reason: TelegramReviewReason })),
+  }),
   review: z.object({
     state: z.enum(['idle', 'active', 'unavailable']),
     pending: z.number().int().min(0),
     unavailable: z.number().int().min(0),
   }),
   watchlistMatches: z.array(ChatWatchlistMatch),
+  lowerConcern: LowerConcern.nullable(),
+  previousLowerConcern: LowerConcern.nullable(),
   messageCount: z.number().int().min(0),
   lastActivityAt: timestamp,
   createdAt: timestamp,
@@ -165,12 +182,23 @@ export const ListChatsResponse = z.object({ chats: z.array(ChatSummary), cursor:
 
 // ---- Dispatch, control, composer, decisions ----
 
+const OfficerContext = z.string().trim().min(1).max(LIMITS.officerContextMax);
+
 export const DispatchRequest = z.object({
   chatIds: z
     .array(id)
     .min(LIMITS.dispatchMin)
     .max(LIMITS.dispatchMax)
     .refine((ids) => new Set(ids).size === ids.length, { message: 'chatIds must be unique' }),
+  officerContext: OfficerContext.nullable().optional(),
+  participantPermissionRecorded: z.literal(true).optional(),
+  expectedTestMode: z.literal(true).optional(),
+}).refine(({ chatIds, officerContext }) => officerContext === undefined || chatIds.length === 1, {
+  path: ['officerContext'], message: 'Select one chat to set or clear an officer briefing.',
+}).refine(body => !body.participantPermissionRecorded || body.chatIds.length === 1, {
+  path: ['participantPermissionRecorded'], message: 'Record participant permission for one selected chat.',
+}).refine(body => !body.expectedTestMode || body.participantPermissionRecorded, {
+  path: ['expectedTestMode'], message: 'Test dispatch requires recorded participant permission.',
 });
 export type DispatchRequest = z.infer<typeof DispatchRequest>;
 export const DispatchResponse = z.object({
@@ -181,9 +209,38 @@ export const DispatchResponse = z.object({
 });
 export type DispatchResponse = z.infer<typeof DispatchResponse>;
 
+export const DispatchByPhoneRequest = z.strictObject({
+  phoneNumber: z.string().trim().min(1).max(64).describe('One complete international phone number starting with + or 00.'),
+  officerContext: OfficerContext.nullable().optional(),
+});
+export type DispatchByPhoneRequest = z.infer<typeof DispatchByPhoneRequest>;
+export const DispatchByPhoneResponse = z.discriminatedUnion('outcome', [
+  z.object({ outcome: z.literal('dispatched'), chatId: id, dispatch: DispatchResponse }),
+  z.object({ outcome: z.literal('no_verified_chat') }),
+  z.object({ outcome: z.literal('ambiguous') }),
+]);
+export type DispatchByPhoneResponse = z.infer<typeof DispatchByPhoneResponse>;
+
+export const InvestigationOpenerRequest = z.strictObject({
+  officerContext: OfficerContext,
+  language: z.enum(['english', 'arabic']),
+});
+export type InvestigationOpenerRequest = z.infer<typeof InvestigationOpenerRequest>;
+export const InvestigationOpenerResponse = z.object({ draft: z.string() });
+
 export const ControlRequest = z.object({ action: z.enum(E.CONTROL_ACTIONS), expectedRevision: revision });
 export type ControlRequest = z.infer<typeof ControlRequest>;
 export const ControlResponse = z.object({ chat: ChatSummary, changedAt: timestamp });
+export const ErasePreview = z.object({ chatCount: z.number().int().nonnegative(), snapshot: z.string() });
+export const EraseRequest = z.strictObject({ expectedSnapshot: z.string().regex(/^[a-f0-9]{64}$/), confirm: z.literal(true) });
+export const EraseResponse = z.object({ chatCount: z.number().int().nonnegative(), filesPending: z.number().int().nonnegative() });
+const erasedCount = z.number().int().nonnegative();
+export const TelegramEraseResponse = z.object({ status: z.enum(['completed', 'in_progress']), total: erasedCount,
+  removed: erasedCount, skipped: erasedCount, failed: erasedCount, uncertain: erasedCount, pending: erasedCount,
+  excluded: z.object({ unverified: erasedCount, expired: erasedCount, rights: erasedCount, unsupported: erasedCount }),
+  remainingChats: z.array(z.object({chatId: id, removed: erasedCount, skipped: erasedCount, uncertain: erasedCount, failed: erasedCount, pending: erasedCount})),
+  manualHistoryMayRemain: z.literal(true) });
+export type TelegramEraseResponse = z.infer<typeof TelegramEraseResponse>;
 
 export const OfficerMessageRequest = z.object({
   text: z.string().min(1).max(LIMITS.messageTextMax),
@@ -191,11 +248,10 @@ export const OfficerMessageRequest = z.object({
 });
 export type OfficerMessageRequest = z.infer<typeof OfficerMessageRequest>;
 
-export const OfficerDecisionRequest = z.object({
-  decision: z.literal('leave_unanswered'),
-  messageId: id,
-  expectedRevision: revision,
-});
+export const OfficerDecisionRequest = z.discriminatedUnion('decision', [
+  z.object({ decision: z.literal('leave_unanswered'), messageId: id, expectedRevision: revision }),
+  z.object({ decision: z.literal('mark_reviewed'), reviewActionId: id, expectedRevision: revision }),
+]);
 export type OfficerDecisionRequest = z.infer<typeof OfficerDecisionRequest>;
 
 // ---- Timeline ----
@@ -322,6 +378,7 @@ export const CaseReferenceResponse = z.object({ caseReference: CaseReference, fi
 
 export const Timeline = z.object({
   chat: ChatSummary,
+  testSession: z.object({ position: z.number().int().positive(), previousMessageIds: z.array(id), previousReferenceIds: z.array(id) }).nullable(),
   messages: z.array(Message),
   messageEvents: z.array(MessageEvent),
   caseActions: z.array(CaseAction),
@@ -375,7 +432,25 @@ export const MeResponse = z.object({
 });
 export type MeResponse = z.infer<typeof MeResponse>;
 
+export const OfficerLoginRequest = z.strictObject({
+  username: z.string().min(1).max(64),
+  // Two UTF-16 code units may encode one Unicode code point.
+  password: z.string().min(1).max(256).meta({ writeOnly: true, format: 'password' }),
+  newPassword: z.string().min(1).max(256).meta({ writeOnly: true, format: 'password' }).optional(),
+});
+export const OfficerLoginResponse = z.union([
+  z.object({ token: z.string() }),
+  z.object({ passwordChangeRequired: z.literal(true) }),
+]);
+export const OfficerLogoutResponse = z.object({ loggedOut: z.literal(true) });
+
 export const HealthResponse = z.object({ status: z.literal('ok') });
+export const DmRepliesRequest = z.strictObject({ enabled: z.boolean() });
+export const ConsentPromptResponse = z.object({ enabled: z.boolean(), available: z.boolean() });
+export const ReplyPromptReloadResponse = z.strictObject({ version: z.string().regex(/^[a-f0-9]{12}$/), changed: z.boolean() });
+export const DmRepliesResponse = z.object({
+  enabled: z.boolean(), available: z.boolean(), mode: z.enum(['approved', 'all_private', 'off']),
+});
 
 export const Status = z.object({
   service: z.object({ version: z.string(), startedAt: timestamp }),
@@ -407,11 +482,14 @@ export const ErrorEnvelope = z.object({
 
 /** Every named component schema, for the OpenAPI generator (Task 10). */
 export const CONTRACT_SCHEMAS = {
+  ErasePreview, EraseRequest, EraseResponse, TelegramEraseResponse,
   Source, CaptureMethod, Direction, AiMode, PrincipalRef, IntakeEvent, IngestRequest, IngestResult,
   EvidenceRef, ChatSummary, RegisterChatRequest, RegisterChatResponse, ListChatsResponse,
-  DispatchRequest, DispatchResponse, ControlRequest, ControlResponse, OfficerMessageRequest, OfficerMessageResponse,
+  DispatchRequest, DispatchResponse, DispatchByPhoneRequest, DispatchByPhoneResponse, ControlRequest, ControlResponse, OfficerMessageRequest, OfficerMessageResponse,
+  InvestigationOpenerRequest, InvestigationOpenerResponse,
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
   WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, MeResponse,
-  HealthResponse, Status, ErrorEnvelope,
+  OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
+  DmRepliesRequest, DmRepliesResponse, ConsentPromptResponse, ReplyPromptReloadResponse,
 } as const;

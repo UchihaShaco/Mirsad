@@ -9,6 +9,37 @@ export const AI_MODE_LABELS = {
 
 export const DIRECTION_LABELS = { incoming: 'Incoming', outgoing: 'Outgoing', unknown: 'Direction not reported' };
 
+export const TELEGRAM_EVIDENCE_LABELS = {
+  payment_link: 'payment link',
+  document: 'document',
+  location: 'location',
+  bank_details: 'bank transfer details',
+  conversation_review: 'conversation',
+};
+
+const INDICATOR_LABELS = {
+  upfront_fee: 'upfront fee', payment_pressure: 'pressure to pay', contradictory_terms: 'conflicting terms',
+  unverified_payment_request: 'unverified payment request', sensitive_request: 'request for sensitive information',
+  threat: 'threat', uncertain: 'unclear circumstances',
+};
+
+/** Officer-facing assessment using only recognized decision and indicator codes. The source link supplies the evidence. */
+export function conversationReviewSummary(detail) {
+  const status = detail?.reviewStatus === 'READY_FOR_OFFICER_REVIEW' ? 'Ready for officer review' : 'Human review required';
+  const indicators = typeof detail?.indicators === 'string'
+    ? detail.indicators.split(',').filter(code => Object.hasOwn(INDICATOR_LABELS, code)).map(code => INDICATOR_LABELS[code]) : [];
+  return indicators.length ? `${status}. Check for ${indicators.join(', ')}.` : `${status}.`;
+}
+
+/** Older chat responses expose only their first held review. */
+export function evidenceItemsFor(hold) {
+  return hold.evidenceItems ?? (hold.officerReview ? [hold.officerReview] : []);
+}
+
+export function evidenceCountLabel(count) {
+  return `${count} ${count === 1 ? 'item' : 'items'} for officer review`;
+}
+
 export const CAPTURE_METHOD_LABELS = {
   fixture_replay: 'Fixture replay',
   telegram_business_live: 'Telegram Business (live)',
@@ -28,6 +59,8 @@ const REVIEW_STATUS_LABELS = {
 
 export const CASE_ACTION_LABELS = {
   chat_registered: 'Chat registered',
+  chat_test_started: 'New test started',
+  lower_concern_assessed: 'Lower concern assessment',
   dispatch_started: 'Dispatch: AI review started',
   control_pause: 'Pause AI',
   control_take_over: 'Take over',
@@ -38,7 +71,50 @@ export const CASE_ACTION_LABELS = {
   capture_retry_requested: 'Capture retry requested',
   watchlist_match: 'Watchlist match',
   text_conflict_recorded: 'Conflicting copy recorded',
+  ai_reply_sent: 'Automated reply sent',
+  ai_reply_failed: 'AI reply failed',
+  ai_reply_skipped: 'Assistant left the message unanswered',
+  telegram_contact_opted_out: 'Contact opted out of automated replies',
+  telegram_contact_opted_in: 'Contact opted back in to automated replies',
+  telegram_dispatch_permission_recorded: 'Officer recorded participant permission for replies and fraud screening',
+  telegram_officer_review_requested: 'Officer review requested',
+  telegram_officer_review_resolved: 'Officer marked evidence reviewed',
+  ai_auto_started: 'Chat marked AI active automatically',
 };
+
+/** Why an AI reply failed, for the codes whose plain reason is not enough; others show as "Reason: code (status)". */
+export const AI_REPLY_FAILURE_NOTES = {
+  blocked_reply: 'Not sent: the reply guard stopped it',
+  store_failed: 'Sent in Telegram, but it could not be stored here',
+  telegram_chat_mismatch: 'Sent in Telegram, but Telegram reported a different chat',
+};
+
+const MODEL_SILENCE_NOTES = {
+  no_actionable_question: 'The model found no question or request to answer.',
+  already_answered: 'The model considered the question already answered.',
+  ordinary_terms_clear: 'The model considered the terms of the offer clear.',
+  conversation_closed: 'The model considered the conversation finished.',
+  sender_withdrew: 'The model understood that the sender wanted to stop.',
+  wrong_contact: 'The model understood the message as intended for someone else.',
+  transaction_boundary: 'The model stopped because continuing would involve a transaction.',
+  no_safe_follow_up: 'The model found no safe follow-up.',
+  other: 'The model selected another reason without specifying it.',
+  reason_unavailable: 'The model returned no reason for skipping this reply.',
+};
+
+/** Display only known reason and source pairs. Older skipped replies have no decision detail. */
+export function silenceSummary(detail) {
+  if (detail?.source === 'model' && typeof detail.reason === 'string' && Object.hasOwn(MODEL_SILENCE_NOTES, detail.reason)) {
+    return MODEL_SILENCE_NOTES[detail.reason];
+  }
+  if (detail?.source === 'reply_guard' && detail.reason === 'repeated_identity_question') {
+    return 'Mirsad suppressed a repeat answer to the same question about Ali’s identity.';
+  }
+  if (detail?.source === 'reply_guard' && detail.reason === 'repeated_meeting_question') {
+    return 'Mirsad stopped a repeat question about meeting arrangements already discussed.';
+  }
+  return 'No reason was recorded.';
+}
 
 export const OBSERVATION_ORIGIN_LABELS = { sender_metadata: 'Sender metadata', message_mention: 'Mentioned in a message' };
 

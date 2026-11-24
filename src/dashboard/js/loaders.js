@@ -5,8 +5,10 @@
 import { ApiError } from './api.js';
 import { describeError } from './format.js';
 import { canCompose, initialComposer } from './state/composer.js';
+import { initialCaseReferenceDraft } from './state/case-reference.js';
 import { pruneSelection } from './state/inbox.js';
-import { replyTargetAfterReload } from './state/timeline.js';
+import { replyTargetAfterReload, timelineForPeriod } from './state/timeline.js';
+import { resetCaseTools } from './views/workspace.js';
 
 const NOT_IMPLEMENTED = 501;
 
@@ -20,9 +22,17 @@ export async function loadInbox(ctx) {
   const ticket = ++ctx.tickets.inbox;
   const { chats, cursor, total } = await ctx.api.listChats();
   if (ticket === ctx.tickets.inbox) {
-    ctx.setState({ chats, chatsTotal: total, inboxLoaded: true, selection: pruneSelection(ctx.getState().selection, chats) });
+    const state = ctx.getState();
+    ctx.setState({ chats, chatsTotal: total, inboxLoaded: true, selection: pruneSelection(state.selection, chats, state.inboxFilter) });
   }
   return cursor;
+}
+
+export async function loadTelegramSetting(ctx, name) {
+  if (ctx.getState().pending === name) return;
+  const ticket = ++ctx.tickets[name];
+  const setting = await ctx.api[name]();
+  if (ticket === ctx.tickets[name]) ctx.setState({ [name]: setting });
 }
 
 async function fetchTimeline(ctx, chatId, ticket) {
@@ -43,14 +53,23 @@ export async function loadTimeline(ctx) {
   const timeline = await fetchTimeline(ctx, chatId, ticket);
   const state = ctx.getState();
   if (timeline === null || ticket !== ctx.tickets.timeline || state.selectedChatId !== chatId) return;
-  const keepComposer = canCompose(timeline.chat, state.me) || state.composer.sending;
-  const target = replyTargetAfterReload({ id: state.replyTargetId, pinned: state.replyTargetPinned }, timeline);
+  const justReset = state.timeline !== null && timeline.testSession?.position !== state.timeline.testSession?.position;
+  if (justReset && timeline.caseActions.some(action => action.position === timeline.testSession?.position
+    && action.type === 'chat_test_started' && action.detail?.erased === true)) {
+    ctx.clearErased(chatId, 'This conversation’s local history was erased.');
+    return;
+  }
+  if (justReset) resetCaseTools(ctx.refs);
+  const keepComposer = !justReset && (canCompose(timeline.chat, state.me) || state.composer.sending);
+  const target = replyTargetAfterReload({ id: state.replyTargetId, pinned: state.replyTargetPinned }, timelineForPeriod(timeline, false));
   ctx.setState({
     timeline,
     timelineError: null,
     replyTargetId: target.id,
     replyTargetPinned: target.pinned,
     composer: keepComposer ? state.composer : initialComposer(),
+    ...(justReset && { caseReferenceDraft: initialCaseReferenceDraft(),
+      dispatchBrief: state.dispatchBrief?.chatId === chatId ? null : state.dispatchBrief }),
     chats: mergeChat(state.chats, timeline.chat),
   });
 }

@@ -116,6 +116,15 @@ export function hasGrant(tx: Tx, principalId: string, channelAccountId: string):
   return row !== undefined;
 }
 
+/** A disabled live connector still reserves its account's evidence provenance. */
+export function hasTelegramLiveConnector(tx: Tx, channelAccountId: string): boolean {
+  return tx.get(
+    `SELECT 1 FROM account_grants g JOIN principals p ON g.principal_id = p.id
+     WHERE g.channel_account_id = :channelAccountId AND p.kind = 'connector' AND p.capture_method = 'telegram_business_live' LIMIT 1`,
+    { channelAccountId },
+  ) !== undefined;
+}
+
 /** IDs of the channel accounts a principal holds a grant on. */
 export function grantedAccountIds(tx: Tx, principalId: string): string[] {
   return tx

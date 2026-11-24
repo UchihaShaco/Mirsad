@@ -33,8 +33,8 @@ function toError(response, envelope) {
 }
 
 /** Authenticated requests; a 401 is reported to onUnauthenticated before the error is thrown. */
-function createTransport(token, onUnauthenticated) {
-  const headersWith = (extra) => ({ ...extra, Authorization: `Bearer ${token}` });
+function createTransport(token, onUnauthenticated = () => {}) {
+  const headersWith = (extra) => token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
   async function fail(response) {
     const error = toError(response, await readEnvelope(response));
     if (response.status === UNAUTHORIZED) onUnauthenticated(error);
@@ -42,7 +42,7 @@ function createTransport(token, onUnauthenticated) {
   }
   return {
     async call(method, path, { body, headers } = {}) {
-      const init = { method, headers: headersWith({ Accept: JSON_TYPE, ...headers }), cache: 'no-store' };
+      const init = { method, headers: headersWith({ Accept: JSON_TYPE, ...headers }), cache: 'no-store', redirect: 'error' };
       if (body !== undefined) {
         init.headers['Content-Type'] = JSON_TYPE;
         init.body = JSON.stringify(body);
@@ -63,23 +63,51 @@ function createTransport(token, onUnauthenticated) {
 
 const segment = (value) => encodeURIComponent(value);
 const chatPath = (chatId, rest) => `/v1/chats/${segment(chatId)}${rest}`;
+const erasePath = (chatId, action) => chatId === null ? `/v1/inbox/${action}` : chatPath(chatId, '/' + action);
+
+export async function loginOfficer({ username, password, newPassword }) {
+  const { data } = await createTransport(null).call('POST', '/v1/auth/login', { body: { username, password, newPassword } });
+  if (data?.passwordChangeRequired === true) return data;
+  if (typeof data?.token !== 'string' || !data.token.startsWith('session_')) throw new Error('Invalid sign-in response.');
+  return data;
+}
+
+export async function logoutOfficer(token) {
+  if (token?.startsWith('session_')) await createTransport(token).call('POST', '/v1/auth/logout');
+}
 
 export function createApi(token, { onUnauthenticated }) {
   const { call, blob } = createTransport(token, onUnauthenticated);
   const post = async (path, body, headers) => (await call('POST', path, { body, headers })).data;
   return {
     me: async () => (await call('GET', '/v1/me')).data.principal,
+    dmReplies: async () => (await call('GET', '/v1/telegram/dm-replies')).data,
+    setDmReplies: (enabled) => post('/v1/telegram/dm-replies', { enabled }),
+    consentPrompt: async () => (await call('GET', '/v1/telegram/consent-prompt')).data,
+    setConsentPrompt: (enabled) => post('/v1/telegram/consent-prompt', { enabled }),
+    reloadReplyPrompt: () => post('/v1/telegram/reply-prompt/reload'),
     listChats: async () => {
       const { data, meta } = await call('GET', `/v1/chats?limit=${CHAT_LIST_LIMIT}`);
       return { chats: data.chats, cursor: data.cursor, total: meta === null ? data.chats.length : meta.total };
     },
     timeline: async (chatId) => (await call('GET', chatPath(chatId, '/timeline'))).data,
-    dispatch: (chatIds, idempotencyKey) => post('/v1/dispatches', { chatIds }, { 'Idempotency-Key': idempotencyKey }),
+    previewErase: async (chatId) => (await call('GET', erasePath(chatId, 'erase-preview'))).data,
+    erase: (chatId, expectedSnapshot, key) =>
+      post(erasePath(chatId, 'erase'), { expectedSnapshot, confirm: true }, { 'Idempotency-Key': key }),
+    eraseTelegram: (chatId, expectedSnapshot, key) =>
+      post(erasePath(chatId, 'erase-telegram'), { expectedSnapshot, confirm: true }, { 'Idempotency-Key': key }),
+    dispatch: (chatIds, idempotencyKey, officerContext, permission) =>
+      post('/v1/dispatches', { chatIds, officerContext, ...permission }, { 'Idempotency-Key': idempotencyKey }),
+    dispatchByPhone: (phoneNumber, officerContext, key) =>
+      post('/v1/dispatches/by-phone', { phoneNumber, officerContext }, { 'Idempotency-Key': key }),
+    investigationOpener: (officerContext, language) => post('/v1/investigation-opener', { officerContext, language }),
     control: (chatId, action, expectedRevision) => post(chatPath(chatId, '/control'), { action, expectedRevision }),
     sendOfficerMessage: ({ chatId, text, expectedRevision, idempotencyKey }) =>
       post(chatPath(chatId, '/officer-messages'), { text, expectedRevision }, { 'Idempotency-Key': idempotencyKey }),
     leaveUnanswered: (chatId, messageId, expectedRevision) =>
       post(chatPath(chatId, '/officer-decisions'), { decision: 'leave_unanswered', messageId, expectedRevision }),
+    markReviewed: (chatId, reviewActionId, expectedRevision) =>
+      post(chatPath(chatId, '/officer-decisions'), { decision: 'mark_reviewed', reviewActionId, expectedRevision }),
     retryCapture: (captureId) => post(`/v1/captures/${segment(captureId)}/retry`),
     /** `request`: { kind, paymentHosts, sourceNote } (state/case-reference.js builds it). */
     recordCaseReference: (chatId, request) => post(chatPath(chatId, '/case-references'), request),

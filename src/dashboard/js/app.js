@@ -5,7 +5,7 @@
  */
 import { createActions } from './actions.js';
 import { describeError } from './format.js';
-import { applyChat, loadInbox, loadTimeline, loadWatchlist } from './loaders.js';
+import { applyChat, loadInbox, loadTelegramSetting, loadTimeline, loadWatchlist } from './loaders.js';
 import { createRefresher, REFRESH_DELAY_MS } from './refresher.js';
 import { createRenderer } from './render.js';
 import { initialCaseReferenceDraft } from './state/case-reference.js';
@@ -16,6 +16,9 @@ import { createCaptureCache } from './views/capture.js';
 import { bindComposer } from './views/composer.js';
 import { bindCaseReferenceForm } from './views/side-panel.js';
 import { createWatchlistView } from './views/watchlist.js';
+import { bindWorkspace, resetCaseTools } from './views/workspace.js';
+import { bindPhoneDispatch } from './views/phone-dispatch.js';
+import { bindErase } from './views/erase.js';
 
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
 const INBOX_NEUTRAL_EVENTS = new Set(['capture.updated']);
@@ -23,37 +26,55 @@ const INBOX_NEUTRAL_EVENTS = new Set(['capture.updated']);
 function initialState(me) {
   return {
     me, view: 'inbox', connection: 'connecting', notice: null, pending: null,
-    chats: [], chatsTotal: 0, inboxLoaded: false, selection: new Set(),
-    selectedChatId: null, focusMessageId: null, timeline: null, timelineError: null,
+    chats: [], chatsTotal: 0, inboxLoaded: false, inboxFilter: 'all', selection: new Set(), dispatchBrief: null,
+    selectedChatId: null, focusMessageId: null, focusEventId: null, timeline: null, timelineError: null, evidenceOpen: false,
     replyTargetId: null, replyTargetPinned: false, composer: initialComposer(), caseReferenceDraft: initialCaseReferenceDraft(),
     watchlist: { status: 'idle', entries: [], message: null },
+    dmReplies: null, consentPrompt: null,
   };
 }
 
-function selectChat(ctx, chatId, messageId) {
+function selectChat(ctx, chatId, messageId, eventId = null) {
   if (chatId === ctx.getState().selectedChatId) {
-    ctx.setState({ focusMessageId: messageId });
+    ctx.setState({ focusMessageId: messageId, focusEventId: eventId });
     return;
   }
   ctx.refreshers.timeline.cancel();
   ctx.captures.revokeAll();
   ctx.tickets.timeline += 1;
+  resetCaseTools(ctx.refs);
   ctx.setState({
-    selectedChatId: chatId, focusMessageId: messageId, timeline: null, timelineError: null,
+    selectedChatId: chatId, focusMessageId: messageId, focusEventId: eventId, timeline: null, timelineError: null, evidenceOpen: false,
     replyTargetId: null, replyTargetPinned: false, composer: initialComposer(), caseReferenceDraft: initialCaseReferenceDraft(),
   });
   if (chatId !== null) ctx.load.timeline().catch(ctx.showError);
 }
 
 function applyRoute(ctx) {
+  const previous = ctx.getState();
   const route = parseRoute(window.location.hash);
   if (route.view === 'watchlist') {
-    ctx.setState({ view: 'watchlist' });
+    resetCaseTools(ctx.refs);
+    ctx.setState({ view: 'watchlist', evidenceOpen: false });
     void ctx.load.watchlist();
     return;
   }
-  ctx.setState({ view: 'inbox' });
-  selectChat(ctx, route.chatId, route.messageId);
+  // History may point back to a message while the phone is displaying its evidence pane.
+  // Reveal the timeline before selectChat moves focus to that source.
+  ctx.setState({ view: 'inbox', evidenceOpen: false, previousRequested: route.previous === true });
+  if (previous.selectedChatId === null && route.chatId !== null) {
+    ctx.queueScroll = ctx.refs.inbox.querySelector('.inbox-lists').scrollTop;
+  }
+  selectChat(ctx, route.chatId, route.messageId, route.eventId);
+  if (!window.matchMedia('(max-width: 760px)').matches) return;
+  if (route.chatId !== null && route.messageId === null && (previous.selectedChatId !== route.chatId || previous.view !== 'inbox')) {
+    ctx.refs.backToInbox.focus({ preventScroll: true });
+  } else if (route.chatId === null && previous.selectedChatId !== null) {
+    const list = ctx.refs.inbox.querySelector('.inbox-lists');
+    const row = [...list.querySelectorAll('li[data-chat-id]')].find(li => li.dataset.chatId === previous.selectedChatId);
+    list.scrollTop = ctx.queueScroll;
+    (row?.querySelector('.chat-link') ?? ctx.refs.inboxFilterAll).focus({ preventScroll: true });
+  }
 }
 
 function onStreamEvent(ctx, event) {
@@ -67,24 +88,101 @@ function onStreamEvent(ctx, event) {
 /** stream.reset: the position fell outside retained history, so reload the snapshots. */
 function onStreamReload(ctx) {
   ctx.refreshers.inbox.request();
+  ctx.refreshers.dmReplies.request();
+  ctx.refreshers.consentPrompt.request();
   ctx.refreshers.timeline.request();
   if (ctx.getState().view === 'watchlist') ctx.refreshers.watchlist.request();
+}
+
+function clearErasedHistory(ctx, id, receipt) {
+  const state = ctx.getState();
+  ctx.forgetErasePreview(id);
+  // Fence reads started before erasure, including an inbox or watchlist request already in flight.
+  ctx.tickets.inbox++;
+  ctx.tickets.watchlist++;
+  if (id === null || state.selectedChatId === id) {
+    if (ctx.refs.captureDialog.open) ctx.refs.captureDialog.close();
+    ctx.refs.captureDialogImage.removeAttribute('src');
+    ctx.refs.captureDialogImage.alt = '';
+    ctx.refs.composerText.value = '';
+    ctx.refs.caseReferenceForm.reset();
+    ctx.captures.revokeAll();
+    window.history.replaceState(null, '', '#/');
+    applyRoute(ctx);
+  }
+  const chats = id === null ? [] : state.chats.filter(chat => chat.id !== id);
+  const selection = new Set(id === null ? [] : [...state.selection].filter(chatId => chatId !== id));
+  ctx.setState({
+    chats, chatsTotal: id === null ? 0 : state.chatsTotal - (state.chats.length - chats.length), selection,
+    dispatchBrief: id === null || state.dispatchBrief?.chatId === id ? null : state.dispatchBrief,
+    watchlist: { status: 'idle', entries: [], message: null }, notice: { tone: 'info', text: receipt },
+  });
+  ctx.watchlistView.clearDrafts();
+  ctx.refreshers.inbox.request();
+  ctx.refreshers.watchlist.request();
+  if (ctx.getState().selectedChatId === null) ctx.refs.inboxFilterAll.focus({ preventScroll: true });
 }
 
 function bindPage(ctx) {
   const { refs, handlers } = ctx;
   const { signal } = ctx.listeners;
+  bindWorkspace(ctx);
+  ctx.forgetErasePreview = bindErase(ctx, ctx.clearErased);
   refs.dispatchButton.addEventListener('click', () => handlers.onDispatch(), { signal });
+  const updateBrief = () => handlers.onDispatchBriefInput(refs.dispatchBriefText.value, refs.dispatchBriefClear.checked);
+  refs.dispatchBriefText.addEventListener('input', updateBrief, { signal });
+  refs.dispatchBriefClear.addEventListener('change', updateBrief, { signal });
+  const openOpener = (briefing = '', recipient = '') => {
+    refs.openerForm.reset();
+    refs.openerContext.value = briefing;
+    refs.openerStatus.textContent = '';
+    refs.openerDraft.value = '';
+    refs.openerResult.hidden = !recipient;
+    refs.copyOpener.hidden = !recipient;
+    refs.copyOpener.disabled = Boolean(recipient);
+    refs.openerRecipient.hidden = !recipient;
+    refs.openerRecipientNumber.textContent = recipient;
+    refs.openTelegramDraft.hidden = !recipient;
+    refs.openTelegramDraft.disabled = true;
+    refs.openerManualHint.textContent = recipient
+      ? 'Open the draft in Telegram to review the recipient and send it yourself. You can also copy the draft.'
+      : 'Review and edit this local draft, then copy it into Telegram when you’re ready to send.';
+    refs.openerDialog.showModal();
+    if (recipient) refs.openerDraft.focus();
+  };
+  refs.openOpener.addEventListener('click', () => openOpener(), { signal });
+  bindPhoneDispatch(ctx, openOpener);
+  refs.openerDialog.addEventListener('close', () => {
+    if (refs.openerDialog.open) return;
+    refs.openerForm.reset();
+    refs.openerRecipientNumber.textContent = '';
+    refs.openerDraft.value = '';
+  }, { signal });
+  refs.openerForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    handlers.onGenerateOpener();
+  }, { signal });
+  refs.openerDraft.addEventListener('input', () => {
+    refs.copyOpener.disabled = !refs.openerDraft.value.trim();
+    refs.openTelegramDraft.disabled = !refs.openerDraft.value.trim();
+  }, { signal });
+  refs.copyOpener.addEventListener('click', () => handlers.onCopyOpener(), { signal });
   refs.captureDialog.addEventListener('close', () => refs.captureDialogImage.removeAttribute('src'), { signal });
   bindComposer(refs, handlers, signal);
   bindCaseReferenceForm(refs, handlers, signal);
   window.addEventListener('hashchange', () => applyRoute(ctx), { signal });
+  window.addEventListener('focus', () => {
+    ctx.refreshers.dmReplies.request();
+    ctx.refreshers.consentPrompt.request();
+  }, { signal });
 }
 
 async function boot(ctx) {
   ctx.render(ctx.getState());
   bindPage(ctx);
   applyRoute(ctx);
+  void ctx.load.dmReplies().catch(ctx.showError);
+  void ctx.load.consentPrompt().catch(ctx.showError);
   let cursor = null;
   try {
     cursor = await ctx.load.inbox();
@@ -110,6 +208,18 @@ function stop(ctx) {
   for (const refresher of Object.values(ctx.refreshers)) refresher.cancel();
   ctx.captures.revokeAll();
   if (ctx.refs.captureDialog.open) ctx.refs.captureDialog.close();
+  if (ctx.refs.openerDialog.open) ctx.refs.openerDialog.close();
+  if (ctx.refs.settingsDialog.open) ctx.refs.settingsDialog.close();
+  if (ctx.refs.phoneDialog.open) ctx.refs.phoneDialog.close();
+  if (ctx.refs.eraseDialog.open) ctx.refs.eraseDialog.close();
+  ctx.refs.eraseChatLabel.textContent = '';
+  ctx.refs.eraseTyped.value = '';
+  ctx.refs.eraseTelegramResult.replaceChildren();
+  ctx.refs.phoneForm.reset();
+  ctx.refs.openerRecipientNumber.textContent = '';
+  resetCaseTools(ctx.refs);
+  ctx.refs.openerForm.reset();
+  ctx.refs.openerDraft.value = '';
 }
 
 export function startDashboard({ api, me, token, refs, onSessionEnded }) {
@@ -119,8 +229,8 @@ export function startDashboard({ api, me, token, refs, onSessionEnded }) {
     listeners: new AbortController(),
     captures: createCaptureCache(api),
     watchlistView: createWatchlistView(refs.watchlist),
-    tickets: { inbox: 0, timeline: 0, watchlist: 0 },
-    stream: null,
+    tickets: { inbox: 0, timeline: 0, watchlist: 0, dmReplies: 0, consentPrompt: 0 },
+    stream: null, queueScroll: 0,
     render: () => undefined,
     getState: () => state,
     setState(patch) {
@@ -130,8 +240,12 @@ export function startDashboard({ api, me, token, refs, onSessionEnded }) {
     },
     showError: (error) => ctx.setState({ notice: { tone: 'error', text: describeError(error) } }),
   };
-  ctx.load = { inbox: () => loadInbox(ctx), timeline: () => loadTimeline(ctx), watchlist: () => loadWatchlist(ctx) };
+  ctx.load = {
+    inbox: () => loadInbox(ctx), timeline: () => loadTimeline(ctx), watchlist: () => loadWatchlist(ctx),
+    dmReplies: () => loadTelegramSetting(ctx, 'dmReplies'), consentPrompt: () => loadTelegramSetting(ctx, 'consentPrompt'),
+  };
   ctx.applyChat = (chat) => applyChat(ctx, chat);
+  ctx.clearErased = (id, receipt) => clearErasedHistory(ctx, id, receipt);
   ctx.refreshers = Object.fromEntries(Object.entries(ctx.load).map(([name, load]) => [name, createRefresher(load, REFRESH_DELAY_MS, ctx.showError)]));
   ctx.handlers = createActions(ctx);
   ctx.render = createRenderer(ctx);

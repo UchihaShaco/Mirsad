@@ -16,6 +16,7 @@ import { findChannelAccountById } from '../storage/repos/principals.ts';
 import type { CaseActionRow, ChatRow, MessageRow } from '../storage/rows.ts';
 import { requireChat } from './access.ts';
 import { assertRevision } from './control.ts';
+import { getTelegramReplyHold } from './telegram-reply-holds.ts';
 import { principalLookup, toCaseAction, toMessage } from './mappers.ts';
 import { appendStreamEvent } from './stream.ts';
 
@@ -83,11 +84,35 @@ export interface DecisionResult {
   created: boolean;
 }
 
+/** Resolve only the evidence item the officer saw. Another attachment or contact opt-out stays in force. */
+function markReviewed(tx: Tx, officer: Principal, chatId: string, reviewActionId: string, revision: number): DecisionResult {
+  const chat = requireChat(tx, officer, chatId);
+  const flag = tx.get<CaseActionRow>(
+    "SELECT * FROM case_actions WHERE id = :flag AND chat_id = :chat AND type = 'telegram_officer_review_requested'",
+    { flag: reviewActionId, chat: chat.id },
+  );
+  if (!flag || !flag.message_id) throw AppError.of('not_found', 'Review request not found.');
+  const existing = tx.get<CaseActionRow>(
+    `SELECT * FROM case_actions WHERE chat_id = :chat AND type = 'telegram_officer_review_resolved'
+     AND json_extract(detail, '$.reviewActionId') = :flag`, { chat: chat.id, flag: flag.id },
+  );
+  if (existing) return { caseAction: toCaseAction(existing, principalLookup(tx)), created: false };
+  assertRevision(chat, revision);
+  const hold = getTelegramReplyHold(tx, chat.id);
+  if (!hold.officerReview) throw AppError.of('invalid_transition', 'Evidence has not reached the review threshold.');
+  const row = caseActions.record(tx, {
+    chatId: chat.id, workspaceId: chat.workspace_id, type: 'telegram_officer_review_resolved', actorId: officer.id,
+    messageId: flag.message_id, revision, detail: { reviewActionId: flag.id, cycleComplete: hold.evidenceItems.length === 1 },
+  });
+  return { caseAction: toCaseAction(row, principalLookup(tx)), created: true };
+}
+
 /**
  * Records "Leave unanswered" for an incoming message of the chat: only a case action, the chat stays open and
  * capture continues. A repeat for the same message returns the action already recorded.
  */
 export function recordDecision(tx: Tx, officer: Principal, chatId: string, request: OfficerDecisionRequest): DecisionResult {
+  if (request.decision === 'mark_reviewed') return markReviewed(tx, officer, chatId, request.reviewActionId, request.expectedRevision);
   const chat = requireControlledChat(tx, officer, chatId, request.expectedRevision);
   const message = requireIncomingMessage(tx, chat, request.messageId);
   const existing = findLeaveUnanswered(tx, chat.id, message.id);

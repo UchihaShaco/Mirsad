@@ -15,14 +15,140 @@ tags:
     description: Static files of the reference dashboard.
 security: []
 paths:
+  /v1/auth/login:
+    post:
+      operationId: post_v1AuthLogin
+      summary: Sign in to the officer dashboard
+      tags:
+        - extension
+      security: &a5 []
+      description: "A temporary password returns passwordChangeRequired. Submit the username and temporary password again with a different newPassword (12–128 characters) to receive a session. Pass the returned session token in the Authorization bearer header. Responses use Cache-Control: no-store. Browser requests must use the same origin and send JSON."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfficerLoginRequest"
+      responses:
+        "200":
+          description: Officer session issued or first-login password change required.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/OfficerLoginResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `origin_not_allowed`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "413":
+          description: "Error envelope. `error.code` is one of: `payload_too_large`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/auth/logout:
+    post:
+      operationId: post_v1AuthLogout
+      summary: Revoke the current officer session
+      tags:
+        - extension
+      security: &a1
+        - officerToken: []
+      description: Requires the password session to revoke. Browser requests must use the same origin.
+      responses:
+        "200":
+          description: Officer session revoked.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/OfficerLogoutResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `origin_not_allowed`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "413":
+          description: "Error envelope. `error.code` is one of: `payload_too_large`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /v1/chats:
     post:
       operationId: post_v1Chats
       summary: Register an existing conversation
       tags:
         - contract
-      security: &a1
-        - officerToken: []
+      security: *a1
       description: Returns a stable `chatId` for the workspace, source, account and conversation. `201` when new, `200` when it already existed.
       requestBody:
         required: true
@@ -267,6 +393,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+        "410":
+          description: "Error envelope. `error.code` is one of: `history_erased`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
         "413":
           description: "Error envelope. `error.code` is one of: `payload_too_large`."
           content:
@@ -372,6 +504,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+        "410":
+          description: "Error envelope. `error.code` is one of: `history_erased`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
         "413":
           description: "Error envelope. `error.code` is one of: `payload_too_large`."
           content:
@@ -399,11 +537,11 @@ paths:
   /v1/dispatches:
     post:
       operationId: post_v1Dispatches
-      summary: Start AI review on selected chats
+      summary: Start AI on selected chats
       tags:
         - contract
       security: *a1
-      description: Access to the whole selection is validated before any chat changes. An officer-controlled chat needs an explicit resume. Requires `Idempotency-Key`.
+      description: Start eligible chats. A single-chat Dispatch can record prior participant permission with participantPermissionRecorded=true. expectedTestMode=true also requires new-contact invitations to remain disabled. This action can authorize the latest unanswered Telegram DM within 24 hours for up to 15 minutes. An optional officer briefing applies to one chat. Send null to clear the briefing. Paused and officer-controlled chats require Resume. Requires `Idempotency-Key`.
       parameters:
         - &a3
           name: Idempotency-Key
@@ -471,8 +609,173 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "410":
+          description: "Error envelope. `error.code` is one of: `history_erased`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
         "422":
           description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/dispatches/by-phone:
+    post:
+      operationId: post_v1DispatchesBy-phone
+      summary: Dispatch an existing Telegram private chat by verified phone number
+      tags:
+        - extension
+      security: *a1
+      description: Matches the latest self-shared contact card on an authorized live account. A unique match uses normal Dispatch controls. Missing or ambiguous matches return only an outcome, allowing officer-led contact without creating a chat or sending a message. Enter a complete international number with + or 00 and the exact international dialling digits.
+      parameters:
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DispatchByPhoneRequest"
+      responses:
+        "200":
+          description: Dispatch result or an unresolved match.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/DispatchByPhoneResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "410":
+          description: "Error envelope. `error.code` is one of: `history_erased`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/investigation-opener:
+    post:
+      operationId: post_v1Investigation-opener
+      summary: Draft an opening question for officer review
+      tags:
+        - extension
+      security: *a1
+      description: Returns a local suggested question in the selected language. The officer can review and copy it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestigationOpenerRequest"
+      responses:
+        "200":
+          description: A draft for the officer.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/InvestigationOpenerResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
           content:
             application/json:
               schema:
@@ -569,6 +872,466 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/erase-preview:
+    get:
+      operationId: get_v1ChatsChatIdErase-preview
+      summary: Preview erasure of one local conversation
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Number of conversations and a snapshot for confirmation.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ErasePreview"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/erase:
+    post:
+      operationId: post_v1ChatsChatIdErase
+      summary: Erase the selected local conversation and all its previous tests
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EraseRequest"
+      responses:
+        "200":
+          description: Local erasure receipt with count of capture files still awaiting cleanup.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/EraseResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/inbox/erase-preview:
+    get:
+      operationId: get_v1InboxErase-preview
+      summary: Preview erasure across the officer’s local inbox
+      tags:
+        - extension
+      security: *a1
+      responses:
+        "200":
+          description: Number of conversations and a snapshot for confirmation.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ErasePreview"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/inbox/erase:
+    post:
+      operationId: post_v1InboxErase
+      summary: Erase the confirmed conversations in the officer’s local inbox
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EraseRequest"
+      responses:
+        "200":
+          description: Local erasure receipt with count of capture files still awaiting cleanup.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/EraseResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/chats/{chatId}/erase-telegram:
+    post:
+      operationId: post_v1ChatsChatIdErase-telegram
+      summary: Delete eligible captured messages on Telegram for both participants
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EraseRequest"
+      responses:
+        "200":
+          description: Telegram deletion counts for the confirmed chat.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/TelegramEraseResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/inbox/erase-telegram:
+    post:
+      operationId: post_v1InboxErase-telegram
+      summary: Delete eligible captured Telegram messages for both participants across this inbox
+      tags:
+        - extension
+      security: *a1
+      parameters:
+        - *a3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EraseRequest"
+      responses:
+        "200":
+          description: Telegram deletion counts for the confirmed inbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/TelegramEraseResponse"
+                  error:
+                    type: "null"
+          headers: *a4
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`, `idempotency_key_required`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `not_controller`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `chat_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `revision_conflict`, `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /v1/chats/{chatId}/officer-messages:
     post:
       operationId: post_v1ChatsChatIdOfficer-messages
@@ -640,6 +1403,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+        "410":
+          description: "Error envelope. `error.code` is one of: `history_erased`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
         "422":
           description: "Error envelope. `error.code` is one of: `idempotency_key_reused`."
           content:
@@ -661,7 +1430,7 @@ paths:
   /v1/chats/{chatId}/officer-decisions:
     post:
       operationId: post_v1ChatsChatIdOfficer-decisions
-      summary: Record a decision on an incoming message
+      summary: Leave an incoming message unanswered or mark one Telegram evidence item reviewed
       tags:
         - contract
       security: *a1
@@ -733,7 +1502,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "404":
-          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`."
+          description: "Error envelope. `error.code` is one of: `chat_not_found`, `message_not_found`, `not_found`."
           content:
             application/json:
               schema:
@@ -1322,13 +2091,324 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/telegram/dm-replies:
+    get:
+      operationId: get_v1TelegramDm-replies
+      summary: Read the connected account’s automatic DM reply setting
+      tags:
+        - extension
+      security: *a1
+      responses:
+        "200":
+          description: Reply mode and whether this officer can switch it.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/DmRepliesResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: post_v1TelegramDm-replies
+      summary: Enable or stop automatic replies for eligible private Telegram chats
+      tags:
+        - extension
+      security: *a1
+      description: Requires a grant on the linked account. Enabling starts with fresh incoming messages. When consent prompts are enabled, new contacts can opt in directly in Telegram. Disabling automated replies stops new automated sends and leaves intake active.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DmRepliesRequest"
+      responses:
+        "200":
+          description: Current account reply setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/DmRepliesResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `account_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: "Error envelope. `error.code` is one of: `invalid_transition`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/telegram/consent-prompt:
+    get:
+      operationId: get_v1TelegramConsent-prompt
+      summary: Read the private-chat consent invitation setting
+      tags:
+        - extension
+      security: *a1
+      responses:
+        "200":
+          description: Saved invitation setting and whether the officer can change it.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ConsentPromptResponse"
+                  error:
+                    type: "null"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: post_v1TelegramConsent-prompt
+      summary: Turn Telegram consent invitations on or off
+      tags:
+        - extension
+      security: *a1
+      description: Requires officer access to the linked account. With all-DM replies enabled, enabled=false turns on Test mode. A new private message written by either the owner or the contact automatically activates an eligible chat locally. The model can reply only to an eligible incoming message with participant permission. Setting enabled=true stops new automatic dispatches and enables local opt-in invitations. The selection persists across restarts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DmRepliesRequest"
+      responses:
+        "200":
+          description: Saved invitation setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ConsentPromptResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `account_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /v1/telegram/reply-prompt/reload:
+    post:
+      operationId: post_v1TelegramReply-promptReload
+      summary: Reload the saved Ali reply prompt
+      tags:
+        - extension
+      security: *a1
+      description: An officer with access to the linked Telegram account can reload prompts/ali.md for subsequent replies. Send an empty POST. If the file cannot be read or validated, the previous prompt stays active.
+      responses:
+        "200":
+          description: Active content version and whether it changed.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - data
+                  - error
+                properties:
+                  success:
+                    const: true
+                  data:
+                    $ref: "#/components/schemas/ReplyPromptReloadResponse"
+                  error:
+                    type: "null"
+        "400":
+          description: "Error envelope. `error.code` is one of: `validation_failed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: "Error envelope. `error.code` is one of: `unauthenticated`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: "Error envelope. `error.code` is one of: `forbidden_for_principal`, `origin_not_allowed`, `host_not_allowed`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: "Error envelope. `error.code` is one of: `account_not_found`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: "Error envelope. `error.code` is one of: `reply_prompt_unavailable`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: "Error envelope. `error.code` is one of: `rate_limited`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: "Error envelope. `error.code` is one of: `internal_error`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /healthz:
     get:
       operationId: get_healthz
       summary: Liveness check
       tags:
         - extension
-      security: &a5 []
+      security: *a5
       responses:
         "200":
           description: The service is up.
@@ -1454,6 +2534,19 @@ components:
       scheme: bearer
       description: A connector token (intake), sent only in the Authorization header. Never put a token in a URL.
   schemas:
+    EraseRequest:
+      type: object
+      properties:
+        expectedSnapshot:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        confirm:
+          type: boolean
+          const: true
+      required:
+        - expectedSnapshot
+        - confirm
+      additionalProperties: false
     IngestRequest:
       type: object
       properties:
@@ -1575,6 +2668,17 @@ components:
               pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
             direction:
               $ref: "#/components/schemas/Direction"
+            reviewAttachments:
+              maxItems: 5
+              type: array
+              items:
+                type: string
+                enum:
+                  - document
+                  - location
+                  - venue
+                  - forwarded
+                  - blockquote
           required:
             - type
             - sourceEventId
@@ -1636,8 +2740,37 @@ components:
             type: string
             minLength: 1
             maxLength: 200
+        officerContext:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: "null"
+        participantPermissionRecorded:
+          type: boolean
+          const: true
+        expectedTestMode:
+          type: boolean
+          const: true
       required:
         - chatIds
+    DispatchByPhoneRequest:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: One complete international phone number starting with + or 00.
+        officerContext:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 500
+            - type: "null"
+      required:
+        - phoneNumber
+      additionalProperties: false
     ControlRequest:
       type: object
       properties:
@@ -1654,6 +2787,14 @@ components:
       required:
         - action
         - expectedRevision
+    DmRepliesRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+        - enabled
+      additionalProperties: false
     OfficerMessageRequest:
       type: object
       properties:
@@ -1669,23 +2810,41 @@ components:
         - text
         - expectedRevision
     OfficerDecisionRequest:
-      type: object
-      properties:
-        decision:
-          type: string
-          const: leave_unanswered
-        messageId:
-          type: string
-          minLength: 1
-          maxLength: 200
-        expectedRevision:
-          type: integer
-          minimum: 1
-          maximum: 9007199254740991
-      required:
-        - decision
-        - messageId
-        - expectedRevision
+      oneOf:
+        - type: object
+          properties:
+            decision:
+              type: string
+              const: leave_unanswered
+            messageId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            expectedRevision:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+          required:
+            - decision
+            - messageId
+            - expectedRevision
+        - type: object
+          properties:
+            decision:
+              type: string
+              const: mark_reviewed
+            reviewActionId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            expectedRevision:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+          required:
+            - decision
+            - reviewActionId
+            - expectedRevision
     CaseReferenceRequest:
       type: object
       properties:
@@ -1730,6 +2889,29 @@ components:
         - decision
         - reason
         - expectedRevision
+    OfficerLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 64
+        password:
+          type: string
+          minLength: 1
+          maxLength: 256
+          writeOnly: true
+          format: password
+        newPassword:
+          type: string
+          minLength: 1
+          maxLength: 256
+          writeOnly: true
+          format: password
+      required:
+        - username
+        - password
+      additionalProperties: false
     Source:
       type: string
       enum:
@@ -1740,6 +2922,143 @@ components:
       enum:
         - incoming
         - outgoing
+    ErasePreview:
+      type: object
+      properties:
+        chatCount:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        snapshot:
+          type: string
+      required:
+        - chatCount
+        - snapshot
+      additionalProperties: false
+    EraseResponse:
+      type: object
+      properties:
+        chatCount:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        filesPending:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - chatCount
+        - filesPending
+      additionalProperties: false
+    TelegramEraseResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - completed
+            - in_progress
+        total:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        removed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        skipped:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        failed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        uncertain:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        pending:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        excluded:
+          type: object
+          properties:
+            unverified:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            expired:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            rights:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            unsupported:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - unverified
+            - expired
+            - rights
+            - unsupported
+          additionalProperties: false
+        remainingChats:
+          type: array
+          items:
+            type: object
+            properties:
+              chatId:
+                type: string
+                minLength: 1
+                maxLength: 200
+              removed:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              skipped:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              uncertain:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              failed:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              pending:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+            required:
+              - chatId
+              - removed
+              - skipped
+              - uncertain
+              - failed
+              - pending
+            additionalProperties: false
+        manualHistoryMayRemain:
+          type: boolean
+          const: true
+      required:
+        - status
+        - total
+        - removed
+        - skipped
+        - failed
+        - uncertain
+        - pending
+        - excluded
+        - remainingChats
+        - manualHistoryMayRemain
+      additionalProperties: false
     CaptureMethod:
       type: string
       enum:
@@ -1920,6 +3239,77 @@ components:
             - type: string
               const: Message received.
             - type: "null"
+        telegramReplyHold:
+          type: object
+          properties:
+            contactOptedOut:
+              type: boolean
+            officerReview:
+              anyOf:
+                - type: object
+                  properties:
+                    actionId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    messageId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    reason:
+                      type: string
+                      enum:
+                        - document
+                        - location
+                        - payment_link
+                        - bank_details
+                        - conversation_review
+                        - model_payment_link
+                  required:
+                    - actionId
+                    - messageId
+                    - reason
+                  additionalProperties: false
+                - type: "null"
+            evidenceItems:
+              type: array
+              items:
+                type: object
+                properties:
+                  actionId:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  messageId:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  messageEventId:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 200
+                      - type: "null"
+                  reason:
+                    type: string
+                    enum:
+                      - document
+                      - location
+                      - payment_link
+                      - bank_details
+                      - conversation_review
+                      - model_payment_link
+                required:
+                  - actionId
+                  - messageId
+                  - messageEventId
+                  - reason
+                additionalProperties: false
+          required:
+            - contactOptedOut
+            - officerReview
+            - evidenceItems
+          additionalProperties: false
         review:
           type: object
           properties:
@@ -1968,6 +3358,176 @@ components:
               - evidence
               - restrictedEvidence
             additionalProperties: false
+        lowerConcern:
+          anyOf:
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: meeting_arranged
+                assessedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                sources:
+                  type: object
+                  properties:
+                    agreement:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    time:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    place:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    date:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                  required:
+                    - agreement
+                    - time
+                    - place
+                  additionalProperties: false
+              required:
+                - kind
+                - assessedAt
+                - sources
+              additionalProperties: false
+            - type: "null"
+        previousLowerConcern:
+          anyOf:
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: meeting_arranged
+                assessedAt:
+                  type: string
+                  format: date-time
+                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+                sources:
+                  type: object
+                  properties:
+                    agreement:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    time:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    place:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                    date:
+                      type: object
+                      properties:
+                        messageId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                        messageEventId:
+                          type: string
+                          minLength: 1
+                          maxLength: 200
+                      required:
+                        - messageId
+                        - messageEventId
+                      additionalProperties: false
+                  required:
+                    - agreement
+                    - time
+                    - place
+                  additionalProperties: false
+              required:
+                - kind
+                - assessedAt
+                - sources
+              additionalProperties: false
+            - type: "null"
         messageCount:
           type: integer
           minimum: 0
@@ -1997,8 +3557,11 @@ components:
         - firstObservedDirection
         - intakeAccount
         - acknowledgementTemplate
+        - telegramReplyHold
         - review
         - watchlistMatches
+        - lowerConcern
+        - previousLowerConcern
         - messageCount
         - lastActivityAt
         - createdAt
@@ -2061,6 +3624,40 @@ components:
         - dispatchId
         - results
       additionalProperties: false
+    DispatchByPhoneResponse:
+      oneOf:
+        - type: object
+          properties:
+            outcome:
+              type: string
+              const: dispatched
+            chatId:
+              type: string
+              minLength: 1
+              maxLength: 200
+            dispatch:
+              $ref: "#/components/schemas/DispatchResponse"
+          required:
+            - outcome
+            - chatId
+            - dispatch
+          additionalProperties: false
+        - type: object
+          properties:
+            outcome:
+              type: string
+              const: no_verified_chat
+          required:
+            - outcome
+          additionalProperties: false
+        - type: object
+          properties:
+            outcome:
+              type: string
+              const: ambiguous
+          required:
+            - outcome
+          additionalProperties: false
     ControlResponse:
       type: object
       properties:
@@ -2081,6 +3678,30 @@ components:
           $ref: "#/components/schemas/Message"
       required:
         - message
+      additionalProperties: false
+    InvestigationOpenerRequest:
+      type: object
+      properties:
+        officerContext:
+          type: string
+          minLength: 1
+          maxLength: 500
+        language:
+          type: string
+          enum:
+            - english
+            - arabic
+      required:
+        - officerContext
+        - language
+      additionalProperties: false
+    InvestigationOpenerResponse:
+      type: object
+      properties:
+        draft:
+          type: string
+      required:
+        - draft
       additionalProperties: false
     OfficerDecisionResponse:
       type: object
@@ -2370,6 +3991,9 @@ components:
           type: string
           enum:
             - chat_registered
+            - chat_test_started
+            - lower_concern_assessed
+            - telegram_dispatch_permission_recorded
             - dispatch_started
             - control_pause
             - control_take_over
@@ -2380,6 +4004,14 @@ components:
             - capture_retry_requested
             - watchlist_match
             - text_conflict_recorded
+            - ai_reply_sent
+            - ai_reply_failed
+            - ai_auto_started
+            - ai_reply_skipped
+            - telegram_contact_opted_out
+            - telegram_contact_opted_in
+            - telegram_officer_review_requested
+            - telegram_officer_review_resolved
         actor:
           anyOf:
             - $ref: "#/components/schemas/PrincipalRef"
@@ -2558,6 +4190,32 @@ components:
       properties:
         chat:
           $ref: "#/components/schemas/ChatSummary"
+        testSession:
+          anyOf:
+            - type: object
+              properties:
+                position:
+                  type: integer
+                  exclusiveMinimum: 0
+                  maximum: 9007199254740991
+                previousMessageIds:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                previousReferenceIds:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+              required:
+                - position
+                - previousMessageIds
+                - previousReferenceIds
+              additionalProperties: false
+            - type: "null"
         messages:
           type: array
           items:
@@ -2582,6 +4240,7 @@ components:
           type: string
       required:
         - chat
+        - testSession
         - messages
         - messageEvents
         - caseActions
@@ -2755,6 +4414,32 @@ components:
           additionalProperties: false
       required:
         - principal
+      additionalProperties: false
+    OfficerLoginResponse:
+      anyOf:
+        - type: object
+          properties:
+            token:
+              type: string
+          required:
+            - token
+          additionalProperties: false
+        - type: object
+          properties:
+            passwordChangeRequired:
+              type: boolean
+              const: true
+          required:
+            - passwordChangeRequired
+          additionalProperties: false
+    OfficerLogoutResponse:
+      type: object
+      properties:
+        loggedOut:
+          type: boolean
+          const: true
+      required:
+        - loggedOut
       additionalProperties: false
     HealthResponse:
       type: object
@@ -2938,6 +4623,47 @@ components:
         - data
         - error
       additionalProperties: false
+    DmRepliesResponse:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        available:
+          type: boolean
+        mode:
+          type: string
+          enum:
+            - approved
+            - all_private
+            - off
+      required:
+        - enabled
+        - available
+        - mode
+      additionalProperties: false
+    ConsentPromptResponse:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        available:
+          type: boolean
+      required:
+        - enabled
+        - available
+      additionalProperties: false
+    ReplyPromptReloadResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          pattern: ^[a-f0-9]{12}$
+        changed:
+          type: boolean
+      required:
+        - version
+        - changed
+      additionalProperties: false
     ListMeta:
       type: object
       additionalProperties: false
@@ -2979,6 +4705,12 @@ x-workflow-example:
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
             inboxStatus: open
+            telegramReplyHold:
+              contactOptedOut: false
+              officerReview: null
+              evidenceItems: []
+            lowerConcern: null
+            previousLowerConcern: null
             aiMode: not_started
             revision: 1
             controller: null
@@ -3071,6 +4803,12 @@ x-workflow-example:
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
             inboxStatus: open
+            telegramReplyHold: &a7
+              contactOptedOut: false
+              officerReview: null
+              evidenceItems: []
+            lowerConcern: null
+            previousLowerConcern: null
             aiMode: ai_active
             revision: 2
             controller: null
@@ -3080,11 +4818,11 @@ x-workflow-example:
             firstObservedDirection: incoming
             intakeAccount: false
             acknowledgementTemplate: null
-            review: &a7
+            review: &a8
               state: active
               pending: 1
               unavailable: 0
-            watchlistMatches: &a8 []
+            watchlistMatches: &a9 []
             messageCount: 1
             lastActivityAt: 2026-11-21T08:00:02.000Z
             createdAt: 2026-11-21T08:00:00.000Z
@@ -3155,6 +4893,7 @@ x-workflow-example:
               position: 3
           findings: []
           caseReferences: []
+          testSession: null
           cursor: "5"
         error: null
   - step: 5
@@ -3181,6 +4920,9 @@ x-workflow-example:
             externalChatId: host-conversation-1001
             displayLabel: Test Contact
             inboxStatus: open
+            telegramReplyHold: *a7
+            lowerConcern: null
+            previousLowerConcern: null
             aiMode: officer_control
             revision: 3
             controller: *a6
@@ -3190,8 +4932,8 @@ x-workflow-example:
             firstObservedDirection: incoming
             intakeAccount: false
             acknowledgementTemplate: null
-            review: *a7
-            watchlistMatches: *a8
+            review: *a8
+            watchlistMatches: *a9
             messageCount: 1
             lastActivityAt: 2026-11-21T08:00:04.000Z
             createdAt: 2026-11-21T08:00:00.000Z

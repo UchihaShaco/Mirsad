@@ -9,6 +9,7 @@ import type { CaptureMethod, CaptureStatus, MessageEventType } from '../contract
 import type { CaptureRenderInput } from '../ports/capture-renderer.ts';
 import type { StoredEvidence } from '../ports/evidence-store.ts';
 import { appendStreamEvent } from '../services/stream.ts';
+import { flushErasedEvidence, trackEvidenceWrite } from '../services/erased-evidence.ts';
 import type { Tx } from '../storage/db.ts';
 import { newId } from '../storage/ids.ts';
 import { insertArtifact } from '../storage/repos/artifacts.ts';
@@ -133,7 +134,18 @@ async function processCapture(deps: AppDeps, job: CaptureJob): Promise<void> {
     return;
   }
   try {
-    recordReady(deps, job, await deps.evidenceStore.put(storageKeyFor(job.source), png));
+    const exists = () => deps.db.transaction(tx => !!tx.get('SELECT 1 FROM captures WHERE id=?', [job.captureId]));
+    if (!exists()) return;
+    const key = storageKeyFor(job.source);
+    const stored = await trackEvidenceWrite(deps.evidenceStore, key, deps.evidenceStore.put(key, png));
+    if (exists()) {
+      recordReady(deps, job, stored);
+    } else {
+      // Another service instance can finish a write after the erasing instance has drained its queue.
+      deps.db.transaction(tx => tx.run('INSERT OR IGNORE INTO erased_evidence_files(storage_key,chat_id) VALUES (?,?)',
+        [key, job.source.chat_id]));
+      await flushErasedEvidence(deps.db, deps.evidenceStore, new Set([job.source.chat_id]));
+    }
   } catch (error) {
     recordFailure(deps, job, 'storage_failed', error);
   }

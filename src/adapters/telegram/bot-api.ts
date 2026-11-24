@@ -1,7 +1,9 @@
 /**
- * Read-only Telegram Bot API client (design section 19.8). It has no method that sends, edits, deletes or marks a
- * message read. Telegram puts the bot token in the request path, so every URL is built in `methodUrl` and never
- * appears in an error or a log line; error descriptions from Telegram are redacted before they are kept.
+ * Telegram Bot API clients (design sections 19.8 and 20). `createBotApi` is the connector's read-only client: it has no
+ * method that sends, edits, deletes or marks a message read. `createBotSender` is a separate client with exactly one
+ * method, a reply in a business chat, used only by the opt-in local-model replies. Telegram puts the bot token in the
+ * request path, so every URL is built in `call` and never appears in an error or a log line; error descriptions from
+ * Telegram are redacted before they are kept.
  */
 import { z } from 'zod';
 import { telegramUpdateSchema } from './fixture-schema.ts';
@@ -14,7 +16,7 @@ export const BUSINESS_UPDATE_TYPES = [
 ] as const;
 export type BusinessUpdateType = (typeof BUSINESS_UPDATE_TYPES)[number];
 
-export type BotApiMethod = 'getMe' | 'getWebhookInfo' | 'getBusinessConnection' | 'getUpdates';
+export type BotApiMethod = 'getMe' | 'getWebhookInfo' | 'getBusinessConnection' | 'getUpdates' | 'sendMessage' | 'deleteBusinessMessages';
 
 const DEFAULT_BASE_URL = 'https://api.telegram.org';
 const LOOPBACK_HOSTNAMES = ['127.0.0.1', 'localhost', '[::1]'];
@@ -49,6 +51,16 @@ export type WebhookInfo = z.infer<typeof webhookInfoSchema>;
 
 const businessConnectionSchema = telegramUpdateSchema.shape.business_connection.unwrap();
 export type BusinessConnection = z.infer<typeof businessConnectionSchema>;
+
+/** What Telegram answers to sendMessage: the message as sent (it carries more fields than these). */
+const sentMessageSchema = z.looseObject({
+  message_id: z.number().int().positive(),
+  date: z.number().int(),
+  chat: z.looseObject({ id: z.number().int() }),
+  from: z.looseObject({ id: z.number().int(), first_name: z.string().optional(), last_name: z.string().optional() }).optional(),
+  text: z.string().optional(),
+});
+export type SentMessage = z.infer<typeof sentMessageSchema>;
 
 const envelopeSchema = z.discriminatedUnion('ok', [
   z.object({ ok: z.literal(true), result: z.unknown() }),
@@ -89,6 +101,33 @@ export interface BotApi {
   /** One business connection: owner user, enabled flag and rights. Reads no messages. */
   getBusinessConnection(businessConnectionId: string, signal?: AbortSignal): Promise<BusinessConnection>;
   getUpdates(params: GetUpdatesParams, signal?: AbortSignal): Promise<RawUpdate[]>;
+}
+
+/** A plain-text reply in one private chat of the business account, sent through its business connection. */
+export interface BusinessReply {
+  businessConnectionId: string;
+  chatId: number;
+  text: string;
+}
+
+/** The whole sender: one call. The connector never holds it. */
+export interface BotSender {
+  sendBusinessMessage(reply: BusinessReply, signal?: AbortSignal): Promise<SentMessage>;
+}
+
+/** The destructive client is injected only into the explicitly confirmed officer route. */
+export interface TelegramEraser {
+  getBusinessConnection(id: string): Promise<BusinessConnection>;
+  deleteBusinessMessages(connection: string, messageIds: number[]): Promise<true>;
+}
+
+export function createTelegramEraser(options: BotApiOptions): TelegramEraser {
+  const client = clientFor(options);
+  return {
+    getBusinessConnection: createBotApi(options).getBusinessConnection,
+    deleteBusinessMessages: (connection, messageIds) => call(client, 'deleteBusinessMessages',
+      { business_connection_id: connection, message_ids: messageIds }, z.literal(true), REQUEST_TIMEOUT_MS),
+  };
 }
 
 export interface BotApiOptions {
@@ -159,9 +198,29 @@ async function call<T>(client: Client, method: BotApiMethod, body: object, schem
   return result.data;
 }
 
-export function createBotApi(options: BotApiOptions): BotApi {
+function clientFor(options: BotApiOptions): Client {
   if (!isWellFormedBotToken(options.token)) throw new Error('bot_token_malformed');
-  const client: Client = { token: options.token, baseUrl: checkedBaseUrl(options.baseUrl ?? DEFAULT_BASE_URL), fetch: options.fetch ?? fetch };
+  return { token: options.token, baseUrl: checkedBaseUrl(options.baseUrl ?? DEFAULT_BASE_URL), fetch: options.fetch ?? fetch };
+}
+
+/** The sender for opt-in local-model replies (design section 20): sendMessage on the business connection, nothing else. */
+export function createBotSender(options: BotApiOptions): BotSender {
+  const client = clientFor(options);
+  return Object.freeze({
+    sendBusinessMessage: (reply: BusinessReply, signal?: AbortSignal) =>
+      call(
+        client,
+        'sendMessage',
+        { business_connection_id: reply.businessConnectionId, chat_id: reply.chatId, text: reply.text },
+        sentMessageSchema,
+        REQUEST_TIMEOUT_MS,
+        signal,
+      ),
+  });
+}
+
+export function createBotApi(options: BotApiOptions): BotApi {
+  const client = clientFor(options);
   return Object.freeze({
     getMe: (signal?: AbortSignal) => call(client, 'getMe', {}, botUserSchema, REQUEST_TIMEOUT_MS, signal),
     getWebhookInfo: (signal?: AbortSignal) => call(client, 'getWebhookInfo', {}, webhookInfoSchema, REQUEST_TIMEOUT_MS, signal),

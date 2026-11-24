@@ -11,6 +11,7 @@ export function timelineEntries(
   timeline: Pick<Timeline, 'messages' | 'messageEvents' | 'caseActions' | 'findings'>,
 ): TimelineEntry[];
 export function latestIncomingMessageId(timeline: Pick<Timeline, 'messages'>): string | null;
+export function timelineForPeriod(timeline: Timeline, previous: boolean): Timeline;
 
 /** A message sender as senderPhoneOf reads it; `phone` is optional so a sender from before the field also fits. */
 export interface SenderWithOptionalPhone {

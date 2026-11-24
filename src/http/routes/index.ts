@@ -7,20 +7,25 @@ import type { AppDeps } from '../../app.ts';
 import type { AppEnv, HttpMethod, RouteHandler, RouteKey, RouteModule } from '../context.ts';
 import { requireAnyPrincipal, requireConnector, requireOfficer } from '../middleware/auth.ts';
 import { routes as artifacts } from './artifacts.ts';
+import { createAuthRoutes } from './auth.ts';
 import { routes as captures } from './captures.ts';
 import { routes as caseReferences } from './case-references.ts';
 import { routes as chatEvents } from './chat-events.ts';
 import { routes as chats } from './chats.ts';
 import { routes as control } from './control.ts';
+import { routes as erasure } from './erasure.ts';
 import { routes as dashboardStatic } from './dashboard-static.ts';
 import { routes as dispatches } from './dispatches.ts';
 import { routes as eventsStream } from './events-stream.ts';
 import { routes as health } from './health.ts';
 import { routes as ingest } from './ingest.ts';
+import { routes as investigationOpeners } from './investigation-openers.ts';
 import { routes as me } from './me.ts';
 import { routes as officer } from './officer.ts';
 import { routes as status } from './status.ts';
 import { routes as timeline } from './timeline.ts';
+import { routes as telegramDmReplies } from './telegram-dm-replies.ts';
+import { routes as telegramErase } from './telegram-erase.ts';
 import { routes as watchlist } from './watchlist.ts';
 
 export type RouteAuth = 'officer' | 'connector' | 'any' | 'none';
@@ -40,12 +45,22 @@ const route = (method: HttpMethod, path: string, auth: RouteAuth, extension = fa
 });
 
 export const ROUTES: readonly RouteSpec[] = [
+  route('POST', '/v1/auth/login', 'none', true),
+  route('POST', '/v1/auth/logout', 'officer', true),
   route('POST', '/v1/chats', 'officer'),
   route('GET', '/v1/chats', 'officer'),
   route('POST', '/v1/ingest', 'connector'),
   route('POST', '/v1/chats/{chatId}/events', 'connector'),
   route('POST', '/v1/dispatches', 'officer'),
+  route('POST', '/v1/dispatches/by-phone', 'officer', true),
+  route('POST', '/v1/investigation-opener', 'officer', true),
   route('POST', '/v1/chats/{chatId}/control', 'officer'),
+  route('GET', '/v1/chats/{chatId}/erase-preview', 'officer', true),
+  route('POST', '/v1/chats/{chatId}/erase', 'officer', true),
+  route('GET', '/v1/inbox/erase-preview', 'officer', true),
+  route('POST', '/v1/inbox/erase', 'officer', true),
+  route('POST', '/v1/chats/{chatId}/erase-telegram', 'officer', true),
+  route('POST', '/v1/inbox/erase-telegram', 'officer', true),
   route('POST', '/v1/chats/{chatId}/officer-messages', 'officer'),
   route('POST', '/v1/chats/{chatId}/officer-decisions', 'officer'),
   route('GET', '/v1/chats/{chatId}/timeline', 'officer'),
@@ -57,14 +72,19 @@ export const ROUTES: readonly RouteSpec[] = [
   route('POST', '/v1/captures/{captureId}/retry', 'officer', true),
   route('GET', '/v1/me', 'any', true),
   route('GET', '/v1/status', 'officer', true),
+  route('GET', '/v1/telegram/dm-replies', 'officer', true),
+  route('POST', '/v1/telegram/dm-replies', 'officer', true),
+  route('GET', '/v1/telegram/consent-prompt', 'officer', true),
+  route('POST', '/v1/telegram/consent-prompt', 'officer', true),
+  route('POST', '/v1/telegram/reply-prompt/reload', 'officer', true),
   route('GET', '/healthz', 'none', true),
   route('GET', '/', 'none'),
   route('GET', '/assets/*', 'none'),
 ];
 
 const MODULES: RouteModule[] = [
-  chats, ingest, chatEvents, dispatches, timeline, artifacts, captures, control,
-  officer, eventsStream, watchlist, caseReferences, status, health, me, dashboardStatic,
+  chats, ingest, chatEvents, dispatches, timeline, artifacts, captures, control, erasure, telegramErase,
+  officer, eventsStream, watchlist, caseReferences, status, health, me, dashboardStatic, telegramDmReplies, investigationOpeners,
 ];
 
 const GUARDS: Record<RouteAuth, MiddlewareHandler<AppEnv> | null> = {
@@ -83,7 +103,7 @@ export const routeKey = (spec: RouteSpec): RouteKey => `${spec.method} ${spec.pa
 
 function collectHandlers(): Map<RouteKey, RouteHandler> {
   const handlers = new Map<RouteKey, RouteHandler>();
-  for (const module of MODULES) {
+  for (const module of [...MODULES, createAuthRoutes()]) {
     for (const [key, handler] of Object.entries(module) as [RouteKey, RouteHandler | undefined][]) {
       if (!handler) continue;
       if (handlers.has(key)) throw new Error(`duplicate_route_handler: ${key}`);

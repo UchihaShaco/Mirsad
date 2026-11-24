@@ -105,7 +105,11 @@ describe('dashboard static files', () => {
     for (const file of scripts) {
       const source = fs.readFileSync(file, 'utf8');
       expect(source, file).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function\(/);
-      expect(source, file).not.toMatch(/https?:\/\//);
+      // The officer can explicitly open a composed first message in Telegram. No remote assets are loaded.
+      const withoutHandoff = path.relative(DASHBOARD_DIR, file).split(path.sep).join('/') === 'js/views/phone-dispatch.js'
+        ? source.replace("new URL('https://t.me/' + recipient)", '')
+        : source;
+      expect(withoutHandoff, file).not.toMatch(/https?:\/\//);
     }
     const page = fs.readFileSync(path.join(DASHBOARD_DIR, 'index.html'), 'utf8');
     expect(page).not.toMatch(/<script(?![^>]*\ssrc=)[^>]*>/);

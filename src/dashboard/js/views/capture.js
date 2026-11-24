@@ -46,15 +46,15 @@ export function createCaptureCache(api) {
  * error), and the timeline is not redrawn then. Retry loading removes its own button; Retry capture goes through the
  * actions, which ignore a click while another action runs.
  */
-function retryButton(label, onClick) {
-  const button = h('button', { type: 'button', text: label });
+function retryButton(label, focusKey, onClick) {
+  const button = h('button', { type: 'button', text: label, dataset: { focusKey } });
   button.addEventListener('click', onClick);
   return button;
 }
 
 function showImage(figure, artifactId, subject, ctx) {
   const image = h('img', { className: 'capture-image', alt: `${CAPTURE_LABEL} of ${subject}` });
-  const enlarge = h('button', { type: 'button', className: 'capture-thumb', 'aria-label': `Enlarge the ${CAPTURE_LABEL} of ${subject}` }, [image]);
+  const enlarge = h('button', { type: 'button', className: 'capture-thumb', 'aria-label': `Enlarge the ${CAPTURE_LABEL} of ${subject}`, dataset: { focusKey: `enlarge:${artifactId}` } }, [image]);
   const status = h('p', { className: 'hint', text: 'Loading the capture.' });
   append(figure, [enlarge, h('figcaption', { text: CAPTURE_LABEL }), status]);
   enlarge.addEventListener('click', () => {
@@ -63,7 +63,7 @@ function showImage(figure, artifactId, subject, ctx) {
   const failed = (text) => {
     figure.dataset.state = 'error';
     status.textContent = `Could not load the capture: ${text}`;
-    status.after(retryButton('Retry loading', (event) => {
+    status.after(retryButton('Retry loading', `reload:${artifactId}`, (event) => {
       event.currentTarget.remove();
       attempt();
     }));
@@ -95,7 +95,7 @@ export function renderCapture(capture, subject, ctx) {
     return append(figure, [
       h('figcaption', { text: CAPTURE_LABEL }),
       h('p', { className: 'error', text: `Capture failed (${reason}). The message itself is stored.` }),
-      capture.retryable ? retryButton('Retry capture', () => ctx.handlers.onRetryCapture(capture.id)) : null,
+      capture.retryable ? retryButton('Retry capture', `retry:${capture.id}`, () => ctx.handlers.onRetryCapture(capture.id)) : null,
     ]);
   }
   return append(figure, [

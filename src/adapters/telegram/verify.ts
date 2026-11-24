@@ -5,6 +5,7 @@
  */
 import type { Config } from '../../config.ts';
 import { BotApiError, type BotApi, type BotUser, type BusinessConnection, type WebhookInfo } from './bot-api.ts';
+import { approvedReplyChatIds, isTelegramChatId } from './chat-scope.ts';
 import { telegramUpdateSchema } from './fixture-schema.ts';
 
 export type VerificationCheckId =
@@ -15,7 +16,16 @@ export type VerificationCheckId =
   | 'connection_owner_provisioned'
   | 'connection_rights_none'
   | 'approved_chats_configured'
-  | 'approval_reference_configured';
+  | 'approval_reference_configured'
+  | 'ai_replies_can_reply'
+  | 'ai_reply_consent_configured'
+  | 'ai_reply_chats_configured';
+
+/** The right required to send a reply on the business connection (design section 20). */
+const REPLY_RIGHT = 'can_reply';
+const ACCEPTED_REPLY_RIGHTS = new Set([REPLY_RIGHT, 'can_read_messages']);
+/** Only locally recognized flags appear by name in verification and discovery output. */
+const REPORTABLE_RIGHTS = new Set([...ACCEPTED_REPLY_RIGHTS, 'can_delete_all_messages']);
 
 export interface VerificationCheck {
   id: VerificationCheckId;
@@ -34,8 +44,8 @@ export interface ConnectionSummary {
 export interface VerificationReport {
   /** True only when every check passed. */
   ready: boolean;
-  bot: { id: number; username: string | null; canConnectToBusiness: boolean } | null;
-  webhook: { set: boolean; pendingUpdateCount: number; allowedUpdates: string[]; lastErrorAt: string | null; lastErrorMessage: string | null } | null;
+  bot: { id: number; canConnectToBusiness: boolean } | null;
+  webhook: { set: boolean; pendingUpdateCount: number; allowedUpdateCount: number; lastErrorAt: string | null } | null;
   connection: ConnectionSummary | null;
   checks: VerificationCheck[];
 }
@@ -68,8 +78,7 @@ const check = (id: VerificationCheckId, passed: boolean, detail: string): Verifi
 
 function describeError(error: BotApiError): string {
   const status = error.status === null ? '' : ` ${error.status}`;
-  const description = error.description === null ? '' : `: ${error.description}`;
-  return `${error.method} ${error.code}${status}${description}`;
+  return `${error.method} ${error.code}${status}`;
 }
 
 async function attempt<T>(call: () => Promise<T>): Promise<Attempt<T>> {
@@ -82,10 +91,11 @@ async function attempt<T>(call: () => Promise<T>): Promise<Attempt<T>> {
 }
 
 function grantedRights(connection: BusinessConnection): string[] {
-  return Object.entries(connection.rights ?? {})
-    .filter(([, granted]) => granted)
-    .map(([right]) => right)
-    .sort();
+  const flags = new Set<string>();
+  for (const [right, granted] of Object.entries(connection.rights ?? {})) {
+    if (granted) flags.add(REPORTABLE_RIGHTS.has(right) ? right : 'unrecognized_right');
+  }
+  return [...flags].sort();
 }
 
 function summarize(connection: BusinessConnection): ConnectionSummary {
@@ -95,7 +105,7 @@ function summarize(connection: BusinessConnection): ConnectionSummary {
 function botChecks(bot: BotUser): VerificationCheck[] {
   const business = bot.can_connect_to_business === true;
   return [
-    check('token_accepted', true, `bot ${bot.id}${bot.username ? ` (@${bot.username})` : ''}`),
+    check('token_accepted', true, `bot ${bot.id}`),
     check('bot_can_connect_to_business', business, business ? 'business mode is on' : 'business mode is off: turn it on for the bot in BotFather'),
   ];
 }
@@ -116,7 +126,24 @@ function ownerCheck(owner: string, provisioned: string | null): VerificationChec
     : check('connection_owner_provisioned', false, `owner user ${owner} is not the provisioned live channel account ${provisioned}`);
 }
 
-function connectionChecks(connection: Attempt<BusinessConnection> | null, provisioned: string | null): VerificationCheck[] {
+/** Intake alone accepts no grants. Reply mode requires can_reply and permits the account's optional read grant. */
+function rightsChecks(rights: readonly string[], aiReplies: boolean): VerificationCheck[] {
+  const extra = aiReplies ? rights.filter((right) => !ACCEPTED_REPLY_RIGHTS.has(right)) : rights;
+  const allowedDetail = rights.length === 0 ? 'no rights granted' : `allowed rights granted: ${rights.join(', ')}`;
+  const checks = [check('connection_rights_none', extra.length === 0, extra.length ? `rights granted: ${extra.join(', ')}` : allowedDetail)];
+  if (!aiReplies) return checks;
+  const canReply = rights.includes(REPLY_RIGHT);
+  return [
+    ...checks,
+    check(
+      'ai_replies_can_reply',
+      canReply,
+      canReply ? 'the reply right is granted' : "the reply right is not granted: tick Reply to Messages in the bot's Chat Automation settings",
+    ),
+  ];
+}
+
+function connectionChecks(connection: Attempt<BusinessConnection> | null, provisioned: string | null, aiReplies: boolean): VerificationCheck[] {
   const unread = connection === null ? 'TELEGRAM_APPROVED_CONNECTION_ID is not set' : connection.ok ? null : connection.detail;
   if (unread !== null || connection === null || !connection.ok) {
     const skipped = 'not checked: the approved connection could not be read';
@@ -124,25 +151,57 @@ function connectionChecks(connection: Attempt<BusinessConnection> | null, provis
       check('connection_enabled', false, unread ?? skipped),
       check('connection_owner_provisioned', false, skipped),
       check('connection_rights_none', false, skipped),
+      ...(aiReplies ? [check('ai_replies_can_reply', false, skipped)] : []),
     ];
   }
-  const rights = grantedRights(connection.value);
   const enabled = connection.value.is_enabled;
   return [
     check('connection_enabled', enabled, enabled ? 'the approved connection is enabled' : 'the approved connection is disabled'),
     ownerCheck(String(connection.value.user.id), provisioned),
-    check('connection_rights_none', rights.length === 0, rights.length === 0 ? 'no rights granted (read-only intake)' : `rights granted: ${rights.join(', ')}`),
+    ...rightsChecks(grantedRights(connection.value), aiReplies),
   ];
 }
 
-function configChecks(telegram: Config['telegram']): VerificationCheck[] {
+/** The approved list, or the all-private scope with its owner-decision reference; excluded chat IDs must be valid. */
+function chatsCheck(telegram: Config['telegram']): VerificationCheck {
+  const excludedValid = telegram.excludedChatIds.every(isTelegramChatId);
+  if (!excludedValid) return check('approved_chats_configured', false, 'TELEGRAM_EXCLUDED_CHAT_IDS holds a value that is not a chat ID');
+  const excluded = telegram.excludedChatIds.length > 0 ? `, ${telegram.excludedChatIds.length} excluded` : '';
+  if (telegram.chatScope === 'all_private') {
+    const decided = telegram.allChatsReference !== null;
+    const detail = decided ? `all private chats (TELEGRAM_CHAT_SCOPE=all_private)${excluded}` : 'TELEGRAM_ALL_CHATS_REFERENCE is not set';
+    return check('approved_chats_configured', decided, detail);
+  }
   const chats = telegram.approvedChatIds.length;
-  return [
-    check('approved_chats_configured', chats > 0, chats > 0 ? `${chats} approved chat IDs` : 'TELEGRAM_APPROVED_CHAT_IDS is not set'),
+  if (!telegram.approvedChatIds.every(isTelegramChatId)) {
+    return check('approved_chats_configured', false, 'TELEGRAM_APPROVED_CHAT_IDS holds a value that is not a chat ID');
+  }
+  return check('approved_chats_configured', chats > 0, chats > 0 ? `${chats} approved chat IDs${excluded}` : 'TELEGRAM_APPROVED_CHAT_IDS is not set');
+}
+
+function configChecks(telegram: Config['telegram'], ownerId?: string | null): VerificationCheck[] {
+  const checks = [
+    chatsCheck(telegram),
     check(
       'approval_reference_configured',
       telegram.approvalReference !== null,
       telegram.approvalReference !== null ? 'an approval reference is set' : 'TELEGRAM_APPROVAL_REFERENCE is not set',
+    ),
+  ];
+  if (!telegram.aiReplies.enabled) return checks;
+  const consent = telegram.aiReplies.consentReference !== null;
+  const replyChats = approvedReplyChatIds(telegram).filter((id) => id !== ownerId);
+  const portalEnrollment = telegram.chatScope === 'all_private' && !!telegram.allChatsReference && !telegram.approvedChatIds.length;
+  return [
+    ...checks,
+    check('ai_reply_chats_configured', replyChats.length > 0 || portalEnrollment, replyChats.length
+      ? `${replyChats.length} explicitly approved reply chat(s)`
+      : portalEnrollment ? 'No pre-approved contacts. Use the portal switch to invite eligible private chats to opt in.'
+      : 'TELEGRAM_APPROVED_CHAT_IDS must include an eligible private chat for automated replies'),
+    check(
+      'ai_reply_consent_configured',
+      consent,
+      consent ? 'a consent reference for automated replies is set' : 'TELEGRAM_AI_REPLY_CONSENT_REFERENCE is not set',
     ),
   ];
 }
@@ -153,10 +212,12 @@ function finish(parts: Omit<VerificationReport, 'ready'>): VerificationReport {
 
 export async function verifyConnection(api: BotApi, config: Pick<Config, 'telegram'>, options: VerifyOptions = {}): Promise<VerificationReport> {
   const { telegram } = config;
+  const aiReplies = telegram.aiReplies.enabled;
   const bot = await attempt(() => api.getMe());
   if (!bot.ok) {
-    const skipped = NEEDS_TOKEN.map((id) => check(id, false, 'not checked: the token was not accepted'));
-    return finish({ bot: null, webhook: null, connection: null, checks: [check('token_accepted', false, bot.detail), ...skipped, ...configChecks(telegram)] });
+    const needed: VerificationCheckId[] = aiReplies ? [...NEEDS_TOKEN, 'ai_replies_can_reply'] : NEEDS_TOKEN;
+    const skipped = needed.map((id) => check(id, false, 'not checked: the token was not accepted'));
+    return finish({ bot: null, webhook: null, connection: null, checks: [check('token_accepted', false, bot.detail), ...skipped, ...configChecks(telegram, options.provisionedOwnerUserId)] });
   }
   const webhook = await attempt(() => api.getWebhookInfo());
   const connectionId = telegram.approvedConnectionId;
@@ -164,16 +225,20 @@ export async function verifyConnection(api: BotApi, config: Pick<Config, 'telegr
   const info = webhook.ok ? webhook.value : null;
   const linked = connection?.ok ? connection.value : null;
   return finish({
-    bot: { id: bot.value.id, username: bot.value.username ?? null, canConnectToBusiness: bot.value.can_connect_to_business === true },
+    bot: { id: bot.value.id, canConnectToBusiness: bot.value.can_connect_to_business === true },
     webhook: info && {
       set: info.url !== '',
       pendingUpdateCount: info.pending_update_count,
-      allowedUpdates: info.allowed_updates ?? [],
+      allowedUpdateCount: info.allowed_updates?.length ?? 0,
       lastErrorAt: info.last_error_date === undefined ? null : new Date(info.last_error_date * MS_PER_SECOND).toISOString(),
-      lastErrorMessage: info.last_error_message ?? null,
     },
     connection: linked && summarize(linked),
-    checks: [...botChecks(bot.value), webhookCheck(webhook), ...connectionChecks(connection, options.provisionedOwnerUserId ?? null), ...configChecks(telegram)],
+    checks: [
+      ...botChecks(bot.value),
+      webhookCheck(webhook),
+      ...connectionChecks(connection, options.provisionedOwnerUserId ?? null, aiReplies),
+      ...configChecks(telegram, options.provisionedOwnerUserId),
+    ],
   });
 }
 

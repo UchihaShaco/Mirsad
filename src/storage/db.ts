@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 10;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -43,6 +43,8 @@ export interface Tx {
 
 export interface Db {
   transaction<T>(fn: (tx: Tx) => T): T;
+  /** After committed erasures, truncate the WAL when current readers permit it. */
+  checkpointAfterErasure?(): boolean;
   close(): void;
 }
 
@@ -55,6 +57,8 @@ export interface OpenDatabaseOptions {
 }
 
 const SCHEMA_SQL = fs.readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
+const EVIDENCE_SOURCES_SQL = fs.readFileSync(new URL('./telegram-evidence-sources.sql', import.meta.url), 'utf8');
+const OFFICER_PASSWORDS_SQL = fs.readFileSync(new URL('./officer-passwords.sql', import.meta.url), 'utf8');
 
 type Bindable = string | number | bigint | null | Uint8Array;
 
@@ -77,12 +81,76 @@ function plain<T>(row: unknown): T {
 }
 
 function migrate(db: DatabaseSync): void {
-  const current = (db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version;
-  if (current >= SCHEMA_VERSION) return;
+  const version = db.prepare('PRAGMA user_version');
+  if (Number(version.get()?.user_version) >= SCHEMA_VERSION) return;
   db.exec('BEGIN IMMEDIATE');
   try {
-    db.exec(SCHEMA_SQL);
-    db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+    const current = Number(version.get()?.user_version);
+    if (current === 0) db.exec(SCHEMA_SQL);
+    if (current < 2) db.exec(EVIDENCE_SOURCES_SQL);
+    if (current < 3) db.exec(OFFICER_PASSWORDS_SQL);
+    if (current < 4) db.exec(`
+      CREATE INDEX IF NOT EXISTS messages_chat_position ON messages(chat_id, position);
+      CREATE INDEX IF NOT EXISTS message_edits_by_source ON message_events(message_id, position)
+        WHERE type='edited' AND text IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS chat_source_changes ON message_events(chat_id, position)
+        WHERE type IN ('edited','deleted','conflicting_copy');
+    `);
+    if (current < 5) db.exec(`
+      ALTER TABLE officer_passwords ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0
+        CHECK(must_change_password IN (0, 1));
+    `);
+    if (current < 6) db.exec(`
+      CREATE TABLE dispatch_briefs (
+        chat_id TEXT PRIMARY KEY REFERENCES chats(id) ON DELETE CASCADE,
+        context TEXT NOT NULL,
+        recorded_by TEXT NOT NULL REFERENCES principals(id),
+        updated_at TEXT NOT NULL
+      );
+    `);
+    if (current < 7) db.exec(`
+      CREATE TABLE telegram_dispatch_contacts (
+        chat_id TEXT PRIMARY KEY REFERENCES chats(id) ON DELETE CASCADE,
+        connector_id TEXT NOT NULL REFERENCES principals(id),
+        telegram_message_id INTEGER NOT NULL,
+        verified_message_id TEXT REFERENCES messages(id) ON DELETE SET NULL
+      );
+    `);
+    if (current < 8) db.exec(`
+      CREATE TABLE chat_erasure_fences (
+        chat_id TEXT PRIMARY KEY REFERENCES chats(id),
+        cutoff_second INTEGER NOT NULL, telegram_id INTEGER NOT NULL, hidden INTEGER NOT NULL CHECK(hidden IN (0,1))
+      );
+      CREATE TABLE erased_source_keys (
+        chat_id TEXT NOT NULL REFERENCES chats(id), digest TEXT NOT NULL, PRIMARY KEY(chat_id,digest)
+      );
+      CREATE TABLE erased_evidence_files (
+        storage_key TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id)
+      );
+      CREATE TABLE telegram_pending_sends (
+        chat_id TEXT PRIMARY KEY REFERENCES chats(id), trigger_id TEXT NOT NULL, expires_at TEXT NOT NULL
+      );
+    `);
+    if (current < 9) db.exec(`
+      CREATE TABLE telegram_message_proofs (
+        message_id TEXT PRIMARY KEY REFERENCES messages(id) ON DELETE CASCADE,
+        connector_id TEXT NOT NULL REFERENCES principals(id), connection_hash TEXT NOT NULL,
+        chat_number INTEGER NOT NULL, message_number INTEGER NOT NULL, sent_second INTEGER NOT NULL,
+        own_send INTEGER NOT NULL, content_kind TEXT NOT NULL,
+        removal TEXT CHECK(removal IN ('uncertain','removed','failed'))
+      );
+    `);
+    if (current < 10) db.exec(`
+      CREATE TABLE telegram_dispatch_permissions (
+        chat_id TEXT PRIMARY KEY REFERENCES chats(id), connector_id TEXT NOT NULL REFERENCES principals(id),
+        policy_key TEXT NOT NULL, cutoff_position INTEGER NOT NULL, cutoff_second INTEGER NOT NULL,
+        cutoff_telegram_id INTEGER NOT NULL, trigger_id TEXT REFERENCES messages(id) ON DELETE SET NULL,
+        catchup_id TEXT REFERENCES messages(id) ON DELETE SET NULL, catchup_until INTEGER,
+        suspended INTEGER NOT NULL DEFAULT 0 CHECK (suspended IN (0,1))
+      );
+      CREATE INDEX message_events_message_type_connector ON message_events(message_id,type,connector_id);
+    `);
+    if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {
     if (db.isTransaction) db.exec('ROLLBACK');
@@ -233,12 +301,13 @@ function createTransactionRunner(db: DatabaseSync, tx: Tx, queue: CommitQueue, l
 export function openDatabase(file: string, options: OpenDatabaseOptions = {}): Db {
   const db = new DatabaseSync(file, { timeout: BUSY_TIMEOUT_MS, enableForeignKeyConstraints: true });
   // FULL: a commit returns only once it is on disk, so evidence acknowledged with 201 survives a power cut (design 19.2).
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON;');
+  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON; PRAGMA secure_delete = ON;');
   migrate(db);
   const queue = new CommitQueue();
   const tx = createTx(db, options, queue);
   return {
     transaction: createTransactionRunner(db, tx, queue, options.logger ?? createJsonLogger({ clock: options.clock })),
+    checkpointAfterErasure: () => db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get()?.busy === 0,
     close: () => {
       if (db.isOpen) db.close();
     },

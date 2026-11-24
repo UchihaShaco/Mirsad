@@ -20,8 +20,9 @@ const JSON_TYPE = 'application/json';
 
 /** Component schemas that describe request bodies; everything else describes a response. */
 const REQUEST_SCHEMAS = [
-  'IngestRequest', 'IntakeEvent', 'RegisterChatRequest', 'DispatchRequest', 'ControlRequest',
-  'OfficerMessageRequest', 'OfficerDecisionRequest', 'CaseReferenceRequest', 'WatchlistReviewRequest',
+  'EraseRequest',
+  'IngestRequest', 'IntakeEvent', 'RegisterChatRequest', 'DispatchRequest', 'DispatchByPhoneRequest', 'ControlRequest', 'DmRepliesRequest',
+  'OfficerMessageRequest', 'OfficerDecisionRequest', 'CaseReferenceRequest', 'WatchlistReviewRequest', 'OfficerLoginRequest',
 ] as const;
 /** Small enums that both sides share; emitted once, from the output side. */
 const SHARED_SCHEMAS = ['Source', 'Direction'] as const;

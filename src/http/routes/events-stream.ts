@@ -9,6 +9,7 @@ import { streamSSE, type SSEStreamingApi } from 'hono/streaming';
 import { z } from 'zod';
 import type { AppDeps } from '../../app.ts';
 import type { StreamWireMessage } from '../../contract/stream-events.ts';
+import { parseBearer } from '../../identity/tokens.ts';
 import type { Principal } from '../../ports/identity.ts';
 import { currentCursor } from '../../services/chats.ts';
 import { readStreamBatch, type StreamBatch } from '../../services/stream-subscribe.ts';
@@ -22,7 +23,7 @@ const KEEP_ALIVE_COMMENT = ': keep-alive\n\n';
 const StreamPosition = z.string().regex(/^\d{1,15}$/).transform(Number);
 const StartParams = z.object({ lastEventId: StreamPosition.optional(), cursor: StreamPosition.optional() });
 
-type CloseReason = 'disconnected' | 'principal_disabled' | 'failed';
+type CloseReason = 'disconnected' | 'principal_disabled' | 'session_ended' | 'failed';
 
 interface SseFrame {
   id: string;
@@ -66,7 +67,7 @@ async function writeBatch(stream: SSEStreamingApi, batch: StreamBatch, deps: App
  * Runs one subscription until the client disconnects, the server closes or the principal is disabled. It never
  * throws: Hono prints an error that escapes a stream callback to the console.
  */
-async function subscribe(stream: SSEStreamingApi, deps: AppDeps, principal: Principal, start: number): Promise<void> {
+async function subscribe(stream: SSEStreamingApi, deps: AppDeps, principal: Principal, start: number, sessionHeader?: string): Promise<void> {
   const aborted = new AbortController();
   stream.onAbort(() => aborted.abort());
   if (stream.aborted) aborted.abort();
@@ -77,6 +78,10 @@ async function subscribe(stream: SSEStreamingApi, deps: AppDeps, principal: Prin
   let reason: CloseReason = 'disconnected';
   try {
     while (!aborted.signal.aborted) {
+      if (sessionHeader && deps.identity.authenticate(sessionHeader)?.id !== principal.id) {
+        reason = 'session_ended';
+        break;
+      }
       const batch = deps.db.transaction((tx) => readStreamBatch(tx, principal, position, STREAM_BATCH_LIMIT));
       if (batch.disabled) {
         reason = 'principal_disabled';
@@ -107,6 +112,8 @@ export const routes: RouteModule = {
   'GET /v1/events': (c, deps) => {
     const principal = principalOf(c);
     const start = startPosition(c, deps, principal);
-    return streamSSE(c, (stream) => subscribe(stream, deps, principal, start));
+    const header = c.req.header('authorization');
+    const sessionHeader = parseBearer(header)?.startsWith('session_') ? header : undefined;
+    return streamSSE(c, (stream) => subscribe(stream, deps, principal, start, sessionHeader));
   },
 };

@@ -77,6 +77,21 @@ function recordingLogger(): { logger: Logger; lines: LogLine[] } {
 }
 
 describe('local evidence store', () => {
+  it('removes only the requested capture and interrupted writes for that key and tolerates retries', async () => {
+    const store = createLocalEvidenceStore(dir);
+    const key = 'captures/ws_1/chat_1/cap_1.png';
+    const neighbor = 'captures/ws_1/chat_1/cap_10.png';
+    await store.put(key, new Uint8Array([1]));
+    await store.put(neighbor, new Uint8Array([2]));
+    const temp = path.join(dir, key + '.10b0ff12-38f2-48f0-b168-f202fec1c25a.tmp');
+    fs.writeFileSync(temp, 'interrupted');
+    await store.remove(key);
+    await store.remove(key);
+    expect(fs.existsSync(temp)).toBe(false);
+    await expect(store.get(key)).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(await store.get(neighbor)).toEqual(new Uint8Array([2]));
+    await expect(store.remove('../outside')).rejects.toThrow('invalid_evidence_key');
+  });
   it('writes bytes under the evidence directory and reads them back with checksum and size', async () => {
     const store = createLocalEvidenceStore(dir);
     const bytes = new Uint8Array([137, 80, 78, 71, 1, 2, 3]);

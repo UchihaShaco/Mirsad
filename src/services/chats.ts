@@ -10,8 +10,10 @@ import { findChatByExternalId, insertChat, listChatRows } from '../storage/repos
 import { countMessages } from '../storage/repos/messages.ts';
 import { findChannelAccount, findChannelAccountById, findPrincipalById, grantedAccountIds, hasGrant } from '../storage/repos/principals.ts';
 import { reviewStatusCounts } from '../storage/repos/reviews.ts';
+import { readLowerConcern, readPreviousLowerConcern } from './lower-concern.ts';
 import type { ChannelAccountRow, ChatRow } from '../storage/rows.ts';
 import { appendStreamEvent } from './stream.ts';
+import { getTelegramReplyHold } from './telegram-reply-holds.ts';
 import * as watchlist from './watchlist.ts';
 
 /** The workspace's latest stream sequence as an opaque decimal string (design section 6). */
@@ -53,7 +55,10 @@ function toSummary(tx: Tx, chat: ChatRow, account: ChannelAccountRow, matches: C
     intakeAccount: account.is_intake === 1,
     acknowledgementTemplate: account.is_intake === 1 ? LABELS.acknowledgementTemplate : null,
     review: reviewSummary(tx, chat.id),
+    telegramReplyHold: getTelegramReplyHold(tx, chat.id),
     watchlistMatches: matches,
+    lowerConcern: readLowerConcern(tx, chat.id),
+    previousLowerConcern: readPreviousLowerConcern(tx, chat.id),
     messageCount: countMessages(tx, chat.id),
     lastActivityAt: chat.updated_at,
     createdAt: chat.created_at,
