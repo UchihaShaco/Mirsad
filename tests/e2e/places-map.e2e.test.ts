@@ -12,7 +12,11 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright-core';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import path from 'node:path';
 import { loadPlaces } from '../../src/places/store.ts';
+import { importWebsiteChecks } from '../../src/places/website-checks.ts';
+import { DATABASE_FILE, openDatabase } from '../../src/storage/db.ts';
+import { readWebsiteChecks } from '../../scripts/import-website-checks.ts';
 import { startHarness, type TestHarness } from '../helpers/harness.ts';
 
 const TINY_PNG = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
@@ -40,7 +44,14 @@ async function launchInstalledBrowser(): Promise<Browser | null> {
       failures.push(`${channel}: ${firstLine(error)}`);
     }
   }
-  skipReason = `Skipped: neither Microsoft Edge nor Google Chrome could be launched by playwright-core (${failures.join('; ')}).`;
+  // Last, a Chromium that Playwright installed under ~/.cache/ms-playwright (for example for Python) at the revision
+  // this playwright-core expects: a Linux machine often has that and neither Edge nor Chrome.
+  try {
+    return await chromium.launch({ headless: true });
+  } catch (error) {
+    failures.push(`playwright chromium: ${firstLine(error)}`);
+  }
+  skipReason = `Skipped: neither Microsoft Edge, Google Chrome nor Playwright's Chromium could be launched by playwright-core (${failures.join('; ')}).`;
   return null;
 }
 
@@ -52,7 +63,16 @@ beforeAll(async () => {
   });
   await new Promise<void>((done) => upstream.listen(0, '127.0.0.1', done));
   upstreamPort = (upstream.address() as AddressInfo).port;
-  h = await startHarness({ places: loadPlaces(sample), mapTileUpstream: `http://127.0.0.1:${upstreamPort}` });
+  const places = loadPlaces(sample);
+  h = await startHarness({ places, mapTileUpstream: `http://127.0.0.1:${upstreamPort}` });
+  // The synthetic website checks report, imported the way the operator command does it.
+  const db = openDatabase(path.join(h.dataDir, DATABASE_FILE));
+  try {
+    const { report, sha256 } = readWebsiteChecks(fileURLToPath(new URL('../../fixtures/places/website-checks-sample.json', import.meta.url)));
+    importWebsiteChecks(db, report, new Set(places.map((place) => place.id)), { reportSha256: sha256 });
+  } finally {
+    db.close();
+  }
   browser = await launchInstalledBrowser();
 });
 
@@ -143,6 +163,37 @@ describe('places map', () => {
     await page.getByLabel('Search names').fill(name);
     await page.getByRole('button', { name: 'Search', exact: true }).click();
     await expect.poll(() => page.locator('.places-marker').count(), { timeout: UI_TIMEOUT_MS }).toBe(1);
+    expect(problems).toEqual([]);
+  });
+
+  it('shows flagged websites with a legend and filter, and explains a flag in the details without a live link', async (test) => {
+    if (!browser) test.skip(skipReason);
+    const { page, problems } = await openDashboard();
+    await openPlaces(page);
+    await expect.poll(() => page.locator('.places-marker.flag-harmful').count(), { timeout: UI_TIMEOUT_MS }).toBe(1);
+    expect(await page.locator('#places-legend').innerText()).toContain('Harmful website');
+    const filter = page.getByLabel('Flagged websites');
+    await expect.poll(() => filter.locator('option').allTextContents()).toContain('Flagged websites (3)');
+    expect(await filter.locator('option').allTextContents()).toContain('Low-confidence warning (1)');
+    await filter.selectOption('flagged');
+    await expect.poll(() => page.locator('.places-marker').count(), { timeout: UI_TIMEOUT_MS }).toBe(3);
+    expect(await page.locator('.places-marker[data-website-flag]').count()).toBe(3);
+
+    await page.locator('.places-marker.flag-harmful').click();
+    const body = page.locator('#places-details-body');
+    await body.getByText('Website check', { exact: true }).waitFor();
+    const panel = await body.innerText();
+    expect(panel).toContain('Harmful website');
+    expect(panel).toContain("This listing's website now leads to an online gambling site");
+    expect(panel).toContain('94 of 100 (Blocked)');
+    expect(panel).toContain('hxxps://win-big-casino[.]test/landing?ref=lapsed');
+    expect(panel).toContain('Redirects to an online gambling site');
+    expect(panel).toContain('يحوّل إلى موقع قمار على الإنترنت');
+    expect(panel).toContain('2026-11-24 09:01:12 UTC');
+    expect(panel).toContain('SS-0A1B2C3D');
+    // Neither the harmful destination nor the listing's own (taken-over) website is a link.
+    const hrefs = await body.locator('a[href]').evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+    expect(hrefs.filter((href) => !href.startsWith('https://www.google.com/maps') && !href.startsWith('tel:'))).toEqual([]);
     expect(problems).toEqual([]);
   });
 

@@ -264,14 +264,14 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
   },
   'GET /v1/places/search': {
     summary: 'Search the Abu Dhabi places directory',
-    description: 'Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), up to 200 per page with an opaque cursor.',
-    success: [{ status: 200, description: 'Matching places, the distinct categories of all matches, and the next page cursor.', schema: 'PlacesSearchResponse', paginated: true }],
+    description: 'Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), and with websiteFlag to listings whose website Mirsad\'s website shield flagged (flagged, harmful, parked or suspicious), up to 200 per page with an opaque cursor.',
+    success: [{ status: 200, description: 'Matching places, the distinct categories of all matches, the website flag of each place on the page, flagged listings per kind, and the next page cursor.', schema: 'PlacesSearchResponse', paginated: true }],
     errors: ['validation_failed'],
     placesSearchQuery: true,
   },
   'GET /v1/places/{placeId}': {
     summary: 'Read one place from the directory',
-    success: [{ status: 200, description: 'The place for the map details panel.', schema: 'PlacesDetailResponse' }],
+    success: [{ status: 200, description: 'The place for the map details panel, with its most serious imported website check or null.', schema: 'PlacesDetailResponse' }],
     errors: ['not_found'],
   },
   'GET /v1/map/tiles/{z}/{x}/{y}': {

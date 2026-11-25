@@ -55,3 +55,11 @@ export const WATCHLIST_STATUS_LABELS = {
   approved: LABELS.approved,
   cleared: LABELS.cleared,
 } as const;
+
+/** The Places map's names for a flagged listing website (WebsiteFlag); the dashboard legend and filter use these. */
+export const WEBSITE_FLAG_LABELS = {
+  harmful: 'Harmful website',
+  suspicious: 'Redirects elsewhere',
+  parked: 'Expired or parked',
+  unconfirmed: 'Low-confidence warning',
+} as const;

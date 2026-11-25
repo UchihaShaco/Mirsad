@@ -116,17 +116,27 @@ export function createApi(token, { onUnauthenticated }) {
     exportBlocklist: () => call('GET', '/v1/watchlist/blocklist').then(({ data }) => data.file),
     importCitizenReport: (report, demo) => post('/v1/citizen-reports', { report, ...(demo && { demo: true }) }),
     flagScammer: (chatId, phone, reason) => post(chatPath(chatId, '/scammer-flags'), { phone, reason }),
-    searchPlaces: async ({ q, category, bbox, limit, cursor }) => {
+    searchPlaces: async ({ q, category, websiteFlag, bbox, limit, cursor }) => {
       const params = new URLSearchParams();
       if (q) params.set('q', q);
       if (category) params.set('category', category);
+      if (websiteFlag) params.set('websiteFlag', websiteFlag);
       if (bbox) params.set('bbox', bbox);
       params.set('limit', String(limit));
       if (cursor) params.set('cursor', cursor);
       const { data, meta } = await call('GET', `/v1/places/search?${params}`);
-      return { places: data.places, nextCursor: data.nextCursor, categories: data.categories ?? [], total: meta === null ? data.places.length : meta.total };
+      return {
+        places: data.places, nextCursor: data.nextCursor, categories: data.categories ?? [],
+        websiteFlags: data.websiteFlags ?? {}, websiteFlagCounts: data.websiteFlagCounts ?? null,
+        total: meta === null ? data.places.length : meta.total,
+      };
     },
     getPlace: async (placeId) => (await call('GET', `/v1/places/${segment(placeId)}`)).data.place,
+    /** The place and its most serious imported website check (null when none), for the details panel. */
+    getPlaceDetail: async (placeId) => {
+      const { data } = await call('GET', `/v1/places/${segment(placeId)}`);
+      return { place: data.place, websiteCheck: data.websiteCheck ?? null };
+    },
     reviewWatchlistEntry: (entryId, decision, reason, expectedRevision) =>
       post(`/v1/watchlist/${segment(entryId)}/review`, { decision, reason, expectedRevision }),
     /** The capture PNG; the caller turns it into an object URL. */

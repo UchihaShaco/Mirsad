@@ -1143,6 +1143,34 @@ button.primary.danger:hover:not(:disabled) { border-color: var(--alert-ink); bac
 .places-marker:hover { transform: scale(1.15); }
 .places-marker.selected { background: var(--alert-solid); }
 .places-marker:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Flagged websites: shape and ring as well as colour, so a flag reads without colour vision and on both themes.
+   Harmful is a red diamond with a ring, redirecting elsewhere an amber square with a ring, expired or parked a hollow
+   dashed circle, a low-confidence warning the plain dot with a dotted ring. Flagged dots sit above the others. */
+.places-marker.flag-harmful, .places-marker.flag-suspicious { width: 20px; height: 20px; margin: -2px; z-index: 2; }
+.places-marker.flag-harmful, .places-swatch.flag-harmful { border-radius: 3px; transform: rotate(45deg); background: var(--alert-solid); box-shadow: 0 0 0 2px var(--alert-solid), 0 1px 4px rgba(0, 0, 0, 0.6); }
+.places-marker.flag-harmful:hover { transform: rotate(45deg) scale(1.15); }
+.places-marker.flag-suspicious, .places-swatch.flag-suspicious { border-radius: 3px; background: var(--attn-solid); box-shadow: 0 0 0 2px var(--attn-solid), 0 1px 4px rgba(0, 0, 0, 0.6); }
+.places-marker.flag-parked, .places-swatch.flag-parked { border: 3px dashed var(--attn-solid); background: var(--raised); z-index: 1; }
+.places-marker.flag-unconfirmed, .places-swatch.flag-unconfirmed { box-shadow: 0 0 0 2px var(--raised), 0 0 0 4px var(--ink-3); }
+.places-marker.flag-unconfirmed { box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px var(--ink-3); }
+.places-marker.selected[class*="flag-"] { outline: 3px solid var(--focus); outline-offset: 3px; }
+.places-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); }
+.places-legend-title { font-weight: 600; }
+.places-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.places-swatch { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ffffff; background: var(--you-solid); box-shadow: 0 0 0 1px var(--line-strong); }
+.places-swatch.flag-harmful, .places-swatch.flag-suspicious { width: 11px; height: 11px; margin: 2px; }
+.places-website-check { margin: 4px 0 8px; padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--sunken); }
+.places-website-check.flag-harmful { background: var(--alert-tint); border-color: var(--alert-line); border-inline-start: 4px solid var(--alert-solid); }
+.places-website-check.flag-suspicious { background: var(--attn-tint); border-color: var(--attn-line); border-inline-start: 4px solid var(--attn-solid); }
+.places-website-check.flag-parked { background: var(--attn-tint); border-color: var(--attn-line); border-inline-start: 4px dashed var(--attn-solid); }
+.places-website-check.flag-unconfirmed { border-inline-start: 4px dotted var(--ink-3); }
+.places-flag-label { margin: 0 0 4px; font-weight: 700; color: var(--ink); }
+.places-website-check.flag-harmful .places-flag-label { color: var(--alert-ink); }
+.places-website-check.flag-suspicious .places-flag-label, .places-website-check.flag-parked .places-flag-label { color: var(--attn-ink); }
+.places-finding { margin: 0 0 4px; color: var(--ink); }
+.places-finding-ar, .places-reason-ar { display: block; margin: 0 0 4px; color: var(--ink-2); font-size: 13px; }
+.places-reasons { margin: 2px 0 6px; padding-inline-start: 1.2rem; color: var(--ink); }
+.places-defanged { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; color: var(--ink); }
 .places-controls { position: absolute; top: 8px; inset-inline-start: 8px; display: flex; flex-direction: column; gap: 4px; }
 .places-zoom { width: 2rem; height: 2rem; font-size: 1.1rem; line-height: 1; }
 .places-attrib { position: absolute; bottom: 0; inset-inline: 0; padding: 2px 6px; font-size: 11px; color: var(--ink-2); background: var(--raised); border-top: 1px solid var(--line-soft); }
