@@ -271,6 +271,13 @@ export function createActions(ctx) {
     setState({ inboxFilter, selection, dispatchBrief: state.dispatchBrief?.chatId === eligibleId ? state.dispatchBrief : null });
   }
   return {
+    /** Whether a number or website from a case belongs to a business in the Places directory. */
+    onCheckPlaces: async (value) => {
+      const result = await ctx.api.searchPlaces({ q: value, limit: 5 });
+      if (result.total > 0) return { status: 'listed', places: result.places, total: result.total };
+      const directory = await ctx.api.searchPlaces({ q: '', limit: 1 });
+      return { status: directory.total === 0 ? 'no_directory' : 'not_listed', places: [], total: 0 };
+    },
     onInboxFilter: (filter) => {
       const state = getState();
       if (filter === state.inboxFilter || !INBOX_FILTERS.includes(filter)) return;

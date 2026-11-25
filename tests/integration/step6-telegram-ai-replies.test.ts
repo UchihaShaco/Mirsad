@@ -165,6 +165,10 @@ it('uses the Arabic model only for Arabic turns and records the model that answe
   }
 });
 
+// Every delivered message is its own durable (fsynced) transaction; these send 30 to 50 of them, which can outlast
+// the default budget when the whole suite shares the disk.
+const HIGH_VOLUME_TIMEOUT_MS = 60_000;
+
 it('keeps earlier job terms in bounded worker history after many short messages', async () => {
   const stand = standIns();
   const h = await Harness.start(LIVE_ENV, stand);
@@ -183,7 +187,7 @@ it('keeps earlier job terms in bounded worker history after many short messages'
   } finally {
     await h.stop();
   }
-});
+}, HIGH_VOLUME_TIMEOUT_MS);
 
 it('recovers the seller and latest correction across a restart, a language switch and 45 intervening messages', async () => {
   const first = standIns();
@@ -211,7 +215,7 @@ it('recovers the seller and latest correction across a restart, a language switc
     expect(call[0].some(m => m.text === offer)).toBe(false);
     expect(call[4]).toEqual({ offer, correction });
   } finally { await h.stop(); }
-});
+}, HIGH_VOLUME_TIMEOUT_MS);
 
 it('refreshes a distant offer after a source edit and discards an in-flight draft if that offer is deleted', async () => {
   const stand = standIns();
@@ -240,7 +244,7 @@ it('refreshes a distant offer after a source edit and discards an in-flight draf
     expect(calls.mock.calls.at(-1)?.[4]).toBeUndefined();
     expect(stand.sender.sent[1]?.reply.text).toBe('Okay.');
   } finally { stand.generator.releaseHeld(); await h.stop(); }
-});
+}, HIGH_VOLUME_TIMEOUT_MS);
 
 it('excludes bank evidence from offer memory and starts a fresh memory when the contact reopens', async () => {
   const stand = standIns();

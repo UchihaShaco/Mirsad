@@ -24,12 +24,19 @@ export function parseRoute(hash) {
   const parts = hash.replace(/^#\/?/, '').split('/').filter((part) => part !== '').map(decode);
   if (parts.some((part) => part === null)) return INBOX;
   if (parts[0] === 'watchlist') return { view: 'watchlist', chatId: null, messageId: null };
-  if (parts[0] === 'places') return { view: 'places', chatId: null, messageId: null };
+  if (parts[0] === 'places') {
+    return { view: 'places', chatId: null, messageId: null, ...(parts[1] === 'search' && parts[2] && { placesQuery: parts[2] }) };
+  }
   if (parts[0] !== 'chats' || !parts[1]) return INBOX;
   const messageId = parts[2] === 'messages' && parts[3] ? parts[3] : null;
   const chat = { view: 'inbox', chatId: parts[1], messageId };
   if (parts[2] === 'previous') return { ...chat, previous: true };
   return messageId && parts[4] === 'events' && parts[5] ? { ...chat, eventId: parts[5] } : chat;
+}
+
+/** The Places map opened on a phone number or website from a case. */
+export function placesHref(query) {
+  return `#/places/search/${encodeURIComponent(query)}`;
 }
 
 export function chatHref(chatId, messageId = null, eventId = null) {

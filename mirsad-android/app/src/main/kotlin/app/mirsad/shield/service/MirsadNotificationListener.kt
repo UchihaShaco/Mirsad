@@ -70,11 +70,8 @@ class MirsadNotificationListener : NotificationListenerService() {
         val channel = if (isSmsApp(pkg)) Channel.SMS else Channel.CHAT
         val isNumber = Senders.looksLikePhoneNumber(sender)
         // A name is treated as a saved contact. On SMS a single short token ("ADCB", "EmiratesNBD", "Aramex") is a
-        // carrier sender ID, whatever its case: a spoofed brand ID must not get the contact cap.
-        val smsSenderId = channel == Channel.SMS && sender.trim().let { s -> s.length in 2..11 && s.none { it.isWhitespace() } }
-        val looksLikeContact = !isNumber && sender.isNotBlank() &&
-            sender.any { it.isLetter() } && !smsSenderId &&
-            !(channel == Channel.SMS && Senders.looksLikeAlphanumericId(sender))
+        // carrier sender ID, whatever its case: a spoofed brand ID must not get the contact cap. Shared with the CLI.
+        val looksLikeContact = app.mirsad.core.engine.SenderHeuristics.looksLikeContact(sender, channel, isNumber)
         val hidden = content.text.isNullOrBlank()
         val event = Event(
             channel = channel,

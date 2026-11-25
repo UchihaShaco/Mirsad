@@ -522,6 +522,11 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .report-artifacts dd { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 0; }
 .report-artifacts bdi { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
 .report-provenance { margin: 0; overflow-wrap: anywhere; }
+/* Check in Places beside a number or website: the answer replaces the button in place. */
+.artifact-check { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.places-check { min-height: 24px; padding: 0 8px; font-size: 12px; color: var(--you); }
+.places-answer { color: var(--ink-2); font-size: 12.5px; }
+.places-listed { color: var(--ink); }
 .report-strip .control-mark { background: var(--sunken); color: var(--ink-2); }
 /* The signed phone blocklist: one plain action above the entries. */
 .blocklist-export { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 18px; margin: 14px 0 18px; padding: 14px 16px; border-radius: var(--radius-card); background: var(--raised); box-shadow: var(--shadow-soft); }
@@ -1154,8 +1159,9 @@ button.primary.danger:hover:not(:disabled) { border-color: var(--alert-ink); bac
 .places-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; }
 .places-chip { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--you-tint); color: var(--you-ink); border: 1px solid var(--you-line); font-size: 12.5px; font-weight: 600; }
 .places-call { font-weight: 600; }
-.places-map-link, .places-map-link:visited { display: inline-block; margin-top: 6px; padding: 8px 16px; background: var(--you-solid); color: var(--on-you); border-radius: var(--radius); text-decoration: none; font-weight: 600; }
-.places-map-link:hover { background: var(--you-solid-hover); color: var(--on-you); }
+/* Scoped to the panel so the panel's link colour cannot override the button's text. */
+.places-details .places-map-link, .places-details .places-map-link:visited { display: inline-block; margin-top: 6px; padding: 8px 16px; background: var(--you-solid); color: var(--on-you); border-radius: var(--radius); text-decoration: none; font-weight: 600; }
+.places-details .places-map-link:hover { background: var(--you-solid-hover); color: var(--on-you); }
 @media (max-width: 900px) {
   .places-layout { flex-direction: column; flex-wrap: nowrap; }
   .places-details { max-width: none; }

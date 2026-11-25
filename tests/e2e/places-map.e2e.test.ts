@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 /**
  * Places map end to end: the officer opens the Places map from the nav, sees
  * the directory on a panned map, clicks a dot for its phones and links, and
@@ -142,6 +143,31 @@ describe('places map', () => {
     await page.getByLabel('Search names').fill(name);
     await page.getByRole('button', { name: 'Search', exact: true }).click();
     await expect.poll(() => page.locator('.places-marker').count(), { timeout: UI_TIMEOUT_MS }).toBe(1);
+    expect(problems).toEqual([]);
+  });
+
+  it('checks a reported number and website in Places from a citizen report, and opens the match on the map', async (test) => {
+    if (!browser) test.skip(skipReason);
+    const report = JSON.parse(fs.readFileSync(new URL('../../contracts/fixtures/citizen-report.v1.json', import.meta.url), 'utf8'));
+    report.reportId = 'mrs-0b1aced00001';
+    report.artifacts.phones = ['+971 2 642 9176'];
+    const imported = await h.http(h.tokens.officerA).post('/v1/citizen-reports', { report });
+    expect(imported.status, imported.text).toBe(201);
+    const { page, problems } = await openDashboard();
+    await page.goto(`${h.baseUrl}/#/chats/${imported.body.data.chatId}`);
+    const details = page.locator('#timeline .report-details');
+    await details.waitFor();
+    // The call-back number in the scam belongs to a real shop: the scammer borrowed it.
+    await details.getByRole('button', { name: 'Check +971 2 642 9176 in Places' }).click();
+    await details.getByText('Listed in Places:', { exact: false }).waitFor();
+    expect(await details.locator('.places-listed').innerText()).toContain('Aesop (beauty supply store)');
+    // The scam's own domain is no business in the directory.
+    await details.getByRole('button', { name: 'Check adpolice-fines.example in Places' }).click();
+    await details.getByText('Not listed for any business in Places.', { exact: true }).waitFor();
+    await details.getByRole('link', { name: 'Show on map' }).click();
+    await page.getByRole('heading', { name: 'Places map', exact: true }).waitFor();
+    await expect.poll(() => page.getByLabel('Search names').inputValue()).toBe('+971 2 642 9176');
+    await page.locator('#places-details').getByText('Aesop', { exact: true }).first().waitFor();
     expect(problems).toEqual([]);
   });
 });

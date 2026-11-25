@@ -61,11 +61,52 @@ function decodeCursor(cursor: string | null | undefined): number {
   }
 }
 
-/** Matches name, category and description (case-insensitive substring). Address and phones are not searched. */
+/**
+ * The national significant number of a UAE-style number, else all its digits: +971 2 642 9176, 00971 2 642 9176 and
+ * 02 642 9176 all become 26429176. Lets an officer check a number however the evidence wrote it.
+ */
+export function nationalNumber(raw: string): string {
+  let digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (digits.startsWith('971')) digits = digits.slice(3);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return digits;
+}
+
+/** A website's host without www., from a URL or a bare domain; null when the text is not one. */
+export function hostOf(raw: string): string | null {
+  const text = raw.trim().toLowerCase();
+  if (text === '' || /\s/.test(text) || !text.includes('.')) return null;
+  try {
+    return new URL(text.includes('://') ? text : `https://${text}`).hostname.replace(/^www\./, '') || null;
+  } catch {
+    return null;
+  }
+}
+
+const PHONE_TEXT = /^[+\d\s().\/-]+$/;
+
+/**
+ * Matches name, category and description (case-insensitive substring). A query that is a phone number (7 or more
+ * digits) also matches a listed phone with the same national number, and a domain or URL matches a listed website on
+ * that host or under it, so an officer can ask "whose number, whose site is this?". Addresses are not searched.
+ */
 function matchesText(place: PlaceRecord, needle: string): boolean {
   if (needle === '') return true;
   const hay = `${place.name} ${place.category} ${place.description}`.toLowerCase();
-  return hay.includes(needle);
+  if (hay.includes(needle)) return true;
+  if (PHONE_TEXT.test(needle)) {
+    const wanted = nationalNumber(needle);
+    if (wanted.length >= 7 && place.phones.some((phone) => nationalNumber(phone) === wanted)) return true;
+  }
+  const host = hostOf(needle);
+  if (host !== null && !PHONE_TEXT.test(needle)) {
+    return place.urls.some((url) => {
+      const listed = hostOf(url);
+      return listed !== null && (listed === host || host.endsWith(`.${listed}`));
+    });
+  }
+  return false;
 }
 
 /** Bounding-box test. Crossing boxes (min > max) never match: viewports here do not cross the antimeridian. */

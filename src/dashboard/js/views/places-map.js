@@ -413,10 +413,39 @@ function externalLink(text, url, className) {
     signal.addEventListener('abort', destroy, { once: true });
   }
 
+  /**
+   * Opens the map on a value from a case (a phone number or website): finds it across the whole directory, centres the
+   * map on the first match and opens its details, so the match is never hidden outside the visible area.
+   */
+  async function focusSearch(q) {
+    if (!state.built) build();
+    refs.placesQuery.value = q;
+    refs.placesCategory.value = '';
+    state.q = q;
+    state.category = '';
+    try {
+      const result = await api.searchPlaces({ q, limit: 20 });
+      const first = result.places[0];
+      if (first) {
+        state.center = { lon: first.lng, lat: first.lat };
+        state.zoom = Math.max(state.zoom, 15);
+        showDetails(first);
+      } else {
+        closeDetails();
+      }
+    } catch {
+      // The visible-area refresh below reports the error.
+    }
+    void refresh();
+  }
+
   return {
     refresh() {
       if (!state.built) build();
       void refresh();
+    },
+    search(q) {
+      void focusSearch(q);
     },
     destroy,
   };

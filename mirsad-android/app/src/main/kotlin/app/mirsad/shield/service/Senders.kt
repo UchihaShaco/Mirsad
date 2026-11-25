@@ -34,14 +34,7 @@ object Senders {
     }
 
     /** SMS sender IDs such as "ADCB", "DEWA" or "ADNOC": short, no spaces, no lowercase letters. */
-    fun looksLikeAlphanumericId(raw: String): Boolean {
-        val s = raw.trim()
-        return s.length in 2..11 &&
-            s.none { it.isWhitespace() } &&
-            s.any { it.isLetter() } &&
-            s.none { it.isLowerCase() } &&
-            s.all { it.isLetterOrDigit() || it == '-' || it == '_' || it == '.' }
-    }
+    fun looksLikeAlphanumericId(raw: String): Boolean = app.mirsad.core.engine.SenderHeuristics.looksLikeAlphanumericId(raw)
 
     fun senderTypeOf(sender: String, looksLikeContact: Boolean): SenderType = when {
         looksLikePhoneNumber(sender) -> SenderType.NUMBER

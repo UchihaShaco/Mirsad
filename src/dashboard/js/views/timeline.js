@@ -11,7 +11,7 @@ import {
 } from '../format.js';
 import { evidenceSources } from '../state/attention.js';
 import { canCompose } from '../state/composer.js';
-import { chatHref } from '../state/route.js';
+import { chatHref, placesHref } from '../state/route.js';
 import { senderPhoneOf, timelineEntries } from '../state/timeline.js';
 import { renderCapture } from './capture.js';
 
@@ -95,13 +95,15 @@ function replyTargetControl(message, ctx) {
   return h('label', { className: 'reply-target' }, [radio, h('span', { text: 'Select this message' })]);
 }
 
-function messageFacts(message, chat, replySource) {
+function messageFacts(message, chat, replySource, ctx) {
   const facts = [...sourceFact(chat, message.source.captureMethod), ...fact('Received', timeEl(message.receivedAt))];
   if (replySource) facts.push(...fact('Automated reply', replySource));
   if (message.sentAt !== null) facts.push(...fact('Sent at source', timeEl(message.sentAt)));
   // The number a sender-metadata watchlist observation cites; shown as the source wrote it.
   const senderPhone = senderPhoneOf(message);
-  if (senderPhone !== null) facts.push(...fact('Sender phone', bdi(senderPhone)));
+  if (senderPhone !== null) {
+    facts.push(...fact('Sender phone', h('span', { className: 'artifact-check' }, [bdi(senderPhone), ctx ? placesCheck(senderPhone, ctx) : null])));
+  }
   return h('dl', { className: 'facts' }, facts);
 }
 
@@ -148,8 +150,45 @@ function authorOf(message, replySource) {
   return message.direction === 'outgoing' ? 'account' : 'contact';
 }
 
+/** Answers survive a re-render of the timeline: keyed by the value checked. */
+const placesChecks = new Map();
+const humanCategory = (category) => category.replace(/_/g, ' ');
+
+function placesAnswer(value, answer) {
+  if (answer.status === 'pending') return h('span', { className: 'places-answer', role: 'status', text: 'Checking Places…' });
+  if (answer.status === 'error') return h('span', { className: 'places-answer error', role: 'status', text: 'Places could not be checked.' });
+  if (answer.status === 'no_directory') return h('span', { className: 'places-answer', role: 'status', text: 'The Places directory is not loaded on this portal.' });
+  if (answer.status === 'not_listed') return h('span', { className: 'places-answer', role: 'status', text: 'Not listed for any business in Places.' });
+  const [first] = answer.places;
+  const more = answer.total > 1 ? ` and ${answer.total - 1} more` : '';
+  return h('span', { className: 'places-answer places-listed', role: 'status' }, [
+    document.createTextNode('Listed in Places: '), bdi(first.name), document.createTextNode(` (${humanCategory(first.category)})${more}. `),
+    h('a', { href: placesHref(value), text: 'Show on map', dataset: { focusKey: `places:${value}` } }),
+  ]);
+}
+
+/** Whose number or website this is, from the Places directory; asked only when the officer clicks. */
+function placesCheck(value, ctx) {
+  const answer = placesChecks.get(value);
+  if (answer) return placesAnswer(value, answer);
+  const button = h('button', { type: 'button', className: 'quiet places-check', text: 'Check in Places',
+    'aria-label': `Check ${value} in Places`, dataset: { focusKey: `places-check:${value}` } });
+  button.addEventListener('click', async () => {
+    const slot = button.parentElement;
+    placesChecks.set(value, { status: 'pending' });
+    button.replaceWith(placesAnswer(value, { status: 'pending' }));
+    let result;
+    try { result = await ctx.handlers.onCheckPlaces(value); } catch { result = { status: 'error' }; }
+    placesChecks.set(value, result);
+    // A re-render may have replaced the row meanwhile; it reads the stored answer.
+    slot?.querySelector('.places-answer')?.replaceWith(placesAnswer(value, result));
+    if (result.status === 'error') placesChecks.delete(value);
+  });
+  return button;
+}
+
 /** What the citizen's phone decided and found, from the report. Links are shown as text and never opened. */
-function reportDetails(report) {
+function reportDetails(report, ctx) {
   if (!report) return null;
   const a = report.artifacts;
   const groups = [
@@ -166,7 +205,9 @@ function reportDetails(report) {
       report.reasonCodes.filter(code => code !== 'MODEL_SCORE').map(code => h('li', { text: REPORT_REASON_LABELS[code] ?? code }))) : null,
     groups.length ? h('dl', { className: 'report-artifacts' }, groups.flatMap(([label, values]) => [
       h('dt', { text: label }),
-      h('dd', {}, values.map(value => h('bdi', { dir: 'ltr', text: value }))),
+      h('dd', {}, values.map(value => (label === 'Phone numbers' || label === 'Domains')
+        ? h('span', { className: 'artifact-check' }, [h('bdi', { dir: 'ltr', text: value }), placesCheck(value, ctx)])
+        : h('bdi', { dir: 'ltr', text: value }))),
     ])) : null,
     h('p', { className: 'hint report-provenance' }, [
       h('span', { text: `Report ${report.reportId} · shared ${formatTime(report.createdAt)} · imported ${formatTime(report.importedAt)}` }),
@@ -193,7 +234,7 @@ function messageEntry(message, ctx) {
   }, [
     entryTop(heading(message, replySource), message.receivedAt),
     messageText(message.text, missing),
-    reportDetails(ctx.reports.get(message.id)),
+    reportDetails(ctx.reports.get(message.id), ctx),
     ...sourceMarkers(message.id, ctx),
     meetingAgreement(message.id, ctx),
     skipped ? h('div', { className: 'skipped-reply' }, [
@@ -206,7 +247,7 @@ function messageEntry(message, ctx) {
       h('strong', { className: 'badge badge-simulated', text: message.sendStatusLabel ?? 'Not sent' }),
     ]) : null,
     ctx.selecting && direction === 'incoming' && !composerSent ? replyTargetControl(message, ctx) : null,
-    ...captureAndDetails(`message:${message.id}`, messageFacts(message, ctx.chat, replySource), message.capture, message.review, subject, ctx),
+    ...captureAndDetails(`message:${message.id}`, messageFacts(message, ctx.chat, replySource, ctx), message.capture, message.review, subject, ctx),
   ]);
 }
 

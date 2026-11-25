@@ -67,7 +67,8 @@ function applyRoute(ctx) {
   if (route.view === 'places') {
     resetCaseTools(ctx.refs);
     ctx.setState({ view: 'places', evidenceOpen: false });
-    ctx.placesView.refresh();
+    if (route.placesQuery) ctx.placesView.search(route.placesQuery);
+    else ctx.placesView.refresh();
     return;
   }
   // History may point back to a message while the phone is displaying its evidence pane.

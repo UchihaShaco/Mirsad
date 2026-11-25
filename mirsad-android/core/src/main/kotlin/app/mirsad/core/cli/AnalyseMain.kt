@@ -50,11 +50,10 @@ fun main(args: Array<String>) {
     analyseOne(engine, sender, text, channel, sensitivity)
 }
 
+/** The app's own rule (SenderHeuristics), so the CLI holds, warns and allows exactly as the phone would. */
 private fun looksLikeContact(sender: String, channel: Channel): Boolean {
-    val s = sender.trim()
-    if (s.isEmpty() || s.any { it.isDigit() }) return false
-    val allCapsId = s.length <= 11 && s.none { it.isLowerCase() } && s.any { it in 'A'..'Z' }
-    return !(channel == Channel.SMS && allCapsId) && s.any { it.isLetter() } && !allCapsId
+    val isNumber = sender.none { it.isLetter() } && app.mirsad.core.report.ArtifactNormaliser.phone(sender) != null
+    return app.mirsad.core.engine.SenderHeuristics.looksLikeContact(sender, channel, isNumber)
 }
 
 private fun analyseOne(
