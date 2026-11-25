@@ -7,11 +7,13 @@ Abu Dhabi Police hackathon by the Mirsad team, not an official app, and it holds
 
 ![Mirsad Android demo: a scam SMS is held, a wrongly held message is restored with one tap, a call from the scam number is rejected, the report preview](demo/mirsad-android-demo.gif)
 
-30-second video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4).
-15-second explainer recorded on a real Android 15 phone, including a real scam call rejected before it rang:
-[demo/mirsad-explainer-15s.mp4](demo/mirsad-explainer-15s.mp4). It was recorded on an Android 14 emulator
+30-second video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4). It was recorded on an Android 14 emulator
 from the APK in `dist/`: the SMS and the call are injected through the emulator and go through the real notification
 listener and call screening service.
+
+15-second explainer: [demo/mirsad-explainer-15s.mp4](demo/mirsad-explainer-15s.mp4). It was recorded on a real
+Android 15 phone, including a real scam call from a block-listed number rejected before it rang (the caller's
+number is pixelated).
 
 ## 1. Try it in two minutes
 
