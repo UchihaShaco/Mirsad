@@ -28,6 +28,7 @@
     <!-- Reason codes in plain words -->
     <string name="reason_generic">نمط مشبوه</string>
     <string name="reason_sender_blocklisted">المرسل موجود في قائمة الحظر</string>
+    <string name="reason_sender_known_scammer_contact">المرسل ضمن جهة الاتصال «محتال معروف» التي أُبلغ عنها عبر مرصاد</string>
     <string name="reason_sender_allowlisted">المرسل موجود في قائمة السماح</string>
     <string name="reason_sender_looks_like_contact">المرسل يبدو كجهة اتصال محفوظة</string>
     <string name="reason_sender_plain_number_claims_entity">رقم هاتف عادي يدّعي أنه بنك أو جهة رسمية</string>

@@ -22,6 +22,7 @@ data class RulesFile(
     val paymentRequest: PatternGroupSpec = PatternGroupSpec(),
     val links: LinksSpec = LinksSpec(),
     val calls: CallsSpec = CallsSpec(),
+    val senders: SendersSpec = SendersSpec(),
     val arabizi: ArabiziSpec = ArabiziSpec(),
 )
 
@@ -68,6 +69,10 @@ data class LinksSpec(
 @Serializable
 data class CallsSpec(val oneRingPrefixes: List<String> = emptyList())
 
+/** [knownScammerContactNames]: names of the contact Mirsad contact sync writes (numbered continuations match too). */
+@Serializable
+data class SendersSpec(val knownScammerContactNames: List<String> = emptyList())
+
 @Serializable
 data class ArabiziSpec(val strong: List<String> = emptyList(), val weak: List<String> = emptyList())
 
@@ -112,6 +117,11 @@ class RuleSet(val file: RulesFile) {
     val lookalikeMaxDistance: Int = file.links.lookalikeMaxDistance
     val lookalikeShortDomainMaxDistance: Int = file.links.lookalikeShortDomainMaxDistance
     val oneRingPrefixes: List<String> = file.calls.oneRingPrefixes
+    val knownScammerContactNames: Set<String> =
+        file.senders.knownScammerContactNames.map { SenderHeuristics.canonicalName(it) }.filter { it.isNotEmpty() }.toHashSet()
+
+    fun isKnownScammerContact(displayName: String): Boolean =
+        SenderHeuristics.isKnownScammerContact(displayName, knownScammerContactNames)
     val arabizi: ArabiziLexicon = ArabiziLexicon(file.arabizi.strong, file.arabizi.weak)
 
     /** Every compiled pattern with a label, for profiling and the on-device self-check. */

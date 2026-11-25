@@ -90,7 +90,7 @@ Every warning, in both languages, carries the Abu Dhabi Police public guidance l
 
 Everything runs on the phone in pure Kotlin (`core/`, no Android imports), in one call that never throws.
 
-**Stage 1: rules and reputation** (data in `app/src/main/assets/rules.json`, version 1.2.0):
+**Stage 1: rules and reputation** (data in `app/src/main/assets/rules.json`, version 1.3.0):
 - *Sender*: block and allow lists; a plain mobile number that claims to be a bank, courier, telecom or government body;
   a non-UAE country code while the text names a UAE entity; international and one-ring call patterns; a call from a
   number that sent a held message in the last 7 days.
@@ -265,6 +265,14 @@ The field-by-field handling is in [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA
   number the police flag onto one "⚠️ Known Scammer" contact, so the dialer, SMS, WhatsApp and Telegram show that name.
   It needs the internet to receive the list from its server and permission to write contacts, so it is a separate app
   with its own Gradle project, and Mirsad Android keeps its no-internet guarantee. A citizen can install either or both.
+
+  **With both installed.** A messaging app shows a flagged number as "⚠️ Known Scammer" (or "⚠️ Known Scammer 2", or
+  "⚠️ محتال معروف"), so Mirsad sees that name and not the number. Mirsad treats the name as a block-list hit, not a
+  saved contact: the message is held with the reason "Sender is on your Known Scammer contact, flagged through Mirsad".
+  The names are listed in `rules.json` (`senders`). **Not a scam** still restores the message in one tap and remembers
+  its template. It never allows the name itself, because the name covers every flagged number. Calls are different:
+  Android does not ask a call-screening app about callers saved in contacts, so Mirsad cannot reject a call from that
+  contact. Only the contact-sync app can stop those calls, by sending its contact's calls to voicemail.
 
 ## 9. Build from source, tests, evaluation
 
