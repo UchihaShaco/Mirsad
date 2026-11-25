@@ -71,8 +71,6 @@ SCENES = [
       "ترى بالضبط ما سيُشارك، ولا يخرج شيء من الهاتف إلا إذا أرسلته بنفسك.")),
 ]
 
-FOOTER_EN = "Abu Dhabi Police hackathon prototype  ·  no internet permission  ·  demo data"
-FOOTER_AR = "نموذج أولي لهاكاثون شرطة أبوظبي، بلا صلاحية إنترنت، ببيانات تجريبية"
 
 
 def font(path, size):
@@ -165,8 +163,6 @@ def render(frame_path, texts, index, total, arabic):
         cx = (right - i * 34) if arabic else (left + i * 34)
         r = 9 if i == index else 6
         d.ellipse([cx - r, dot_y - r, cx + r, dot_y + r], fill=ACCENT if i == index else (90, 130, 122))
-    f_foot = font(AR_FONT if arabic else EN_REG, 26)
-    put(FOOTER_AR if arabic else FOOTER_EN, f_foot, (120, 160, 152), H - 95)
     return img.convert("RGB")
 
 
