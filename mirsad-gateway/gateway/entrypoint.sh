@@ -6,6 +6,7 @@ MODE="${GATEWAY_MODE:-tailscale}"          # tailscale | wireguard | explicit
 STATE="${SCAMSHIELD_STATE:-/var/lib/scamshield}"
 TS_IF=tailscale0
 TPROXY_PORT=8080
+TUNNEL_MSS="${SCAMSHIELD_TUNNEL_MSS:-1000}"
 EXPLICIT_PORT=8081
 WG_PORT=51820
 DEMO_NET="${SCAMSHIELD_DEMO_NET:-172.30.77.0/24}"  # the demo sites' compose network (docker-compose.yml)
@@ -56,6 +57,12 @@ setup_firewall() {
 
   ensure_chain mangle SCAMSHIELD_MSS FORWARD
   iptables -t mangle -A SCAMSHIELD_MSS -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  # Connections the proxy answers itself (every redirected 80/443 flow) never pass FORWARD, so the clamp
+  # above does not cover them. Where the path to the phone carries less than the tunnel's own MTU, the
+  # proxy's full-size packets (block page, checking page, relayed TLS) are lost and the phone sees a blank
+  # page. Cap the segment size the phone announces on the tunnel so replies fit.
+  ensure_chain mangle SCAMSHIELD_MSS_IN PREROUTING
+  iptables -t mangle -A SCAMSHIELD_MSS_IN -i "$TS_IF" -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss "$TUNNEL_MSS"
 
   ensure_chain nat SCAMSHIELD_POST POSTROUTING
   iptables -t nat -A SCAMSHIELD_POST -s 100.64.0.0/10 -o "$wan" -j MASQUERADE
