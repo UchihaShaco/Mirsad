@@ -1,0 +1,2029 @@
+[
+ {
+  "id": "3d4e5f6a7b8c43940516c7d8e9fa0b49",
+  "url": "https://sho.rt.example/aB12",
+  "final_url": "https://examp1e-bank-verify.com/secure/kyc",
+  "host": "examp1e-bank-verify.com",
+  "registered_domain": "examp1e-bank-verify.com",
+  "decision": "block",
+  "risk_score": 96.0,
+  "stage": "deep",
+  "final": true,
+  "summary_en": "Look-alike of Example Bank registered 3 days ago; the page asks for your password and OTP and sends them to another server.",
+  "summary_ar": "موقع يقلّد بنك المثال سُجّل قبل 3 أيام؛ تطلب الصفحة كلمة المرور ورمز التحقق وترسلهما إلى خادم آخر.",
+  "reasons": [
+   {
+    "code": "rule.impersonation_block",
+    "severity": "critical",
+    "points": 0.0,
+    "title_en": "Confirmed impersonation: brand on a domain it does not own, collecting sensitive data",
+    "title_ar": "انتحال مؤكد: علامة تجارية على نطاق لا تملكه تجمع بيانات حساسة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.lookalike",
+    "severity": "high",
+    "points": 36.0,
+    "title_en": "Imitates Example Bank (typosquat: 1 → l)",
+    "title_ar": "ينتحل صفة بنك المثال (تحريف إملائي)",
+    "detail": "examp1e-bank vs examplebank",
+    "evidence": {}
+   },
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 3 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 3 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.external_form_action",
+    "severity": "high",
+    "points": 14.0,
+    "title_en": "Sends the entered details to another server (collect.example-cdn.top)",
+    "title_ar": "يرسل البيانات المدخلة إلى خادم آخر (collect.example-cdn.top)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.otp_form",
+    "severity": "high",
+    "points": 12.0,
+    "title_en": "Asks for a one-time password (OTP)",
+    "title_ar": "يطلب رمز التحقق لمرة واحدة (OTP)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.password_form",
+    "severity": "medium",
+    "points": 8.0,
+    "title_en": "Asks for a password",
+    "title_ar": "يطلب كلمة المرور",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.shortener_in_chain",
+    "severity": "low",
+    "points": 6.0,
+    "title_en": "Redirect chain passes through a link shortener",
+    "title_ar": "تمر سلسلة إعادة التوجيه عبر رابط مختصر",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.urgency",
+    "severity": "medium",
+    "points": 8.0,
+    "title_en": "Pressure wording: account suspended, within 24 hours",
+    "title_ar": "عبارات ضغط واستعجال: تعليق الحساب، خلال 24 ساعة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "tls.new_certificate",
+    "severity": "low",
+    "points": 4.0,
+    "title_en": "Security certificate issued 2 days ago",
+    "title_ar": "صدرت شهادة الأمان قبل 2 يوم",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "model.page",
+    "severity": "info",
+    "points": 0.0,
+    "title_en": "Page model: 97% likely a scam",
+    "title_ar": "نموذج تحليل الصفحة: احتمال الاحتيال 97٪",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "review.confirmed",
+    "severity": "info",
+    "points": 0.0,
+    "title_en": "Second-opinion review confirmed the block",
+    "title_ar": "أكّدت المراجعة الثانية قرار الحظر",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.91,
+  "page_model_score": 0.97,
+  "llm_score": 0.95,
+  "brand": {
+   "brand": "Example Bank",
+   "brand_ar": "بنك المثال",
+   "category": "bank",
+   "official_domains": [
+    "examplebank.example",
+    "online.examplebank.example"
+   ],
+   "technique": "typosquat",
+   "matched_on": [
+    "domain",
+    "title",
+    "favicon"
+   ],
+   "score": 0.96
+  },
+  "domain": {
+   "host": "examp1e-bank-verify.com",
+   "registered_domain": "examp1e-bank-verify.com",
+   "tld": "com",
+   "is_ip": false,
+   "is_idn": false,
+   "created": "2026-11-21T17:30:00Z",
+   "age_days": 3,
+   "registrar": "Example Registrar LLC",
+   "registrant_country": "IS",
+   "nameservers": [
+    "ada.ns.example-dns.net",
+    "bob.ns.example-dns.net"
+   ],
+   "ips": [
+    "203.0.113.10"
+   ],
+   "asn": 64500,
+   "asn_org": "Example Hosting BV",
+   "hosting_country": "NL",
+   "tls_issuer": "Example Free CA R3",
+   "tls_not_before": "2026-11-22T17:30:00Z",
+   "tls_age_days": 2,
+   "tls_sans": [
+    "examp1e-bank-verify.com",
+    "www.examp1e-bank-verify.com"
+   ],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://examp1e-bank-verify.com/login",
+   "final_url": "https://examp1e-bank-verify.com/secure/kyc",
+   "status": 200,
+   "fetched_at": "2026-11-24T17:18:00Z",
+   "redirect_chain": [
+    {
+     "url": "https://sho.rt.example/aB12",
+     "status": 301,
+     "via": "shortener",
+     "ip": "198.51.100.7"
+    },
+    {
+     "url": "https://examp1e-bank-verify.com/login",
+     "status": 302,
+     "via": "http",
+     "ip": "203.0.113.10"
+    },
+    {
+     "url": "https://examp1e-bank-verify.com/secure/kyc",
+     "status": 200,
+     "via": "js",
+     "ip": "203.0.113.10"
+    }
+   ],
+   "headers": {},
+   "html": "",
+   "title": "Example Bank | Verify your account",
+   "text": "",
+   "lang": "en",
+   "links": [],
+   "forms": [
+    {
+     "action": "https://collect.example-cdn.top/p.php",
+     "method": "post",
+     "action_host": "collect.example-cdn.top",
+     "external_action": true,
+     "input_types": [
+      "text",
+      "password",
+      "tel"
+     ],
+     "input_names": [
+      "user",
+      "pass",
+      "otp"
+     ],
+     "asks_password": true,
+     "asks_card": false,
+     "asks_otp": true,
+     "asks_national_id": false,
+     "asks_phone": false
+    }
+   ],
+   "scripts": [
+    {
+     "src": null,
+     "first_party": true,
+     "size": 18234,
+     "obfuscated": true,
+     "obfuscation_markers": [
+      "eval(atob(",
+      "hex-escaped strings"
+     ],
+     "endpoints": [
+      "https://collect.example-cdn.top/p.php"
+     ],
+     "redirects": [],
+     "suspicious_calls": [
+      "keydown listener",
+      "navigator.sendBeacon"
+     ]
+    },
+    {
+     "src": "https://examp1e-bank-verify.com/js/app.js",
+     "first_party": true,
+     "size": 4410,
+     "obfuscated": false,
+     "obfuscation_markers": [],
+     "endpoints": [],
+     "redirects": [
+      "/secure/kyc"
+     ],
+     "suspicious_calls": [
+      "history.pushState loop"
+     ]
+    }
+   ],
+   "external_hosts": [
+    "collect.example-cdn.top"
+   ],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [
+   {
+    "url": "https://sho.rt.example/aB12",
+    "status": 301,
+    "via": "shortener",
+    "ip": "198.51.100.7"
+   },
+   {
+    "url": "https://examp1e-bank-verify.com/login",
+    "status": 302,
+    "via": "http",
+    "ip": "203.0.113.10"
+   },
+   {
+    "url": "https://examp1e-bank-verify.com/secure/kyc",
+    "status": 200,
+    "via": "js",
+    "ip": "203.0.113.10"
+   }
+  ],
+  "pages_crawled": 7,
+  "campaign_id": "camp-7f2a",
+  "review": {
+   "outcome": "confirmed",
+   "decision": "block",
+   "confidence": 0.94,
+   "summary_en": "Every key finding re-validated: the domain is 3 days old, not owned by Example Bank, and the login form posts credentials to an unrelated server.",
+   "summary_ar": "أُعيد التحقق من جميع المؤشرات الرئيسية: النطاق عمره 3 أيام ولا يملكه بنك المثال، ونموذج الدخول يرسل بيانات الاعتماد إلى خادم غير تابع له.",
+   "steps": [
+    {
+     "tool": "rdap_lookup",
+     "input": {
+      "domain": "examp1e-bank-verify.com"
+     },
+     "finding": "Registered 3 days ago at Example Registrar LLC; registrant country IS.",
+     "supports_block": true,
+     "elapsed_ms": 640.0
+    },
+    {
+     "tool": "brand_registry",
+     "input": {
+      "brand": "Example Bank"
+     },
+     "finding": "Official domains are examplebank.example and online.examplebank.example; this domain is not among them.",
+     "supports_block": true,
+     "elapsed_ms": 12.0
+    },
+    {
+     "tool": "fetch_page",
+     "input": {
+      "url": "https://examp1e-bank-verify.com/secure/kyc"
+     },
+     "finding": "Form still posts password and OTP to collect.example-cdn.top.",
+     "supports_block": true,
+     "elapsed_ms": 1830.0
+    },
+    {
+     "tool": "web_search",
+     "input": {
+      "query": "examp1e-bank-verify.com"
+     },
+     "finding": "No legitimate references; two community reports of SMS phishing.",
+     "supports_block": true,
+     "elapsed_ms": 2210.0
+    },
+    {
+     "tool": "tls_check",
+     "input": {
+      "host": "examp1e-bank-verify.com"
+     },
+     "finding": "Free domain-validated certificate issued 2 days ago; neutral on its own.",
+     "supports_block": null,
+     "elapsed_ms": 310.0
+    }
+   ],
+   "model": "reviewer-agent",
+   "started_at": "2026-11-24T17:21:00Z",
+   "finished_at": "2026-11-24T17:21:12Z"
+  },
+  "source": "user",
+  "evidence_ref": "SS-3D4E5F6A",
+  "evidence_at": null,
+  "timings_ms": {
+   "layer0_cache_hit": 1.3,
+   "total": 1.3
+  },
+  "created_at": "2026-11-24T17:29:00Z",
+  "updated_at": "2026-11-24T17:29:00Z"
+ },
+ {
+  "id": "e5f6a7b8c9d04e1f2a3b4c5d6e7f8a94",
+  "url": "https://examplebank.example/",
+  "final_url": "https://examplebank.example/",
+  "host": "examplebank.example",
+  "registered_domain": "examplebank.example",
+  "decision": "allow",
+  "risk_score": 2.0,
+  "stage": "reputation",
+  "final": true,
+  "summary_en": "Verified official domain of Example Bank.",
+  "summary_ar": "النطاق الرسمي الموثّق لبنك المثال.",
+  "reasons": [
+   {
+    "code": "rep.allowlisted",
+    "severity": "info",
+    "points": -60.0,
+    "title_en": "Verified official domain",
+    "title_ar": "نطاق رسمي موثّق",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "trust.allowlist_guard",
+    "severity": "info",
+    "points": 0.0,
+    "title_en": "Verified official domain is never blocked",
+    "title_ar": "النطاق الرسمي الموثّق لا يُحظر أبداً",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": null,
+  "page_model_score": null,
+  "llm_score": null,
+  "brand": null,
+  "domain": {
+   "host": "examplebank.example",
+   "registered_domain": "examplebank.example",
+   "tld": "",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 7300,
+   "registrar": null,
+   "registrant_country": null,
+   "nameservers": [],
+   "ips": [],
+   "asn": null,
+   "asn_org": null,
+   "hosting_country": null,
+   "tls_issuer": null,
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": true,
+   "allowlist_owner": "Example Bank",
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": null,
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": null,
+  "review": null,
+  "source": "user",
+  "evidence_ref": null,
+  "evidence_at": null,
+  "timings_ms": {
+   "layer0_cache_hit": 0.9,
+   "total": 0.9
+  },
+  "created_at": "2026-11-24T17:28:00Z",
+  "updated_at": "2026-11-24T17:28:00Z"
+ },
+ {
+  "id": "f6a7b8c9d0e14f2a3b4c5d6e7f8a9b05",
+  "url": "https://news.example.org/uae/weather",
+  "final_url": "https://news.example.org/uae/weather",
+  "host": "news.example.org",
+  "registered_domain": "example.org",
+  "decision": "allow",
+  "risk_score": 9.0,
+  "stage": "page",
+  "final": true,
+  "summary_en": "Long-established, widely visited site; nothing suspicious on the page.",
+  "summary_ar": "موقع راسخ وواسع الانتشار؛ لا شيء مريب في الصفحة.",
+  "reasons": [
+   {
+    "code": "domain.long_established",
+    "severity": "info",
+    "points": -16.0,
+    "title_en": "Domain has existed for 18 years",
+    "title_ar": "النطاق مسجّل منذ 18 سنة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.popular",
+    "severity": "info",
+    "points": -14.0,
+    "title_en": "Widely visited site (rank 2140)",
+    "title_ar": "موقع واسع الانتشار (الترتيب 2140)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "tls.organisation_validated",
+    "severity": "info",
+    "points": -8.0,
+    "title_en": "Certificate verifies the organisation's identity",
+    "title_ar": "الشهادة تتحقق من هوية الجهة المالكة",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.04,
+  "page_model_score": 0.03,
+  "llm_score": null,
+  "brand": null,
+  "domain": {
+   "host": "news.example.org",
+   "registered_domain": "example.org",
+   "tld": "org",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 6600,
+   "registrar": "Example Registrar LLC",
+   "registrant_country": null,
+   "nameservers": [],
+   "ips": [
+    "198.51.100.20"
+   ],
+   "asn": 64496,
+   "asn_org": "Example CDN Inc",
+   "hosting_country": "AE",
+   "tls_issuer": "Example OV CA",
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": 2140,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": null,
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": null,
+  "review": null,
+  "source": "user",
+  "evidence_ref": null,
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 1.2,
+   "models.score_url": 11.4,
+   "intel.assess_domain_fast": 66.5,
+   "layer1_url": 95.0,
+   "fetch_page": 396.8,
+   "models.score_page": 41.0,
+   "layer2_page": 640.0,
+   "total": 736.2
+  },
+  "created_at": "2026-11-24T17:25:00Z",
+  "updated_at": "2026-11-24T17:25:06Z"
+ },
+ {
+  "id": "a1f04c2e9b7d4e1f8a6b3c5d7e9f0a12",
+  "url": "https://sho.rt.example/aB12",
+  "final_url": "https://examp1e-bank-verify.com/secure/kyc",
+  "host": "examp1e-bank-verify.com",
+  "registered_domain": "examp1e-bank-verify.com",
+  "decision": "block",
+  "risk_score": 96.0,
+  "stage": "deep",
+  "final": true,
+  "summary_en": "Look-alike of Example Bank registered 3 days ago; the page asks for your password and OTP and sends them to another server.",
+  "summary_ar": "موقع يقلّد بنك المثال سُجّل قبل 3 أيام؛ تطلب الصفحة كلمة المرور ورمز التحقق وترسلهما إلى خادم آخر.",
+  "reasons": [
+   {
+    "code": "rule.impersonation_block",
+    "severity": "critical",
+    "points": 0.0,
+    "title_en": "Confirmed impersonation: brand on a domain it does not own, collecting sensitive data",
+    "title_ar": "انتحال مؤكد: علامة تجارية على نطاق لا تملكه تجمع بيانات حساسة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.lookalike",
+    "severity": "high",
+    "points": 36.0,
+    "title_en": "Imitates Example Bank (typosquat: 1 → l)",
+    "title_ar": "ينتحل صفة بنك المثال (تحريف إملائي)",
+    "detail": "examp1e-bank vs examplebank",
+    "evidence": {}
+   },
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 3 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 3 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.external_form_action",
+    "severity": "high",
+    "points": 14.0,
+    "title_en": "Sends the entered details to another server (collect.example-cdn.top)",
+    "title_ar": "يرسل البيانات المدخلة إلى خادم آخر (collect.example-cdn.top)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.otp_form",
+    "severity": "high",
+    "points": 12.0,
+    "title_en": "Asks for a one-time password (OTP)",
+    "title_ar": "يطلب رمز التحقق لمرة واحدة (OTP)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.password_form",
+    "severity": "medium",
+    "points": 8.0,
+    "title_en": "Asks for a password",
+    "title_ar": "يطلب كلمة المرور",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.shortener_in_chain",
+    "severity": "low",
+    "points": 6.0,
+    "title_en": "Redirect chain passes through a link shortener",
+    "title_ar": "تمر سلسلة إعادة التوجيه عبر رابط مختصر",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.urgency",
+    "severity": "medium",
+    "points": 8.0,
+    "title_en": "Pressure wording: account suspended, within 24 hours",
+    "title_ar": "عبارات ضغط واستعجال: تعليق الحساب، خلال 24 ساعة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "tls.new_certificate",
+    "severity": "low",
+    "points": 4.0,
+    "title_en": "Security certificate issued 2 days ago",
+    "title_ar": "صدرت شهادة الأمان قبل 2 يوم",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "model.page",
+    "severity": "info",
+    "points": 0.0,
+    "title_en": "Page model: 97% likely a scam",
+    "title_ar": "نموذج تحليل الصفحة: احتمال الاحتيال 97٪",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "review.confirmed",
+    "severity": "info",
+    "points": 0.0,
+    "title_en": "Second-opinion review confirmed the block",
+    "title_ar": "أكّدت المراجعة الثانية قرار الحظر",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.91,
+  "page_model_score": 0.97,
+  "llm_score": 0.95,
+  "brand": {
+   "brand": "Example Bank",
+   "brand_ar": "بنك المثال",
+   "category": "bank",
+   "official_domains": [
+    "examplebank.example",
+    "online.examplebank.example"
+   ],
+   "technique": "typosquat",
+   "matched_on": [
+    "domain",
+    "title",
+    "favicon"
+   ],
+   "score": 0.96
+  },
+  "domain": {
+   "host": "examp1e-bank-verify.com",
+   "registered_domain": "examp1e-bank-verify.com",
+   "tld": "com",
+   "is_ip": false,
+   "is_idn": false,
+   "created": "2026-11-21T17:30:00Z",
+   "age_days": 3,
+   "registrar": "Example Registrar LLC",
+   "registrant_country": "IS",
+   "nameservers": [
+    "ada.ns.example-dns.net",
+    "bob.ns.example-dns.net"
+   ],
+   "ips": [
+    "203.0.113.10"
+   ],
+   "asn": 64500,
+   "asn_org": "Example Hosting BV",
+   "hosting_country": "NL",
+   "tls_issuer": "Example Free CA R3",
+   "tls_not_before": "2026-11-22T17:30:00Z",
+   "tls_age_days": 2,
+   "tls_sans": [
+    "examp1e-bank-verify.com",
+    "www.examp1e-bank-verify.com"
+   ],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://examp1e-bank-verify.com/login",
+   "final_url": "https://examp1e-bank-verify.com/secure/kyc",
+   "status": 200,
+   "fetched_at": "2026-11-24T17:18:00Z",
+   "redirect_chain": [
+    {
+     "url": "https://sho.rt.example/aB12",
+     "status": 301,
+     "via": "shortener",
+     "ip": "198.51.100.7"
+    },
+    {
+     "url": "https://examp1e-bank-verify.com/login",
+     "status": 302,
+     "via": "http",
+     "ip": "203.0.113.10"
+    },
+    {
+     "url": "https://examp1e-bank-verify.com/secure/kyc",
+     "status": 200,
+     "via": "js",
+     "ip": "203.0.113.10"
+    }
+   ],
+   "headers": {},
+   "html": "",
+   "title": "Example Bank | Verify your account",
+   "text": "",
+   "lang": "en",
+   "links": [],
+   "forms": [
+    {
+     "action": "https://collect.example-cdn.top/p.php",
+     "method": "post",
+     "action_host": "collect.example-cdn.top",
+     "external_action": true,
+     "input_types": [
+      "text",
+      "password",
+      "tel"
+     ],
+     "input_names": [
+      "user",
+      "pass",
+      "otp"
+     ],
+     "asks_password": true,
+     "asks_card": false,
+     "asks_otp": true,
+     "asks_national_id": false,
+     "asks_phone": false
+    }
+   ],
+   "scripts": [
+    {
+     "src": null,
+     "first_party": true,
+     "size": 18234,
+     "obfuscated": true,
+     "obfuscation_markers": [
+      "eval(atob(",
+      "hex-escaped strings"
+     ],
+     "endpoints": [
+      "https://collect.example-cdn.top/p.php"
+     ],
+     "redirects": [],
+     "suspicious_calls": [
+      "keydown listener",
+      "navigator.sendBeacon"
+     ]
+    },
+    {
+     "src": "https://examp1e-bank-verify.com/js/app.js",
+     "first_party": true,
+     "size": 4410,
+     "obfuscated": false,
+     "obfuscation_markers": [],
+     "endpoints": [],
+     "redirects": [
+      "/secure/kyc"
+     ],
+     "suspicious_calls": [
+      "history.pushState loop"
+     ]
+    }
+   ],
+   "external_hosts": [
+    "collect.example-cdn.top"
+   ],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [
+   {
+    "url": "https://sho.rt.example/aB12",
+    "status": 301,
+    "via": "shortener",
+    "ip": "198.51.100.7"
+   },
+   {
+    "url": "https://examp1e-bank-verify.com/login",
+    "status": 302,
+    "via": "http",
+    "ip": "203.0.113.10"
+   },
+   {
+    "url": "https://examp1e-bank-verify.com/secure/kyc",
+    "status": 200,
+    "via": "js",
+    "ip": "203.0.113.10"
+   }
+  ],
+  "pages_crawled": 7,
+  "campaign_id": "camp-7f2a",
+  "review": {
+   "outcome": "confirmed",
+   "decision": "block",
+   "confidence": 0.94,
+   "summary_en": "Every key finding re-validated: the domain is 3 days old, not owned by Example Bank, and the login form posts credentials to an unrelated server.",
+   "summary_ar": "أُعيد التحقق من جميع المؤشرات الرئيسية: النطاق عمره 3 أيام ولا يملكه بنك المثال، ونموذج الدخول يرسل بيانات الاعتماد إلى خادم غير تابع له.",
+   "steps": [
+    {
+     "tool": "rdap_lookup",
+     "input": {
+      "domain": "examp1e-bank-verify.com"
+     },
+     "finding": "Registered 3 days ago at Example Registrar LLC; registrant country IS.",
+     "supports_block": true,
+     "elapsed_ms": 640.0
+    },
+    {
+     "tool": "brand_registry",
+     "input": {
+      "brand": "Example Bank"
+     },
+     "finding": "Official domains are examplebank.example and online.examplebank.example; this domain is not among them.",
+     "supports_block": true,
+     "elapsed_ms": 12.0
+    },
+    {
+     "tool": "fetch_page",
+     "input": {
+      "url": "https://examp1e-bank-verify.com/secure/kyc"
+     },
+     "finding": "Form still posts password and OTP to collect.example-cdn.top.",
+     "supports_block": true,
+     "elapsed_ms": 1830.0
+    },
+    {
+     "tool": "web_search",
+     "input": {
+      "query": "examp1e-bank-verify.com"
+     },
+     "finding": "No legitimate references; two community reports of SMS phishing.",
+     "supports_block": true,
+     "elapsed_ms": 2210.0
+    },
+    {
+     "tool": "tls_check",
+     "input": {
+      "host": "examp1e-bank-verify.com"
+     },
+     "finding": "Free domain-validated certificate issued 2 days ago; neutral on its own.",
+     "supports_block": null,
+     "elapsed_ms": 310.0
+    }
+   ],
+   "model": "reviewer-agent",
+   "started_at": "2026-11-24T17:21:00Z",
+   "finished_at": "2026-11-24T17:21:12Z"
+  },
+  "source": "user",
+  "evidence_ref": "SS-A1F04C2E",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 1.8,
+   "models.score_url": 25.4,
+   "intel.assess_domain_fast": 148.4,
+   "layer1_url": 212.0,
+   "fetch_page": 1140.8,
+   "models.score_page": 41.0,
+   "layer2_page": 1840.0,
+   "layer3_deep": 8420.0,
+   "layer4_review": 6900.0,
+   "total": 10473.8
+  },
+  "created_at": "2026-11-24T17:17:48Z",
+  "updated_at": "2026-11-24T17:21:12Z"
+ },
+ {
+  "id": "0a1b2c3d4e5f40617283940a1b2c3d16",
+  "url": "https://mega-deals-example.shop/white-friday",
+  "final_url": "https://mega-deals-example.shop/white-friday",
+  "host": "mega-deals-example.shop",
+  "registered_domain": "mega-deals-example.shop",
+  "decision": "warn",
+  "risk_score": 54.0,
+  "stage": "page",
+  "final": true,
+  "summary_en": "Young shop domain with payment lures and countdown pressure; no brand impersonation found.",
+  "summary_ar": "متجر بنطاق حديث مع إغراءات دفع وعدّاد تنازلي للضغط؛ لم يُعثر على انتحال علامة تجارية.",
+  "reasons": [
+   {
+    "code": "domain.young",
+    "severity": "medium",
+    "points": 9.0,
+    "title_en": "Domain is less than six months old (41 days)",
+    "title_ar": "عمر النطاق أقل من ستة أشهر (41 يوماً)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.payment_lure",
+    "severity": "medium",
+    "points": 10.0,
+    "title_en": "Payment or prize lure: 90% off, today only",
+    "title_ar": "إغراء بالدفع أو الجوائز: خصم 90٪، اليوم فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.urgency",
+    "severity": "medium",
+    "points": 8.0,
+    "title_en": "Pressure wording: offer ends in 10 minutes",
+    "title_ar": "عبارات ضغط واستعجال: ينتهي العرض خلال 10 دقائق",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "url.suspicious_tld",
+    "severity": "low",
+    "points": 6.0,
+    "title_en": "Domain ending \".shop\" is heavily abused by scammers",
+    "title_ar": "امتداد النطاق \".shop\" يكثر استغلاله في الاحتيال",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "tls.organisation_validated",
+    "severity": "info",
+    "points": -4.0,
+    "title_en": "Certificate has existed for 40 days",
+    "title_ar": "عمر الشهادة 40 يوماً",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.47,
+  "page_model_score": 0.58,
+  "llm_score": null,
+  "brand": null,
+  "domain": {
+   "host": "mega-deals-example.shop",
+   "registered_domain": "mega-deals-example.shop",
+   "tld": "shop",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 41,
+   "registrar": "Example Budget Registrar",
+   "registrant_country": null,
+   "nameservers": [],
+   "ips": [
+    "203.0.113.77"
+   ],
+   "asn": 64500,
+   "asn_org": "Example Hosting BV",
+   "hosting_country": "NL",
+   "tls_issuer": null,
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": null,
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": null,
+  "review": null,
+  "source": "user",
+  "evidence_ref": "SS-0A1B2C3D",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.0,
+   "models.score_url": 20.4,
+   "intel.assess_domain_fast": 119.0,
+   "layer1_url": 170.0,
+   "fetch_page": 1370.2,
+   "models.score_page": 41.0,
+   "layer2_page": 2210.0,
+   "total": 2382.0
+  },
+  "created_at": "2026-11-24T17:11:00Z",
+  "updated_at": "2026-11-24T17:11:06Z"
+ },
+ {
+  "id": "1b2c3d4e5f6a41728394a5b6c7d8e927",
+  "url": "https://example-telecom-rewards.xyz/",
+  "final_url": "https://example-telecom-rewards.xyz/",
+  "host": "example-telecom-rewards.xyz",
+  "registered_domain": "example-telecom-rewards.xyz",
+  "decision": "block",
+  "risk_score": 83.0,
+  "stage": "deep",
+  "final": true,
+  "summary_en": "Landing page looked harmless; the deep crawl found a card-capture page posing as Example Telecom three links in.",
+  "summary_ar": "بدت الصفحة الأولى غير ضارة؛ لكن الفحص العميق وجد صفحة لسرقة بيانات البطاقة تنتحل صفة شركة اتصالات المثال بعد ثلاث نقرات.",
+  "reasons": [
+   {
+    "code": "deep.revoked",
+    "severity": "critical",
+    "points": 0.0,
+    "title_en": "Allowed earlier, blocked after deeper inspection of /claim/step3",
+    "title_ar": "سُمح به سابقاً ثم حُظر بعد فحص أعمق للصفحة /claim/step3",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.sensitive_form_off_brand",
+    "severity": "high",
+    "points": 16.0,
+    "title_en": "Asks for card details while posing as Example Telecom on a domain it does not own",
+    "title_ar": "يطلب بيانات البطاقة منتحلاً صفة شركة اتصالات المثال على نطاق لا يملكه",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.card_form",
+    "severity": "high",
+    "points": 18.0,
+    "title_en": "Asks for payment card details",
+    "title_ar": "يطلب بيانات البطاقة المصرفية",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.exfiltration",
+    "severity": "critical",
+    "points": 30.0,
+    "title_en": "Sends data to a known data-theft channel (messaging bot API)",
+    "title_ar": "يرسل البيانات إلى قناة معروفة لسرقة البيانات (واجهة روبوت مراسلة)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.young",
+    "severity": "medium",
+    "points": 9.0,
+    "title_en": "Domain is less than six months old (12 days)",
+    "title_ar": "عمر النطاق أقل من ستة أشهر (12 يوماً)",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.31,
+  "page_model_score": 0.22,
+  "llm_score": 0.9,
+  "brand": {
+   "brand": "Example Telecom",
+   "brand_ar": "شركة اتصالات المثال",
+   "category": "telecom",
+   "official_domains": [
+    "exampletelecom.example"
+   ],
+   "technique": "content",
+   "matched_on": [
+    "page text",
+    "logo colours"
+   ],
+   "score": 0.82
+  },
+  "domain": {
+   "host": "example-telecom-rewards.xyz",
+   "registered_domain": "example-telecom-rewards.xyz",
+   "tld": "xyz",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 12,
+   "registrar": "Example Budget Registrar",
+   "registrant_country": null,
+   "nameservers": [
+    "ada.ns.example-dns.net",
+    "bob.ns.example-dns.net"
+   ],
+   "ips": [
+    "203.0.113.10"
+   ],
+   "asn": 64500,
+   "asn_org": "Example Hosting BV",
+   "hosting_country": "NL",
+   "tls_issuer": null,
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://example-telecom-rewards.xyz/",
+   "final_url": "https://example-telecom-rewards.xyz/",
+   "status": 200,
+   "fetched_at": "2026-11-24T17:04:00Z",
+   "redirect_chain": [],
+   "headers": {},
+   "html": "",
+   "title": "Rewards",
+   "text": "",
+   "lang": null,
+   "links": [],
+   "forms": [],
+   "scripts": [],
+   "external_hosts": [],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [],
+  "pages_crawled": 14,
+  "campaign_id": "camp-7f2a",
+  "review": null,
+  "source": "user",
+  "evidence_ref": "SS-1B2C3D4E",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.2,
+   "models.score_url": 18.0,
+   "intel.assess_domain_fast": 105.0,
+   "layer1_url": 150.0,
+   "fetch_page": 812.2,
+   "models.score_page": 41.0,
+   "layer2_page": 1310.0,
+   "layer3_deep": 12800.0,
+   "total": 14262.2
+  },
+  "created_at": "2026-11-24T17:04:00Z",
+  "updated_at": "2026-11-24T17:05:00Z",
+  "revoked": true
+ },
+ {
+  "id": "b2c3d4e5f6a74b8c9d0e1f2a3b4c5d61",
+  "url": "https://roads-fine-payment-example.icu/pay",
+  "final_url": "https://roads-fine-payment-example.icu/pay",
+  "host": "roads-fine-payment-example.icu",
+  "registered_domain": "roads-fine-payment-example.icu",
+  "decision": "block",
+  "risk_score": 92.0,
+  "stage": "page",
+  "final": true,
+  "summary_en": "Newly registered .icu domain posing as Example Roads Authority, asking for card details to pay a AED 50 fee.",
+  "summary_ar": "نطاق حديث التسجيل ينتحل صفة هيئة الطرق المثال ويطلب بيانات البطاقة لدفع رسوم قدرها 50 درهم.",
+  "reasons": [
+   {
+    "code": "page.fee_bait",
+    "severity": "high",
+    "points": 14.0,
+    "title_en": "Small fee of AED 50 paired with a penalty or deadline threat",
+    "title_ar": "رسوم صغيرة بقيمة 50 درهم مقرونة بتهديد بغرامة أو مهلة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.card_form",
+    "severity": "high",
+    "points": 18.0,
+    "title_en": "Asks for payment card details",
+    "title_ar": "يطلب بيانات البطاقة المصرفية",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.tld_campaign_combo",
+    "severity": "high",
+    "points": 12.0,
+    "title_en": "Cheap \".icu\" domain with fine, toll or parcel-fee wording",
+    "title_ar": "نطاق رخيص بامتداد \".icu\" مع عبارات مخالفات أو رسوم طرق أو شحنات",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 1 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 1 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.brand_hosting_mismatch",
+    "severity": "low",
+    "points": 5.0,
+    "title_en": "Claims to be Example Roads Authority but is hosted abroad (SG)",
+    "title_ar": "يدّعي أنه هيئة الطرق المثال لكنه مستضاف خارج الدولة (SG)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.cloaking_code",
+    "severity": "medium",
+    "points": 7.0,
+    "title_en": "Hides from security scanners (user-agent check)",
+    "title_ar": "يتخفّى عن أدوات الفحص الأمني (فحص هوية المتصفح)",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.88,
+  "page_model_score": 0.93,
+  "llm_score": null,
+  "brand": {
+   "brand": "Example Roads Authority",
+   "brand_ar": "هيئة الطرق المثال",
+   "category": "government",
+   "official_domains": [
+    "exampleroadsauthority.example"
+   ],
+   "technique": "combosquat",
+   "matched_on": [
+    "domain",
+    "page text"
+   ],
+   "score": 0.9
+  },
+  "domain": {
+   "host": "roads-fine-payment-example.icu",
+   "registered_domain": "roads-fine-payment-example.icu",
+   "tld": "icu",
+   "is_ip": false,
+   "is_idn": false,
+   "created": "2026-11-23T17:30:00Z",
+   "age_days": 1,
+   "registrar": "Example Budget Registrar",
+   "registrant_country": "CN",
+   "nameservers": [
+    "ns1.example-parking.net",
+    "ns2.example-parking.net"
+   ],
+   "ips": [
+    "192.0.2.44"
+   ],
+   "asn": 64511,
+   "asn_org": "Example Cloud Pte Ltd",
+   "hosting_country": "SG",
+   "tls_issuer": "Example Free CA R3",
+   "tls_not_before": null,
+   "tls_age_days": 1,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://roads-fine-payment-example.icu/pay",
+   "final_url": "https://roads-fine-payment-example.icu/pay",
+   "status": 200,
+   "fetched_at": "2026-11-24T16:59:00Z",
+   "redirect_chain": [],
+   "headers": {},
+   "html": "",
+   "title": "Example Roads Authority - Pay now",
+   "text": "",
+   "lang": null,
+   "links": [],
+   "forms": [
+    {
+     "action": "/api/card",
+     "method": "post",
+     "action_host": null,
+     "external_action": false,
+     "input_types": [
+      "text",
+      "tel"
+     ],
+     "input_names": [],
+     "asks_password": false,
+     "asks_card": true,
+     "asks_otp": false,
+     "asks_national_id": false,
+     "asks_phone": false
+    }
+   ],
+   "scripts": [],
+   "external_hosts": [],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": "camp-3c19",
+  "review": null,
+  "source": "watcher",
+  "evidence_ref": "SS-B2C3D4E5",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.4,
+   "models.score_url": 19.2,
+   "intel.assess_domain_fast": 112.0,
+   "layer1_url": 160.0,
+   "fetch_page": 880.4,
+   "models.score_page": 41.0,
+   "layer2_page": 1420.0,
+   "total": 1582.4
+  },
+  "created_at": "2026-11-24T16:59:00Z",
+  "updated_at": "2026-11-24T16:59:12Z"
+ },
+ {
+  "id": "2c3d4e5f6a7b42839405b6c7d8e9fa38",
+  "url": "https://community-iftar-example.org/donate",
+  "final_url": "https://community-iftar-example.org/donate",
+  "host": "community-iftar-example.org",
+  "registered_domain": "community-iftar-example.org",
+  "decision": "allow",
+  "risk_score": 24.0,
+  "stage": "deep",
+  "final": true,
+  "summary_en": "Initially blocked for a new domain collecting card payments; the review found a registered charity using a known payment provider.",
+  "summary_ar": "حُظر في البداية لأنه نطاق جديد يجمع مدفوعات بالبطاقة؛ ووجدت المراجعة أنه جمعية خيرية مسجّلة تستخدم مزود دفع معروفاً.",
+  "reasons": [
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 9 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 9 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.card_form",
+    "severity": "high",
+    "points": 18.0,
+    "title_en": "Asks for payment card details",
+    "title_ar": "يطلب بيانات البطاقة المصرفية",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.payment_lure",
+    "severity": "medium",
+    "points": 10.0,
+    "title_en": "Payment or prize lure: donate now",
+    "title_ar": "إغراء بالدفع أو الجوائز: تبرّع الآن",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "review.overturned",
+    "severity": "info",
+    "points": -40.0,
+    "title_en": "Second-opinion review found a false positive and unblocked the site",
+    "title_ar": "وجدت المراجعة الثانية أن الحظر خاطئ فأُلغي حظر الموقع",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.42,
+  "page_model_score": 0.71,
+  "llm_score": null,
+  "brand": null,
+  "domain": {
+   "host": "community-iftar-example.org",
+   "registered_domain": "community-iftar-example.org",
+   "tld": "org",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 9,
+   "registrar": "Example Registrar LLC",
+   "registrant_country": null,
+   "nameservers": [],
+   "ips": [
+    "198.51.100.61"
+   ],
+   "asn": 64496,
+   "asn_org": "Example CDN Inc",
+   "hosting_country": "AE",
+   "tls_issuer": "Example OV CA",
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": null,
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": null,
+  "review": {
+   "outcome": "overturned",
+   "decision": "allow",
+   "confidence": 0.86,
+   "summary_en": "False positive: the payment form is served by a well-known payment provider and the organisation is listed in the charity register.",
+   "summary_ar": "حظر خاطئ: نموذج الدفع يقدّمه مزود دفع معروف، والجهة مدرجة في سجل الجمعيات الخيرية.",
+   "steps": [
+    {
+     "tool": "fetch_page",
+     "input": {
+      "url": "https://community-iftar-example.org/donate"
+     },
+     "finding": "Card form is an iframe from pay.example-psp.com, a well-known provider.",
+     "supports_block": false,
+     "elapsed_ms": 1620.0
+    },
+    {
+     "tool": "web_search",
+     "input": {
+      "query": "community iftar example charity licence"
+     },
+     "finding": "Organisation appears in the public charity register (fictional sample).",
+     "supports_block": false,
+     "elapsed_ms": 2480.0
+    },
+    {
+     "tool": "rdap_lookup",
+     "input": {
+      "domain": "community-iftar-example.org"
+     },
+     "finding": "Registered 9 days ago; consistent with a seasonal campaign site.",
+     "supports_block": null,
+     "elapsed_ms": 580.0
+    },
+    {
+     "tool": "brand_registry",
+     "input": {
+      "host": "community-iftar-example.org"
+     },
+     "finding": "No brand impersonation found.",
+     "supports_block": false,
+     "elapsed_ms": 9.0
+    }
+   ],
+   "model": "reviewer-agent",
+   "started_at": "2026-11-24T16:53:00Z",
+   "finished_at": "2026-11-24T16:53:18Z"
+  },
+  "source": "user",
+  "evidence_ref": null,
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 1.9,
+   "models.score_url": 16.8,
+   "intel.assess_domain_fast": 98.0,
+   "layer1_url": 140.0,
+   "fetch_page": 942.4,
+   "models.score_page": 41.0,
+   "layer2_page": 1520.0,
+   "layer3_deep": 6100.0,
+   "layer4_review": 7400.0,
+   "total": 7761.9
+  },
+  "created_at": "2026-11-24T16:51:00Z",
+  "updated_at": "2026-11-24T16:53:18Z",
+  "previous_decision": "block"
+ },
+ {
+  "id": "c3d4e5f6a7b84c9d0e1f2a3b4c5d6e72",
+  "url": "https://example-post-parcel-fee.top/pay",
+  "final_url": "https://example-post-parcel-fee.top/pay",
+  "host": "example-post-parcel-fee.top",
+  "registered_domain": "example-post-parcel-fee.top",
+  "decision": "block",
+  "risk_score": 88.0,
+  "stage": "page",
+  "final": true,
+  "summary_en": "Newly registered .top domain posing as Example Post, asking for card details to pay a AED 12 fee.",
+  "summary_ar": "نطاق حديث التسجيل ينتحل صفة بريد المثال ويطلب بيانات البطاقة لدفع رسوم قدرها 12 درهم.",
+  "reasons": [
+   {
+    "code": "page.fee_bait",
+    "severity": "high",
+    "points": 14.0,
+    "title_en": "Small fee of AED 12 paired with a penalty or deadline threat",
+    "title_ar": "رسوم صغيرة بقيمة 12 درهم مقرونة بتهديد بغرامة أو مهلة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.card_form",
+    "severity": "high",
+    "points": 18.0,
+    "title_en": "Asks for payment card details",
+    "title_ar": "يطلب بيانات البطاقة المصرفية",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.tld_campaign_combo",
+    "severity": "high",
+    "points": 12.0,
+    "title_en": "Cheap \".top\" domain with fine, toll or parcel-fee wording",
+    "title_ar": "نطاق رخيص بامتداد \".top\" مع عبارات مخالفات أو رسوم طرق أو شحنات",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 1 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 1 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.brand_hosting_mismatch",
+    "severity": "low",
+    "points": 5.0,
+    "title_en": "Claims to be Example Post but is hosted abroad (SG)",
+    "title_ar": "يدّعي أنه بريد المثال لكنه مستضاف خارج الدولة (SG)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.cloaking_code",
+    "severity": "medium",
+    "points": 7.0,
+    "title_en": "Hides from security scanners (user-agent check)",
+    "title_ar": "يتخفّى عن أدوات الفحص الأمني (فحص هوية المتصفح)",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.85,
+  "page_model_score": 0.93,
+  "llm_score": null,
+  "brand": {
+   "brand": "Example Post",
+   "brand_ar": "بريد المثال",
+   "category": "courier",
+   "official_domains": [
+    "examplepost.example"
+   ],
+   "technique": "combosquat",
+   "matched_on": [
+    "domain",
+    "page text"
+   ],
+   "score": 0.9
+  },
+  "domain": {
+   "host": "example-post-parcel-fee.top",
+   "registered_domain": "example-post-parcel-fee.top",
+   "tld": "top",
+   "is_ip": false,
+   "is_idn": false,
+   "created": "2026-11-23T17:30:00Z",
+   "age_days": 1,
+   "registrar": "Example Budget Registrar",
+   "registrant_country": "CN",
+   "nameservers": [
+    "ns1.example-parking.net",
+    "ns2.example-parking.net"
+   ],
+   "ips": [
+    "192.0.2.44"
+   ],
+   "asn": 64511,
+   "asn_org": "Example Cloud Pte Ltd",
+   "hosting_country": "SG",
+   "tls_issuer": "Example Free CA R3",
+   "tls_not_before": null,
+   "tls_age_days": 1,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://example-post-parcel-fee.top/pay",
+   "final_url": "https://example-post-parcel-fee.top/pay",
+   "status": 200,
+   "fetched_at": "2026-11-24T16:43:00Z",
+   "redirect_chain": [],
+   "headers": {},
+   "html": "",
+   "title": "Example Post - Pay now",
+   "text": "",
+   "lang": null,
+   "links": [],
+   "forms": [
+    {
+     "action": "/api/card",
+     "method": "post",
+     "action_host": null,
+     "external_action": false,
+     "input_types": [
+      "text",
+      "tel"
+     ],
+     "input_names": [],
+     "asks_password": false,
+     "asks_card": true,
+     "asks_otp": false,
+     "asks_national_id": false,
+     "asks_phone": false
+    }
+   ],
+   "scripts": [],
+   "external_hosts": [],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": "camp-3c19",
+  "review": null,
+  "source": "watcher",
+  "evidence_ref": "SS-C3D4E5F6",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.4,
+   "models.score_url": 21.6,
+   "intel.assess_domain_fast": 126.0,
+   "layer1_url": 180.0,
+   "fetch_page": 961.0,
+   "models.score_page": 41.0,
+   "layer2_page": 1550.0,
+   "total": 1732.4
+  },
+  "created_at": "2026-11-24T16:43:00Z",
+  "updated_at": "2026-11-24T16:43:12Z"
+ },
+ {
+  "id": "4e5f6a7b8c9d44a51627d8e9fa0b1c5a",
+  "url": "https://gold-yield-example.com/invest",
+  "final_url": "https://gold-yield-example.com/invest",
+  "host": "gold-yield-example.com",
+  "registered_domain": "gold-yield-example.com",
+  "decision": "warn",
+  "risk_score": 62.0,
+  "stage": "deep",
+  "final": true,
+  "summary_en": "Promises guaranteed daily returns on gold trading; no licence found. Review downgraded the block to a warning.",
+  "summary_ar": "يعد بعوائد يومية مضمونة من تداول الذهب دون ترخيص ظاهر. خفّضت المراجعة الحظر إلى تحذير.",
+  "reasons": [
+   {
+    "code": "page.payment_lure",
+    "severity": "medium",
+    "points": 10.0,
+    "title_en": "Payment or prize lure: guaranteed 3% daily",
+    "title_ar": "إغراء بالدفع أو الجوائز: عائد مضمون 3٪ يومياً",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.young",
+    "severity": "medium",
+    "points": 9.0,
+    "title_en": "Domain is less than six months old (77 days)",
+    "title_ar": "عمر النطاق أقل من ستة أشهر (77 يوماً)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.visitor_profiling",
+    "severity": "low",
+    "points": 4.0,
+    "title_en": "Looks up the visitor's IP and location, as phishing kits do",
+    "title_ar": "يستعلم عن عنوان IP وموقع الزائر كما تفعل أدوات التصيّد",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "review.downgraded",
+    "severity": "info",
+    "points": -8.0,
+    "title_en": "Second-opinion review downgraded the block to a warning",
+    "title_ar": "خفّضت المراجعة الثانية الحظر إلى تحذير",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.61,
+  "page_model_score": 0.74,
+  "llm_score": null,
+  "brand": null,
+  "domain": {
+   "host": "gold-yield-example.com",
+   "registered_domain": "gold-yield-example.com",
+   "tld": "com",
+   "is_ip": false,
+   "is_idn": false,
+   "created": null,
+   "age_days": 77,
+   "registrar": null,
+   "registrant_country": null,
+   "nameservers": [],
+   "ips": [
+    "192.0.2.80"
+   ],
+   "asn": 64511,
+   "asn_org": "Example Cloud Pte Ltd",
+   "hosting_country": "SG",
+   "tls_issuer": null,
+   "tls_not_before": null,
+   "tls_age_days": null,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": null,
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": null,
+  "review": {
+   "outcome": "downgraded",
+   "decision": "warn",
+   "confidence": 0.6,
+   "summary_en": "Likely high-risk investment marketing, but no credential or card capture found; warning is the proportionate response.",
+   "summary_ar": "تسويق استثماري عالي الخطورة على الأرجح، لكن لم يُعثر على سرقة بيانات اعتماد أو بطاقات؛ التحذير هو الإجراء المناسب.",
+   "steps": [
+    {
+     "tool": "fetch_page",
+     "input": {
+      "url": "https://gold-yield-example.com/invest"
+     },
+     "finding": "Sign-up form asks for name and phone only.",
+     "supports_block": false,
+     "elapsed_ms": 1400.0
+    },
+    {
+     "tool": "web_search",
+     "input": {
+      "query": "gold-yield-example.com licence"
+     },
+     "finding": "No regulator licence found.",
+     "supports_block": true,
+     "elapsed_ms": 2100.0
+    }
+   ],
+   "model": "reviewer-agent",
+   "started_at": "2026-11-24T16:35:00Z",
+   "finished_at": "2026-11-24T16:35:12Z"
+  },
+  "source": "user",
+  "evidence_ref": "SS-4E5F6A7B",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.0,
+   "models.score_url": 22.8,
+   "intel.assess_domain_fast": 133.0,
+   "layer1_url": 190.0,
+   "fetch_page": 1054.0,
+   "models.score_page": 41.0,
+   "layer2_page": 1700.0,
+   "layer3_deep": 5200.0,
+   "layer4_review": 5100.0,
+   "total": 7092.0
+  },
+  "created_at": "2026-11-24T16:33:00Z",
+  "updated_at": "2026-11-24T16:35:12Z",
+  "previous_decision": "block"
+ },
+ {
+  "id": "d4e5f6a7b8c94d0e1f2a3b4c5d6e7f83",
+  "url": "https://toll-topup-example.cfd/pay",
+  "final_url": "https://toll-topup-example.cfd/pay",
+  "host": "toll-topup-example.cfd",
+  "registered_domain": "toll-topup-example.cfd",
+  "decision": "block",
+  "risk_score": 85.0,
+  "stage": "page",
+  "final": true,
+  "summary_en": "Newly registered .cfd domain posing as Example Toll, asking for card details to pay a AED 25 fee.",
+  "summary_ar": "نطاق حديث التسجيل ينتحل صفة رسوم الطرق المثال ويطلب بيانات البطاقة لدفع رسوم قدرها 25 درهم.",
+  "reasons": [
+   {
+    "code": "page.fee_bait",
+    "severity": "high",
+    "points": 14.0,
+    "title_en": "Small fee of AED 25 paired with a penalty or deadline threat",
+    "title_ar": "رسوم صغيرة بقيمة 25 درهم مقرونة بتهديد بغرامة أو مهلة",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.card_form",
+    "severity": "high",
+    "points": 18.0,
+    "title_en": "Asks for payment card details",
+    "title_ar": "يطلب بيانات البطاقة المصرفية",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.tld_campaign_combo",
+    "severity": "high",
+    "points": 12.0,
+    "title_en": "Cheap \".cfd\" domain with fine, toll or parcel-fee wording",
+    "title_ar": "نطاق رخيص بامتداد \".cfd\" مع عبارات مخالفات أو رسوم طرق أو شحنات",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "domain.newly_registered",
+    "severity": "high",
+    "points": 20.0,
+    "title_en": "Domain registered only 1 days ago",
+    "title_ar": "تم تسجيل النطاق قبل 1 يوماً فقط",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.brand_hosting_mismatch",
+    "severity": "low",
+    "points": 5.0,
+    "title_en": "Claims to be Example Toll but is hosted abroad (SG)",
+    "title_ar": "يدّعي أنه رسوم الطرق المثال لكنه مستضاف خارج الدولة (SG)",
+    "detail": "",
+    "evidence": {}
+   },
+   {
+    "code": "page.cloaking_code",
+    "severity": "medium",
+    "points": 7.0,
+    "title_en": "Hides from security scanners (user-agent check)",
+    "title_ar": "يتخفّى عن أدوات الفحص الأمني (فحص هوية المتصفح)",
+    "detail": "",
+    "evidence": {}
+   }
+  ],
+  "url_model_score": 0.8200000000000001,
+  "page_model_score": 0.93,
+  "llm_score": null,
+  "brand": {
+   "brand": "Example Toll",
+   "brand_ar": "رسوم الطرق المثال",
+   "category": "government",
+   "official_domains": [
+    "exampletoll.example"
+   ],
+   "technique": "combosquat",
+   "matched_on": [
+    "domain",
+    "page text"
+   ],
+   "score": 0.9
+  },
+  "domain": {
+   "host": "toll-topup-example.cfd",
+   "registered_domain": "toll-topup-example.cfd",
+   "tld": "cfd",
+   "is_ip": false,
+   "is_idn": false,
+   "created": "2026-11-23T17:30:00Z",
+   "age_days": 1,
+   "registrar": "Example Budget Registrar",
+   "registrant_country": "CN",
+   "nameservers": [
+    "ns1.example-parking.net",
+    "ns2.example-parking.net"
+   ],
+   "ips": [
+    "192.0.2.45"
+   ],
+   "asn": 64511,
+   "asn_org": "Example Cloud Pte Ltd",
+   "hosting_country": "SG",
+   "tls_issuer": "Example Free CA R3",
+   "tls_not_before": null,
+   "tls_age_days": 1,
+   "tls_sans": [],
+   "popularity_rank": null,
+   "allowlisted": false,
+   "allowlist_owner": null,
+   "blocklisted": false,
+   "blocklist_sources": [],
+   "is_shortener": false,
+   "is_shared_hosting": false,
+   "errors": [],
+   "elapsed_ms": 0.0
+  },
+  "page": {
+   "url": "https://toll-topup-example.cfd/pay",
+   "final_url": "https://toll-topup-example.cfd/pay",
+   "status": 200,
+   "fetched_at": "2026-11-24T16:27:00Z",
+   "redirect_chain": [],
+   "headers": {},
+   "html": "",
+   "title": "Example Toll - Pay now",
+   "text": "",
+   "lang": null,
+   "links": [],
+   "forms": [
+    {
+     "action": "/api/card",
+     "method": "post",
+     "action_host": null,
+     "external_action": false,
+     "input_types": [
+      "text",
+      "tel"
+     ],
+     "input_names": [],
+     "asks_password": false,
+     "asks_card": true,
+     "asks_otp": false,
+     "asks_national_id": false,
+     "asks_phone": false
+    }
+   ],
+   "scripts": [],
+   "external_hosts": [],
+   "favicon_hash": null,
+   "content_hash": null,
+   "structure_hash": null,
+   "kit_hash": null,
+   "iframes": [],
+   "needs_js": false,
+   "tls_error": null,
+   "error": null,
+   "elapsed_ms": 0.0,
+   "timings_ms": {}
+  },
+  "redirect_chain": [],
+  "pages_crawled": 0,
+  "campaign_id": "camp-3c19",
+  "review": null,
+  "source": "watcher",
+  "evidence_ref": "SS-D4E5F6A7",
+  "evidence_at": null,
+  "timings_ms": {
+   "intel.reputation": 0.4,
+   "layer0_reputation": 2.4,
+   "models.score_url": 24.0,
+   "intel.assess_domain_fast": 140.0,
+   "layer1_url": 200.0,
+   "fetch_page": 1041.6,
+   "models.score_page": 41.0,
+   "layer2_page": 1680.0,
+   "total": 1882.4
+  },
+  "created_at": "2026-11-24T16:27:00Z",
+  "updated_at": "2026-11-24T16:27:12Z"
+ }
+]

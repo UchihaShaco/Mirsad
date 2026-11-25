@@ -1,0 +1,22 @@
+{
+  "model": "url_ensemble_cpu",
+  "dataset": "urls_test",
+  "n": 10000,
+  "tp": 2564,
+  "fp": 1,
+  "tn": 5070,
+  "fn": 2365,
+  "precision": 0.9996101364522417,
+  "recall": 0.5201866504361939,
+  "f1": 0.684280757939685,
+  "fpr": 0.00019719976336028398,
+  "roc_auc": 0.9825613836774048,
+  "pr_auc": 0.9828940090899205,
+  "recall_at_fpr_0.1pct": 0.6029620612700345,
+  "recall_at_fpr_1pct": 0.8145668492594846,
+  "threshold": 0.9917101627264355,
+  "latency_ms_p50": 9.16835899988655,
+  "latency_ms_p95": 20.339185648845145,
+  "no_answer": 0,
+  "note": "random sample of 10000 rows (10k-row sample of urls_test)"
+}

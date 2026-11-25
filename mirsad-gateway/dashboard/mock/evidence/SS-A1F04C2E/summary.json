@@ -1,0 +1,105 @@
+{
+ "case_ref": "SS-A1F04C2E",
+ "verdict_id": "a1f04c2e9b7d4e1f8a6b3c5d7e9f0a12",
+ "url": "https://sho.rt.example/aB12",
+ "final_url": "https://examp1e-bank-verify.com/secure/kyc",
+ "host": "examp1e-bank-verify.com",
+ "registered_domain": "examp1e-bank-verify.com",
+ "decision": "block",
+ "risk_score": 96.0,
+ "brand": "Example Bank",
+ "brand_ar": "بنك المثال",
+ "official_domains": [
+  "examplebank.example",
+  "online.examplebank.example"
+ ],
+ "detected_at": {
+  "utc": "2026-11-24T17:17:48+00:00",
+  "gst": "2026-11-24T21:17:48+04:00"
+ },
+ "captured_at": {
+  "utc": "2026-11-24T17:18:28+00:00",
+  "gst": "2026-11-24T21:18:28+04:00"
+ },
+ "built_at": {
+  "utc": "2026-11-24T17:18:34+00:00",
+  "gst": "2026-11-24T21:18:34+04:00"
+ },
+ "screenshots": {
+  "live": {
+   "file": "screenshot.png",
+   "error": null,
+   "final_url": "https://sho.rt.example/aB12",
+   "title": null,
+   "user_agent": null
+  },
+  "engine": {
+   "file": "screenshot_engine.png",
+   "error": null
+  }
+ },
+ "views": {
+  "compared": true,
+  "differs": false,
+  "similarity": 1.0,
+  "notes": []
+ },
+ "registration": {
+  "registrar": "Example Registrar LLC",
+  "registrar_iana_id": "9999",
+  "created": "2026-11-21T17:30:00Z",
+  "age_days": 3,
+  "registrant": null,
+  "registrant_country": "IS",
+  "nameservers": [
+   "ada.ns.example-dns.net",
+   "bob.ns.example-dns.net"
+  ],
+  "source": "rdap"
+ },
+ "hosting": {
+  "ips": [
+   "203.0.113.10"
+  ],
+  "asn": 64500,
+  "network": "Example Hosting BV",
+  "country": "NL"
+ },
+ "tls": {
+  "issuer": "Example Free CA R3",
+  "not_before": null,
+  "not_after": null,
+  "sha256": null
+ },
+ "abuse_contacts": {
+  "registrar": [
+   "abuse@registrar.example"
+  ],
+  "hosting": [
+   "abuse@hosting.example"
+  ]
+ },
+ "files": [
+  {
+   "name": "screenshot.png",
+   "sha256": "f7f09c6a3ffd3dce01d2f2c7bebaa1bbe4cf0dc5728bf3fdab29a3a90ccb791a",
+   "bytes": 65755
+  },
+  {
+   "name": "screenshot_engine.png",
+   "sha256": "f7f09c6a3ffd3dce01d2f2c7bebaa1bbe4cf0dc5728bf3fdab29a3a90ccb791a",
+   "bytes": 65755
+  },
+  {
+   "name": "capture.html",
+   "sha256": "0218483fa40afa1a807aa65d1399151d604da6e18aa3643218fd81fe9e5f0b7f",
+   "bytes": 1084
+  },
+  {
+   "name": "takedown_request.txt",
+   "sha256": "cdfd3978f8b8289ef054aaaa25ca44364759b7155fcc9e4ad7ef99f0ddde7a38",
+   "bytes": 150
+  }
+ ],
+ "unavailable": {}
+}

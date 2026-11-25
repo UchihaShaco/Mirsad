@@ -1,0 +1,545 @@
+{
+ "tag": "qwen3.5-9b",
+ "dataset": "listings_final_blocks",
+ "summary": {
+  "n": 56,
+  "false_positives": {
+   "n": 9,
+   "cleared_to_allow": 0,
+   "downgraded_to_warn": 1,
+   "still_blocked": 8
+  },
+  "true_positives": {
+   "n": 43,
+   "kept_blocked": 43,
+   "wrongly_warned": 0,
+   "wrongly_allowed": 0
+  },
+  "transitions": {
+   "legitimate (false positive) | block": {
+    "downgraded -> warn": 1,
+    "confirmed -> block": 8
+   },
+   "scam (true positive) | block": {
+    "confirmed -> block": 43
+   },
+   "unlabelled | block": {
+    "confirmed -> block": 2,
+    "inconclusive -> block": 2
+   }
+  },
+  "seconds_p50": 15.4,
+  "seconds_max": 27.0,
+  "arabic_ok_rate": 1.0,
+  "errors": 0,
+  "models": {
+   "openai-compatible:scamshield-llm": 56
+  }
+ },
+ "rows": [
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 15.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.98,
+   "seconds": 15.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 20.1,
+   "arabic_ok": true
+  },
+  {
+   "label": null,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.82,
+   "seconds": 13.8,
+   "arabic_ok": true
+  },
+  {
+   "label": null,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 10.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.98,
+   "seconds": 27.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 22.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.85,
+   "seconds": 10.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.9,
+   "seconds": 10.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.8,
+   "seconds": 17.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.8,
+   "seconds": 11.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.85,
+   "seconds": 15.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.85,
+   "seconds": 14.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.7,
+   "seconds": 22.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.9,
+   "seconds": 19.4,
+   "arabic_ok": true
+  },
+  {
+   "label": null,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 13.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 11.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.85,
+   "seconds": 13.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 6.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 20.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 14.5,
+   "arabic_ok": true
+  },
+  {
+   "label": null,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.82,
+   "seconds": 10.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 14.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 16.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 18.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 16.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 23.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 14.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 20.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 17.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 19.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 17.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 19.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 17.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 21.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 13.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 17.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 5.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 14.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 14.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 10.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 15.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 12.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 13.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 21.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 16.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 12.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 10.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 18.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 16.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 16.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 15.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 13.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 6.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 13.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 19.2,
+   "arabic_ok": true
+  }
+ ]
+}

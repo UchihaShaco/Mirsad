@@ -1,0 +1,20 @@
+{
+  "model": "page_gte_ft",
+  "dataset": "pages_test_arabic",
+  "n": 45,
+  "tp": 24,
+  "fp": 0,
+  "tn": 19,
+  "fn": 2,
+  "precision": 1.0,
+  "recall": 0.9230769230769231,
+  "f1": 0.9600000000000001,
+  "fpr": 0.0,
+  "roc_auc": 1.0,
+  "pr_auc": 0.9999999999999998,
+  "recall_at_fpr_0.1pct": 1.0,
+  "recall_at_fpr_1pct": 1.0,
+  "threshold": 0.809878170490265,
+  "latency_ms_p50": null,
+  "latency_ms_p95": null
+}

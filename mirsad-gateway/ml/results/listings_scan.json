@@ -1,0 +1,37 @@
+{
+ "dataset": "websites of Abu Dhabi map listings (private list; aggregates only)",
+ "sites": 8883,
+ "first_scan_before_tuning": {
+  "allow": 7696,
+  "warn": 982,
+  "block": 205
+ },
+ "final_scan_frozen_engine": {
+  "allow": 8505,
+  "warn": 322,
+  "block": 56
+ },
+ "final_scan_blocks_by_kind": {
+  "leads to or serves gambling / harmful content (takeover or compromise)": 43,
+  "listed on a public phishing feed": 8,
+  "other": 1,
+  "young domain with data-theft or wallet-draining script": 4
+ },
+ "final_scan_warns_by_kind": {
+  "other (mostly model scores with a risky TLD, site builder or young domain)": 198,
+  "domain expired or parked for sale": 120,
+  "re-registered name redirecting to an unrelated site": 4
+ },
+ "flagged_share_first": 0.1336,
+ "flagged_share_final": 0.0426,
+ "batch_elapsed_ms": {
+  "p50": 2508.0,
+  "p95": 4424.0,
+  "note": "batch run, 6 concurrent checks at lowest CPU priority, blocklists on, page depth"
+ },
+ "notes": [
+  "This list was used to tune rules after the first scan, so the final numbers are development numbers.",
+  "Block kinds are assigned from the engine's reason codes; the gambling group was checked by page title and destination, the data-theft group was not checked by hand.",
+  "The second scan ran live about three hours after the first; some destinations changed or were unreachable in between."
+ ]
+}

@@ -1,0 +1,21 @@
+{
+  "model": "page_combo_no_abstain",
+  "dataset": "pages_test",
+  "n": 15048,
+  "tp": 3223,
+  "fp": 32,
+  "tn": 7329,
+  "fn": 4464,
+  "precision": 0.9901689708141321,
+  "recall": 0.41927930271887603,
+  "f1": 0.5891061963078048,
+  "fpr": 0.004347235429968754,
+  "roc_auc": 0.9581788454819045,
+  "pr_auc": 0.960034307341704,
+  "recall_at_fpr_0.1pct": 0.2385846233901392,
+  "recall_at_fpr_1pct": 0.5341485625081306,
+  "threshold": 0.9763178425610113,
+  "latency_ms_p50": 15.30081000055361,
+  "latency_ms_p95": 38.64606299939627,
+  "latency_note": "1 CPU thread, batch 1, end to end (HTML parse + features + model), 300 pages, CPU shared with other jobs (alone: page_combo 9.2 ms p50)"
+}

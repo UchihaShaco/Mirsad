@@ -1,0 +1,28 @@
+{
+  "model": "hf_kmack_distilbert",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 717,
+  "tn": 2957,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.19515514425694067,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.5,
+  "latency_ms_p50": 38.99090699815133,
+  "latency_ms_p95": 71.81717649891654,
+  "no_answer": 0,
+  "note": "kmack/malicious-url-detection, DistilBERT 66M, trained on kmack/Phishing_urls; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)",
+  "latency_gpu_ms_p50": 49.35523499989358,
+  "latency_gpu_ms_p95": 85.04184979992715,
+  "latency_source": "cpu",
+  "row_level_detail": {
+    "false_positives": 200
+  }
+}

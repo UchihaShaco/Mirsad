@@ -1,0 +1,35 @@
+# Local config and secrets
+.env
+
+# Python
+.venv/
+.venv-llm/
+.venv-gpu/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Runtime state: engine database, feeds, evidence packs, tunnel identity
+/data/
+gateway/state/
+
+# Datasets, model weights and vendored baselines are rebuilt or downloaded, never committed
+ml/data/
+ml/artifacts/*.bin
+ml/artifacts/page_encoder*/
+ml/page/cache/
+ml/sota/url/vendor/
+ml/sota/page/vendor/
+ml/sota/page/cache/
+
+# The repo root .gitignore ignores data/ everywhere; this product ships reference data inside its package.
+!src/scamshield/*/data/
+
+# Kept on the machine that made them, never pushed: recorded copies of real sites' pages (the tests skip without them),
+# the Phishpedia-derived global brand list (optional; the engine runs without it), the full benchmark results with
+# per-URL rows, and a captured real search-results page.
+tests/pipeline/snapshots/
+src/scamshield/intel/data/global_brands.json
+tests/watch/fixtures/ddg_enbd_customer_care.html

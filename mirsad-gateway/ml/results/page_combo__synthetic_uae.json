@@ -1,0 +1,21 @@
+{
+  "model": "page_combo",
+  "dataset": "synthetic_uae",
+  "n": 297,
+  "tp": 142,
+  "fp": 4,
+  "tn": 143,
+  "fn": 8,
+  "precision": 0.9726027397260274,
+  "recall": 0.9466666666666667,
+  "f1": 0.9594594594594594,
+  "fpr": 0.027210884353741496,
+  "roc_auc": 0.9941043083900226,
+  "pr_auc": 0.9935868707710288,
+  "recall_at_fpr_0.1pct": 0.66,
+  "recall_at_fpr_1pct": 0.72,
+  "threshold": 0.9695954669238083,
+  "latency_ms_p50": 19.627437999588437,
+  "latency_ms_p95": 43.633122000755975,
+  "latency_note": "CPU path of score_page inside the engine container (encoder unavailable), one page at a time"
+}

@@ -1,0 +1,22 @@
+{
+  "model": "url_mmbert_ft",
+  "dataset": "urls_test_shorteners",
+  "n": 1351,
+  "tp": 1,
+  "fp": 3,
+  "tn": 1334,
+  "fn": 13,
+  "precision": 0.25,
+  "recall": 0.07142857142857142,
+  "f1": 0.11111111111111112,
+  "fpr": 0.002243829468960359,
+  "roc_auc": 0.9962602842183994,
+  "pr_auc": 0.6083050935992111,
+  "recall_at_fpr_0.1pct": 0.07142857142857142,
+  "recall_at_fpr_1pct": 1.0,
+  "threshold": 0.9910145401954652,
+  "latency_ms_p50": 70.3515420009353,
+  "latency_ms_p95": 183.48433890259906,
+  "no_answer": 0,
+  "note": "jhu-clsp/mmBERT-small fine-tuned on URLs, GPU (bf16); latency is single-URL on GPU"
+}

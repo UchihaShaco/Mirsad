@@ -1,0 +1,20 @@
+{
+  "model": "page_gte_ft",
+  "dataset": "synthetic_uae",
+  "n": 297,
+  "tp": 150,
+  "fp": 7,
+  "tn": 140,
+  "fn": 0,
+  "precision": 0.9554140127388535,
+  "recall": 1.0,
+  "f1": 0.9771986970684039,
+  "fpr": 0.047619047619047616,
+  "roc_auc": 0.9995918367346939,
+  "pr_auc": 0.9996120107962214,
+  "recall_at_fpr_0.1pct": 0.9866666666666667,
+  "recall_at_fpr_1pct": 0.9866666666666667,
+  "threshold": 0.809878170490265,
+  "latency_ms_p50": null,
+  "latency_ms_p95": null
+}

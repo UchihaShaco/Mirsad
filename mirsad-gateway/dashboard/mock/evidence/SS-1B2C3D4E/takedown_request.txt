@@ -1,0 +1,3 @@
+Subject: Phishing report: example-telecom-rewards[.]xyz [case SS-1B2C3D4E]
+
+Sample takedown request (demo data). See the real engine for a complete text.

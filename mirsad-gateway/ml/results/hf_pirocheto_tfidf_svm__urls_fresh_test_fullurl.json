@@ -1,0 +1,22 @@
+{
+  "model": "hf_pirocheto_tfidf_svm",
+  "dataset": "urls_fresh_test_fullurl",
+  "n": 3472,
+  "tp": 1104,
+  "fp": 617,
+  "tn": 1438,
+  "fn": 313,
+  "precision": 0.641487507263219,
+  "recall": 0.7791107974594214,
+  "f1": 0.7036328871892925,
+  "fpr": 0.30024330900243307,
+  "roc_auc": 0.8174926638128942,
+  "pr_auc": 0.7338325819541267,
+  "recall_at_fpr_0.1pct": 0.04728299223712068,
+  "recall_at_fpr_1pct": 0.08680310515172901,
+  "threshold": 0.5,
+  "latency_ms_p50": 1.9749200018850388,
+  "latency_ms_p95": 4.204394750922803,
+  "no_answer": 0,
+  "note": "pirocheto/phishing-url-detection ONNX (TF-IDF + linear SVM), trained on pirocheto/phishing-url"
+}

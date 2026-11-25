@@ -1,0 +1,24 @@
+{
+  "model": "url_ensemble_cpu",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 0,
+  "tn": 3674,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.0,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.9917101627264355,
+  "latency_ms_p50": 12.217463501656312,
+  "latency_ms_p95": 22.073677400840097,
+  "no_answer": 0,
+  "row_level_detail": {
+    "false_positives": 0
+  }
+}

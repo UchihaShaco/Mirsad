@@ -1,0 +1,24 @@
+{
+  "model": "url_lgbm_feats",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 2,
+  "tn": 3672,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.0005443658138268917,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.9552042160737814,
+  "latency_ms_p50": 0.4131345012865495,
+  "latency_ms_p95": 0.9369976498419418,
+  "no_answer": 0,
+  "row_level_detail": {
+    "false_positives": 2
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": "url_mmbert_ft",
+  "dataset": "urls_test_nohf",
+  "n": 297150,
+  "tp": 95245,
+  "fp": 159,
+  "tn": 144483,
+  "fn": 57263,
+  "precision": 0.9983334032116054,
+  "recall": 0.6245246151021586,
+  "f1": 0.7683774887863435,
+  "fpr": 0.0010992657734268056,
+  "roc_auc": 0.9838787854484694,
+  "pr_auc": 0.9857628318962202,
+  "recall_at_fpr_0.1pct": 0.6167610879429276,
+  "recall_at_fpr_1pct": 0.8164752013009153,
+  "threshold": 0.9910145401954652,
+  "latency_ms_p50": 85.23081599923898,
+  "latency_ms_p95": 118.12411384980803,
+  "no_answer": 0,
+  "note": "jhu-clsp/mmBERT-small fine-tuned on URLs, GPU (bf16); latency is single-URL on GPU"
+}

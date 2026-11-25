@@ -1,0 +1,22 @@
+{
+  "model": "page_gte_ft",
+  "dataset": "pages_test_1pct",
+  "n": 7435,
+  "tp": 61.1,
+  "fp": 39.0,
+  "tn": 7322.0,
+  "fn": 12.9,
+  "precision": 0.6100293186361936,
+  "recall": 0.8256756756756756,
+  "f1": 0.7015001906605144,
+  "fpr": 0.005298193180274418,
+  "roc_auc": 0.9906200776921468,
+  "pr_auc": 0.7864761179370128,
+  "recall_at_fpr_0.1pct": 0.5783783783783785,
+  "recall_at_fpr_1pct": 0.895945945945946,
+  "threshold": 0.809878170490265,
+  "latency_ms_p50": null,
+  "latency_ms_p95": null,
+  "base_rate": 0.01,
+  "draws": 20
+}

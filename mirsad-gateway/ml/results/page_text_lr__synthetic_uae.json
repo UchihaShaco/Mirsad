@@ -1,0 +1,21 @@
+{
+  "model": "page_text_lr",
+  "dataset": "synthetic_uae",
+  "n": 297,
+  "tp": 143,
+  "fp": 21,
+  "tn": 126,
+  "fn": 7,
+  "precision": 0.8719512195121951,
+  "recall": 0.9533333333333334,
+  "f1": 0.9108280254777071,
+  "fpr": 0.14285714285714285,
+  "roc_auc": 0.9730158730158731,
+  "pr_auc": 0.9735644034721602,
+  "recall_at_fpr_0.1pct": 0.29333333333333333,
+  "recall_at_fpr_1pct": 0.5733333333333334,
+  "threshold": 0.964439962071943,
+  "latency_ms_p50": 13.246114500361728,
+  "latency_ms_p95": 36.74185605050301,
+  "latency_note": "1 CPU thread, batch 1, end to end (HTML parse + features + model), 300 pages, CPU shared with other jobs (alone: page_combo 9.2 ms p50)"
+}

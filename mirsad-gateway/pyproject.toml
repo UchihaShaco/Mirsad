@@ -1,0 +1,60 @@
+[project]
+name = "scamshield"
+version = "0.1.0"
+description = "Mirsad website shield: simulated ISP gateway that investigates websites before a user can load them"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2",
+    "httpx",
+    "anthropic>=2",
+    "curl_cffi",
+    "selectolax",
+    "lxml",
+    "beautifulsoup4",
+    "tldextract",
+    "dnspython",
+    "cryptography",
+    "mmh3",
+    "rapidfuzz",
+    "idna",
+    "scikit-learn",
+    "lightgbm",
+    "xgboost",
+    "pandas",
+    "pyarrow",
+    "numpy",
+    "joblib",
+    "onnxruntime",
+    "tokenizers",
+    "aiosqlite",
+    "sse-starlette",
+    "python-multipart",
+    "jinja2",
+    "weasyprint",
+    "playwright",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "datasets", "huggingface_hub", "tqdm", "requests"]
+# ml/bench baselines and plots (CPU torch: --index-url https://download.pytorch.org/whl/cpu)
+bench = ["matplotlib", "onnx", "torch", "transformers", "huggingface_hub"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"scamshield.evidence" = ["fonts/*", "templates/*"]
+"scamshield.review" = ["data/*.json"]
+"scamshield.intel" = ["data/*.json"]
+"scamshield.models" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]  # lets tests import shared helpers such as tests.fixtures.server

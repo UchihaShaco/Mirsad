@@ -1,0 +1,115 @@
+[
+ {
+  "id": "camp-3c19",
+  "label": "Fine and parcel-fee kit on cheap TLDs",
+  "label_ar": "حملة رسوم المخالفات والشحنات على نطاقات رخيصة",
+  "first_seen": "2026-11-24T16:27:00+00:00",
+  "last_seen": "2026-11-24T16:59:00+00:00",
+  "domains": [
+   {
+    "host": "roads-fine-payment-example.icu",
+    "decision": "block",
+    "risk_score": 92.0,
+    "verdict_id": "b2c3d4e5f6a74b8c9d0e1f2a3b4c5d61"
+   },
+   {
+    "host": "example-post-parcel-fee.top",
+    "decision": "block",
+    "risk_score": 88.0,
+    "verdict_id": "c3d4e5f6a7b84c9d0e1f2a3b4c5d6e72"
+   },
+   {
+    "host": "toll-topup-example.cfd",
+    "decision": "block",
+    "risk_score": 85.0,
+    "verdict_id": "d4e5f6a7b8c94d0e1f2a3b4c5d6e7f83"
+   },
+   {
+    "host": "parking-fine-example.sbs",
+    "decision": "block",
+    "risk_score": 90,
+    "verdict_id": null
+   }
+  ],
+  "links": [
+   {
+    "source": "roads-fine-payment-example.icu",
+    "target": "example-post-parcel-fee.top",
+    "shared": [
+     "ip 192.0.2.44",
+     "ns example-parking.net",
+     "kit hash 9f3a…e1"
+    ]
+   },
+   {
+    "source": "roads-fine-payment-example.icu",
+    "target": "toll-topup-example.cfd",
+    "shared": [
+     "ns example-parking.net",
+     "kit hash 9f3a…e1"
+    ]
+   },
+   {
+    "source": "example-post-parcel-fee.top",
+    "target": "toll-topup-example.cfd",
+    "shared": [
+     "AS64511"
+    ]
+   },
+   {
+    "source": "toll-topup-example.cfd",
+    "target": "parking-fine-example.sbs",
+    "shared": [
+     "ip 192.0.2.45",
+     "favicon 6b1d…"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "camp-7f2a",
+  "label": "Example Bank / Example Telecom credential theft",
+  "label_ar": "سرقة بيانات اعتماد بنك المثال واتصالات المثال",
+  "first_seen": "2026-11-24T17:04:00+00:00",
+  "last_seen": "2026-11-24T17:18:00+00:00",
+  "domains": [
+   {
+    "host": "examp1e-bank-verify.com",
+    "decision": "block",
+    "risk_score": 96,
+    "verdict_id": "a1f04c2e9b7d4e1f8a6b3c5d7e9f0a12"
+   },
+   {
+    "host": "example-telecom-rewards.xyz",
+    "decision": "block",
+    "risk_score": 83,
+    "verdict_id": "1b2c3d4e5f6a41728394a5b6c7d8e927"
+   },
+   {
+    "host": "examp1e-bank-secure.net",
+    "decision": "block",
+    "risk_score": 91,
+    "verdict_id": null
+   }
+  ],
+  "links": [
+   {
+    "source": "examp1e-bank-verify.com",
+    "target": "example-telecom-rewards.xyz",
+    "shared": [
+     "ip 203.0.113.10",
+     "ns example-dns.net",
+     "exfil endpoint"
+    ]
+   },
+   {
+    "source": "examp1e-bank-verify.com",
+    "target": "examp1e-bank-secure.net",
+    "shared": [
+     "TLS SAN",
+     "page structure hash"
+    ]
+   }
+  ]
+ }
+]

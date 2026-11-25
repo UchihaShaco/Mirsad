@@ -1,0 +1,215 @@
+{
+ "page_speed": {
+  "phases": {
+   "layer 0 reputation": 0.26,
+   "URL model": 3.88,
+   "layer 1 URL (model + domain intel + look-alike)": 271.76,
+   "fetch page (+ redirects, static JS scan)": 3004.09,
+   "page model": 76.65,
+   "brand match on page": 5.52,
+   "first verdict (layer 2 done)": 3522.19,
+   "total in engine": 1.84
+  },
+  "browser_load_p50": 4860.416919998897,
+  "browser_networkidle_p50": 9981.098145999567,
+  "llm_p50": 2085.470128500674,
+  "models": [
+   {
+    "model": "hf_ealvaradob_bert_large",
+    "dataset": "pages_test",
+    "p50_ms": 3715.6033249993925
+   },
+   {
+    "model": "hf_horizon_mmbert_scam",
+    "dataset": "pages_test",
+    "p50_ms": 1947.3261134990025
+   },
+   {
+    "model": "hf_horizon_scam_text",
+    "dataset": "uae_legit",
+    "p50_ms": 200.30615299947385
+   },
+   {
+    "model": "hf_huynq3_mbert_webpage",
+    "dataset": "pages_test",
+    "p50_ms": 875.0564040001336
+   },
+   {
+    "model": "hf_kmack_distilbert",
+    "dataset": "urls_test",
+    "p50_ms": 38.99090699815133
+   },
+   {
+    "model": "hf_pirocheto_tfidf_svm",
+    "dataset": "urls_test",
+    "p50_ms": 1.889336499516503
+   },
+   {
+    "model": "hf_urlbert_tiny_v4",
+    "dataset": "urls_test",
+    "p50_ms": 4.536532498605084
+   },
+   {
+    "model": "keyword_baseline",
+    "dataset": "pages_test",
+    "p50_ms": 6.241885501367506
+   },
+   {
+    "model": "llm_judge_qwen3.5-9b",
+    "dataset": "llm_sample_arabic",
+    "p50_ms": 5736.908697999752
+   },
+   {
+    "model": "llm_judge_qwen3.5-9b_signals",
+    "dataset": "llm_sample_arabic",
+    "p50_ms": 4398.776802001521
+   },
+   {
+    "model": "page_combo_no_abstain",
+    "dataset": "pages_test",
+    "p50_ms": 15.30081000055361
+   },
+   {
+    "model": "page_struct_lgbm",
+    "dataset": "pages_test",
+    "p50_ms": 6.335344500257634
+   },
+   {
+    "model": "page_text_lr",
+    "dataset": "pages_test",
+    "p50_ms": 13.246114500361728
+   },
+   {
+    "model": "rules_baseline",
+    "dataset": "pages_test",
+    "p50_ms": 6.032279999999446
+   },
+   {
+    "model": "sota_url_urlnet",
+    "dataset": "urls_test",
+    "p50_ms": 4.774708999320865
+   },
+   {
+    "model": "url_ensemble",
+    "dataset": "urls_test",
+    "p50_ms": 96.38834199904522
+   },
+   {
+    "model": "url_lgbm_feats",
+    "dataset": "urls_test",
+    "p50_ms": 0.3757129979931051
+   },
+   {
+    "model": "url_mmbert_ft",
+    "dataset": "urls_test",
+    "p50_ms": 67.60847050099983
+   },
+   {
+    "model": "url_stack",
+    "dataset": "urls_test",
+    "p50_ms": 0.7200939999165712
+   },
+   {
+    "model": "url_tfidf_lr",
+    "dataset": "urls_test",
+    "p50_ms": 0.2072870011033956
+   }
+  ],
+  "published": [
+   [
+    "Phishpedia (USENIX Sec '21)",
+    "screenshot + URL",
+    "0.19 s + 1.88 s screenshot",
+    "GPU; logo detector + Siamese matcher",
+    "Lin et al. 2021, Table 2"
+   ],
+   [
+    "EMD / PhishZoo (as compared in Phishpedia)",
+    "screenshot",
+    "15-27 s",
+    "",
+    "Lin et al. 2021"
+   ],
+   [
+    "KnowPhish Detector + KnowPhish KB (USENIX Sec '24)",
+    "screenshot + HTML text + LLM",
+    "2.02 s (1.6-2 s)",
+    "GPT-3.5 brand extraction",
+    "Li et al. 2024, arXiv 2403.02253"
+   ],
+   [
+    "Phishpedia with KnowPhish KB",
+    "screenshot + URL",
+    "0.22 s",
+    "",
+    "arXiv 2403.02253"
+   ],
+   [
+    "DynaPhish (USENIX Sec '23)",
+    "screenshot + web search",
+    "10.9 s (5.8 s in PhishLLM's setup)",
+    "",
+    "arXiv 2403.02253; PhishLLM paper"
+   ],
+   [
+    "PhishLLM / PhishVLM (USENIX Sec '24)",
+    "screenshot + OCR + LLM + search",
+    "3.2 s",
+    "GPT-3.5; $6.14 per 1k sites",
+    "Liu et al. 2024"
+   ],
+   [
+    "GEPAgent",
+    "agentic GPT-4V",
+    "~20 s",
+    "",
+    "arXiv 2408.01667"
+   ],
+   [
+    "SLM judge: mistral-nemo 12B",
+    "HTML (5%) + URL",
+    "1.79 s",
+    "A100, Ollama",
+    "arXiv 2511.15434"
+   ],
+   [
+    "SLM judge: gemma3 4B / 12B / 27B",
+    "HTML (5%) + URL",
+    "1.97 / 3.55 / 7.08 s",
+    "A100, Ollama",
+    "arXiv 2511.15434"
+   ],
+   [
+    "SLM judge: llama3.3 70B",
+    "HTML (5%) + URL",
+    "7.73 s",
+    "A100, Ollama",
+    "arXiv 2511.15434"
+   ],
+   [
+    "SLM judge: deepseek-r1 70B",
+    "HTML (5%) + URL",
+    "23.3 s",
+    "A100, Ollama",
+    "arXiv 2511.15434"
+   ],
+   [
+    "CrawlPhish cloaking detection (S&P '21)",
+    "forced JS execution",
+    "~46 screenshots per site",
+    "",
+    "Zhang et al. 2021"
+   ]
+  ],
+  "hardware": "13th Gen Intel(R) Core(TM) i7-13700K",
+  "pages": 95
+ },
+ "images": [
+  "cm__url_stack__urls_fresh_test.png",
+  "cm__hf_urlbert_tiny_v4__urls_fresh_test.png",
+  "cm__url_stack__uae_legit.png",
+  "cm__hf_urlbert_tiny_v4__uae_legit.png",
+  "page_confusion__pages_test.png",
+  "page_speed.png"
+ ]
+}

@@ -1,0 +1,3 @@
+Subject: Phishing report: examp1e-bank-verify[.]com [case SS-A1F04C2E]
+
+Sample takedown request (demo data). See the real engine for a complete text.

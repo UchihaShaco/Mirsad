@@ -1,0 +1,28 @@
+{
+  "model": "hf_horizon_scam_text",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 202,
+  "tn": 3472,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.054980947196516056,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.5,
+  "latency_ms_p50": 88.57627950055758,
+  "latency_ms_p95": 174.67275785293177,
+  "no_answer": 0,
+  "note": "Horizon-Labs/phishing-scam-detector-base, mmBERT 307M message-text model (fraud/spam/legit) applied to the URL string; P(scam)=P(fraud). Off-domain reference; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)",
+  "latency_gpu_ms_p50": 13.041410998994252,
+  "latency_gpu_ms_p95": 35.38625084729575,
+  "latency_source": "cpu",
+  "row_level_detail": {
+    "false_positives": 200
+  }
+}

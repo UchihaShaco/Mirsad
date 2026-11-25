@@ -1,0 +1,22 @@
+{
+  "model": "url_ensemble_cpu@triage",
+  "dataset": "urls_fresh_test",
+  "n": 5394,
+  "tp": 2364,
+  "fp": 26,
+  "tn": 2674,
+  "fn": 330,
+  "precision": 0.9891213389121339,
+  "recall": 0.8775055679287305,
+  "f1": 0.929976396538159,
+  "fpr": 0.00962962962962963,
+  "roc_auc": 0.9914013995435673,
+  "pr_auc": 0.9916738766025731,
+  "recall_at_fpr_0.1pct": 0.6458797327394209,
+  "recall_at_fpr_1pct": 0.8775055679287305,
+  "threshold": 0.8615179760319575,
+  "latency_ms_p50": 10.510871501537622,
+  "latency_ms_p95": 20.826448097432138,
+  "no_answer": 0,
+  "note": "triage operating point: threshold set for 1% FPR on validation; URLs above it are escalated to the page check, not blocked"
+}
