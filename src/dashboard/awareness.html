@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Mirsad · Awareness campaigns</title>
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/awareness.css">
+<script type="module" src="/assets/js/awareness/main.js"></script>
+</head>
+<body class="aw-body">
+<header class="topbar">
+  <p class="brand"><img class="brand-mark" src="/assets/icon.svg" alt="" width="26" height="26"><span class="brand-name">Mirsad</span><span class="brand-arabic" lang="ar" dir="rtl" aria-hidden="true">مرصاد</span></p>
+  <nav class="view-nav" aria-label="Views">
+    <a href="/#/">Inbox</a>
+    <a href="/#/watchlist">Phone watchlist</a>
+    <a href="/#/places">Places map</a>
+    <a href="/assets/awareness.html" aria-current="page">Awareness campaigns</a>
+  </nav>
+  <span class="aw-sim-pill" title="This page is a front-end prototype. No message is sent and every number is simulated.">Simulation · no messages are sent</span>
+</header>
+
+<main class="aw">
+  <section class="aw-intro" aria-labelledby="aw-heading">
+    <div class="aw-intro-text">
+      <h1 id="aw-heading">Awareness campaigns <span class="aw-ar" lang="ar" dir="rtl">حملات التوعية</span></h1>
+      <p>Send a safe test message that looks like a real scam to a chosen slice of the Abu Dhabi emirate. See on the map
+        who taps the link, find the groups most exposed to fraud, and invite everyone who tapped to install Mirsad on
+        their phone.</p>
+    </div>
+    <dl class="aw-kpis" aria-label="All campaigns so far">
+      <div><dt>Test messages sent</dt><dd id="kpi-sent">0</dd></div>
+      <div><dt>Tapped the link</dt><dd id="kpi-clicked">0</dd></div>
+      <div><dt>Click rate</dt><dd id="kpi-rate">0%</dd></div>
+      <div><dt>Installed Mirsad after the test</dt><dd id="kpi-installed">0</dd></div>
+    </dl>
+  </section>
+
+  <div class="aw-grid">
+    <!-- Campaign builder -->
+    <form id="aw-form" class="aw-panel aw-builder" autocomplete="off" aria-labelledby="aw-builder-heading">
+      <h2 id="aw-builder-heading">New campaign</h2>
+
+      <fieldset class="aw-field">
+        <legend>Scam pattern to imitate</legend>
+        <div id="f-lure" class="aw-lures" role="radiogroup"></div>
+      </fieldset>
+
+      <div class="aw-row">
+        <fieldset class="aw-field">
+          <legend>Channel</legend>
+          <div id="f-channel" class="aw-seg"></div>
+        </fieldset>
+        <fieldset class="aw-field">
+          <legend>Message language</legend>
+          <div id="f-language" class="aw-seg"></div>
+        </fieldset>
+      </div>
+
+      <fieldset class="aw-field">
+        <legend>Where <span class="aw-hint">pick regions, or click areas on the map</span></legend>
+        <div id="f-regions" class="aw-chips"></div>
+        <div id="f-areas" class="aw-chips aw-area-chips" aria-live="polite"></div>
+      </fieldset>
+
+      <fieldset class="aw-field">
+        <legend>Age</legend>
+        <div id="f-ages" class="aw-chips"></div>
+      </fieldset>
+
+      <div class="aw-row">
+        <fieldset class="aw-field">
+          <legend>Gender</legend>
+          <div id="f-genders" class="aw-chips"></div>
+        </fieldset>
+        <fieldset class="aw-field">
+          <legend>Residence</legend>
+          <div id="f-residences" class="aw-chips"></div>
+        </fieldset>
+      </div>
+
+      <fieldset class="aw-field">
+        <legend>Nationality group</legend>
+        <div id="f-nationalities" class="aw-chips"></div>
+      </fieldset>
+
+      <fieldset class="aw-field">
+        <legend>Number of messages</legend>
+        <div class="aw-size">
+          <input id="f-size" type="range" min="100" max="1000" step="100" value="5000" aria-describedby="f-eligible">
+          <output id="f-size-out" for="f-size">0</output>
+        </div>
+        <p id="f-eligible" class="aw-hint">0 people match these filters.</p>
+      </fieldset>
+
+      <div class="aw-preview" aria-label="Message preview">
+        <p class="aw-preview-label">What they will receive</p>
+        <p id="f-preview" class="aw-bubble"></p>
+        <p class="aw-hint">The link opens a safe awareness page; nothing is collected except the tap.</p>
+      </div>
+
+      <button type="submit" id="aw-launch" class="primary aw-launch">Launch campaign</button>
+    </form>
+
+    <!-- Map -->
+    <section class="aw-panel aw-mapcard" aria-labelledby="aw-map-heading">
+      <div class="aw-map-head">
+        <div>
+          <h2 id="aw-map-heading">Who tapped the link</h2>
+          <p class="aw-hint">Drag to pan, scroll or use + and − to zoom. Click a dot to target that area.</p>
+        </div>
+        <div id="m-mode" class="aw-seg" role="radiogroup" aria-label="Map layer"></div>
+      </div>
+      <div class="aw-map-filters" aria-label="Show on the map">
+        <label>Campaign <select id="m-campaign"></select></label>
+        <label>Age <select id="m-age"></select></label>
+        <label>Gender <select id="m-gender"></select></label>
+        <label>Nationality <select id="m-nationality"></select></label>
+      </div>
+      <div id="aw-map" class="aw-map">
+        <div class="aw-map-controls">
+          <button type="button" id="m-zoom-in" aria-label="Zoom in">+</button>
+          <button type="button" id="m-zoom-out" aria-label="Zoom out">−</button>
+          <button type="button" id="m-reset" aria-label="Show the whole emirate">⤢</button>
+        </div>
+        <div class="aw-legend" aria-hidden="true">
+          <span id="m-legend-low">Fewer taps</span><span class="aw-legend-bar"></span><span id="m-legend-high">More taps</span>
+        </div>
+        <div id="m-tooltip" class="aw-tooltip" role="status" hidden></div>
+        <div id="m-sending" class="aw-map-sending" hidden><span class="aw-spinner"></span><span id="m-sending-text">Sending…</span></div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="aw-panel aw-results" aria-labelledby="aw-results-heading">
+      <h2 id="aw-results-heading">Live results</h2>
+      <div id="r-idle" class="aw-idle">
+        <p>Choose who to reach and launch a campaign. Results appear here as messages are delivered and tapped.</p>
+      </div>
+      <div id="r-live" hidden>
+        <p id="r-title" class="aw-live-title"></p>
+        <ol id="r-stages" class="aw-stages"></ol>
+        <div class="aw-progress" aria-hidden="true"><span id="r-bar"></span></div>
+        <dl class="aw-counters">
+          <div><dt>Delivered</dt><dd id="r-delivered">0</dd></div>
+          <div><dt>Tapped</dt><dd id="r-clicked">0</dd></div>
+          <div><dt>Click rate</dt><dd id="r-rate">0%</dd></div>
+          <div><dt>Installed Mirsad</dt><dd id="r-installed">0</dd></div>
+          <div><dt>Reported it to Aman</dt><dd id="r-reported">0</dd></div>
+        </dl>
+        <ul id="r-feed" class="aw-feed" aria-live="polite" aria-label="Latest taps"></ul>
+      </div>
+
+      <h3 class="aw-sub">Most exposed groups</h3>
+      <div id="r-tabs" class="aw-seg aw-tabs" role="tablist" aria-label="Group by"></div>
+      <ul id="r-bars" class="aw-bars"></ul>
+      <ol id="r-segments" class="aw-segments"></ol>
+
+      <h3 class="aw-sub">What the citizen sees</h3>
+      <div id="c-tabs" class="aw-seg aw-tabs" role="tablist" aria-label="Citizen journey"></div>
+      <div class="aw-phone" aria-live="polite">
+        <div class="aw-phone-notch"></div>
+        <div id="c-screen" class="aw-phone-screen"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="aw-panel aw-history" aria-labelledby="aw-history-heading">
+    <h2 id="aw-history-heading">Campaigns</h2>
+    <div class="aw-table-wrap">
+      <table>
+        <thead><tr><th>Campaign</th><th>Audience</th><th>Sent</th><th>Tapped</th><th>Click rate</th><th>Installed Mirsad</th><th></th></tr></thead>
+        <tbody id="h-rows"></tbody>
+      </table>
+    </div>
+    <p class="aw-hint">All campaigns, people and numbers on this page are simulated from an illustrative model. It is a
+      front-end prototype: no message is sent and no personal data is used.</p>
+  </section>
+</main>
+
+<dialog id="aw-confirm" class="aw-dialog" aria-labelledby="aw-confirm-heading">
+  <form method="dialog">
+    <h2 id="aw-confirm-heading">Launch this campaign?</h2>
+    <p id="aw-confirm-summary"></p>
+    <p class="aw-hint">Everyone who taps lands on a safe page explaining it was an awareness test, with an invitation to
+      install Mirsad. Nobody is asked for any data.</p>
+    <div class="aw-dialog-actions">
+      <button value="cancel" type="submit" class="quiet">Cancel</button>
+      <button value="send" type="submit" class="primary" id="aw-confirm-send">Send test messages</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>
