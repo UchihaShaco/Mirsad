@@ -268,7 +268,8 @@ cd mirsad-android
 cp app/build/outputs/apk/debug/app-debug.apk dist/mirsad-android-debug.apk
 ```
 
-- `:core:test` (107 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports and the
+- `:core:test` (114 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports, signed
+  blocklists and the
   legitimate-message sets. Every app build runs it first, and the no-internet check before packaging and lint.
 - `./gradlew :core:trainModel` regenerates the synthetic data, evaluates, and writes `app/src/main/assets/model.bin`.
 - `scripts/` holds the emulator, permission, injection, screenshot and video scripts used for the media here

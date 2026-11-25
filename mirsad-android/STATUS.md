@@ -5,7 +5,7 @@ FINAL
 _Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was checked"._
 
 ## What works
-- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 107 core tests (engine, HOLD gate policy,
+- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 114 core tests (engine, HOLD gate policy,
   robustness, classifier, reports, the 56-row legitimate suite with 0 held and 0 warned, and two never-HOLD sets),
   lint 0 errors, no-INTERNET gate. Every app build runs the core tests first.
 - Judge path without permissions: Demo → scam held → incident with reasons and timing → a wrongly held legitimate
@@ -20,6 +20,31 @@ _Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was ch
 ## How it was checked
 Independent verification (VERIFIER_REPORT.md): six of eleven verifiers finished before the usage limit; every blocker
 they found is fixed and covered by a test. Open items are listed there and in README section 10.
+
+## Live test on a real phone (2026-11-25)
+
+Tested by the team lead's session on a real Android 15 phone over adb, with the APK built from this source (the
+`dist/mirsad-android-debug.apk` committed alongside this note is that exact build). Nothing here used an emulator.
+
+| What | Result |
+|---|---|
+| Build and checks | `:core:test` 114/114, `:app:assembleDebug`, `:app:lintDebug` 0 errors; the APK asks only for notifications (no INTERNET) |
+| Demo, Report preview, Check a message (share sheet) | Work as documented; Aman shortcuts disabled for demo incidents |
+| Live notification from a monitored app (fake police fine) | Caught on arrival, **held** (risk 96%), original notification removed, Mirsad notice posted; a normal message was left alone |
+| Real SMS through Google Messages | Caught live with the right reasons; **warned**, not held, because the sender was a saved contact (the contact cap, by design) |
+| Real call from a number on the block list | **Rejected before ringing**; Android's call log records it as blocked; the incident says "The sender is on your block list" |
+| Signed blocklist from the Mirsad portal (new) | Verified list imported; a tampered copy refused with nothing changed; a newer list from the same key replaced the previous one |
+| Blind set of 30 new messages (15 scam, 15 legitimate, EN and AR) | 15/15 scams flagged (8 held, 7 warned), 15/15 legitimate allowed |
+
+Fixed during the test:
+- `scripts/push_report_to_mirsad.sh` was refused on every push (`account_not_authorized`: it invented a channel
+  account per report, and posted citizen reports as Telegram chats). It now sends the report as-is to the portal's
+  `POST /v1/citizen-reports`; an officer can also import the file in the portal.
+- `scripts/analyse.sh` treated SMS sender IDs such as `ADCB-Alert` as saved contacts and only warned where the phone
+  holds. Both now use one rule, `SenderHeuristics` in core.
+
+Worth deciding: a scam from a saved contact (for example a hacked friend's account) is only ever warned about, and a
+warned scam does not count against the sender's calls; only a held message or a block-list entry blocks calls.
 
 ## Next (if anyone continues)
 1. Lower the WARN rate on legitimate messages (retrain with legitimate messages that contain links).
