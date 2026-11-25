@@ -47,7 +47,7 @@ if [[ -f "$mp4" ]]; then
   (( size < MAX_MP4 )) || { status=FAIL; bad "mp4 is $size bytes (>= $MAX_MP4)"; }
   (( w % 2 == 0 && h % 2 == 0 )) || { status=FAIL; bad "mp4 has odd dimensions ${w}x${h}"; }
   (( w >= 1280 )) || { status=FAIL; bad "mp4 is narrower than 1280 px (${w}x${h})"; }
-  "$PYTHON" -I -c 'import sys; sys.exit(0 if 0 < float(sys.argv[1]) <= 20.0 else 1)' "$dur" || { status=FAIL; bad "mp4 duration ${dur}s is not within (0, 20.0]"; }
+  "$PYTHON" -I -c 'import sys; sys.exit(0 if 0 < float(sys.argv[1]) <= 17.0 else 1)' "$dur" || { status=FAIL; bad "mp4 duration ${dur}s is not within (0, 17.0]"; }
   row "demo/mirsad-android-demo.mp4" "${w}x${h}" "$size B" "${dur}s" "$status"
 else
   bad "missing $mp4"; row "demo/mirsad-android-demo.mp4" "-" "-" "-" "MISSING"
@@ -70,6 +70,6 @@ fi
 # ---- table ----------------------------------------------------------------------------------------
 printf '%-34s %-10s %-11s %-9s %s\n' "file" "size(px)" "bytes" "duration" "status"
 printf '%s\n' "${rows[@]}"
-echo "screenshots: ${#pngs[@]} (need >= 8, each < 500 KB, portrait); mp4 <= 20.0 s and < 15 MB; gif < 8 MB"
+echo "screenshots: ${#pngs[@]} (need >= 8, each < 500 KB, portrait); mp4 <= 17.0 s and < 15 MB; gif < 8 MB"
 if (( fail )); then echo "check_media: FAIL"; exit 1; fi
 echo "check_media: PASS"

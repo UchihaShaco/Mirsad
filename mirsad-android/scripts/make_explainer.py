@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Builds the 20-second explainer video from real phone screenshots: one caption per step on one side, the phone on the
+Builds the 17-second explainer video from real phone screenshots: one caption per step on one side, the phone on the
 other, cross-fades between steps. English and Arabic caption versions, same timing (so one voice-over fits both).
 
 Usage: python3 -I scripts/make_explainer.py <frames_dir>
@@ -32,39 +32,39 @@ WHITE = (255, 255, 255)
 SOFT = (196, 222, 216)
 RED = (232, 96, 86)
 
-# (frame, seconds, english, arabic). Durations add up to 20 s after the cross-fades.
+# (frame, seconds, english, arabic). Durations add up to 17 s after the cross-fades.
 SCENES = [
-    ("s1_home", 2.8,
+    ("s1_home", 2.4,
      ("MIRSAD  ·  مرصاد", "A scam shield that lives on your phone",
       "Built for the UAE. It checks every call and message on the phone itself, with no internet."),
      ("مرصاد", "درع ضد الاحتيال يعمل على هاتفك",
       "مصمَّم للإمارات. يفحص كل مكالمة ورسالة على الهاتف نفسه، دون إنترنت.")),
-    ("s2_sms_arrives", 3.2,
+    ("s2_sms_arrives", 2.8,
      ("1  ·  WITHOUT MIRSAD", "A scam SMS arrives",
       "“Emirates Post: your parcel is held. Pay AED 3.50 within 24 hours”, with a fake link."),
      ("١ ـ من دون مرصاد", "تصل رسالة احتيال",
       "«بريد الإمارات: طردك محتجز. ادفع ٣٫٥٠ درهم خلال ٢٤ ساعة» مع رابط مزيّف.")),
-    ("s3_held", 3.4,
+    ("s3_held", 2.9,
      ("2  ·  WITH MIRSAD", "It is held in milliseconds",
       "The scam notification disappears before you can tap the link. A quiet notice takes its place."),
      ("٢ ـ مع مرصاد", "تُحجز الرسالة في أجزاء من الثانية",
       "يختفي إشعار الاحتيال قبل أن تضغط على الرابط، ويظهر مكانه تنبيه هادئ.")),
-    ("s4_incident", 3.4,
+    ("s4_incident", 2.9,
      ("3  ·  EXPLAINED", "It tells you why, in plain words",
       "A fake brand in the link, a small fee, a foreign number posing as Emirates Post. In Arabic or English."),
      ("٣ ـ الشرح", "ويشرح لك السبب بوضوح",
       "رابط ينتحل اسم بريد الإمارات، ورسوم صغيرة، ورقم أجنبي. بالعربية أو الإنجليزية.")),
-    ("s5_call", 3.0,
+    ("s5_call", 2.6,
      ("4  ·  CALLS", "The scammer calls. The phone never rings.",
       "A call from a number that sent a held scam is rejected and kept in the call log."),
      ("٤ ـ المكالمات", "يتصل المحتال… ولا يرنّ الهاتف",
       "تُرفض المكالمة من رقم أرسل رسالة محجوزة، وتبقى في سجل المكالمات.")),
-    ("s6_restore", 3.2,
+    ("s6_restore", 2.8,
      ("5  ·  IF IT IS WRONG", "One tap gives it back",
       "Nothing is ever deleted. “Not a scam” restores the message and trusts the sender."),
      ("٥ ـ إن أخطأ", "ضغطة واحدة تعيدها",
       "لا يُحذف شيء أبداً. «ليس احتيالاً» تعيد الرسالة وتثق بالمرسل.")),
-    ("s7_report", 3.4,
+    ("s7_report", 3.0,
      ("6  ·  EVIDENCE", "One tap turns it into a police report",
       "You see exactly what would be shared. Nothing leaves the phone unless you send it."),
      ("٦ ـ البلاغ", "وضغطة واحدة تحوّلها إلى بلاغ",
@@ -177,7 +177,7 @@ def build(frames, lang):
         paths.append(out)
         durs.append(dur)
     total = sum(durs) - FADE * (len(durs) - 1)
-    assert abs(total - 20.0) < 0.01, total
+    assert abs(total - 17.0) < 0.01, total
 
     cmd = [FFMPEG, "-v", "error", "-y"]
     for p, dur in zip(paths, durs):
@@ -191,7 +191,7 @@ def build(frames, lang):
     chain.append(f"{last}format=yuv420p,fps=30[v]")
     mp4 = os.path.join(DEMO, "mirsad-android-demo.mp4" if not arabic else "mirsad-android-demo-ar.mp4")
     cmd += ["-filter_complex", ";".join(chain), "-map", "[v]", "-an", "-c:v", "libx264", "-preset", "slow",
-            "-crf", "22", "-movflags", "+faststart", "-t", "20", mp4]
+            "-crf", "22", "-movflags", "+faststart", "-t", "17", mp4]
     subprocess.run(cmd, check=True, timeout=600)
     return mp4
 

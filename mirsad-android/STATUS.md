@@ -15,8 +15,8 @@ _Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was ch
   (media emulator) and Android 16.
 - Engine rules 1.2.0 + classifier lr-ngram-v1 behind the HOLD gate; Arabic and English with RTL; blocklist import;
   Aman shortcuts disabled for synthetic incidents; training-row export; laptop CLI `scripts/analyse.sh`.
-- dist/mirsad-android-debug.apk, 11 screenshots and the 20 s explainer video (English and Arabic captions) + GIF come from the same final build.
-- Voice-over script (English and Arabic, timed to the scenes): docs/VOICEOVER.md.
+- The 17-second live demo (two phones, same scam SMS and call, with and without Mirsad; English and Arabic captions)
+  and the voice-over script (docs/VOICEOVER.md) come from the APK in dist/.
 
 ## How it was checked
 Independent verification (VERIFIER_REPORT.md): six of eleven verifiers finished before the usage limit; every blocker

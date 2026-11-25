@@ -1,0 +1,246 @@
+{
+  "version": 1,
+  "historyId": "2533e59b-c656-48aa-a898-da6643f19164",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "AGENTS.md": {
+      "hash": "729e31835a21c7b42ee006e2aacc63016abc05d26883f871ad3bf206943f2cfb",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/72/729e31835a21c7b42ee006e2aacc63016abc05d26883f871ad3bf206943f2cfb"
+    },
+    "CLAUDE.md": {
+      "hash": "729e31835a21c7b42ee006e2aacc63016abc05d26883f871ad3bf206943f2cfb",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/72/729e31835a21c7b42ee006e2aacc63016abc05d26883f871ad3bf206943f2cfb"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/53/53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "e72f55872b5b97baa2d7389540e828e975ba47bb86daecb9a7e65e73196aacd1",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/e7/e72f55872b5b97baa2d7389540e828e975ba47bb86daecb9a7e65e73196aacd1"
+    },
+    "meta.json": {
+      "hash": "52c44be4fc4b023a83090e52d365e773d8e1a1d054f70a6080bed206194fe53e",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/52/52c44be4fc4b023a83090e52d365e773d8e1a1d054f70a6080bed206194fe53e"
+    },
+    "package.json": {
+      "hash": "888fb46aa13f8769b82105bb19603c887522b5bd27c00891e3f02a1459091fb6",
+      "content": "/Users/ahsalem/.cache/hyperframes/history/2533e59b-c656-48aa-a898-da6643f19164/blobs/88/888fb46aa13f8769b82105bb19603c887522b5bd27c00891e3f02a1459091fb6"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "603f3928-daef-4bb8-a562-b39f87b16767"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "603f3928-daef-4bb8-a562-b39f87b16767",
+        "scope": "project",
+        "report": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/checks/603f3928-daef-4bb8-a562-b39f87b16767.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1795574464091,
+        "contentHash": "2ff4ecedacf673d2a2ad983e14c9691993594735c1060055515e09effc890fb7",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-7"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-0",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-00-at-1.5s.png",
+        "time": 1.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "d84ce644cd4dd2af34313d71f54e50efcf2778d32c21063588422f11f39faee9",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-1",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-01-at-3.8s.png",
+        "time": 3.8,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "9e37b617f5c7c341e12ee590da1188dfbe5e0f0f42779e6934f894c410fdd13c",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-2",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-02-at-6.5s.png",
+        "time": 6.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "e2689176be21b7cd82b578d5e3488a101114f4bbffd377a3f49c75a76652d82e",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-3",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-03-at-9.8s.png",
+        "time": 9.8,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "4acb2c574e1be6da79b72d0724ce9de72f25b8a1ec25fdeed08e57526d5a2ec9",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-4",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-04-at-12.8s.png",
+        "time": 12.8,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "66ad19f74bdf88deab5acb3664ffb99caa2cc192b3c87856ddc492dd97e3a161",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-5",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-05-at-16.2s.png",
+        "time": 16.2,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474950,
+        "contentHash": "01037820f1f4b9c160e9847b191ec7bc3bf2dbff3efd2afa9ef129b4f8b8b631",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-6",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-06-at-19.5s.png",
+        "time": 19.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474951,
+        "contentHash": "65af776ce9b9ddc4def5eefffeb85f0ce60174f11ba4f714c75f52e9eb6fae6a",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "b4a8085e-382b-43ac-bce0-1ed88c7578c7-7",
+        "image": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/.hyperframes/artifacts/snapshots/8d2015c3-1ed0-464c-8196-8461f1d7aa35/frame-07-at-19.75s.png",
+        "time": 19.75,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795574474951,
+        "contentHash": "65af776ce9b9ddc4def5eefffeb85f0ce60174f11ba4f714c75f52e9eb6fae6a",
+        "revision": null,
+        "inputFingerprint": "b05a4d069e0350786942bc3e4d3c57598ab5aa768529f48a3e281d232f4b8ab8",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  }
+}

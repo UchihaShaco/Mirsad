@@ -1,0 +1,4892 @@
+{
+  "ok": false,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": false,
+    "errorCount": 1,
+    "warningCount": 11,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#scanbar\" for x between 4.20s and 4.30s.",
+        "selector": "#scanbar",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      },
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#snack\" for y between 15.60s and 15.61s.",
+        "selector": "#snack",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "2 tl.fromTo() calls target \"#scanbar\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#scanbar",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 3.4s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "3 tl.fromTo() calls target \"#tap\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#tap",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 7.55s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      },
+      {
+        "code": "gsap_non_transform_motion",
+        "severity": "error",
+        "message": "GSAP tween on \"#tap\" uses motion that snaps to integer device pixels: left, top. Layout and text-reflow properties snap during browser layout; roundProps rounds the tween value. Slow motion or an ease-out tail then stutters under the seek-by-frame capture engine. Animate transforms (x/y/scale/opacity) instead.",
+        "selector": "#tap",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "replace left/top with the transform equivalent (x, y), e.g. tl.fromTo(\"#tap\", { x: -1300 }, { x: 0, ...yourAnimation }). Transforms interpolate sub-pixel and stay smooth at any speed."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#sms, #held, #held2, #restored, #snack\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#sms, #held, #held2, #restored, #snack",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#call\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#call",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#blocked\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#blocked",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#r1, #r2, #r3\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#r1, #r2, #r3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#json div\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#json div",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#phone\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#phone",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"stage\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#stage",
+        "dataAttributes": {},
+        "sourceFile": "/Users/ahsalem/hackathons/scam shield/Mirsad/mirsad-android/demo/hyperframes/mirsad/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"stage\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": false,
+    "errorCount": 6,
+    "warningCount": 4,
+    "infoCount": 43,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.333,
+        "selector": "#home > h2:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1188,
+          "top": 130,
+          "right": 1362.45,
+          "bottom": 160,
+          "width": 174.45,
+          "height": 30
+        },
+        "containerSelector": "#sms > div:nth-of-type(1)",
+        "text": "Mirsad (مرصاد)",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1188,
+          "y": 130,
+          "width": 174.45,
+          "height": 30
+        },
+        "firstSeen": 2.625,
+        "lastSeen": 20,
+        "occurrences": 113,
+        "heldMs": 8125,
+        "times": [
+          2.625,
+          2.75,
+          2.875,
+          3,
+          3.125,
+          3.25,
+          3.333,
+          3.375,
+          3.5,
+          3.625,
+          3.75,
+          3.875,
+          4,
+          4.125,
+          4.25,
+          4.375,
+          4.5,
+          4.625,
+          4.75,
+          4.875,
+          5,
+          5.125,
+          5.25,
+          5.375,
+          5.625,
+          5.75,
+          5.875,
+          6,
+          6.125,
+          6.25,
+          6.375,
+          6.5,
+          6.625,
+          6.75,
+          6.875,
+          7,
+          7.125,
+          7.25,
+          7.375,
+          7.5,
+          7.625,
+          7.75,
+          7.778,
+          7.875,
+          8.25,
+          8.375,
+          8.5,
+          8.625,
+          8.75,
+          8.875,
+          9,
+          9.125,
+          9.25,
+          9.375,
+          9.5,
+          9.625,
+          9.75,
+          9.875,
+          10,
+          10.125,
+          10.25,
+          10.375,
+          10.5,
+          10.625,
+          10.75,
+          14.25,
+          14.375,
+          14.444,
+          14.5,
+          14.625,
+          14.75,
+          14.875,
+          15,
+          15.125,
+          15.25,
+          15.375,
+          15.5,
+          15.625,
+          15.75,
+          15.875,
+          16,
+          16.125,
+          16.25,
+          16.375,
+          16.5,
+          16.625,
+          16.667,
+          16.75,
+          16.875,
+          17,
+          17.375,
+          17.5,
+          17.625,
+          17.75,
+          17.875,
+          18,
+          18.125,
+          18.25,
+          18.375,
+          18.5,
+          18.625,
+          18.75,
+          18.875,
+          18.889,
+          19,
+          19.125,
+          19.25,
+          19.375,
+          19.5,
+          19.625,
+          19.75,
+          19.875,
+          20
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.333,
+        "selector": "div.sub",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1188,
+          "top": 165.19,
+          "right": 1337.86,
+          "bottom": 183.19,
+          "width": 149.86,
+          "height": 18
+        },
+        "containerSelector": "#sms > div:nth-of-type(2)",
+        "text": "On-device scam shield",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1188,
+          "y": 165.19,
+          "width": 149.86,
+          "height": 18
+        },
+        "firstSeen": 2.625,
+        "lastSeen": 17,
+        "occurrences": 59,
+        "heldMs": 5250,
+        "times": [
+          2.625,
+          3,
+          3.125,
+          3.25,
+          3.333,
+          3.375,
+          3.5,
+          3.625,
+          3.75,
+          3.875,
+          4,
+          4.125,
+          4.25,
+          4.375,
+          4.5,
+          4.625,
+          4.75,
+          4.875,
+          5,
+          5.125,
+          5.25,
+          5.375,
+          5.75,
+          6,
+          6.125,
+          6.25,
+          6.375,
+          6.5,
+          6.625,
+          6.75,
+          6.875,
+          7,
+          7.125,
+          7.25,
+          7.375,
+          7.5,
+          7.625,
+          7.75,
+          7.778,
+          7.875,
+          14.444,
+          14.625,
+          14.75,
+          14.875,
+          15,
+          15.125,
+          15.25,
+          15.375,
+          15.5,
+          16,
+          16.125,
+          16.25,
+          16.375,
+          16.5,
+          16.625,
+          16.667,
+          16.75,
+          16.875,
+          17
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.333,
+        "selector": "div.h",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1206,
+          "top": 217.69,
+          "right": 1464.66,
+          "bottom": 240.69,
+          "width": 258.66,
+          "height": 23
+        },
+        "containerSelector": "#sms > div:nth-of-type(3)",
+        "text": "🛡️ All three protections are on",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 217.69,
+          "width": 258.66,
+          "height": 23
+        },
+        "firstSeen": 2.75,
+        "lastSeen": 20,
+        "occurrences": 108,
+        "heldMs": 8500,
+        "times": [
+          2.75,
+          2.875,
+          3,
+          3.125,
+          3.25,
+          3.333,
+          3.375,
+          3.5,
+          3.625,
+          3.75,
+          3.875,
+          4,
+          4.125,
+          4.25,
+          4.375,
+          4.5,
+          4.625,
+          4.75,
+          4.875,
+          5,
+          5.125,
+          5.25,
+          5.375,
+          5.75,
+          6,
+          6.125,
+          6.25,
+          6.375,
+          6.5,
+          6.625,
+          6.75,
+          6.875,
+          7,
+          7.125,
+          7.25,
+          7.375,
+          7.5,
+          7.625,
+          7.75,
+          7.778,
+          7.875,
+          8.25,
+          8.375,
+          8.5,
+          8.625,
+          8.75,
+          8.875,
+          9,
+          9.125,
+          9.25,
+          9.375,
+          9.5,
+          9.625,
+          9.75,
+          9.875,
+          10,
+          10.125,
+          10.25,
+          10.375,
+          10.5,
+          10.625,
+          10.75,
+          10.875,
+          11.125,
+          11.25,
+          14.375,
+          14.5,
+          14.625,
+          14.75,
+          14.875,
+          15,
+          15.125,
+          15.25,
+          15.375,
+          15.5,
+          15.75,
+          15.875,
+          16,
+          16.125,
+          16.25,
+          16.375,
+          16.5,
+          16.625,
+          16.667,
+          16.75,
+          16.875,
+          17,
+          17.25,
+          17.75,
+          17.875,
+          18,
+          18.125,
+          18.25,
+          18.375,
+          18.5,
+          18.625,
+          18.75,
+          18.875,
+          18.889,
+          19,
+          19.125,
+          19.25,
+          19.375,
+          19.5,
+          19.625,
+          19.75,
+          19.875,
+          20
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.333,
+        "selector": "div.prot > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1206,
+          "top": 251.48,
+          "right": 1352.23,
+          "bottom": 269.48,
+          "width": 146.23,
+          "height": 18
+        },
+        "containerSelector": "span.link",
+        "text": "Screen incoming calls",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 251.48,
+          "width": 146.23,
+          "height": 18
+        },
+        "firstSeen": 2.75,
+        "lastSeen": 20,
+        "occurrences": 93,
+        "heldMs": 8000,
+        "times": [
+          2.75,
+          2.875,
+          3,
+          3.125,
+          3.25,
+          3.333,
+          3.375,
+          3.5,
+          3.625,
+          3.75,
+          3.875,
+          4,
+          4.125,
+          4.25,
+          4.375,
+          4.5,
+          4.625,
+          4.75,
+          4.875,
+          5,
+          5.125,
+          5.25,
+          5.375,
+          5.875,
+          6,
+          6.125,
+          6.25,
+          6.375,
+          6.5,
+          6.625,
+          6.75,
+          6.875,
+          7,
+          7.125,
+          7.25,
+          7.375,
+          7.5,
+          7.625,
+          7.75,
+          7.778,
+          7.875,
+          8.125,
+          8.25,
+          8.375,
+          8.5,
+          8.625,
+          8.75,
+          8.875,
+          9,
+          9.125,
+          9.25,
+          9.375,
+          9.5,
+          9.625,
+          9.75,
+          9.875,
+          10,
+          10.125,
+          10.25,
+          10.375,
+          10.5,
+          10.625,
+          10.75,
+          14.375,
+          14.444,
+          14.5,
+          14.625,
+          14.75,
+          14.875,
+          15,
+          15.125,
+          15.25,
+          15.375,
+          15.5,
+          17.875,
+          18,
+          18.125,
+          18.25,
+          18.375,
+          18.5,
+          18.625,
+          18.75,
+          18.875,
+          18.889,
+          19,
+          19.125,
+          19.25,
+          19.375,
+          19.5,
+          19.625,
+          19.75,
+          19.875,
+          20
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 7.778,
+        "selector": "div.prot > div:nth-of-type(3) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1206,
+          "top": 278.48,
+          "right": 1391.25,
+          "bottom": 296.48,
+          "width": 185.25,
+          "height": 18
+        },
+        "containerSelector": "#held > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "Read message notifications",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 278.48,
+          "width": 185.25,
+          "height": 18
+        },
+        "firstSeen": 5.75,
+        "lastSeen": 20,
+        "occurrences": 73,
+        "heldMs": 4625,
+        "times": [
+          5.75,
+          5.875,
+          6,
+          6.125,
+          6.25,
+          6.375,
+          6.5,
+          6.625,
+          6.75,
+          6.875,
+          7,
+          7.125,
+          7.25,
+          7.375,
+          7.5,
+          7.625,
+          7.75,
+          7.778,
+          7.875,
+          8.125,
+          10.875,
+          11.125,
+          11.25,
+          11.375,
+          11.5,
+          11.625,
+          11.75,
+          11.875,
+          12,
+          12.125,
+          12.222,
+          12.25,
+          12.375,
+          12.5,
+          12.625,
+          12.75,
+          12.875,
+          13,
+          13.125,
+          13.25,
+          13.375,
+          13.5,
+          13.625,
+          13.75,
+          13.875,
+          14.375,
+          14.5,
+          14.625,
+          14.75,
+          14.875,
+          15,
+          15.125,
+          15.25,
+          15.375,
+          15.5,
+          18,
+          18.125,
+          18.25,
+          18.375,
+          18.5,
+          18.625,
+          18.75,
+          18.875,
+          18.889,
+          19,
+          19.125,
+          19.25,
+          19.375,
+          19.5,
+          19.625,
+          19.75,
+          19.875,
+          20
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10,
+        "selector": "div.prot > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1206,
+          "top": 305.48,
+          "right": 1295.66,
+          "bottom": 323.48,
+          "width": 89.66,
+          "height": 18
+        },
+        "containerSelector": "div.why",
+        "text": "Show notices",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 305.48,
+          "width": 89.66,
+          "height": 18
+        },
+        "firstSeen": 8.125,
+        "lastSeen": 20,
+        "occurrences": 41,
+        "heldMs": 2750,
+        "times": [
+          8.125,
+          8.25,
+          8.375,
+          8.5,
+          8.625,
+          8.75,
+          8.875,
+          9,
+          9.125,
+          9.25,
+          9.375,
+          9.5,
+          9.625,
+          9.75,
+          9.875,
+          10,
+          10.125,
+          10.25,
+          10.375,
+          10.5,
+          10.625,
+          10.75,
+          10.875,
+          18,
+          18.125,
+          18.25,
+          18.375,
+          18.5,
+          18.625,
+          18.75,
+          18.875,
+          18.889,
+          19,
+          19.125,
+          19.25,
+          19.375,
+          19.5,
+          19.625,
+          19.75,
+          19.875,
+          20
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "warning",
+        "time": 1.111,
+        "selector": "#incident",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 1166,
+          "top": 1046,
+          "right": 1604,
+          "bottom": 1994,
+          "width": 438,
+          "height": 948
+        },
+        "containerSelector": "#screen",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1166,
+          "top": 66,
+          "right": 1604,
+          "bottom": 1014,
+          "width": 438,
+          "height": 948
+        },
+        "overflow": {
+          "bottom": 980
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1166,
+          "y": 1046,
+          "width": 438,
+          "height": 948
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "warning",
+        "time": 1.111,
+        "selector": "#report",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 1166,
+          "top": 1046,
+          "right": 1604,
+          "bottom": 1994,
+          "width": 438,
+          "height": 948
+        },
+        "containerSelector": "#screen",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1166,
+          "top": 66,
+          "right": 1604,
+          "bottom": 1014,
+          "width": 438,
+          "height": 948
+        },
+        "overflow": {
+          "bottom": 980
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1166,
+          "y": 1046,
+          "width": 438,
+          "height": 948
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "panel_out_of_canvas",
+        "severity": "warning",
+        "time": 1.111,
+        "selector": "#incident",
+        "message": "Painted panel extends outside the composition canvas.",
+        "rect": {
+          "left": 1166,
+          "top": 1046,
+          "right": 1604,
+          "bottom": 1994,
+          "width": 438,
+          "height": 948
+        },
+        "containerSelector": "#root",
+        "text": "← Incident Held Held — very likely a scam Risk s",
+        "fixHint": "Move the panel inward, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 914
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1166,
+          "y": 1046,
+          "width": 438,
+          "height": 948
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "panel_out_of_canvas",
+        "severity": "warning",
+        "time": 1.111,
+        "selector": "#report",
+        "message": "Painted panel extends outside the composition canvas.",
+        "rect": {
+          "left": 1166,
+          "top": 1046,
+          "right": 1604,
+          "bottom": 1994,
+          "width": 438,
+          "height": 948
+        },
+        "containerSelector": "#root",
+        "text": "← Report preview Never included Your contacts · ",
+        "fixHint": "Move the panel inward, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 914
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1166,
+          "y": 1046,
+          "width": 438,
+          "height": 948
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "#incident > div:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1186,
+          "top": 1104,
+          "right": 1292.56,
+          "bottom": 1129,
+          "width": 106.56,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "← Incident",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 49
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1186,
+          "y": 1104,
+          "width": 106.56,
+          "height": 25
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "span.badge",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1216,
+          "top": 1166,
+          "right": 1245.05,
+          "bottom": 1182,
+          "width": 29.05,
+          "height": 16
+        },
+        "containerSelector": "#root",
+        "text": "Held",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 102
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1216,
+          "y": 1166,
+          "width": 29.05,
+          "height": 16
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.heldcard > h3:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1204,
+          "top": 1198,
+          "right": 1465.7,
+          "bottom": 1225,
+          "width": 261.7,
+          "height": 27
+        },
+        "containerSelector": "#root",
+        "text": "Held — very likely a scam",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 145
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1204,
+          "y": 1198,
+          "width": 261.7,
+          "height": 27
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.heldcard > p:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1204,
+          "top": 1232.59,
+          "right": 1400.5,
+          "bottom": 1248.59,
+          "width": 196.5,
+          "height": 16
+        },
+        "containerSelector": "#root",
+        "text": "Risk score 99% · SMS · just now",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 168.59
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1204,
+          "y": 1232.59,
+          "width": 196.5,
+          "height": 16
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.why",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1190,
+          "top": 1281.78,
+          "right": 1388.61,
+          "bottom": 1302.78,
+          "width": 198.61,
+          "height": 21
+        },
+        "containerSelector": "#root",
+        "text": "Why Mirsad decided this",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 222.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1190,
+          "y": 1281.78,
+          "width": 198.61,
+          "height": 21
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.lat",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1190,
+          "top": 1596.78,
+          "right": 1463.53,
+          "bottom": 1612.78,
+          "width": 273.53,
+          "height": 16
+        },
+        "containerSelector": "#root",
+        "text": "Analysed on this phone in 4 ms · no internet",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 532.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1190,
+          "y": 1596.78,
+          "width": 273.53,
+          "height": 16
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 18.889,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "#report > div:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1186,
+          "top": 1104,
+          "right": 1361.7,
+          "bottom": 1129,
+          "width": 175.7,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "← Report preview",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 49
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1186,
+          "y": 1104,
+          "width": 175.7,
+          "height": 25
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.incl",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1186,
+          "top": 1484.19,
+          "right": 1544.88,
+          "bottom": 1501.19,
+          "width": 358.88,
+          "height": 17
+        },
+        "containerSelector": "#root",
+        "text": "Your contacts · other messages · location · your number",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 421.19
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1186,
+          "y": 1484.19,
+          "width": 358.88,
+          "height": 17
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.incl > b:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1186,
+          "top": 1458,
+          "right": 1293.7,
+          "bottom": 1477,
+          "width": 107.7,
+          "height": 19
+        },
+        "containerSelector": "#root",
+        "text": "Never included",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 397
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1186,
+          "y": 1458,
+          "width": 107.7,
+          "height": 19
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "#aman",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1252,
+          "top": 1533.83,
+          "right": 1518,
+          "bottom": 1553.83,
+          "width": 266,
+          "height": 20
+        },
+        "containerSelector": "#root",
+        "text": "Report to Abu Dhabi Police (Aman)",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 473.83
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1252,
+          "y": 1533.83,
+          "width": 266,
+          "height": 20
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 1.111,
+        "selector": "div.btn.ghost",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1337.31,
+          "top": 1592.83,
+          "right": 1432.67,
+          "bottom": 1612.83,
+          "width": 95.36,
+          "height": 20
+        },
+        "containerSelector": "#root",
+        "text": "Share report",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 532.83
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1337.31,
+          "y": 1592.83,
+          "width": 95.36,
+          "height": 20
+        },
+        "firstSeen": 1.111,
+        "lastSeen": 16.667,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          1.111,
+          3.333,
+          5.556,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#home > h2:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1188,
+          "top": 130,
+          "right": 1362.45,
+          "bottom": 160,
+          "width": 174.45,
+          "height": 30
+        },
+        "containerSelector": "#sms",
+        "text": "Mirsad (مرصاد)",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1188,
+          "y": 130,
+          "width": 174.45,
+          "height": 30
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 18.889,
+        "occurrences": 7,
+        "heldMs": 0,
+        "times": [
+          3.333,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "div.sub",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1188,
+          "top": 165.19,
+          "right": 1337.86,
+          "bottom": 183.19,
+          "width": 149.86,
+          "height": 18
+        },
+        "containerSelector": "#sms",
+        "text": "On-device scam shield",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1188,
+          "y": 165.19,
+          "width": 149.86,
+          "height": 18
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 18.889,
+        "occurrences": 7,
+        "heldMs": 0,
+        "times": [
+          3.333,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "div.h",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1206,
+          "top": 217.69,
+          "right": 1464.66,
+          "bottom": 240.69,
+          "width": 258.66,
+          "height": 23
+        },
+        "containerSelector": "#sms",
+        "text": "🛡️ All three protections are on",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 217.69,
+          "width": 258.66,
+          "height": 23
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 18.889,
+        "occurrences": 7,
+        "heldMs": 0,
+        "times": [
+          3.333,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "div.prot > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1206,
+          "top": 251.48,
+          "right": 1352.23,
+          "bottom": 269.48,
+          "width": 146.23,
+          "height": 18
+        },
+        "containerSelector": "#sms",
+        "text": "Screen incoming calls",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 251.48,
+          "width": 146.23,
+          "height": 18
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 18.889,
+        "occurrences": 7,
+        "heldMs": 0,
+        "times": [
+          3.333,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "div.prot > div:nth-of-type(2) > b:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1545.28,
+          "top": 251.48,
+          "right": 1564,
+          "bottom": 269.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "containerSelector": "#sms",
+        "text": "On",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28,
+          "y": 251.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 18.889,
+        "occurrences": 7,
+        "heldMs": 0,
+        "times": [
+          3.333,
+          7.778,
+          10,
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#scanbar",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 1040,
+          "top": 118,
+          "right": 1160,
+          "bottom": 279.56,
+          "width": 120,
+          "height": 161.56
+        },
+        "containerSelector": "div.scan",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1180,
+          "top": 118,
+          "right": 1590,
+          "bottom": 279.56,
+          "width": 410,
+          "height": 161.56
+        },
+        "overflow": {
+          "left": 140
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1040,
+          "y": 118,
+          "width": 120,
+          "height": 161.56
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.625,
+        "selector": "div.status > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1194,
+          "top": 78,
+          "right": 1225.78,
+          "bottom": 97,
+          "width": 31.78,
+          "height": 19
+        },
+        "containerSelector": "#held > div:nth-of-type(3)",
+        "text": "9:41",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1194,
+          "y": 78,
+          "width": 31.78,
+          "height": 19
+        },
+        "firstSeen": 5.625,
+        "lastSeen": 14.25,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          5.625,
+          14.25
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.625,
+        "selector": "div.status > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1479.88,
+          "top": 78,
+          "right": 1576,
+          "bottom": 97,
+          "width": 96.12,
+          "height": 19
+        },
+        "containerSelector": "#held > div:nth-of-type(3)",
+        "text": "5G ▮▮▮ 100%",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1479.88,
+          "y": 78,
+          "width": 96.12,
+          "height": 19
+        },
+        "firstSeen": 5.625,
+        "lastSeen": 14.25,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          5.625,
+          14.25
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.778,
+        "selector": "div.prot > div:nth-of-type(3) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1206,
+          "top": 278.48,
+          "right": 1391.25,
+          "bottom": 296.48,
+          "width": 185.25,
+          "height": 18
+        },
+        "containerSelector": "#held",
+        "text": "Read message notifications",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 278.48,
+          "width": 185.25,
+          "height": 18
+        },
+        "firstSeen": 7.778,
+        "lastSeen": 18.889,
+        "occurrences": 5,
+        "heldMs": 0,
+        "times": [
+          7.778,
+          10,
+          12.222,
+          14.444,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 7.778,
+        "selector": "div.prot > div:nth-of-type(3) > b:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1545.28,
+          "top": 278.48,
+          "right": 1564,
+          "bottom": 296.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "containerSelector": "#held",
+        "text": "On",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28,
+          "y": 278.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "firstSeen": 7.778,
+        "lastSeen": 18.889,
+        "occurrences": 5,
+        "heldMs": 0,
+        "times": [
+          7.778,
+          10,
+          12.222,
+          14.444,
+          18.889
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 8,
+        "selector": "div.counts > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1220,
+          "top": 449.48,
+          "right": 1307.73,
+          "bottom": 465.48,
+          "width": 87.73,
+          "height": 16
+        },
+        "containerSelector": "div.heldcard > h3:nth-of-type(1)",
+        "text": "Flagged today",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1220,
+          "y": 449.48,
+          "width": 87.73,
+          "height": 16
+        },
+        "firstSeen": 8,
+        "lastSeen": 10.875,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8,
+          10.875
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 8,
+        "selector": "div.counts > div:nth-of-type(2) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1423,
+          "top": 449.48,
+          "right": 1518.92,
+          "bottom": 465.48,
+          "width": 95.92,
+          "height": 16
+        },
+        "containerSelector": "div.heldcard > h3:nth-of-type(1)",
+        "text": "Flagged in total",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1423,
+          "y": 449.48,
+          "width": 95.92,
+          "height": 16
+        },
+        "firstSeen": 8,
+        "lastSeen": 8,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          8
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 8,
+        "selector": "div.safety > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1233,
+          "top": 521.48,
+          "right": 1551.8,
+          "bottom": 559.73,
+          "width": 318.8,
+          "height": 38.25
+        },
+        "containerSelector": "div.why",
+        "text": "Never share banking details, passwords or one-time codes with anyone.",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1233,
+          "y": 521.48,
+          "width": 318.8,
+          "height": 38.25
+        },
+        "firstSeen": 8,
+        "lastSeen": 17.125,
+        "occurrences": 4,
+        "heldMs": 125,
+        "times": [
+          8,
+          10.875,
+          11,
+          17.125
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.prot > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1206,
+          "top": 305.48,
+          "right": 1295.66,
+          "bottom": 323.48,
+          "width": 89.66,
+          "height": 18
+        },
+        "containerSelector": "#incident",
+        "text": "Show notices",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1206,
+          "y": 305.48,
+          "width": 89.66,
+          "height": 18
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          14.444,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.prot > div:nth-of-type(4) > b:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1545.28,
+          "top": 305.48,
+          "right": 1564,
+          "bottom": 323.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "containerSelector": "#incident",
+        "text": "On",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28,
+          "y": 305.48,
+          "width": 18.72,
+          "height": 18
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          14.444,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "#cToday",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1220,
+          "top": 377.48,
+          "right": 1239.52,
+          "bottom": 417.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "containerSelector": "#r1",
+        "text": "1",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1220,
+          "y": 377.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.counts > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1220,
+          "top": 449.48,
+          "right": 1307.73,
+          "bottom": 465.48,
+          "width": 87.73,
+          "height": 16
+        },
+        "containerSelector": "#r2",
+        "text": "Flagged today",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1220,
+          "y": 449.48,
+          "width": 87.73,
+          "height": 16
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "#cTotal",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1423,
+          "top": 377.48,
+          "right": 1442.52,
+          "bottom": 417.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "containerSelector": "#r1",
+        "text": "1",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1423,
+          "y": 377.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.counts > div:nth-of-type(2) > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1423,
+          "top": 449.48,
+          "right": 1518.92,
+          "bottom": 465.48,
+          "width": 95.92,
+          "height": 16
+        },
+        "containerSelector": "#r2",
+        "text": "Flagged in total",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1423,
+          "y": 449.48,
+          "width": 95.92,
+          "height": 16
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.safety",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1204,
+          "top": 521.48,
+          "right": 1223,
+          "bottom": 539.48,
+          "width": 19,
+          "height": 18
+        },
+        "containerSelector": "#r2 > span:nth-of-type(1)",
+        "text": "🛡️",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1204,
+          "y": 521.48,
+          "width": 19,
+          "height": 18
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 10,
+        "selector": "div.safety > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1233,
+          "top": 521.48,
+          "right": 1551.8,
+          "bottom": 559.73,
+          "width": 318.8,
+          "height": 38.25
+        },
+        "containerSelector": "#r2 > span:nth-of-type(1)",
+        "text": "Never share banking details, passwords or one-time codes with anyone.",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 20
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1233,
+          "y": 521.48,
+          "width": 318.8,
+          "height": 38.25
+        },
+        "firstSeen": 10,
+        "lastSeen": 18.889,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          10,
+          12.222,
+          18.889
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 10.875,
+        "selector": "#cToday",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1220,
+          "top": 377.48,
+          "right": 1239.52,
+          "bottom": 417.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "containerSelector": "#r1 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "1",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1220,
+          "y": 377.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "firstSeen": 10.875,
+        "lastSeen": 10.875,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10.875
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 10.875,
+        "selector": "#cTotal",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1423,
+          "top": 377.48,
+          "right": 1442.52,
+          "bottom": 417.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "containerSelector": "#r1 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "1",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1423,
+          "y": 377.48,
+          "width": 19.52,
+          "height": 40
+        },
+        "firstSeen": 10.875,
+        "lastSeen": 10.875,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10.875
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 10.875,
+        "selector": "div.safety",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 1204,
+          "top": 521.48,
+          "right": 1223,
+          "bottom": 539.48,
+          "width": 19,
+          "height": 18
+        },
+        "containerSelector": "#r2 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "🛡️ Never share banking details, passwords or one-time codes with anyone.",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1204,
+          "y": 521.48,
+          "width": 19,
+          "height": 18
+        },
+        "firstSeen": 10.875,
+        "lastSeen": 17.375,
+        "occurrences": 4,
+        "heldMs": 250,
+        "times": [
+          10.875,
+          11,
+          17.125,
+          17.375
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r1 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1200,
+          "top": 1323.78,
+          "right": 1484.47,
+          "bottom": 1361.28,
+          "width": 284.47,
+          "height": 37.5
+        },
+        "containerSelector": "#root",
+        "text": "A brand name is in the link, but it is not the official site",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 281.28
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1200,
+          "y": 1323.78,
+          "width": 284.47,
+          "height": 37.5
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r1 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1531.91,
+          "top": 1323.78,
+          "right": 1570,
+          "bottom": 1341.78,
+          "width": 38.09,
+          "height": 18
+        },
+        "containerSelector": "#root",
+        "text": "+0.60",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 261.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1531.91,
+          "y": 1323.78,
+          "width": 38.09,
+          "height": 18
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r1 > span:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1209,
+          "top": 1390.78,
+          "right": 1286.03,
+          "bottom": 1404.78,
+          "width": 77.03,
+          "height": 14
+        },
+        "containerSelector": "#root",
+        "text": "Hard evidence",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 324.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1209,
+          "y": 1390.78,
+          "width": 77.03,
+          "height": 14
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r2 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1200,
+          "top": 1441.78,
+          "right": 1428.27,
+          "bottom": 1459.78,
+          "width": 228.27,
+          "height": 18
+        },
+        "containerSelector": "#root",
+        "text": "Asks for a small fee through a link",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 379.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1200,
+          "y": 1441.78,
+          "width": 228.27,
+          "height": 18
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r2 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1531.91,
+          "top": 1441.78,
+          "right": 1570,
+          "bottom": 1459.78,
+          "width": 38.09,
+          "height": 18
+        },
+        "containerSelector": "#root",
+        "text": "+0.50",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 379.78
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1531.91,
+          "y": 1441.78,
+          "width": 38.09,
+          "height": 18
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r2 > span:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1209,
+          "top": 1489.28,
+          "right": 1286.03,
+          "bottom": 1503.28,
+          "width": 77.03,
+          "height": 14
+        },
+        "containerSelector": "#root",
+        "text": "Hard evidence",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 423.28
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1209,
+          "y": 1489.28,
+          "width": 77.03,
+          "height": 14
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r3 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1200,
+          "top": 1540.28,
+          "right": 1499.36,
+          "bottom": 1558.28,
+          "width": 299.36,
+          "height": 18
+        },
+        "containerSelector": "#root",
+        "text": "A foreign number claims to be Emirates Post",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 478.28
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1200,
+          "y": 1540.28,
+          "width": 299.36,
+          "height": 18
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 12.222,
+        "selector": "#r3 > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 1531.91,
+          "top": 1540.28,
+          "right": 1570,
+          "bottom": 1558.28,
+          "width": 38.09,
+          "height": 18
+        },
+        "containerSelector": "#root",
+        "text": "+0.38",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "bottom": 478.28
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1531.91,
+          "y": 1540.28,
+          "width": 38.09,
+          "height": 18
+        },
+        "firstSeen": 12.222,
+        "lastSeen": 18.889,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          12.222,
+          14.444,
+          16.667,
+          18.889
+        ]
+      }
+    ],
+    "duration": 20,
+    "samples": [
+      1.111,
+      3.333,
+      5.556,
+      7.778,
+      10,
+      12.222,
+      14.444,
+      16.667,
+      18.889
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 53,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 0,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": false,
+    "errorCount": 3,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "error",
+        "message": "Contrast is 4.16:1; WCAG AA requires 4.5:1.",
+        "text": "On",
+        "fg": "rgb(30,122,60)",
+        "bg": "rgb(255,218,214)",
+        "ratio": 4.16,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(29,116,57)",
+        "large": false,
+        "selector": "div > div > div:nth-of-type(10) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > b",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28125,
+          "y": 253.484375,
+          "width": 18.71875,
+          "height": 15
+        },
+        "time": 10,
+        "times": [
+          1.111,
+          5.556,
+          10,
+          18.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "error",
+        "message": "Contrast is 4.43:1; WCAG AA requires 4.5:1.",
+        "text": "On",
+        "fg": "rgb(30,122,60)",
+        "bg": "rgb(227,235,232)",
+        "ratio": 4.43,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(30,120,59)",
+        "large": false,
+        "selector": "div > div > div:nth-of-type(10) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > b",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28125,
+          "y": 280.484375,
+          "width": 18.71875,
+          "height": 15
+        },
+        "time": 18.889,
+        "times": [
+          1.111,
+          5.556,
+          18.889
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "error",
+        "message": "Contrast is 4.43:1; WCAG AA requires 4.5:1.",
+        "text": "On",
+        "fg": "rgb(30,122,60)",
+        "bg": "rgb(227,235,232)",
+        "ratio": 4.43,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(30,120,59)",
+        "large": false,
+        "selector": "div > div > div:nth-of-type(10) > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(4) > b",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1545.28125,
+          "y": 307.484375,
+          "width": 18.71875,
+          "height": 15
+        },
+        "time": 18.889,
+        "times": [
+          1.111,
+          5.556,
+          18.889
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.111,
+      5.556,
+      10,
+      14.444,
+      18.889
+    ],
+    "checked": 139,
+    "passed": 129
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 15,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "film_silent",
+        "severity": "warning",
+        "message": "This 20 s film has no sound source (no <audio>, no <video> with sound): add a music bed and sounds on the visible actions unless the person asked for silence; see references/sound.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Every call and message is checked on the phone itself.\" (10 words) is on screen 2.23 s (±0.01 s), under its 2.63 s floor: hold it about 0.5 s + 0.3 s a word (3.50 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Every call and message is checked on the phone itself.",
+        "selector": "#c1 > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 140,
+          "y": 576.39,
+          "width": 814.45,
+          "height": 95.29999999999995
+        },
+        "time": 0.141,
+        "words": 10,
+        "seconds": 2.227,
+        "floorSeconds": 2.625,
+        "measured": [
+          {
+            "time": 0,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 0.125,
+            "opacity": 0.46,
+            "heightPx": 95
+          },
+          {
+            "time": 0.25,
+            "opacity": 0.95,
+            "heightPx": 95
+          },
+          {
+            "time": 0.375,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 0.5,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 0.625,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 1.875,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 2,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 2.125,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 2.25,
+            "opacity": 0.96,
+            "heightPx": 95
+          },
+          {
+            "time": 2.375,
+            "opacity": 0.35,
+            "heightPx": 95
+          },
+          {
+            "time": 2.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.625,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Pay AED 3.50 through a lookalike link, from a foreign num...\" (11 words) is on screen 2.43 s (±0.01 s), under its 2.85 s floor: hold it about 0.5 s + 0.3 s a word (3.80 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Pay AED 3.50 through a lookalike link, from a foreign number.",
+        "selector": "#c2 > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 140,
+          "y": 495.64,
+          "width": 752.02,
+          "height": 95.28999999999996
+        },
+        "time": 2.539,
+        "words": 11,
+        "seconds": 2.43,
+        "floorSeconds": 2.85,
+        "measured": [
+          {
+            "time": 2.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.5,
+            "opacity": 0.46,
+            "heightPx": 95
+          },
+          {
+            "time": 2.625,
+            "opacity": 0.89,
+            "heightPx": 95
+          },
+          {
+            "time": 2.75,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 2.875,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 3,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 4.5,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 4.625,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 4.75,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 4.875,
+            "opacity": 0.9,
+            "heightPx": 95
+          },
+          {
+            "time": 5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.25,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Emirates Post: your parcel is held at customs. Pay AED 3....\" (26 words) is on screen 2.87 s (±0.01 s), under its 6.23 s floor: hold it about 0.5 s + 0.3 s a word (8.30 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Emirates Post: your parcel is held at customs. Pay AED 3.50 within 24 hours or it will be returned: http://emiratespost-ae.delivery-fee.example/pay",
+        "selector": "#sms > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 126.1,
+          "width": 370.45000000000005,
+          "height": 61.379999999999995
+        },
+        "time": 2.57,
+        "words": 26,
+        "seconds": 2.867,
+        "floorSeconds": 6.225,
+        "measured": [
+          {
+            "time": 2.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.625,
+            "opacity": 0.72,
+            "heightPx": 61
+          },
+          {
+            "time": 2.75,
+            "opacity": 1,
+            "heightPx": 61
+          },
+          {
+            "time": 2.875,
+            "opacity": 1,
+            "heightPx": 61
+          },
+          {
+            "time": 3,
+            "opacity": 1,
+            "heightPx": 61
+          },
+          {
+            "time": 5,
+            "opacity": 1,
+            "heightPx": 61
+          },
+          {
+            "time": 5.125,
+            "opacity": 1,
+            "heightPx": 61
+          },
+          {
+            "time": 5.25,
+            "opacity": 0.93,
+            "heightPx": 61
+          },
+          {
+            "time": 5.375,
+            "opacity": 0.65,
+            "heightPx": 59
+          },
+          {
+            "time": 5.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.75,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Held 1 suspicious message from +44 70 0000 0001\" (9 words) is on screen 2.23 s (±0.01 s), under its 2.40 s floor: hold it about 0.5 s + 0.3 s a word (3.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Held 1 suspicious message from +44 70 0000 0001",
+        "selector": "#held > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 164.25,
+          "width": 370.45000000000005,
+          "height": 43.5
+        },
+        "time": 5.641,
+        "words": 9,
+        "seconds": 2.227,
+        "floorSeconds": 2.4,
+        "measured": [
+          {
+            "time": 5.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.75,
+            "opacity": 0.98,
+            "heightPx": 44
+          },
+          {
+            "time": 5.875,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 6,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 6.125,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 7.375,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 7.5,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 7.625,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 7.75,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 7.875,
+            "opacity": 0.44,
+            "heightPx": 44
+          },
+          {
+            "time": 8,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 8.125,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Link uses a brand name but is not the official site · Ask...\" (19 words) is on screen 2.23 s (±0.01 s), under its 4.65 s floor: hold it about 0.5 s + 0.3 s a word (6.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Link uses a brand name but is not the official site · Asks for a small fee through a link",
+        "selector": "#held > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 216.25,
+          "width": 343.8600000000001,
+          "height": 39.69
+        },
+        "time": 5.641,
+        "words": 19,
+        "seconds": 2.227,
+        "floorSeconds": 4.65,
+        "measured": [
+          {
+            "time": 5.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 5.625,
+            "opacity": 0.41,
+            "heightPx": 40
+          },
+          {
+            "time": 5.75,
+            "opacity": 0.98,
+            "heightPx": 40
+          },
+          {
+            "time": 5.875,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 6,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 6.125,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 7.375,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 7.5,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 7.625,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 7.75,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 7.875,
+            "opacity": 0.44,
+            "heightPx": 40
+          },
+          {
+            "time": 8,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 8.125,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Fake brand link · small fee · foreign number posing as a ...\" (12 words) is on screen 2.84 s (±0.01 s), under its 3.07 s floor: hold it about 0.5 s + 0.3 s a word (4.10 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Fake brand link · small fee · foreign number posing as a UAE entity.",
+        "selector": "#c4 > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 140,
+          "y": 577.72,
+          "width": 724.53,
+          "height": 95.28999999999996
+        },
+        "time": 7.938,
+        "words": 12,
+        "seconds": 2.836,
+        "floorSeconds": 3.075,
+        "measured": [
+          {
+            "time": 7.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.75,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.875,
+            "opacity": 0.18,
+            "heightPx": 95
+          },
+          {
+            "time": 8,
+            "opacity": 0.89,
+            "heightPx": 95
+          },
+          {
+            "time": 8.125,
+            "opacity": 0.99,
+            "heightPx": 95
+          },
+          {
+            "time": 8.25,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 8.375,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 10.375,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 10.5,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 10.625,
+            "opacity": 0.99,
+            "heightPx": 95
+          },
+          {
+            "time": 10.75,
+            "opacity": 0.61,
+            "heightPx": 95
+          },
+          {
+            "time": 10.875,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.125,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"A brand name is in the link, but it is not the official site\" (14 words) is on screen 2.63 s (±0.01 s), under its 3.53 s floor: hold it about 0.5 s + 0.3 s a word (4.70 s here) before it leaves or changes; see references/motion.md.",
+        "text": "A brand name is in the link, but it is not the official site",
+        "selector": "#r1 > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1208.89,
+          "y": 343.78,
+          "width": 284.47,
+          "height": 37.5
+        },
+        "time": 8.469,
+        "words": 14,
+        "seconds": 2.633,
+        "floorSeconds": 3.525,
+        "measured": [
+          {
+            "time": 8.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 8.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 8.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 8.5,
+            "opacity": 0.7,
+            "heightPx": 38
+          },
+          {
+            "time": 8.625,
+            "opacity": 0.96,
+            "heightPx": 38
+          },
+          {
+            "time": 8.75,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 8.875,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 10.625,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 10.75,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 10.875,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 11,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 11.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.375,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 65 text elements stay under it for 0.5 s or more, the smallest \"Hard evidence\" at 12 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Hard evidence",
+        "selector": "#r1 > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1217.89,
+          "y": 410.78,
+          "width": 77.03,
+          "height": 14
+        },
+        "time": 8.5,
+        "times": [
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          2.625,
+          2.625,
+          2.625,
+          2.625,
+          3.375,
+          5.75,
+          5.75,
+          5.75,
+          5.75,
+          5.75,
+          7.875,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8.5,
+          8.5,
+          8.5,
+          8.875,
+          8.875,
+          8.875,
+          9.25,
+          9.25,
+          11.125,
+          12.375,
+          12.375,
+          14.25,
+          14.25,
+          14.25,
+          14.25,
+          14.375,
+          15.625,
+          15.625,
+          15.625,
+          15.75,
+          15.75,
+          17.125,
+          17.125,
+          17.125,
+          17.125,
+          17.25,
+          17.625,
+          17.75,
+          17.875,
+          17.875,
+          18,
+          18.125,
+          18.25,
+          18.25
+        ],
+        "fontPx": 12,
+        "floorPx": 28,
+        "seconds": 2.625,
+        "elements": [
+          {
+            "selector": "#r1 > span:nth-of-type(1)",
+            "text": "Hard evidence",
+            "fontPx": 12,
+            "time": 8.5,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#r2 > span:nth-of-type(1)",
+            "text": "Hard evidence",
+            "fontPx": 12,
+            "time": 8.875,
+            "seconds": 2.25
+          },
+          {
+            "selector": "#json > div:nth-of-type(2)",
+            "text": "\"reportId\": \"mrs-6b9a9b77ece1\",",
+            "fontPx": 13.5,
+            "time": 17.625,
+            "seconds": 2.375
+          },
+          {
+            "selector": "#json > div:nth-of-type(3)",
+            "text": "\"channel\": \"SMS\", \"level\": \"HOLD\",",
+            "fontPx": 13.5,
+            "time": 17.75,
+            "seconds": 2.25
+          },
+          {
+            "selector": "#json > div:nth-of-type(4)",
+            "text": "\"score\": 0.995,",
+            "fontPx": 13.5,
+            "time": 17.875,
+            "seconds": 2.125
+          },
+          {
+            "selector": "#json > div:nth-of-type(5)",
+            "text": "\"reasonCodes\": [\"LINK_BRAND_IN_HOST…\",",
+            "fontPx": 13.5,
+            "time": 17.875,
+            "seconds": 2.125
+          },
+          {
+            "selector": "#json > div:nth-of-type(6)",
+            "text": "\"CONTENT_SMALL_FEE_LINK\", …],",
+            "fontPx": 13.5,
+            "time": 18,
+            "seconds": 2
+          },
+          {
+            "selector": "#json > div:nth-of-type(7)",
+            "text": "\"sender\": \"+447000000001\",",
+            "fontPx": 13.5,
+            "time": 18.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#json > div:nth-of-type(8)",
+            "text": "\"domains\": [\"delivery-fee.example\"],",
+            "fontPx": 13.5,
+            "time": 18.25,
+            "seconds": 1.75
+          },
+          {
+            "selector": "#json > div:nth-of-type(9)",
+            "text": "\"fingerprint\": \"a51d6ef86b7b801f\"",
+            "fontPx": 13.5,
+            "time": 18.25,
+            "seconds": 1.75
+          },
+          {
+            "selector": "#sms > div:nth-of-type(1)",
+            "text": "Messages · now",
+            "fontPx": 13.51,
+            "time": 2.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#checking",
+            "text": "Mirsad checking… 4 ms",
+            "fontPx": 13.51,
+            "time": 3.375,
+            "seconds": 2.125
+          },
+          {
+            "selector": "div.counts > div:nth-of-type(1) > div:nth-of-type(2)",
+            "text": "Flagged today",
+            "fontPx": 14,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.counts > div:nth-of-type(2) > div:nth-of-type(2)",
+            "text": "Flagged in total",
+            "fontPx": 14,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "#held > div:nth-of-type(1)",
+            "text": "Mirsad (مرصاد) · now",
+            "fontPx": 14,
+            "time": 5.75,
+            "seconds": 2.125
+          },
+          {
+            "selector": "span.badge",
+            "text": "Held",
+            "fontPx": 14,
+            "time": 8,
+            "seconds": 3.25
+          },
+          {
+            "selector": "div.heldcard > p:nth-of-type(1)",
+            "text": "Risk score 99% · SMS · just now",
+            "fontPx": 14,
+            "time": 8,
+            "seconds": 3.25
+          },
+          {
+            "selector": "div.lat",
+            "text": "Analysed on this phone in 4 ms · no internet",
+            "fontPx": 14,
+            "time": 8,
+            "seconds": 3.125
+          },
+          {
+            "selector": "#held2 > div:nth-of-type(1)",
+            "text": "Mirsad (مرصاد) · now",
+            "fontPx": 14,
+            "time": 14.375,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#restored > div:nth-of-type(1)",
+            "text": "WhatsApp · restored by Mirsad",
+            "fontPx": 14,
+            "time": 15.625,
+            "seconds": 1.375
+          },
+          {
+            "selector": "div.incl",
+            "text": "Your contacts · other messages · location · your number",
+            "fontPx": 14.5,
+            "time": 17.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#blocked > span:nth-of-type(1)",
+            "text": "This number sent a scam Mirsad held. The phone did not ring; the call stays in your call log.",
+            "fontPx": 14.82,
+            "time": 12.375,
+            "seconds": 1.625
+          },
+          {
+            "selector": "#sms > div:nth-of-type(3)",
+            "text": "Emirates Post: your parcel is held at customs. Pay AED 3.50 within 24 hours or it will be returned:",
+            "fontPx": 14.96,
+            "time": 2.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "span.link",
+            "text": "http://emiratespost-ae.delivery-fee.example/pay",
+            "fontPx": 14.96,
+            "time": 2.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.sub",
+            "text": "On-device scam shield",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Screen incoming calls",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(2) > b:nth-of-type(1)",
+            "text": "On",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(3) > span:nth-of-type(1)",
+            "text": "Read message notifications",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(3) > b:nth-of-type(1)",
+            "text": "On",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Show notices",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.prot > div:nth-of-type(4) > b:nth-of-type(1)",
+            "text": "On",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.safety",
+            "text": "🛡️",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.safety > span:nth-of-type(1)",
+            "text": "Never share banking details, passwords or one-time codes with anyone.",
+            "fontPx": 15,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "#held > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Not a scam",
+            "fontPx": 15,
+            "time": 5.75,
+            "seconds": 2.125
+          },
+          {
+            "selector": "#held > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "Report",
+            "fontPx": 15,
+            "time": 5.75,
+            "seconds": 2.125
+          },
+          {
+            "selector": "#r1 > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "A brand name is in the link, but it is not the official site",
+            "fontPx": 15,
+            "time": 8.5,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#r1 > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "+0.60",
+            "fontPx": 15,
+            "time": 8.5,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#r2 > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Asks for a small fee through a link",
+            "fontPx": 15,
+            "time": 8.875,
+            "seconds": 2.25
+          },
+          {
+            "selector": "#r2 > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "+0.50",
+            "fontPx": 15,
+            "time": 8.875,
+            "seconds": 2.25
+          },
+          {
+            "selector": "#r3 > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "A foreign number claims to be Emirates Post",
+            "fontPx": 15,
+            "time": 9.25,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#r3 > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "+0.38",
+            "fontPx": 15,
+            "time": 9.25,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#nas",
+            "text": "Not a scam",
+            "fontPx": 15,
+            "time": 14.25,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#held2 > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "Report",
+            "fontPx": 15,
+            "time": 14.25,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#held > div:nth-of-type(3)",
+            "text": "Link uses a brand name but is not the official site · Asks for a small fee through a link",
+            "fontPx": 15.5,
+            "time": 5.75,
+            "seconds": 2.125
+          },
+          {
+            "selector": "#held2 > div:nth-of-type(3)",
+            "text": "“Hi, it’s Omar, my new number. Can you transfer the AED 500 for the pitch?”",
+            "fontPx": 15.5,
+            "time": 14.25,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#restored > div:nth-of-type(3)",
+            "text": "Hi, it’s Omar, my new number. Can you transfer the AED 500 for the pitch?",
+            "fontPx": 15.5,
+            "time": 15.625,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#snack > span:nth-of-type(1)",
+            "text": "Restored — sender allowed, template remembered",
+            "fontPx": 15.5,
+            "time": 15.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "#snack > b:nth-of-type(1)",
+            "text": "Undo",
+            "fontPx": 15.5,
+            "time": 15.75,
+            "seconds": 1.25
+          },
+          {
+            "selector": "div.status > span:nth-of-type(1)",
+            "text": "9:41",
+            "fontPx": 16,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.status > span:nth-of-type(2)",
+            "text": "5G ▮▮▮ 100%",
+            "fontPx": 16,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "div.incl > b:nth-of-type(1)",
+            "text": "Never included",
+            "fontPx": 16,
+            "time": 17.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#aman",
+            "text": "Report to Abu Dhabi Police (Aman)",
+            "fontPx": 17,
+            "time": 17.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.btn.ghost",
+            "text": "Share report",
+            "fontPx": 17,
+            "time": 17.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#sms > div:nth-of-type(2)",
+            "text": "+44 70 0000 0001",
+            "fontPx": 17.37,
+            "time": 2.625,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.who",
+            "text": "Incoming call",
+            "fontPx": 17.79,
+            "time": 11.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#held > div:nth-of-type(2)",
+            "text": "Held 1 suspicious message from +44 70 0000 0001",
+            "fontPx": 18,
+            "time": 5.75,
+            "seconds": 2.125
+          },
+          {
+            "selector": "div.why",
+            "text": "Why Mirsad decided this",
+            "fontPx": 18,
+            "time": 8,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#held2 > div:nth-of-type(2)",
+            "text": "Held 1 suspicious message from +971 50 000 0041",
+            "fontPx": 18,
+            "time": 14.25,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#restored > div:nth-of-type(2)",
+            "text": "Omar (+971 50 000 0041)",
+            "fontPx": 18,
+            "time": 15.625,
+            "seconds": 1.375
+          },
+          {
+            "selector": "div.h",
+            "text": "🛡️ All three protections are on",
+            "fontPx": 19,
+            "time": 0.25,
+            "seconds": 19.75
+          },
+          {
+            "selector": "#incident > div:nth-of-type(1)",
+            "text": "← Incident",
+            "fontPx": 22,
+            "time": 7.875,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#report > div:nth-of-type(1)",
+            "text": "← Report preview",
+            "fontPx": 22,
+            "time": 17.125,
+            "seconds": 2.875
+          },
+          {
+            "selector": "div.heldcard > h3:nth-of-type(1)",
+            "text": "Held — very likely a scam",
+            "fontPx": 23,
+            "time": 8,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#blocked > b:nth-of-type(1)",
+            "text": "⛔ Rejected by Mirsad",
+            "fontPx": 23.71,
+            "time": 12.375,
+            "seconds": 1.625
+          },
+          {
+            "selector": "#home > h2:nth-of-type(1)",
+            "text": "Mirsad (مرصاد)",
+            "fontPx": 26,
+            "time": 0.25,
+            "seconds": 19.75
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"This number sent a scam Mirsad held. The phone did not ri...\" (19 words) is on screen 1.63 s (±0.01 s), under its 4.65 s floor: hold it about 0.5 s + 0.3 s a word (6.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "This number sent a scam Mirsad held. The phone did not ring; the call stays in your call log.",
+        "selector": "#blocked > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1210,
+          "y": 642.02,
+          "width": 328.30999999999995,
+          "height": 38.25
+        },
+        "time": 12.305,
+        "words": 19,
+        "seconds": 1.633,
+        "floorSeconds": 4.65,
+        "measured": [
+          {
+            "time": 12,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.375,
+            "opacity": 0.93,
+            "heightPx": 38
+          },
+          {
+            "time": 12.5,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 12.625,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 12.75,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 13.5,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 13.625,
+            "opacity": 1,
+            "heightPx": 38
+          },
+          {
+            "time": 13.75,
+            "opacity": 0.96,
+            "heightPx": 38
+          },
+          {
+            "time": 13.875,
+            "opacity": 0.7,
+            "heightPx": 38
+          },
+          {
+            "time": 14,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.25,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Nothing is ever deleted. “Not a scam” restores it and tru...\" (13 words) is on screen 2.83 s (±0.01 s), under its 3.30 s floor: hold it about 0.5 s + 0.3 s a word (4.40 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Nothing is ever deleted. “Not a scam” restores it and trusts the sender.",
+        "selector": "#c6 > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 140,
+          "y": 494.31,
+          "width": 804.52,
+          "height": 95.30000000000001
+        },
+        "time": 14.141,
+        "words": 13,
+        "seconds": 2.828,
+        "floorSeconds": 3.3,
+        "measured": [
+          {
+            "time": 13.875,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.125,
+            "opacity": 0.46,
+            "heightPx": 95
+          },
+          {
+            "time": 14.25,
+            "opacity": 0.95,
+            "heightPx": 95
+          },
+          {
+            "time": 14.375,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 14.5,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 14.625,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 16.5,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 16.625,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 16.75,
+            "opacity": 1,
+            "heightPx": 95
+          },
+          {
+            "time": 16.875,
+            "opacity": 0.9,
+            "heightPx": 95
+          },
+          {
+            "time": 17,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.25,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Held 1 suspicious message from +971 50 000 0041\" (9 words) is on screen 1.34 s (±0.01 s), under its 2.40 s floor: hold it about 0.5 s + 0.3 s a word (3.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Held 1 suspicious message from +971 50 000 0041",
+        "selector": "#held2 > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 70.9,
+          "width": 370.45000000000005,
+          "height": 43.5
+        },
+        "time": 14.234,
+        "words": 9,
+        "seconds": 1.336,
+        "floorSeconds": 2.4,
+        "measured": [
+          {
+            "time": 13.875,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.25,
+            "opacity": 0.62,
+            "heightPx": 44
+          },
+          {
+            "time": 14.375,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 14.5,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 14.625,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 15.125,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 15.25,
+            "opacity": 1,
+            "heightPx": 44
+          },
+          {
+            "time": 15.375,
+            "opacity": 0.99,
+            "heightPx": 44
+          },
+          {
+            "time": 15.5,
+            "opacity": 0.7,
+            "heightPx": 44
+          },
+          {
+            "time": 15.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.75,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.875,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"“Hi, it’s Omar, my new number. Can you transfer the AED 5...\" (15 words) is on screen 1.34 s (±0.01 s), under its 3.75 s floor: hold it about 0.5 s + 0.3 s a word (5.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "“Hi, it’s Omar, my new number. Can you transfer the AED 500 for the pitch?”",
+        "selector": "#held2 > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 122.9,
+          "width": 349.70000000000005,
+          "height": 39.69
+        },
+        "time": 14.234,
+        "words": 15,
+        "seconds": 1.336,
+        "floorSeconds": 3.75,
+        "measured": [
+          {
+            "time": 13.875,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.25,
+            "opacity": 0.62,
+            "heightPx": 40
+          },
+          {
+            "time": 14.375,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 14.5,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 14.625,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 15.125,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 15.25,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 15.375,
+            "opacity": 0.99,
+            "heightPx": 40
+          },
+          {
+            "time": 15.5,
+            "opacity": 0.7,
+            "heightPx": 40
+          },
+          {
+            "time": 15.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.75,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.875,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Hi, it’s Omar, my new number. Can you transfer the AED 50...\" (15 words) is on screen 1.43 s (±0.01 s), under its 3.75 s floor: hold it about 0.5 s + 0.3 s a word (5.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Hi, it’s Omar, my new number. Can you transfer the AED 500 for the pitch?",
+        "selector": "#restored > div:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1198,
+          "y": 122.61,
+          "width": 344.22,
+          "height": 39.67999999999999
+        },
+        "time": 15.57,
+        "words": 15,
+        "seconds": 1.43,
+        "floorSeconds": 3.75,
+        "measured": [
+          {
+            "time": 15.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.625,
+            "opacity": 0.7,
+            "heightPx": 40
+          },
+          {
+            "time": 15.75,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 15.875,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 16,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 16.5,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 16.625,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 16.75,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 16.875,
+            "opacity": 1,
+            "heightPx": 40
+          },
+          {
+            "time": 17,
+            "opacity": 0.36,
+            "heightPx": 40
+          },
+          {
+            "time": 17.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.25,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Restored — sender allowed, template remembered\" (5 words) is on screen 1.33 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Restored — sender allowed, template remembered",
+        "selector": "#snack > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1200,
+          "y": 934.78,
+          "width": 255.48000000000002,
+          "height": 38.91999999999996
+        },
+        "time": 15.672,
+        "words": 5,
+        "seconds": 1.328,
+        "floorSeconds": 1.5,
+        "measured": [
+          {
+            "time": 15.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.625,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.75,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 15.875,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16.125,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16.5,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16.625,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16.75,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 16.875,
+            "opacity": 1,
+            "heightPx": 39
+          },
+          {
+            "time": 17,
+            "opacity": 0.36,
+            "heightPx": 39
+          },
+          {
+            "time": 17.125,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.25,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 160
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "audio_none",
+        "severity": "info",
+        "message": "The film has no sound: no clip in it plays audio.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      }
+    ]
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}
