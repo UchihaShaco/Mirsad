@@ -28,3 +28,4 @@ One line per decision taken without asking, newest at the bottom.
 - 2026-11-24 HOLD notices use a quiet channel (IMPORTANCE_LOW, no sound); WARN stays high importance so a suspicious call shows a heads-up while it rings.
 - 2026-11-24 Report copies are saved in app-private storage only and removed by Delete all data; the report preview lists follow the app language.
 - 2026-11-24 The root README does not list products (it documents the single root service), so no line was added there.
+- 2026-11-25 The demo video is a 20-second captioned explainer (English and Arabic versions, 1920x1080) built from real phone frames with cross-fades, for viewers who have never seen the product; the user records the voice-over (docs/VOICEOVER.md). ffmpeg here has no text renderer, so captions are drawn with Pillow.

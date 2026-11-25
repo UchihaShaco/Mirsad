@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Older 30 s raw screen recording (kept for reference; the README video is now the 20 s explainer from
+# scripts/make_explainer.py). Writes demo/raw-recording.mp4 only.
 # Record the 30 s Mirsad demo on the media emulator and produce demo/mirsad-android-demo.mp4 (H.264, no audio,
 # 720 px wide, <= 30.0 s, < 15 MB) and demo/mirsad-android-demo.gif (10 fps, 360 px wide, < 8 MB).
 #
@@ -25,8 +27,8 @@ source "$(dirname "$0")/_lib.sh"
 
 DEVICE_MP4="/sdcard/mirsad.mp4"
 RAW_MP4="$MIRSAD_RUN_DIR/mirsad-raw.mp4"
-OUT_MP4="$DEMO_DIR/mirsad-android-demo.mp4"
-OUT_GIF="$DEMO_DIR/mirsad-android-demo.gif"
+OUT_MP4="$DEMO_DIR/raw-recording.mp4"
+OUT_GIF="$MIRSAD_RUN_DIR/raw-recording.gif"
 MAX_MP4_BYTES=$((15 * 1024 * 1024))
 MAX_GIF_BYTES=$((8 * 1024 * 1024))
 RECORD_SECONDS=30
