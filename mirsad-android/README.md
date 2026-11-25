@@ -9,9 +9,12 @@ Abu Dhabi Police hackathon by the Mirsad team, not an official app, and it holds
 
 17-second live demo: [English captions](demo/mirsad-android-demo.mp4) · [Arabic captions](demo/mirsad-android-demo-ar.mp4)
 · voice-over script in [docs/VOICEOVER.md](docs/VOICEOVER.md). Two phones recorded at the same moment, in real time:
-the left one (Android 14) has no Mirsad, the right one (Android 16) runs the APK in `dist/`. Both receive the same
-scam SMS and then the same call, injected through the emulator; Mirsad's notification listener and call screening
-service do the rest.
+the left one (Android 14) has no Mirsad, the right one (Android 16) runs Mirsad. Both receive the same scam SMS and then
+the same call, injected through the emulator; Mirsad's notification listener and call screening service do the rest.
+
+Animated 20-second version: [English](demo/mirsad-android-demo-animated.mp4) ·
+[Arabic](demo/mirsad-android-demo-animated-ar.mp4). Every earlier demo cut is kept, numbered, in
+[demo/versions/](demo/versions/README.md).
 
 15-second explainer: [demo/mirsad-explainer-15s.mp4](demo/mirsad-explainer-15s.mp4). It was recorded on a real
 Android 15 phone, including a real scam call from a block-listed number rejected before it rang (the caller's
@@ -287,7 +290,7 @@ cd mirsad-android
 cp app/build/outputs/apk/debug/app-debug.apk dist/mirsad-android-debug.apk
 ```
 
-- `:core:test` (114 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports, signed
+- `:core:test` (120 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports, signed
   blocklists and the
   legitimate-message sets. Every app build runs it first, and the no-internet check before packaging and lint.
 - `./gradlew :core:trainModel` regenerates the synthetic data, evaluates, and writes `app/src/main/assets/model.bin`.

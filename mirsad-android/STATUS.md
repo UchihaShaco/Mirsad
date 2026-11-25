@@ -2,10 +2,10 @@ FINAL
 
 # STATUS — Mirsad Android
 
-_Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was checked"._
+_Last update: 2026-11-25 07:40 (+04). Definition of done met; see "How it was checked"._
 
 ## What works
-- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 114 core tests (engine, HOLD gate policy,
+- `./gradlew :core:test :app:assembleDebug :app:lintDebug` is green: 120 core tests (engine, HOLD gate policy,
   robustness, classifier, reports, the 56-row legitimate suite with 0 held and 0 warned, and two never-HOLD sets),
   lint 0 errors, no-INTERNET gate. Every app build runs the core tests first.
 - Judge path without permissions: Demo → scam held → incident with reasons and timing → a wrongly held legitimate
@@ -13,10 +13,11 @@ _Last update: 2026-11-24 23:10 (+04). Definition of done met; see "How it was ch
 - Live protection with permissions: an injected scam SMS is held (original notification removed, quiet notice with
   Not a scam and Report) and a call from the same number is rejected and kept in the call log. Checked on Android 14
   (media emulator) and Android 16.
-- Engine rules 1.2.0 + classifier lr-ngram-v1 behind the HOLD gate; Arabic and English with RTL; blocklist import;
+- Engine rules 1.3.0 (with the Known Scammer contact rule) + classifier lr-ngram-v1 behind the HOLD gate; Arabic and English with RTL; blocklist import;
   Aman shortcuts disabled for synthetic incidents; training-row export; laptop CLI `scripts/analyse.sh`.
-- The 17-second live demo (two phones, same scam SMS and call, with and without Mirsad; English and Arabic captions)
-  and the voice-over script (docs/VOICEOVER.md) come from the APK in dist/.
+- dist/mirsad-android-debug.apk is rebuilt from the current source (2026-11-25 07:40).
+- Demo videos: the 17-second live two-phone demo and a 20-second animated version (English and Arabic captions), the
+  voice-over script in docs/VOICEOVER.md, and every earlier cut in demo/versions/.
 
 ## How it was checked
 Independent verification (VERIFIER_REPORT.md): six of eleven verifiers finished before the usage limit; every blocker
@@ -29,7 +30,7 @@ Tested by the team lead's session on a real Android 15 phone over adb, with the 
 
 | What | Result |
 |---|---|
-| Build and checks | `:core:test` 114/114, `:app:assembleDebug`, `:app:lintDebug` 0 errors; the APK asks only for notifications (no INTERNET) |
+| Build and checks | `:core:test` 120/120, `:app:assembleDebug`, `:app:lintDebug` 0 errors; the APK asks only for notifications (no INTERNET) |
 | Demo, Report preview, Check a message (share sheet) | Work as documented; Aman shortcuts disabled for demo incidents |
 | Live notification from a monitored app (fake police fine) | Caught on arrival, **held** (risk 96%), original notification removed, Mirsad notice posted; a normal message was left alone |
 | Real SMS through Google Messages | Caught live with the right reasons; **warned**, not held, because the sender was a saved contact (the contact cap, by design) |
