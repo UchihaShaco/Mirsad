@@ -1,11 +1,63 @@
-# Mirsad
+# Mirsad (مرصاد) — three layers of protection
 
-Mirsad is an evidence capture and review service for officer-led investigations. It records chat messages as they reach
-it, renders a timestamped Mirsad-rendered capture of each received message, runs a quiet AI review that an officer can
-pause or take over at any time, and keeps a private phone watchlist. A host platform integrates through the same HTTP API
-and event stream that the reference dashboard uses.
+Mirsad is a fraud-prevention system built by team **Ctrl + Alt + Cats** for the Abu Dhabi Police hackathon. It protects
+in three layers, and each layer feeds the next: the phone shields the person, the police turn one victim's encounter
+into everyone's immunity, and the website checks cut off the scam's money route.
 
-Mirsad supports a local fixture walkthrough and an approved live Telegram Business connection.
+## Layer 1 · People — on the phone
+
+[Mirsad Android](mirsad-android/) is an on-device scam shield with **no internet permission**: it decides on the phone
+whether an incoming call or message is a scam, holds or flags it before it can deceive, explains why in Arabic or
+English, restores a wrong hold in one tap (nothing is ever deleted), and turns each attempt into a structured evidence
+packet the citizen can choose to send to the police.
+
+- **APK:** [`mirsad-android/dist/mirsad-android-debug.apk`](mirsad-android/dist/mirsad-android-debug.apk)
+  (Android 10 or newer; install and try the built-in **Demo** without granting anything)
+- Videos: [30-second demo](mirsad-android/demo/mirsad-android-demo.mp4) ·
+  [15-second explainer recorded on a real Android 15 phone](mirsad-android/demo/mirsad-explainer-15s.mp4)
+- A phone that imports the portal's signed blocklist holds messages and rejects calls from every approved number —
+  one officer's flag protects every phone.
+
+## Layer 2 · Police — the officer portal (this repository)
+
+The service in this repository is an evidence capture and review portal for officer-led investigations. It records chat
+messages as they reach it, renders a timestamped Mirsad-rendered capture of each received message (SHA-256 verified on
+every read), and runs a quiet AI review that an officer can pause or take over at any time. In the approved Telegram
+Business demo, **Ali** — Mirsad's AI — keeps a suspected scammer talking, raises a warning on every payment link while
+the conversation continues, and pauses immediately the moment the sender volunteers bank-transfer details so the officer
+can inspect the source and take over: the scammer types the evidence himself. Citizen reports from Mirsad Android are
+imported as cases, flagged numbers go to a private **phone watchlist**, and the watchlist exports the signed blocklist
+that layer 1 phones consume.
+
+- **Link:** the officer portal is deployed at **<https://mirsad.catsdoes.team/>** — Inbox, Phone watchlist,
+  Places map and Awareness campaigns behind the officer sign-in.
+- To run it yourself: `npm start`, then open <http://127.0.0.1:8787/> (sign-in is created with
+  `npm run officer:create`; for a credential-free tour use the [fixture walkthrough](#fixture-walkthrough)
+  and `npm run demo:credentials`)
+- A host platform integrates through the same HTTP API and event stream that the reference dashboard uses
+  ([openapi.yaml](openapi.yaml)).
+- Mirsad supports a local fixture walkthrough and an approved live Telegram Business connection.
+
+## Layer 3 · The internet — every number and website checked
+
+Scammers borrow real businesses' names, numbers and payment pages, so Mirsad checks the infrastructure itself:
+
+- **Check in Places:** beside every reported number and website, and every sender phone, the portal says whether it
+  belongs to a business in the Abu Dhabi **Places directory** (a scammer often borrows a real shop's number) and opens
+  it on the map.
+- **Places map:** the directory view marks listings whose website Mirsad flagged, so officers see at a glance where
+  fraudulent sites impersonate real businesses.
+- **Suspected fraud is a rule, not an opinion:** when an officer records a merchant's verified payment host, any
+  conflicting payment link in a chat raises **Suspected fraud** automatically. The model never labels fraud.
+
+Together: the app turns one victim's encounter into a report, the portal turns the report into watchlist evidence and a
+city-wide blocklist, and the website checks stop the fake payment page before anyone — with or without the app —
+reaches the final step.
+
+---
+
+The rest of this README documents the layer 2 service: how to run it, the HTTP contract, the review pipeline and its
+safeguards, the Telegram connector, and the verification results.
 
 ## Run Mirsad on Windows
 
