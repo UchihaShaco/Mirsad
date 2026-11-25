@@ -55,7 +55,8 @@ class MirsadEngine(
 
     // ------------------------------------------------------------------------------------
 
-    private enum class SenderKind { NUMBER, ALPHANUMERIC, CONTACT, UNKNOWN }
+    /** KNOWN_SCAMMER: the displayed name is the contact Mirsad contact sync writes for flagged numbers. */
+    private enum class SenderKind { NUMBER, ALPHANUMERIC, CONTACT, KNOWN_SCAMMER, UNKNOWN }
 
     private class SenderInfo(val kind: SenderKind, val raw: String, val e164: String?, val key: String)
 
@@ -116,7 +117,7 @@ class MirsadEngine(
         }
 
         val reasons = bag.reasons
-        val blocklistHard = bag.contains(ReasonCodes.SENDER_BLOCKLISTED) ||
+        val blocklistHard = bag.contains(ReasonCodes.SENDER_BLOCKLISTED) || bag.contains(ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT) ||
             bag.contains(ReasonCodes.LINK_BLOCKLISTED_DOMAIN) || bag.contains(ReasonCodes.FINGERPRINT_BLOCKLISTED)
         val heldNumberCall = event.channel == Channel.CALL && bag.get(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE)?.hard == true
         // A block-list hit, or a call from a number that sent a held message, is a decision the user (or a police
@@ -128,7 +129,8 @@ class MirsadEngine(
         if (sender.kind == SenderKind.CONTACT) level = minOf(level, Level.WARN)
         if (otpLegit) level = minOf(level, Level.WARN)
         if (event.channel == Channel.CALL &&
-            !bag.contains(ReasonCodes.SENDER_BLOCKLISTED) && !bag.contains(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE)
+            !bag.contains(ReasonCodes.SENDER_BLOCKLISTED) && !bag.contains(ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT) &&
+            !bag.contains(ReasonCodes.SENDER_SEEN_IN_HELD_MESSAGE)
         ) {
             level = minOf(level, Level.WARN)
         }
@@ -140,6 +142,8 @@ class MirsadEngine(
         val e164 = PhoneNumbers.toE164(raw)
         val key = e164 ?: raw.lowercase()
         val kind = when {
+            // Checked before the contact cap: a name only looks like a saved contact because contact sync wrote it.
+            rules.isKnownScammerContact(raw) -> SenderKind.KNOWN_SCAMMER
             event.senderLooksLikeContact -> SenderKind.CONTACT
             e164 != null -> SenderKind.NUMBER
             raw.isEmpty() -> SenderKind.UNKNOWN
@@ -160,6 +164,9 @@ class MirsadEngine(
     private fun senderRules(event: Event, sender: SenderInfo, entities: List<Entity>, context: EngineContext, bag: ReasonBag) {
         if (inList(context.blockedSenders, sender)) {
             bag.add(ReasonCodes.SENDER_BLOCKLISTED, rules.weight(ReasonCodes.SENDER_BLOCKLISTED), null, true)
+        }
+        if (sender.kind == SenderKind.KNOWN_SCAMMER) {
+            bag.add(ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT, rules.weight(ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT), null, true)
         }
         val e164 = sender.e164
         if (e164 != null && e164 in context.recentlyHeldNumbers) {

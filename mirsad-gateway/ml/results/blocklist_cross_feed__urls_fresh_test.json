@@ -1,0 +1,22 @@
+{
+  "model": "blocklist_cross_feed",
+  "dataset": "urls_fresh_test",
+  "n": 5394,
+  "tp": 2492,
+  "fp": 0,
+  "tn": 2700,
+  "fn": 202,
+  "precision": 1.0,
+  "recall": 0.9250185597624351,
+  "f1": 0.96104897801774,
+  "fpr": 0.0,
+  "roc_auc": 0.9625092798812176,
+  "pr_auc": 0.9624675771892055,
+  "recall_at_fpr_0.1pct": 0.9250185597624351,
+  "recall_at_fpr_1pct": 0.9250185597624351,
+  "threshold": 0.5,
+  "latency_ms_p50": 0.0023395004973281175,
+  "latency_ms_p95": 0.004217099558445625,
+  "no_answer": 0,
+  "note": "same lookup, but ignoring the feed each row was taken from"
+}

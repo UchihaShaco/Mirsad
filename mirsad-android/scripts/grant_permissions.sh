@@ -35,7 +35,12 @@ echo "---- verification ----"
 notif_dump="$(adbs shell dumpsys notification 2>/dev/null | tr -d '\r' || true)"
 pkg_dump="$(adbs shell dumpsys package "$APP_ID" 2>/dev/null | tr -d '\r' || true)"
 allowed="$(printf '%s\n' "$notif_dump" | grep -A1 'Allowed notification listeners:' | sed -n '2p' | sed 's/^ *//')"
-holders="$(adbs shell cmd role get-role-holders android.app.role.CALL_SCREENING | tr -d '\r')"
+# `cmd role get-role-holders` exists from API 34; on older releases read the holders from `dumpsys role`.
+holders="$(adbs shell cmd role get-role-holders android.app.role.CALL_SCREENING 2>/dev/null | tr -d '\r' || true)"
+if [[ -z "$holders" || "$holders" == *"Unknown command"* ]]; then
+  holders="$(adbs shell dumpsys role 2>/dev/null | tr -d '\r' | grep -A1 'name=android.app.role.CALL_SCREENING$' \
+    | sed -n 's/^ *holders=//p' || true)"
+fi
 echo "POST_NOTIFICATIONS: $(printf '%s\n' "$pkg_dump" | grep 'android.permission.POST_NOTIFICATIONS' | sed -n '1p' | sed 's/^ *//')"
 echo "Allowed notification listeners: $allowed"
 echo "cmd role get-role-holders android.app.role.CALL_SCREENING: $holders"

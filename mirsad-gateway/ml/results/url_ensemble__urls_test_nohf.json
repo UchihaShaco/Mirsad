@@ -1,0 +1,22 @@
+{
+  "model": "url_ensemble",
+  "dataset": "urls_test_nohf",
+  "n": 297150,
+  "tp": 89170,
+  "fp": 99,
+  "tn": 144543,
+  "fn": 63338,
+  "precision": 0.9988909923937761,
+  "recall": 0.584690639179584,
+  "f1": 0.7376218581585511,
+  "fpr": 0.0006844485004355582,
+  "roc_auc": 0.9835987351470598,
+  "pr_auc": 0.9855570121807311,
+  "recall_at_fpr_0.1pct": 0.6129383376609752,
+  "recall_at_fpr_1pct": 0.8148818422640124,
+  "threshold": 0.9846520331750968,
+  "latency_ms_p50": 13.291818999277893,
+  "latency_ms_p95": 93.83734479997656,
+  "no_answer": 0,
+  "note": "w=0.65 * stack + 0.35 * transformer (logit average), threshold at the stack's validation FPR; transformer on GPU"
+}

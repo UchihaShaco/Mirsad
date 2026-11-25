@@ -169,6 +169,7 @@ export const REPORT_REASON_LABELS = {
   SENDER_ONE_RING_PATTERN: "Looks like a one-ring call-back scam",
   SENDER_INTERNATIONAL_CALL: "International number",
   SENDER_SEEN_IN_HELD_MESSAGE: "This number sent a held message recently",
+  SENDER_KNOWN_SCAMMER_CONTACT: "Sender is on the phone's Known Scammer contact, flagged through Mirsad",
   SENDER_OTP_FROM_ALPHANUMERIC: "One-time code from an official sender",
   LINK_SHORTENER: "Shortened link hides the real address",
   LINK_IP_HOST: "Link points to a raw IP address",

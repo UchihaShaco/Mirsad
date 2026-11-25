@@ -1,0 +1,16 @@
+# Secrets and machine-local settings
+.env
+android/local.properties
+android/scamshield.properties
+
+# Build output and caches
+*.apk
+dist/
+android/.gradle/
+android/.kotlin/
+android/.idea/
+android/build/
+android/app/build/
+__pycache__/
+.pytest_cache/
+.venv/

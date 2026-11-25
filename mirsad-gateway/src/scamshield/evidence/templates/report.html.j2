@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirsad — website evidence report {{ case_ref }}</title>
+{% macro heading(en, ar) %}<h2><span class="en">{{ en }}</span><span class="ar" dir="rtl" lang="ar">{{ ar }}</span></h2>{% endmacro %}
+{% macro when(value) %}{% if value is mapping %}<div>{{ value.utc }}</div><div class="muted">{{ value.gst }}</div>{% else %}{{ value }}{% endif %}{% endmacro %}
+{% macro facts(rows) %}
+<table class="facts">
+{% for r in rows %}
+<tr><th><div>{{ r.en }}</div><div class="ar" dir="rtl" lang="ar">{{ r.ar }}</div></th><td class="{{ 'mono' if r.mono }}" dir="ltr">{{ when(r.value) }}</td></tr>
+{% endfor %}
+</table>
+{% endmacro %}
+<style>
+{{ font_css | safe }}
+/* The Mirsad portal's light palette (src/dashboard/styles.css): ink, lines, sunken fill, alert / attention / lower-concern and indigo. */
+:root { --ink: #202438; --muted: #505a70; --line: #dbe0eb; --soft: #f2f4fa; --block: #b92d23; --block-soft: #fbe9e6; --warn: #a15a00; --warn-soft: #fbefd3; --allow: #2a6a3e; --allow-soft: #e2f1e5; --accent: #3f44b4; --accent-ink: #2b2f86; }
+@page { size: A4; margin: 15mm 13mm 17mm;
+  @bottom-left { content: "Mirsad · {{ case_ref }}"; font: 7.5pt "Noto Sans", sans-serif; color: #505a70; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt "Noto Sans", sans-serif; color: #505a70; } }
+* { box-sizing: border-box; }
+body { font-family: "Noto Sans", "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif; color: var(--ink); font-size: 9pt; line-height: 1.45; margin: 0; background: #fff; }
+.ar, [lang="ar"] { font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, "Noto Sans", sans-serif; }
+.mono { font-family: "Noto Sans Mono", ui-monospace, Consolas, monospace; font-size: 8pt; word-break: break-all; }
+.muted { color: var(--muted); }
+.wordmark { display: flex; align-items: center; gap: 6pt; margin-bottom: 7pt; }
+.wordmark img { width: 20pt; height: 20pt; }
+.wordmark .name { font-size: 15pt; font-weight: 700; letter-spacing: -.4pt; }
+.wordmark .ar { color: var(--muted); font-size: 10pt; }
+.wordmark .what { margin-left: auto; color: var(--muted); font-size: 8pt; font-weight: 700; }
+header.top { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1pt solid var(--line); padding-bottom: 8pt; margin-bottom: 10pt; }
+header.top h1 { font-size: 14pt; margin: 0; letter-spacing: -.1pt; }
+header.top .ar h1 { text-align: right; }
+header.top .sub { color: var(--muted); font-size: 8pt; margin-top: 2pt; }
+.verdict { display: flex; gap: 10pt; align-items: stretch; margin: 8pt 0 4pt; }
+.badge { border-radius: 9pt; color: #fff; padding: 8pt 12pt; min-width: 120pt; text-align: center; }
+.badge.block { background: var(--block); } .badge.warn { background: var(--warn); } .badge.allow { background: var(--allow); }
+.badge .big { font-size: 17pt; font-weight: 700; line-height: 1.1; }
+.badge .score { font-size: 9pt; margin-top: 3pt; }
+.target { flex: 1; border: 1pt solid var(--line); border-radius: 9pt; padding: 6pt 9pt; background: var(--soft); }
+.target .label { font-size: 7.5pt; font-weight: 700; color: var(--muted); }
+.target .mono { font-size: 9pt; }
+.summary { display: flex; gap: 12pt; margin: 6pt 0 2pt; }
+.summary p { flex: 1; margin: 0; }
+h2 { display: flex; justify-content: space-between; font-size: 10.5pt; margin: 14pt 0 5pt; padding-bottom: 2pt; border-bottom: 1pt solid var(--line); color: var(--accent-ink); page-break-after: avoid; }
+h2 .ar { font-size: 10.5pt; }
+section { page-break-inside: auto; }
+table { border-collapse: collapse; width: 100%; }
+table.facts th { width: 34%; text-align: left; font-weight: 400; color: var(--muted); vertical-align: top; padding: 3pt 8pt 3pt 0; border-bottom: .5pt solid var(--line); }
+table.facts th .ar { font-size: 8pt; text-align: left; }
+table.facts td { padding: 3pt 0; border-bottom: .5pt solid var(--line); vertical-align: top; }
+table.grid th { font-size: 7.5pt; color: var(--muted); text-align: left; font-weight: 700; border-bottom: 1pt solid var(--line); padding: 3pt 5pt; }
+table.grid td { padding: 4pt 5pt; border-bottom: .5pt solid var(--line); vertical-align: top; }
+table.grid tr { page-break-inside: avoid; }
+.sev { display: inline-block; border-radius: 6pt; padding: 0 6pt; font-size: 7.5pt; font-weight: 700; color: #fff; white-space: nowrap; }
+.sev.critical { background: #821c15; } .sev.high { background: var(--block); } .sev.medium { background: var(--warn-soft); color: #653e00; border: .5pt solid #e2c482; }
+.sev.low { background: #e9ecf4; color: var(--muted); } .sev.info { background: #fff; color: var(--muted); border: .5pt solid #bfc7d9; }
+.reason-ar { margin-top: 1pt; text-align: right; }
+.detail { color: var(--muted); font-size: 8pt; }
+.bar { height: 6pt; background: var(--soft); border-radius: 3pt; width: 70pt; margin-top: 3pt; }
+.bar span { display: block; height: 6pt; border-radius: 3pt; background: var(--block); }
+.bar.down span { background: var(--allow); }
+.pts { font-weight: 700; white-space: nowrap; }
+.chain { margin: 0; padding: 0; list-style: none; }
+.chain li { border-left: 2pt solid var(--accent); padding: 2pt 0 4pt 8pt; margin-left: 4pt; }
+.chain li .meta { color: var(--muted); font-size: 7.5pt; }
+.two { display: flex; gap: 12pt; }
+.two > div { flex: 1; }
+.shot { width: 52mm; flex: none; }
+.shot-label { font-weight: 700; font-size: 8pt; margin-bottom: 3pt; }
+.shot img { width: 52mm; border: 1pt solid var(--line); border-radius: 6pt; }
+.notice { border: 1pt dashed var(--warn); color: #653e00; padding: 8pt; border-radius: 9pt; background: var(--warn-soft); }
+.brand, .review, .channel { page-break-inside: avoid; }
+.brand { border: 1pt solid var(--line); border-left: 3pt solid var(--block); border-radius: 9pt; padding: 6pt 9pt; }
+.brand .name { font-size: 11pt; font-weight: 700; }
+.review { border: 1pt solid var(--line); border-radius: 9pt; padding: 6pt 9pt; }
+.outcome { display: inline-block; border-radius: 8pt; padding: 1pt 8pt; font-weight: 700; color: #fff; background: #616c83; }
+.outcome.confirmed { background: var(--block); } .outcome.overturned { background: var(--allow); } .outcome.downgraded { background: var(--warn); }
+.step-yes { color: var(--block); font-weight: 700; } .step-no { color: var(--allow); font-weight: 700; } .step-neutral { color: var(--muted); }
+.rtl { direction: rtl; text-align: right; }
+.rtl table.facts th, .rtl table.grid th, .rtl table.grid td { text-align: right; }
+.rtl table.facts th { padding: 3pt 0 3pt 8pt; }
+.rtl h2 { justify-content: flex-start; }
+.page-break { page-break-before: always; }
+.attest { font-size: 8pt; color: var(--muted); margin-top: 8pt; }
+{% if not for_pdf %}
+html { background: #edf0f6; }
+body { max-width: 210mm; margin: 16px auto; padding: 18mm 14mm; border-radius: 18px; box-shadow: 0 1px 3px rgb(30 42 74 / 6%), 0 8px 28px -14px rgb(34 48 87 / 20%); font-size: 14px; }
+.mono { font-size: 12px; }
+@media (max-width: 640px) { body { padding: 16px; margin: 0; } .two, .verdict, .summary, header.top { flex-direction: column; } .shot, .shot img { width: 100%; } }
+{% endif %}
+</style>
+</head>
+<body>
+<div class="wordmark"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzNmNDRiNCIvPjxwYXRoIGQ9Ik0xNiA3LjVhOC41IDguNSAwIDEgMCA4LjUgOC41IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIzLjEiIGZpbGw9IiNmZmZmZmYiLz48Y2lyY2xlIGN4PSIyMyIgY3k9IjkiIHI9IjIuMSIgZmlsbD0iIzdmZTBkMiIvPjwvc3ZnPg==" alt="" width="20" height="20"><span class="name">Mirsad</span><span class="ar" dir="rtl" lang="ar">مرصاد</span><span class="what">Website evidence report · <span lang="ar" dir="rtl">تقرير أدلة المواقع</span></span></div>
+<header class="top">
+  <div>
+    <h1>Suspected fraudulent website: case report</h1>
+    <div class="sub">Automated investigation · {{ tool_version }}</div>
+  </div>
+  <div class="ar" dir="rtl" lang="ar">
+    <h1>تقرير قضية: موقع احتيالي مشتبه به</h1>
+    <div class="sub">تحقيق آلي بواسطة مرصاد</div>
+  </div>
+</header>
+
+<table class="facts">
+  <tr><th><div>Case reference</div><div class="ar" dir="rtl" lang="ar">رقم مرجع القضية</div></th><td class="mono"><strong>{{ case_ref }}</strong></td></tr>
+  <tr><th><div>Verdict id</div><div class="ar" dir="rtl" lang="ar">معرّف الحكم</div></th><td class="mono">{{ verdict_id }}</td></tr>
+  <tr><th><div>Report generated</div><div class="ar" dir="rtl" lang="ar">تاريخ إعداد التقرير</div></th><td>{{ when(built) }}</td></tr>
+</table>
+
+<div class="verdict">
+  <div class="badge {{ decision }}">
+    <div class="big">{{ decision_en | upper }}</div>
+    <div class="big ar" dir="rtl" lang="ar">{{ decision_ar }}</div>
+    <div class="score">Risk {{ risk }} / 100 · <span lang="ar" dir="rtl">درجة الخطورة {{ risk }}</span></div>
+  </div>
+  <div class="target">
+    <div class="label">URL (defanged) · الرابط (معطّل)</div>
+    <div class="mono">{{ url }}</div>
+    {% if final_url and final_url != url %}
+    <div class="label" style="margin-top:4pt">Final URL · الرابط النهائي</div>
+    <div class="mono">{{ final_url }}</div>
+    {% endif %}
+    <div class="label" style="margin-top:4pt">Analysis depth · عمق التحليل</div>
+    <div>{{ stage_en }} · <span lang="ar" dir="rtl">{{ stage_ar }}</span></div>
+  </div>
+</div>
+{% if summary_en or summary_ar %}
+<div class="summary">
+  <p>{{ summary_en }}</p>
+  <p class="ar" dir="rtl" lang="ar">{{ summary_ar }}</p>
+</div>
+{% endif %}
+
+<section>
+{{ heading("Timeline", "التسلسل الزمني") }}
+{{ facts(times) }}
+{% if reused %}
+<p class="muted" style="margin:4pt 0 0">The page has not changed since case {{ reused.case_ref }}: its screenshots, page HTML and registration records{% if reused.captured %} (captured {{ reused.captured.utc }} / {{ reused.captured.gst }}){% endif %} are reused, and this report was prepared from the current verdict at the time shown above.</p>
+<p class="muted ar" dir="rtl" lang="ar" style="margin:2pt 0 0">لم تتغير الصفحة منذ القضية {{ reused.case_ref }}: أُعيد استخدام لقطات الشاشة وشيفرة الصفحة وسجلات التسجيل الملتقطة حينها، وأُعدّ هذا التقرير من الحكم الحالي في الوقت المبيّن أعلاه.</p>
+{% endif %}
+</section>
+
+<section>
+{{ heading("Findings and their contribution to the risk score", "المؤشرات ومساهمتها في درجة الخطورة") }}
+{% if reasons %}
+<table class="grid">
+  <tr><th style="width:62pt">Severity</th><th>Finding · المؤشر</th><th style="width:88pt">Contribution</th></tr>
+  {% for r in reasons %}
+  <tr>
+    <td><span class="sev {{ r.severity }}">{{ r.severity_en }}</span><div class="ar muted" dir="rtl" lang="ar" style="font-size:7.5pt">{{ r.severity_ar }}</div></td>
+    <td>
+      <div><strong>{{ r.title_en }}</strong></div>
+      {% if r.title_ar %}<div class="reason-ar ar" dir="rtl" lang="ar">{{ r.title_ar }}</div>{% endif %}
+      {% if r.detail %}<div class="detail">{{ r.detail }}</div>{% endif %}
+      <div class="mono muted" style="font-size:7pt">{{ r.code }}</div>
+    </td>
+    <td><span class="pts">{{ "0" if (r.points | round) == 0 else "%+.0f"|format(r.points) }}</span><div class="bar{{ ' down' if r.points < 0 }}"><span style="width:{{ r.bar }}%"></span></div></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">No individual findings were recorded. · <span lang="ar" dir="rtl">لم تُسجَّل مؤشرات منفردة.</span></p>
+{% endif %}
+</section>
+
+{% if brand %}
+<section>
+{{ heading("Brand impersonation", "انتحال علامة تجارية") }}
+<div class="brand">
+  <div class="name">{{ brand.name }}{% if brand.name_ar %} · <span lang="ar" dir="rtl">{{ brand.name_ar }}</span>{% endif %}{% if brand.category %} <span class="muted" style="font-weight:400">({{ brand.category }})</span>{% endif %}</div>
+  <div class="muted">This site is not operated by the brand it presents. The brand's genuine domains are listed below.</div>
+  <div class="muted ar" dir="rtl" lang="ar">هذا الموقع لا تديره الجهة التي يدّعي تمثيلها. النطاقات الرسمية مدرجة أدناه.</div>
+  {{ facts(brand.rows) }}
+</div>
+</section>
+{% endif %}
+
+<section>
+{{ heading("Screenshot and page facts", "لقطة الشاشة وبيانات الصفحة") }}
+<div class="two">
+  <div class="shot">
+    <div class="shot-label">Live capture · <span lang="ar" dir="rtl">لقطة مباشرة</span></div>
+    {% if screenshot %}
+    <img src="data:image/png;base64,{{ screenshot }}" alt="Live capture of the reported page">
+    <div class="muted" style="font-size:7pt">{{ browser }} · engine's mobile identity · 390×844 · {{ screenshot_url }}</div>
+    {% else %}
+    <div class="notice">
+      <div><strong>Screenshot could not be captured.</strong></div>
+      <div class="ar" dir="rtl" lang="ar"><strong>تعذّر التقاط لقطة الشاشة.</strong></div>
+      <div class="mono" style="margin-top:4pt">{{ screenshot_error }}</div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="shot">
+    <div class="shot-label">As seen by the engine · <span lang="ar" dir="rtl">كما رآه المحرك</span></div>
+    {% if screenshot_engine %}
+    <img src="data:image/png;base64,{{ screenshot_engine }}" alt="The HTML the engine analysed, rendered offline">
+    <div class="muted" style="font-size:7pt">Captured HTML rendered offline: network blocked, scripts off. · <span lang="ar" dir="rtl">عُرضت الشيفرة الملتقطة دون شبكة ودون سكربتات.</span></div>
+    {% else %}
+    <div class="notice"><div class="mono">{{ engine_error }}</div></div>
+    {% endif %}
+  </div>
+  <div>
+    {% if page_rows %}{{ facts(page_rows) }}{% endif %}
+    {% if redirects %}
+    <h3 style="font-size:9pt;margin:8pt 0 3pt">Redirect chain · <span lang="ar" dir="rtl">سلسلة إعادة التوجيه</span></h3>
+    <ol class="chain">
+      {% for h in redirects %}
+      <li><div class="mono">{{ h.url }}</div><div class="meta">{{ h.via }}{% if h.status %} · HTTP {{ h.status }}{% endif %}{% if h.ip %} · {{ h.ip }}{% endif %}</div></li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+  </div>
+</div>
+{% if views and views.compared %}
+<div class="{{ 'notice' if views.differs else 'muted' }}" style="margin-top:6pt">
+  {% if views.differs %}
+  <strong>The live page differs materially from what the engine analysed</strong> ({{ views.notes | join('; ') }}). The site may show automated browsers or scanners different content (cloaking); the difference is itself evidence.
+  <div class="ar" dir="rtl" lang="ar">تختلف الصفحة المباشرة اختلافاً جوهرياً عمّا حلّله المحرك، وقد يكون الموقع يعرض محتوى مختلفاً لأدوات الفحص (تمويه)؛ وهذا الاختلاف بحد ذاته دليل.</div>
+  {% else %}
+  Live capture and engine view match (visible text overlap {{ (views.similarity * 100) | round | int }}%). · <span lang="ar" dir="rtl">اللقطة المباشرة تطابق ما رآه المحرك.</span>
+  {% endif %}
+</div>
+{% endif %}
+</section>
+
+<section>
+{{ heading("Domain registration", "بيانات تسجيل النطاق") }}
+{% if registration %}{{ facts(registration) }}{% else %}<p class="muted">Registration data unavailable: {{ registration_error }}</p>{% endif %}
+</section>
+
+<section>
+{{ heading("Hosting", "الاستضافة") }}
+{% if hosting %}{{ facts(hosting) }}{% else %}<p class="muted">Hosting data unavailable. · <span lang="ar" dir="rtl">بيانات الاستضافة غير متوفرة.</span></p>{% endif %}
+</section>
+
+<section>
+{{ heading("TLS certificate", "شهادة TLS") }}
+{% if tls %}{{ facts(tls) }}{% else %}<p class="muted">No certificate could be retrieved: {{ tls_error }}</p>{% endif %}
+</section>
+
+{% if models %}
+<section>
+{{ heading("Model scores and linkage", "درجات النماذج والارتباطات") }}
+{{ facts(models) }}
+</section>
+{% endif %}
+
+{% if review %}
+<section>
+{{ heading("Independent re-validation", "إعادة التحقق المستقلة") }}
+<div class="review">
+  <div><span class="outcome {{ review.outcome }}">{{ review.outcome_en }} · <span lang="ar" dir="rtl">{{ review.outcome_ar }}</span></span></div>
+  <div class="summary">
+    <p>{{ review.summary_en }}</p>
+    <p class="ar" dir="rtl" lang="ar">{% if review.headline_ar %}<strong>{{ review.headline_ar }}</strong><br>{% endif %}{% if review.summary_ar %}<span class="muted">(صياغة آلية)</span> {{ review.summary_ar }}{% endif %}</p>
+  </div>
+  {{ facts(review.rows) }}
+  {% if review.steps %}
+  <table class="grid" style="margin-top:6pt">
+    <tr><th style="width:16pt">#</th><th>Check · الفحص</th><th>Finding · النتيجة</th><th style="width:70pt">Bearing</th></tr>
+    {% for s in review.steps %}
+    <tr>
+      <td>{{ s.n }}</td>
+      <td><div class="mono">{{ s.tool }}</div><div class="mono muted" style="font-size:7pt">{{ s.input }}</div></td>
+      <td>{{ s.finding }}</td>
+      <td>
+        {% if s.supports is sameas true %}<span class="step-yes">Supports block</span><div class="ar" dir="rtl" lang="ar">يدعم الحظر</div>
+        {% elif s.supports is sameas false %}<span class="step-no">Contradicts block</span><div class="ar" dir="rtl" lang="ar">ينفي الحظر</div>
+        {% else %}<span class="step-neutral">Neutral</span><div class="ar" dir="rtl" lang="ar">محايد</div>{% endif %}
+        <div class="muted" style="font-size:7pt">{{ s.ms }} ms</div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+</section>
+{% endif %}
+
+<section>
+{{ heading("Reporting channels", "قنوات الإبلاغ") }}
+<p class="muted" style="margin:0 0 4pt">For the filing officer. Nothing has been sent automatically. · <span lang="ar" dir="rtl">للاستخدام من قبل الموظف المختص؛ لم يُرسَل أي بلاغ آلياً.</span></p>
+<table class="grid">
+  <tr><th>Channel</th><th>Contact</th><th class="ar" dir="rtl" lang="ar" style="text-align:right">القناة</th></tr>
+  {% for c in channels %}
+  <tr class="channel">
+    <td><strong>{{ c.name_en }}</strong><div class="detail">{{ c.scope_en }}</div></td>
+    <td>{{ c.contact }}<div class="mono muted" style="font-size:6.5pt">{{ c.source }}</div></td>
+    <td class="ar" dir="rtl" lang="ar" style="text-align:right"><strong>{{ c.name_ar }}</strong><div class="detail">{{ c.contact_ar }}</div></td>
+  </tr>
+  {% endfor %}
+</table>
+</section>
+
+<section class="rtl page-break" dir="rtl" lang="ar">
+<h2>ملخص القضية باللغة العربية</h2>
+<table class="facts">
+  <tr><th>رقم مرجع القضية</th><td class="mono" dir="ltr" style="text-align:right">{{ case_ref }}</td></tr>
+  <tr><th>الرابط (معطّل)</th><td class="mono" dir="ltr" style="text-align:right">{{ url }}</td></tr>
+  <tr><th>القرار</th><td><strong>{{ decision_ar }}</strong> — درجة الخطورة {{ risk }} من 100</td></tr>
+  <tr><th>عمق التحليل</th><td>{{ stage_ar }}</td></tr>
+  {% for r in times %}<tr><th>{{ r.ar }}</th><td dir="ltr" style="text-align:right">{{ when(r.value) }}</td></tr>{% endfor %}
+  {% if brand %}<tr><th>العلامة المنتحَلة</th><td>{{ brand.name_ar or brand.name }}</td></tr>{% endif %}
+</table>
+{% if summary_ar %}<p>{{ summary_ar }}</p>{% endif %}
+{% if reasons %}
+<h2>المؤشرات</h2>
+<table class="grid">
+  <tr><th style="width:60pt">الخطورة</th><th>المؤشر</th><th style="width:50pt">المساهمة</th></tr>
+  {% for r in reasons %}
+  <tr><td><span class="sev {{ r.severity }}">{{ r.severity_ar }}</span></td><td>{{ r.title_ar or r.title_en }}</td><td dir="ltr" style="text-align:right"><span class="pts">{{ "0" if (r.points | round) == 0 else "%+.0f"|format(r.points) }}</span></td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% if review %}
+<h2>إعادة التحقق المستقلة</h2>
+<p><span class="outcome {{ review.outcome }}">{{ review.outcome_ar }}</span>{% if review.headline_ar %} <strong>{{ review.headline_ar }}</strong>{% endif %}</p>
+{% if review.summary_ar %}<p class="muted" style="font-size:8pt;margin-bottom:1pt">ملخص كتبه نموذج المراجعة (صياغة آلية؛ انظر مسرد المصطلحات أدناه):</p><p>{{ review.summary_ar }}</p>{% endif %}
+{% endif %}
+<h2>مسرد المصطلحات</h2>
+<table class="grid">
+  <tr><th>المصطلح</th><th>Term</th><th></th></tr>
+  {% for en, ar, note in glossary %}
+  <tr><td><strong>{{ ar }}</strong></td><td dir="ltr" style="text-align:right">{{ en }}</td><td dir="ltr" class="muted" style="text-align:right">{{ note }}</td></tr>
+  {% endfor %}
+</table>
+</section>
+
+<section>
+{{ heading("Attached evidence", "الأدلة المرفقة") }}
+<table class="grid">
+  <tr><th>File</th><th>Contents</th><th class="ar" dir="rtl" lang="ar" style="text-align:right">المحتوى</th></tr>
+  {% for a in attachments %}
+  <tr><td class="mono">{{ a.name }}</td><td>{{ a.en }}</td><td class="ar" dir="rtl" lang="ar" style="text-align:right">{{ a.ar }}</td></tr>
+  {% endfor %}
+</table>
+<p class="attest">This report was produced automatically from the investigation record and live lookups made at the time shown above. URLs are defanged so they cannot be opened by accident. The SHA-256 hash of every file in this pack is recorded in manifest.json for chain of custody.</p>
+<p class="attest ar" dir="rtl" lang="ar" style="text-align:right">أُعدّ هذا التقرير آلياً من سجل التحقيق ومن عمليات استعلام مباشرة أُجريت في الوقت المبيّن أعلاه. الروابط معطّلة لمنع فتحها عن طريق الخطأ. بصمة SHA-256 لكل ملف في هذه الحزمة مسجّلة في ملف manifest.json لضمان سلسلة الحيازة.</p>
+</section>
+</body>
+</html>

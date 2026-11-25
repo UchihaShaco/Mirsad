@@ -89,8 +89,10 @@ class DefaultPipeline(
         val now = System.currentTimeMillis()
         val added = mutableListOf<Long>()
 
-        // The share target uses the placeholder sender "shared"; never allow-list it.
-        if (incident.source != IncidentSource.SHARE && incident.senderType != SenderType.UNKNOWN) {
+        // The share target uses the placeholder sender "shared"; never allow-list it. Nor the Known Scammer contact's
+        // name: it stands for every flagged number, so the overrule only remembers this message's template.
+        val knownScammerName = incident.reasons.any { it.code == ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT }
+        if (incident.source != IncidentSource.SHARE && incident.senderType != SenderType.UNKNOWN && !knownScammerName) {
             val value = Senders.listValue(incident.sender, incident.senderType)
             if (value.isNotBlank() && !lists.contains(ListKind.ALLOW_SENDER, value)) {
                 added += lists.add(

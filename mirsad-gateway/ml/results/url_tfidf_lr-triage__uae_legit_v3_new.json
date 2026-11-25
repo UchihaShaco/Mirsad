@@ -1,0 +1,25 @@
+{
+  "model": "url_tfidf_lr@triage",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 29,
+  "tn": 3645,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.007893304300489928,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.8822733163833619,
+  "latency_ms_p50": 0.2443254998070188,
+  "latency_ms_p95": 0.4524007486907067,
+  "no_answer": 0,
+  "note": "triage operating point: threshold set for 1% FPR on validation; URLs above it are escalated to the page check, not blocked",
+  "row_level_detail": {
+    "false_positives": 29
+  }
+}

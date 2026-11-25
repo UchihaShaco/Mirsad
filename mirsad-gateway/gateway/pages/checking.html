@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Checking {{host}} | Mirsad</title>
+<style>
+  :root {
+    --bg: #edf0f6; --card: #ffffff; --ink: #202438; --muted: #505a70; --line: #dbe0eb; --brand: #3f44b4; --on-brand: #ffffff;
+    --accent: #3f44b4; --done: #2a6a3e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #10131e; --card: #23293a; --ink: #eff0f7; --muted: #b6bed3; --line: #31394d; --brand: #4d52ca; --on-brand: #ffffff;
+            --accent: #a9adf8; --done: #7ccb92; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 16px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans Arabic", sans-serif;
+         min-height: 100vh; padding: env(safe-area-inset-top) 16px 32px; }
+  [lang="ar"] { font-family: "Segoe UI Variable Text", "Segoe UI", "Noto Sans Arabic", "Noto Naskh Arabic", "Geeza Pro", Tahoma, sans-serif; line-height: 1.7; }
+  header, main, footer { max-width: 520px; margin: 0 auto; }
+  header { padding: 16px 0; display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  header svg { width: 32px; height: 32px; flex: none; }
+  header small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .01em; }
+  header .name { font-size: 21px; font-weight: 700; letter-spacing: -0.035em; }
+  header .name-ar { color: var(--muted); font-size: 14px; font-weight: 400; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 28px 20px 24px;
+          box-shadow: 0 1px 3px rgb(30 42 74 / 6%), 0 8px 28px -14px rgb(34 48 87 / 20%); text-align: center; }
+  .ring { width: 84px; height: 84px; margin: 0 auto 18px; position: relative; }
+  .ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 6px solid var(--line);
+                  border-top-color: var(--accent); animation: spin 1s linear infinite; }
+  .ring svg { position: absolute; inset: 22px; }
+  h1 { margin: 0 0 2px; font-size: 23px; line-height: 1.25; }
+  h2 { margin: 0; font-size: 20px; font-weight: 600; }
+  .host { margin: 14px 0 4px; display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--bg);
+          border: 1px solid var(--line); font: 600 14px/1.4 "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, SFMono-Regular, Menlo, "Liberation Mono", monospace; word-break: break-all; }
+  ol { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 8px; text-align: start; }
+  li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: center; padding: 10px 12px;
+       border: 1px solid var(--line); border-radius: 12px; color: var(--muted); transition: color .3s, border-color .3s; }
+  li .ar { display: block; font-size: 14px; }
+  li i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); justify-self: center; }
+  li.active { color: var(--ink); border-color: var(--accent); }
+  li.active i { border-color: var(--accent); border-top-color: transparent; animation: spin .8s linear infinite; }
+  li.done { color: var(--ink); }
+  li.done i { border-color: var(--done); background: var(--done); }
+  .hint { margin: 18px 0 0; font-size: 14px; color: var(--muted); }
+  .slow { display: none; margin-top: 16px; }
+  .slow.on { display: block; }
+  .btn { display: inline-block; margin-top: 10px; padding: 12px 18px; border-radius: 999px; background: var(--brand); color: var(--on-brand);
+         font-weight: 700; text-decoration: none; border: 0; font-size: 15px; cursor: pointer; }
+  footer { margin-top: 16px; font-size: 13px; color: var(--muted); text-align: center; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .ring::before, li.active i { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#3f44b4"/><path d="M16 7.5a8.5 8.5 0 1 0 8.5 8.5" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="16" r="3.1" fill="#ffffff"/><circle cx="23" cy="9" r="2.1" fill="#7fe0d2"/></svg>
+  <div><span class="name">Mirsad</span> <span class="name-ar" lang="ar" dir="rtl">مرصاد</span><small>Website shield · <span lang="ar" dir="rtl">درع المواقع</span></small></div>
+</header>
+<main>
+  <div class="card" role="status" aria-live="polite">
+    <div class="ring" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 3 5.5v6.2c0 5.1 3.8 9.4 9 10.3 5.2-.9 9-5.2 9-10.3V5.5L12 2z" opacity=".25"/></svg>
+    </div>
+    <h1>Checking this site for you</h1>
+    <h2 lang="ar" dir="rtl">نتحقق من هذا الموقع من أجلك</h2>
+    <div class="host" dir="ltr">{{host}}</div>
+    <ol id="steps">
+      <li class="active"><i></i><span>Reputation and known scam lists<span class="ar" lang="ar" dir="rtl">السمعة وقوائم الاحتيال المعروفة</span></span></li>
+      <li><i></i><span>Web address and look-alike check<span class="ar" lang="ar" dir="rtl">فحص العنوان والمواقع المقلِّدة</span></span></li>
+      <li><i></i><span>First page and its redirects<span class="ar" lang="ar" dir="rtl">الصفحة الأولى وإعادة التوجيه</span></span></li>
+    </ol>
+    <p class="hint">You will be taken to the site automatically in a few seconds.<br>
+      <span lang="ar" dir="rtl">سيتم نقلك إلى الموقع تلقائيًا خلال ثوانٍ.</span></p>
+    <div class="slow" id="slow">
+      <p class="hint">This is taking longer than usual. <span lang="ar" dir="rtl">يستغرق الفحص وقتًا أطول من المعتاد.</span></p>
+      <button class="btn" type="button" onclick="location.reload()">Try again · <span lang="ar">أعد المحاولة</span></button>
+    </div>
+  </div>
+  <footer>Protected by your network provider · <span lang="ar" dir="rtl">بحماية مزود الشبكة</span></footer>
+</main>
+<script>
+(function () {
+  var cfg = {{data_json}};
+  var steps = document.querySelectorAll("#steps li");
+  var started = Date.now();
+  var stepMs = Math.max(600, cfg.hold_s * 1000 / 4);
+  function paint() {
+    var n = Math.min(steps.length - 1, Math.floor((Date.now() - started) / stepMs));
+    for (var i = 0; i < steps.length; i++) {
+      steps[i].className = i < n ? "done" : (i === n ? "active" : "");
+    }
+  }
+  function poll() {
+    fetch(cfg.status_url, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
+      if (s.state !== "pending") {
+        for (var i = 0; i < steps.length; i++) steps[i].className = "done";
+        location.replace(cfg.url);
+        return;
+      }
+      if (Date.now() - started > 30000) document.getElementById("slow").classList.add("on");
+      setTimeout(poll, 800);
+    }).catch(function () { setTimeout(poll, 1500); });
+  }
+  setInterval(paint, 250);
+  poll();
+})();
+</script>
+</body>
+</html>

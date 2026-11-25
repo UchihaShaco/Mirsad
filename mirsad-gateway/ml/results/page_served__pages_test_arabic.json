@@ -1,0 +1,23 @@
+{
+  "model": "page_served",
+  "dataset": "pages_test_arabic",
+  "n": 45,
+  "tp": 25,
+  "fp": 0,
+  "tn": 19,
+  "fn": 1,
+  "precision": 1.0,
+  "recall": 0.9615384615384616,
+  "f1": 0.9803921568627451,
+  "fpr": 0.0,
+  "roc_auc": 0.9979757085020243,
+  "pr_auc": 0.9985754985754985,
+  "recall_at_fpr_0.1pct": 0.9615384615384616,
+  "recall_at_fpr_1pct": 0.9615384615384616,
+  "threshold": 0.955481749796998,
+  "latency_ms_p50": 90.440326002863,
+  "latency_ms_p95": 152.99460199821624,
+  "latency_note": "score_page inside the engine container, one page at a time, 320 pages, encoder service on the host GPU (bf16) + CPU model",
+  "latency_ms_p50_cpu_fallback": 19.627437999588437,
+  "latency_ms_p95_cpu_fallback": 43.633122000755975
+}

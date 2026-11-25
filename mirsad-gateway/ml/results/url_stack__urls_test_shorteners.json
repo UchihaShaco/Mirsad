@@ -1,0 +1,21 @@
+{
+  "model": "url_stack",
+  "dataset": "urls_test_shorteners",
+  "n": 1351,
+  "tp": 0,
+  "fp": 0,
+  "tn": 1337,
+  "fn": 14,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.0,
+  "roc_auc": 0.8326210065177904,
+  "pr_auc": 0.24105247114261727,
+  "recall_at_fpr_0.1pct": 0.21428571428571427,
+  "recall_at_fpr_1pct": 0.21428571428571427,
+  "threshold": 0.9805042890564077,
+  "latency_ms_p50": 0.5680290014424827,
+  "latency_ms_p95": 1.1849250997329352,
+  "no_answer": 0
+}

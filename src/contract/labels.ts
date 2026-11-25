@@ -55,3 +55,23 @@ export const WATCHLIST_STATUS_LABELS = {
   approved: LABELS.approved,
   cleared: LABELS.cleared,
 } as const;
+
+/** Where a flagged number stands with the contact-sync server (WatchlistEntry.contactSync), by state or by why it was not sent. */
+export const CONTACT_SYNC_LABELS = {
+  on_phones: 'On phones',
+  queued: 'Queued',
+  no_international_number: 'Not sent: no international number',
+  unreachable: 'Not sent: server unreachable',
+  timeout: 'Not sent: server timed out',
+  server_error: 'Not sent: server error',
+  token_refused: 'Not sent: token refused',
+  number_refused: 'Not sent: number refused',
+} as const;
+
+/** The Places map's names for a flagged listing website (WebsiteFlag); the dashboard legend and filter use these. */
+export const WEBSITE_FLAG_LABELS = {
+  harmful: 'Harmful website',
+  suspicious: 'Redirects elsewhere',
+  parked: 'Expired or parked',
+  unconfirmed: 'Low-confidence warning',
+} as const;

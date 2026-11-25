@@ -60,6 +60,8 @@ object ReasonCodes {
     const val SENDER_BLOCKLISTED = "SENDER_BLOCKLISTED"
     const val SENDER_ALLOWLISTED = "SENDER_ALLOWLISTED"
     const val SENDER_LOOKS_LIKE_CONTACT = "SENDER_LOOKS_LIKE_CONTACT"
+    /** The displayed name is the "Known Scammer" contact Mirsad contact sync writes: a block signal, not a contact. */
+    const val SENDER_KNOWN_SCAMMER_CONTACT = "SENDER_KNOWN_SCAMMER_CONTACT"
     const val SENDER_PLAIN_NUMBER_CLAIMS_ENTITY = "SENDER_PLAIN_NUMBER_CLAIMS_ENTITY"
     const val SENDER_FOREIGN_CODE_UAE_ENTITY = "SENDER_FOREIGN_CODE_UAE_ENTITY"
     const val SENDER_ONE_RING_PATTERN = "SENDER_ONE_RING_PATTERN"

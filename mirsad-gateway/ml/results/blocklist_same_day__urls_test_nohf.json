@@ -1,0 +1,22 @@
+{
+  "model": "blocklist_same_day",
+  "dataset": "urls_test_nohf",
+  "n": 297150,
+  "tp": 143446,
+  "fp": 207,
+  "tn": 144435,
+  "fn": 9062,
+  "precision": 0.9985590276569233,
+  "recall": 0.9405801662863588,
+  "f1": 0.968702833931544,
+  "fpr": 0.0014311195918198035,
+  "roc_auc": 0.9695745233472693,
+  "pr_auc": 0.969721198578796,
+  "recall_at_fpr_0.1pct": 0.0,
+  "recall_at_fpr_1pct": 0.9405801662863588,
+  "threshold": 0.5,
+  "latency_ms_p50": 0.010518500857870094,
+  "latency_ms_p95": 0.021719750839110926,
+  "no_answer": 0,
+  "note": "exact-URL / domain lookup in all public feeds pulled today (benchmark phishing rows were taken from these feeds, so recall here is inflated by construction)"
+}

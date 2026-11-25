@@ -1,0 +1,23 @@
+{
+  "model": "llm_judge_qwen3.5-9b_signals",
+  "dataset": "llm_sample_arabic_gulf",
+  "n": 208,
+  "tp": 83,
+  "fp": 2,
+  "tn": 33,
+  "fn": 90,
+  "precision": 0.9764705882352941,
+  "recall": 0.4797687861271676,
+  "f1": 0.6434108527131782,
+  "fpr": 0.05714285714285714,
+  "roc_auc": 0.6457473162675474,
+  "pr_auc": 0.9064931023903637,
+  "recall_at_fpr_0.1pct": 0.1791907514450867,
+  "recall_at_fpr_1pct": 0.1791907514450867,
+  "threshold": 0.5,
+  "latency_ms_p50": 4398.776802001521,
+  "latency_ms_p95": 7719.319078999977,
+  "json_failure_rate": 0.11683168316831684,
+  "concurrency": 8,
+  "seconds_per_page_throughput": 0.5963286750712838
+}

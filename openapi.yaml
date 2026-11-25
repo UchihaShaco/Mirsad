@@ -2135,7 +2135,7 @@ paths:
       tags:
         - extension
       security: *a1
-      description: "Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), up to 200 per page with an opaque cursor."
+      description: "Officer lookup for the places map: matches name, category and description text, filters by exact category and the visible map area (bbox as minLng,minLat,maxLng,maxLat), and with websiteFlag to listings whose website Mirsad's website shield flagged (flagged, harmful, parked or suspicious), up to 200 per page with an opaque cursor."
       parameters:
         - name: q
           in: query
@@ -2155,6 +2155,17 @@ paths:
           schema:
             type: string
             maxLength: 120
+        - name: websiteFlag
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - flagged
+              - harmful
+              - suspicious
+              - parked
+              - unconfirmed
         - name: limit
           in: query
           required: false
@@ -2171,7 +2182,7 @@ paths:
             maxLength: 200
       responses:
         "200":
-          description: Matching places, the distinct categories of all matches, and the next page cursor.
+          description: Matching places, the distinct categories of all matches, the website flag of each place on the page, flagged listings per kind, and the next page cursor.
           content:
             application/json:
               schema:
@@ -2235,7 +2246,7 @@ paths:
             type: string
       responses:
         "200":
-          description: The place for the map details panel.
+          description: The place for the map details panel, with its most serious imported website check or null.
           content:
             application/json:
               schema:
@@ -5375,6 +5386,32 @@ components:
             - type: "null"
         canReview:
           type: boolean
+        contactSync:
+          anyOf:
+            - type: object
+              properties:
+                state:
+                  type: string
+                  enum:
+                    - on_phones
+                    - queued
+                    - not_sent
+                label:
+                  type: string
+                  enum:
+                    - On phones
+                    - Queued
+                    - "Not sent: no international number"
+                    - "Not sent: server unreachable"
+                    - "Not sent: server timed out"
+                    - "Not sent: server error"
+                    - "Not sent: token refused"
+                    - "Not sent: number refused"
+              required:
+                - state
+                - label
+              additionalProperties: false
+            - type: "null"
       required:
         - id
         - number
@@ -5389,6 +5426,7 @@ components:
         - matches
         - lastDecision
         - canReview
+        - contactSync
       additionalProperties: false
     ListWatchlistResponse:
       type: object
@@ -5648,18 +5686,165 @@ components:
           type: array
           items:
             type: string
+        websiteFlags:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            $ref: "#/components/schemas/WebsiteFlag"
+        websiteFlagCounts:
+          $ref: "#/components/schemas/WebsiteFlagCounts"
       required:
         - places
         - nextCursor
         - categories
+        - websiteFlags
+        - websiteFlagCounts
       additionalProperties: false
     PlacesDetailResponse:
       type: object
       properties:
         place:
           $ref: "#/components/schemas/PlaceRecord"
+        websiteCheck:
+          anyOf:
+            - $ref: "#/components/schemas/PlaceWebsiteCheck"
+            - type: "null"
       required:
         - place
+        - websiteCheck
+      additionalProperties: false
+    WebsiteFlag:
+      type: string
+      enum:
+        - harmful
+        - suspicious
+        - parked
+        - unconfirmed
+    WebsiteFinding:
+      type: string
+      enum:
+        - harmful_redirect
+        - data_theft
+        - feed_listed
+        - brand_mismatch
+        - unrelated_redirect
+        - parked
+        - other_warning
+        - none
+        - not_checked
+    PlaceWebsiteCheck:
+      type: object
+      properties:
+        website:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        host:
+          anyOf:
+            - type: string
+              maxLength: 300
+            - type: "null"
+        decision:
+          anyOf:
+            - type: string
+              enum:
+                - allow
+                - warn
+                - block
+            - type: "null"
+        riskScore:
+          anyOf:
+            - type: number
+              minimum: 0
+              maximum: 100
+            - type: "null"
+        finding:
+          $ref: "#/components/schemas/WebsiteFinding"
+        findingEn:
+          type: string
+          maxLength: 500
+        findingAr:
+          type: string
+          maxLength: 500
+        flag:
+          anyOf:
+            - $ref: "#/components/schemas/WebsiteFlag"
+            - type: "null"
+        reasons:
+          maxItems: 10
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              en:
+                type: string
+              ar:
+                type: string
+            required:
+              - code
+              - en
+              - ar
+            additionalProperties: false
+        finalUrl:
+          anyOf:
+            - type: string
+              maxLength: 2000
+            - type: "null"
+        evidenceRef:
+          anyOf:
+            - type: string
+              maxLength: 64
+            - type: "null"
+        checkedAt:
+          type:
+            - string
+            - "null"
+        importedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - website
+        - host
+        - decision
+        - riskScore
+        - finding
+        - findingEn
+        - findingAr
+        - flag
+        - reasons
+        - finalUrl
+        - evidenceRef
+        - checkedAt
+        - importedAt
+      additionalProperties: false
+    WebsiteFlagCounts:
+      type: object
+      properties:
+        harmful:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        suspicious:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        parked:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        unconfirmed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - harmful
+        - suspicious
+        - parked
+        - unconfirmed
       additionalProperties: false
     OfficerLoginResponse:
       anyOf:

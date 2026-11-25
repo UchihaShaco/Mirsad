@@ -1,7 +1,7 @@
 /** zod schemas and inferred types for every shape of design section 6. */
 import { z } from 'zod';
 import * as E from './enums.ts';
-import { CHANNEL_LABELS, FINDING_LABELS, LABELS, ORIGIN_LABELS } from './labels.ts';
+import { CHANNEL_LABELS, CONTACT_SYNC_LABELS, FINDING_LABELS, LABELS, ORIGIN_LABELS } from './labels.ts';
 
 export const LIMITS = {
   messageTextMax: 65_536,
@@ -544,6 +544,11 @@ export const WatchlistEntry = z.object({
     .object({ decision: z.enum(E.WATCHLIST_DECISIONS), reason: z.string().nullable(), officer: PrincipalRef, decidedAt: timestamp })
     .nullable(),
   canReview: z.boolean(),
+  /** Null unless contact sync is on and the entry is approved. */
+  contactSync: z.object({
+    state: z.enum(['on_phones', 'queued', 'not_sent']),
+    label: z.enum(CONTACT_SYNC_LABELS),
+  }).nullable(),
 });
 export type WatchlistEntry = z.infer<typeof WatchlistEntry>;
 export const ListWatchlistResponse = z.object({ entries: z.array(WatchlistEntry), cursor: z.string() });
@@ -667,11 +672,56 @@ export const PlaceRecord = z.object({
 });
 export type PlaceRecord = z.infer<typeof PlaceRecord>;
 
+/**
+ * What Mirsad's website shield found on a listing's website, as the map shows it: `harmful` (leads to gambling or other
+ * harmful content, a data-theft script, or a public phishing feed listing), `suspicious` (a re-registered name
+ * redirecting to an unrelated site), `parked` (expired or parked for sale) and `unconfirmed` (a low-confidence warning:
+ * model scores, a young domain, a possible brand imitation; shown in the details, kept off the default filter).
+ */
+export const WebsiteFlag = z.enum(['harmful', 'suspicious', 'parked', 'unconfirmed']);
+export type WebsiteFlag = z.infer<typeof WebsiteFlag>;
+/** The website shield's finding categories (format mirsad-places-website-checks/1, `category`). */
+export const WebsiteFinding = z.enum([
+  'harmful_redirect', 'data_theft', 'feed_listed', 'brand_mismatch', 'unrelated_redirect', 'parked', 'other_warning',
+  'none', 'not_checked',
+]);
+export type WebsiteFinding = z.infer<typeof WebsiteFinding>;
+
+/** The latest website check of one listing's website, imported from a Places website checks report. */
+export const PlaceWebsiteCheck = z.object({
+  website: z.string().min(1).max(2000),
+  host: z.string().max(300).nullable(),
+  decision: z.enum(['allow', 'warn', 'block']).nullable(),
+  riskScore: z.number().min(0).max(100).nullable(),
+  finding: WebsiteFinding,
+  /** The website shield's own wording of the finding. */
+  findingEn: z.string().max(500),
+  findingAr: z.string().max(500),
+  flag: WebsiteFlag.nullable(),
+  reasons: z.array(z.object({ code: z.string(), en: z.string(), ar: z.string() })).max(10),
+  /** Where the website ends up after redirects. Text only: never a link, it may be the harmful site. */
+  finalUrl: z.string().max(2000).nullable(),
+  /** The website shield's evidence case reference, e.g. SS-989EE731, on every warn and block. */
+  evidenceRef: z.string().max(64).nullable(),
+  checkedAt: z.string().nullable(),
+  importedAt: z.iso.datetime(),
+});
+export type PlaceWebsiteCheck = z.infer<typeof PlaceWebsiteCheck>;
+export const WebsiteFlagCounts = z.object({
+  harmful: z.number().int().min(0),
+  suspicious: z.number().int().min(0),
+  parked: z.number().int().min(0),
+  unconfirmed: z.number().int().min(0),
+});
+export type WebsiteFlagCounts = z.infer<typeof WebsiteFlagCounts>;
+
 export const PlacesSearchQuery = z.object({
   q: z.string().trim().max(200).optional(),
   category: z.string().trim().max(120).optional(),
   /** Visible map area as minLng,minLat,maxLng,maxLat. */
   bbox: z.string().trim().max(120).optional(),
+  /** Only listings whose website was flagged: harmful, suspicious or parked (`flagged`), or one kind. */
+  websiteFlag: z.enum(['flagged', ...WebsiteFlag.options]).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   cursor: z.string().max(200).optional(),
 });
@@ -681,9 +731,17 @@ export const PlacesSearchResponse = z.object({
   nextCursor: z.string().nullable(),
   /** Distinct categories of the whole match set, so the filter dropdown never depends on the visible page. */
   categories: z.array(z.string()),
+  /** The website flag of each place on this page that has one; places without a flag are left out. */
+  websiteFlags: z.record(z.string(), WebsiteFlag),
+  /** Flagged listings per kind for the text and category search, over the whole directory (not only the map view). */
+  websiteFlagCounts: WebsiteFlagCounts,
 });
 export type PlacesSearchResponse = z.infer<typeof PlacesSearchResponse>;
-export const PlacesDetailResponse = z.object({ place: PlaceRecord });
+export const PlacesDetailResponse = z.object({
+  place: PlaceRecord,
+  /** The listing's most serious website check, or null when no audit report covered it. */
+  websiteCheck: PlaceWebsiteCheck.nullable(),
+});
 export type PlacesDetailResponse = z.infer<typeof PlacesDetailResponse>;
 
 // ---- Envelopes ----
@@ -704,7 +762,7 @@ export const CONTRACT_SCHEMAS = {
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
   WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, CitizenReportImportRequest, CitizenReportImportResponse, BlocklistResponse, BlocklistKeyResponse, MeResponse,
-  PlaceRecord, PlacesSearchResponse, PlacesDetailResponse,
+  PlaceRecord, PlacesSearchResponse, PlacesDetailResponse, WebsiteFlag, WebsiteFinding, PlaceWebsiteCheck, WebsiteFlagCounts,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
   DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,
 } as const;

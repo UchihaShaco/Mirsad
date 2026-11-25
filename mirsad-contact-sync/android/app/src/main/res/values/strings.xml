@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mirsad (مرصاد)</string>
+    <string name="subtitle">Known scammer contacts</string>
+    <string name="notif_title">Mirsad: known scammer contacts on</string>
+</resources>

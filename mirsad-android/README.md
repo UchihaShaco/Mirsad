@@ -5,11 +5,16 @@ message is a scam, holds or flags it, explains why in Arabic or English, lets yo
 attempt into a structured evidence packet you can choose to send to the police. It is a hackathon prototype for the
 Abu Dhabi Police hackathon by the Mirsad team, not an official app, and it holds no internet permission.
 
-![Mirsad Android demo: a scam SMS is held, a wrongly held message is restored with one tap, a call from the scam number is rejected, the report preview](demo/mirsad-android-demo.gif)
+![Two phones receive the same scam SMS and the same scam call. Without Mirsad, the scam lands and the call rings; with Mirsad, the SMS is held with its reasons, the call is rejected before it rings, and the attempt becomes a police report](demo/mirsad-android-demo.gif)
 
-30-second video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4). It was recorded on an Android 14 emulator
-from the APK in `dist/`: the SMS and the call are injected through the emulator and go through the real notification
-listener and call screening service.
+17-second live demo: [English captions](demo/mirsad-android-demo.mp4) · [Arabic captions](demo/mirsad-android-demo-ar.mp4)
+· voice-over script in [docs/VOICEOVER.md](docs/VOICEOVER.md). Two phones recorded at the same moment, in real time:
+the left one (Android 14) has no Mirsad, the right one (Android 16) runs Mirsad. Both receive the same scam SMS and then
+the same call, injected through the emulator; Mirsad's notification listener and call screening service do the rest.
+
+Animated 20-second version: [English](demo/mirsad-android-demo-animated.mp4) ·
+[Arabic](demo/mirsad-android-demo-animated-ar.mp4). Every earlier demo cut is kept, numbered, in
+[demo/versions/](demo/versions/README.md).
 
 15-second explainer: [demo/mirsad-explainer-15s.mp4](demo/mirsad-explainer-15s.mp4). It was recorded on a real
 Android 15 phone, including a real scam call from a block-listed number rejected before it rang (the caller's
@@ -90,7 +95,7 @@ Every warning, in both languages, carries the Abu Dhabi Police public guidance l
 
 Everything runs on the phone in pure Kotlin (`core/`, no Android imports), in one call that never throws.
 
-**Stage 1: rules and reputation** (data in `app/src/main/assets/rules.json`, version 1.2.0):
+**Stage 1: rules and reputation** (data in `app/src/main/assets/rules.json`, version 1.3.0):
 - *Sender*: block and allow lists; a plain mobile number that claims to be a bank, courier, telecom or government body;
   a non-UAE country code while the text names a UAE entity; international and one-ring call patterns; a call from a
   number that sent a held message in the last 7 days.
@@ -261,6 +266,19 @@ scripts/push_report_to_mirsad.sh [adb-serial]                                  #
 
 The field-by-field handling is in [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md), section 7.
 
+- **Known scammer contacts: a separate app.** [Mirsad contact sync](../mirsad-contact-sync/README.md) puts every
+  number the police flag onto one "⚠️ Known Scammer" contact, so the dialer, SMS, WhatsApp and Telegram show that name.
+  It needs the internet to receive the list from its server and permission to write contacts, so it is a separate app
+  with its own Gradle project, and Mirsad Android keeps its no-internet guarantee. A citizen can install either or both.
+
+  **With both installed.** A messaging app shows a flagged number as "⚠️ Known Scammer" (or "⚠️ Known Scammer 2", or
+  "⚠️ محتال معروف"), so Mirsad sees that name and not the number. Mirsad treats the name as a block-list hit, not a
+  saved contact: the message is held with the reason "Sender is on your Known Scammer contact, flagged through Mirsad".
+  The names are listed in `rules.json` (`senders`). **Not a scam** still restores the message in one tap and remembers
+  its template. It never allows the name itself, because the name covers every flagged number. Calls are different:
+  Android does not ask a call-screening app about callers saved in contacts, so Mirsad cannot reject a call from that
+  contact. Only the contact-sync app can stop those calls, by sending its contact's calls to voicemail.
+
 ## 9. Build from source, tests, evaluation
 
 Requirements: JDK 17 and the Android SDK with platform 37. The wrapper fetches Gradle 9.4.1; the build uses AGP 9.2.1,
@@ -272,12 +290,13 @@ cd mirsad-android
 cp app/build/outputs/apk/debug/app-debug.apk dist/mirsad-android-debug.apk
 ```
 
-- `:core:test` (114 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports, signed
+- `:core:test` (120 tests) covers the engine, the HOLD gate policy, robustness, the classifier, the reports, signed
   blocklists and the
   legitimate-message sets. Every app build runs it first, and the no-internet check before packaging and lint.
 - `./gradlew :core:trainModel` regenerates the synthetic data, evaluates, and writes `app/src/main/assets/model.bin`.
 - `scripts/` holds the emulator, permission, injection, screenshot and video scripts used for the media here
-  (`scripts/full_capture.sh` runs them all).
+  (`scripts/full_capture.sh` runs them all). The live demo: `scripts/record_action_demo.sh` records two emulators,
+  `scripts/make_action_video.py` puts them side by side.
 
 **Classifier evaluation (synthetic data only)**, from `data/evaluation.md`: 1,400 rows (700 scam, 700 legitimate;
 English, Arabic, Arabizi), 280 held out; precision 0.993, recall 1.000 at threshold 0.5. Variants of the same templates

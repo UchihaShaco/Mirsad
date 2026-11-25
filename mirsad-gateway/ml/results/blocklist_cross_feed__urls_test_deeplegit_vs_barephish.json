@@ -1,0 +1,22 @@
+{
+  "model": "blocklist_cross_feed",
+  "dataset": "urls_test_deeplegit_vs_barephish",
+  "n": 243136,
+  "tp": 59595,
+  "fp": 370,
+  "tn": 121358,
+  "fn": 61813,
+  "precision": 0.9938297340115068,
+  "recall": 0.4908655113336848,
+  "f1": 0.6571540416710315,
+  "fpr": 0.0030395636172450054,
+  "roc_auc": 0.74391297385822,
+  "pr_auc": 0.7420689398271421,
+  "recall_at_fpr_0.1pct": 0.0,
+  "recall_at_fpr_1pct": 0.4908655113336848,
+  "threshold": 0.5,
+  "latency_ms_p50": 0.008819000868243165,
+  "latency_ms_p95": 0.016149752445926417,
+  "no_answer": 0,
+  "note": "same lookup, but ignoring the feed each row was taken from"
+}

@@ -9,6 +9,7 @@ import app.mirsad.shield.R
 object ReasonText {
     private val labels: Map<String, Int> = mapOf(
         ReasonCodes.SENDER_BLOCKLISTED to R.string.reason_sender_blocklisted,
+        ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT to R.string.reason_sender_known_scammer_contact,
         ReasonCodes.SENDER_ALLOWLISTED to R.string.reason_sender_allowlisted,
         ReasonCodes.SENDER_LOOKS_LIKE_CONTACT to R.string.reason_sender_looks_like_contact,
         ReasonCodes.SENDER_PLAIN_NUMBER_CLAIMS_ENTITY to R.string.reason_sender_plain_number_claims_entity,

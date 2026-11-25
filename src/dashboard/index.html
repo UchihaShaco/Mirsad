@@ -16,6 +16,7 @@
     <a id="nav-inbox" href="#/">Inbox</a>
     <a id="nav-watchlist" href="#/watchlist">Phone watchlist</a>
     <a id="nav-places" href="#/places">Places map</a>
+    <a id="nav-awareness" href="/assets/awareness.html">Awareness campaigns</a>
   </nav>
   <div id="session" class="session" hidden>
     <span id="connection-status" class="connection"></span>
@@ -199,15 +200,20 @@
 
     <section id="places-view" class="places-view" aria-labelledby="places-heading" hidden>
       <h1 id="places-heading">Places map</h1>
-      <p class="hint">Abu Dhabi places directory: drag to pan, scroll to zoom. Click a dot for phones, links and details.</p>
+      <p class="hint">Abu Dhabi places directory: drag to pan, scroll to zoom. Click a dot for phones, links and details. Dots with a ring or a square mark a listing whose website Mirsad's website shield flagged.</p>
       <form id="places-search-form" class="places-search" autocomplete="off">
         <label for="places-query">Search names</label>
         <input id="places-query" name="q" type="search" maxlength="200" dir="auto" placeholder="Hospital, cafe, police">
         <label for="places-category">Category</label>
         <select id="places-category" name="category"></select>
+        <label for="places-website-flag">Flagged websites</label>
+        <select id="places-website-flag" name="websiteFlag">
+          <option value="">All listings</option>
+        </select>
         <button type="submit" class="primary">Search</button>
       </form>
       <p id="places-status" class="hint" role="status"></p>
+      <div id="places-legend" class="places-legend" aria-label="Map legend"></div>
       <div class="places-layout">
         <div id="places-map" class="places-map" role="application" aria-label="Map of Abu Dhabi places" tabindex="0"></div>
         <aside id="places-details" class="places-details" aria-labelledby="places-details-heading" hidden>

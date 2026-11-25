@@ -1,0 +1,760 @@
+{
+ "_about": "Lists the trained page model's features were computed with (models.page_features). They are part of the model: changing any entry changes feature values, so edit them only together with retraining. BRANDS duplicates part of intel/data/brands.json for the same reason.",
+ "_free_hosts_about": "Free hosting / publishing platforms (feature url_free_host).",
+ "free_hosts": [
+  "000webhostapp.com",
+  "weebly.com",
+  "wixsite.com",
+  "wix.com",
+  "github.io",
+  "firebaseapp.com",
+  "web.app",
+  "pages.dev",
+  "workers.dev",
+  "vercel.app",
+  "netlify.app",
+  "blogspot.com",
+  "sites.google.com",
+  "glitch.me",
+  "ngrok.io",
+  "ngrok-free.app",
+  "herokuapp.com",
+  "repl.co",
+  "replit.dev",
+  "webflow.io",
+  "square.site",
+  "godaddysites.com",
+  "azurewebsites.net",
+  "appspot.com",
+  "r2.dev",
+  "ipfs.io",
+  "storage.googleapis.com",
+  "s3.amazonaws.com",
+  "duckdns.org",
+  "onrender.com",
+  "framer.app",
+  "gitbook.io",
+  "my.canva.site",
+  "carrd.co",
+  "jimdosite.com",
+  "yolasite.com",
+  "webcindario.com"
+ ],
+ "_brands_about": "brand -> [tokens EN/AR (normalised), official registered-domain labels]. UAE and Gulf brands come first; global ones start at 'paypal'.",
+ "brands": {
+  "uaepass": [
+   [
+    "uae pass",
+    "uaepass",
+    "الهويه الرقميه",
+    "يو اي اي باس"
+   ],
+   [
+    "uaepass"
+   ]
+  ],
+  "adpolice": [
+   [
+    "abu dhabi police",
+    "شرطه ابوظبي",
+    "شرطه ابو ظبي"
+   ],
+   [
+    "adpolice"
+   ]
+  ],
+  "dubaipolice": [
+   [
+    "dubai police",
+    "شرطه دبي"
+   ],
+   [
+    "dubaipolice"
+   ]
+  ],
+  "moi": [
+   [
+    "ministry of interior",
+    "وزاره الداخليه"
+   ],
+   [
+    "moi"
+   ]
+  ],
+  "icp": [
+   [
+    "federal authority for identity",
+    "icp smart",
+    "الهيئه الاتحاديه للهويه",
+    "الهويه والجنسيه"
+   ],
+   [
+    "icp"
+   ]
+  ],
+  "emiratespost": [
+   [
+    "emirates post",
+    "بريد الامارات",
+    "emirates postal"
+   ],
+   [
+    "emiratespost",
+    "epg"
+   ]
+  ],
+  "rta": [
+   [
+    "roads and transport authority",
+    "هيئه الطرق والمواصلات",
+    "nol card",
+    "بطاقه نول"
+   ],
+   [
+    "rta"
+   ]
+  ],
+  "salik": [
+   [
+    "salik",
+    "سالك"
+   ],
+   [
+    "salik"
+   ]
+  ],
+  "dewa": [
+   [
+    "dubai electricity",
+    "dewa",
+    "هيئه كهرباء ومياه دبي"
+   ],
+   [
+    "dewa"
+   ]
+  ],
+  "addc": [
+   [
+    "addc",
+    "abu dhabi distribution company",
+    "taqa"
+   ],
+   [
+    "addc",
+    "taqa",
+    "aadc"
+   ]
+  ],
+  "tamm": [
+   [
+    "tamm",
+    "تم ابوظبي"
+   ],
+   [
+    "tamm",
+    "abudhabi"
+   ]
+  ],
+  "mohre": [
+   [
+    "mohre",
+    "ministry of human resources",
+    "وزاره الموارد البشريه"
+   ],
+   [
+    "mohre"
+   ]
+  ],
+  "fta": [
+   [
+    "federal tax authority",
+    "الهيئه الاتحاديه للضرائب"
+   ],
+   [
+    "tax"
+   ]
+  ],
+  "cbuae": [
+   [
+    "central bank of the uae",
+    "central bank of uae",
+    "مصرف الامارات المركزي"
+   ],
+   [
+    "centralbank"
+   ]
+  ],
+  "amer": [
+   [
+    "amer center",
+    "مركز امر"
+   ],
+   [
+    "amer"
+   ]
+  ],
+  "tdra": [
+   [
+    "tdra",
+    "هيئه تنظيم الاتصالات"
+   ],
+   [
+    "tdra"
+   ]
+  ],
+  "emiratesnbd": [
+   [
+    "emirates nbd",
+    "الامارات دبي الوطني",
+    "enbd"
+   ],
+   [
+    "emiratesnbd"
+   ]
+  ],
+  "fab": [
+   [
+    "first abu dhabi bank",
+    "bank fab",
+    "بنك ابوظبي الاول"
+   ],
+   [
+    "bankfab",
+    "fab"
+   ]
+  ],
+  "adcb": [
+   [
+    "adcb",
+    "abu dhabi commercial bank",
+    "بنك ابوظبي التجاري"
+   ],
+   [
+    "adcb"
+   ]
+  ],
+  "adib": [
+   [
+    "abu dhabi islamic bank",
+    "adib",
+    "مصرف ابوظبي الاسلامي"
+   ],
+   [
+    "adib"
+   ]
+  ],
+  "dib": [
+   [
+    "dubai islamic bank",
+    "بنك دبي الاسلامي"
+   ],
+   [
+    "dib"
+   ]
+  ],
+  "mashreq": [
+   [
+    "mashreq",
+    "بنك المشرق"
+   ],
+   [
+    "mashreq",
+    "mashreqbank",
+    "mashreqneo"
+   ]
+  ],
+  "rakbank": [
+   [
+    "rakbank",
+    "rak bank",
+    "بنك راك"
+   ],
+   [
+    "rakbank"
+   ]
+  ],
+  "cbd": [
+   [
+    "commercial bank of dubai",
+    "بنك دبي التجاري"
+   ],
+   [
+    "cbd"
+   ]
+  ],
+  "emiratesislamic": [
+   [
+    "emirates islamic",
+    "الامارات الاسلامي"
+   ],
+   [
+    "emiratesislamic"
+   ]
+  ],
+  "etisalat": [
+   [
+    "etisalat",
+    "اتصالات الامارات"
+   ],
+   [
+    "etisalat",
+    "eand"
+   ]
+  ],
+  "du": [
+   [
+    "du telecom",
+    "du.ae",
+    "شركه الامارات للاتصالات المتكامله"
+   ],
+   [
+    "du"
+   ]
+  ],
+  "aramex": [
+   [
+    "aramex",
+    "ارامكس"
+   ],
+   [
+    "aramex"
+   ]
+  ],
+  "emirates": [
+   [
+    "emirates airline",
+    "fly emirates",
+    "طيران الامارات"
+   ],
+   [
+    "emirates"
+   ]
+  ],
+  "etihad": [
+   [
+    "etihad airways",
+    "الاتحاد للطيران"
+   ],
+   [
+    "etihad"
+   ]
+  ],
+  "noon": [
+   [
+    "noon.com"
+   ],
+   [
+    "noon"
+   ]
+  ],
+  "careem": [
+   [
+    "careem"
+   ],
+   [
+    "careem"
+   ]
+  ],
+  "talabat": [
+   [
+    "talabat"
+   ],
+   [
+    "talabat"
+   ]
+  ],
+  "adnoc": [
+   [
+    "adnoc",
+    "ادنوك"
+   ],
+   [
+    "adnoc"
+   ]
+  ],
+  "enoc": [
+   [
+    "enoc",
+    "اينوك"
+   ],
+   [
+    "enoc"
+   ]
+  ],
+  "absher": [
+   [
+    "absher",
+    "ابشر"
+   ],
+   [
+    "absher"
+   ]
+  ],
+  "alrajhi": [
+   [
+    "al rajhi",
+    "alrajhi",
+    "الراجحي"
+   ],
+   [
+    "alrajhibank",
+    "alrajhi"
+   ]
+  ],
+  "stc": [
+   [
+    "stc pay",
+    "stcpay"
+   ],
+   [
+    "stc",
+    "stcpay"
+   ]
+  ],
+  "qnb": [
+   [
+    "qnb",
+    "qatar national bank"
+   ],
+   [
+    "qnb"
+   ]
+  ],
+  "spl": [
+   [
+    "saudi post",
+    "البريد السعودي"
+   ],
+   [
+    "splonline",
+    "spl"
+   ]
+  ],
+  "paypal": [
+   [
+    "paypal"
+   ],
+   [
+    "paypal"
+   ]
+  ],
+  "apple": [
+   [
+    "apple id",
+    "icloud",
+    "apple pay",
+    "itunes"
+   ],
+   [
+    "apple",
+    "icloud"
+   ]
+  ],
+  "microsoft": [
+   [
+    "microsoft",
+    "office 365",
+    "office365",
+    "outlook",
+    "onedrive",
+    "sharepoint",
+    "hotmail"
+   ],
+   [
+    "microsoft",
+    "office",
+    "live",
+    "outlook",
+    "microsoftonline",
+    "sharepoint",
+    "office365",
+    "msn",
+    "bing",
+    "skype",
+    "azure",
+    "windows",
+    "xbox"
+   ]
+  ],
+  "google": [
+   [
+    "google",
+    "gmail"
+   ],
+   [
+    "google",
+    "youtube",
+    "gmail",
+    "googleapis",
+    "gstatic",
+    "blogger"
+   ]
+  ],
+  "facebook": [
+   [
+    "facebook",
+    "meta business",
+    "meta for business"
+   ],
+   [
+    "facebook",
+    "fb",
+    "meta",
+    "fbcdn"
+   ]
+  ],
+  "instagram": [
+   [
+    "instagram"
+   ],
+   [
+    "instagram"
+   ]
+  ],
+  "whatsapp": [
+   [
+    "whatsapp",
+    "واتساب"
+   ],
+   [
+    "whatsapp"
+   ]
+  ],
+  "amazon": [
+   [
+    "amazon"
+   ],
+   [
+    "amazon",
+    "amazonaws",
+    "aws"
+   ]
+  ],
+  "netflix": [
+   [
+    "netflix"
+   ],
+   [
+    "netflix"
+   ]
+  ],
+  "dhl": [
+   [
+    "dhl"
+   ],
+   [
+    "dhl"
+   ]
+  ],
+  "fedex": [
+   [
+    "fedex"
+   ],
+   [
+    "fedex"
+   ]
+  ],
+  "ups": [
+   [
+    "ups tracking",
+    "united parcel service"
+   ],
+   [
+    "ups"
+   ]
+  ],
+  "usps": [
+   [
+    "usps",
+    "postal service"
+   ],
+   [
+    "usps"
+   ]
+  ],
+  "chase": [
+   [
+    "chase bank",
+    "jpmorgan chase"
+   ],
+   [
+    "chase",
+    "jpmorgan"
+   ]
+  ],
+  "wellsfargo": [
+   [
+    "wells fargo"
+   ],
+   [
+    "wellsfargo"
+   ]
+  ],
+  "bankofamerica": [
+   [
+    "bank of america"
+   ],
+   [
+    "bankofamerica",
+    "bofa"
+   ]
+  ],
+  "hsbc": [
+   [
+    "hsbc"
+   ],
+   [
+    "hsbc"
+   ]
+  ],
+  "coinbase": [
+   [
+    "coinbase"
+   ],
+   [
+    "coinbase"
+   ]
+  ],
+  "binance": [
+   [
+    "binance"
+   ],
+   [
+    "binance"
+   ]
+  ],
+  "metamask": [
+   [
+    "metamask"
+   ],
+   [
+    "metamask"
+   ]
+  ],
+  "trezor": [
+   [
+    "trezor"
+   ],
+   [
+    "trezor"
+   ]
+  ],
+  "ledger": [
+   [
+    "ledger live",
+    "ledger wallet"
+   ],
+   [
+    "ledger"
+   ]
+  ],
+  "robinhood": [
+   [
+    "robinhood"
+   ],
+   [
+    "robinhood"
+   ]
+  ],
+  "adobe": [
+   [
+    "adobe"
+   ],
+   [
+    "adobe"
+   ]
+  ],
+  "dropbox": [
+   [
+    "dropbox"
+   ],
+   [
+    "dropbox"
+   ]
+  ],
+  "docusign": [
+   [
+    "docusign"
+   ],
+   [
+    "docusign"
+   ]
+  ],
+  "linkedin": [
+   [
+    "linkedin"
+   ],
+   [
+    "linkedin"
+   ]
+  ],
+  "steam": [
+   [
+    "steam community",
+    "steamcommunity"
+   ],
+   [
+    "steampowered",
+    "steamcommunity"
+   ]
+  ],
+  "roblox": [
+   [
+    "roblox"
+   ],
+   [
+    "roblox"
+   ]
+  ],
+  "booking": [
+   [
+    "booking.com"
+   ],
+   [
+    "booking"
+   ]
+  ],
+  "naver": [
+   [
+    "naver"
+   ],
+   [
+    "naver"
+   ]
+  ],
+  "att": [
+   [
+    "at&t"
+   ],
+   [
+    "att"
+   ]
+  ],
+  "telegram": [
+   [
+    "telegram"
+   ],
+   [
+    "telegram",
+    "t"
+   ]
+  ],
+  "yahoo": [
+   [
+    "yahoo"
+   ],
+   [
+    "yahoo"
+   ]
+  ],
+  "webmail": [
+   [
+    "webmail",
+    "roundcube",
+    "cpanel",
+    "zimbra"
+   ],
+   []
+  ]
+ }
+}

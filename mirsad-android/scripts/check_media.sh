@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Assert the media deliverables and print a table. Exit 1 on any failure.
 #   screenshots/NN_name.png : at least 8 files, each < 500 KB, valid PNG, portrait (height > width)
-#   demo/mirsad-android-demo.mp4 : H.264, yuv420p, no audio stream, even dimensions, duration <= 30.0 s, < 15 MB
-#   demo/mirsad-android-demo.gif : GIF, width 360, < 8 MB
+#   demo/mirsad-android-demo.mp4 (+ -ar.mp4): H.264, yuv420p, no audio stream, even dimensions, duration <= 20.0 s, < 15 MB
+#   demo/mirsad-android-demo.gif : GIF, < 8 MB
 #
 # Usage: scripts/check_media.sh
 # Needs ffprobe only (no device). Flags from `ffprobe -h`: -v -select_streams -show_entries -of.
@@ -46,8 +46,8 @@ if [[ -f "$mp4" ]]; then
   [[ -z "$audio" ]] || { status=FAIL; bad "mp4 has an audio stream"; }
   (( size < MAX_MP4 )) || { status=FAIL; bad "mp4 is $size bytes (>= $MAX_MP4)"; }
   (( w % 2 == 0 && h % 2 == 0 )) || { status=FAIL; bad "mp4 has odd dimensions ${w}x${h}"; }
-  (( h > w )) || { status=FAIL; bad "mp4 is not portrait (${w}x${h})"; }
-  "$PYTHON" -I -c 'import sys; sys.exit(0 if 0 < float(sys.argv[1]) <= 30.0 else 1)' "$dur" || { status=FAIL; bad "mp4 duration ${dur}s is not within (0, 30.0]"; }
+  (( w >= 1280 )) || { status=FAIL; bad "mp4 is narrower than 1280 px (${w}x${h})"; }
+  "$PYTHON" -I -c 'import sys; sys.exit(0 if 0 < float(sys.argv[1]) <= 17.0 else 1)' "$dur" || { status=FAIL; bad "mp4 duration ${dur}s is not within (0, 17.0]"; }
   row "demo/mirsad-android-demo.mp4" "${w}x${h}" "$size B" "${dur}s" "$status"
 else
   bad "missing $mp4"; row "demo/mirsad-android-demo.mp4" "-" "-" "-" "MISSING"
@@ -62,7 +62,6 @@ if [[ -f "$gif" ]]; then
   status=OK
   [[ "$(probe "$gif" codec_name)" == "gif" ]] || { status=FAIL; bad "gif is not a GIF"; }
   (( size < MAX_GIF )) || { status=FAIL; bad "gif is $size bytes (>= $MAX_GIF)"; }
-  [[ "$w" == "360" || "$w" == "320" ]] || { status=FAIL; bad "gif width is $w (expected 360, or 320 fallback)"; }
   row "demo/mirsad-android-demo.gif" "${w}x${h}" "$size B" "${dur}s" "$status"
 else
   bad "missing $gif"; row "demo/mirsad-android-demo.gif" "-" "-" "-" "MISSING"
@@ -71,6 +70,6 @@ fi
 # ---- table ----------------------------------------------------------------------------------------
 printf '%-34s %-10s %-11s %-9s %s\n' "file" "size(px)" "bytes" "duration" "status"
 printf '%s\n' "${rows[@]}"
-echo "screenshots: ${#pngs[@]} (need >= 8, each < 500 KB, portrait); mp4 <= 30.0 s and < 15 MB; gif < 8 MB"
+echo "screenshots: ${#pngs[@]} (need >= 8, each < 500 KB, portrait); mp4 <= 17.0 s and < 15 MB; gif < 8 MB"
 if (( fail )); then echo "check_media: FAIL"; exit 1; fi
 echo "check_media: PASS"

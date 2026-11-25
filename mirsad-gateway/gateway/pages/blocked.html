@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Blocked: {{host}} | Mirsad</title>
+<style>
+  :root {
+    --bg: #edf0f6; --card: #ffffff; --ink: #202438; --muted: #505a70; --line: #dbe0eb; --brand: #3f44b4; --on-brand: #ffffff;
+    --accent: #a3241b; --accent-solid: #b92d23; --on-accent: #ffffff; --accent-soft: #fbe9e6; --ok: #2a6a3e; --on-ok: #ffffff; --ok-soft: #e2f1e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #10131e; --card: #23293a; --ink: #eff0f7; --muted: #b6bed3; --line: #31394d; --brand: #4d52ca; --on-brand: #ffffff;
+            --accent: #f39d94; --accent-solid: #d9584c; --on-accent: #290b08; --accent-soft: #311614; --ok: #7ccb92; --on-ok: #0b2212; --ok-soft: #12281a; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 16px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans Arabic", sans-serif;
+         min-height: 100vh; padding: env(safe-area-inset-top) 16px 32px; }
+  [lang="ar"] { font-family: "Segoe UI Variable Text", "Segoe UI", "Noto Sans Arabic", "Noto Naskh Arabic", "Geeza Pro", Tahoma, sans-serif; line-height: 1.7; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 560px; margin: 0 auto; padding: 16px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; }
+  .brand svg { width: 32px; height: 32px; flex: none; }
+  .brand small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .01em; }
+  .brand .name { font-size: 21px; font-weight: 700; letter-spacing: -0.035em; }
+  .brand .name-ar { color: var(--muted); font-size: 14px; font-weight: 400; }
+  main { max-width: 560px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+          box-shadow: 0 1px 3px rgb(30 42 74 / 6%), 0 8px 28px -14px rgb(34 48 87 / 20%); }
+  .hero { background: var(--accent-solid); color: var(--on-accent); padding: 24px 20px 20px; }
+  .hero .icon { width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.16); display: grid; place-items: center; }
+  .hero h1 { margin: 14px 0 2px; font-size: 24px; line-height: 1.25; }
+  .hero h2 { margin: 0; font-size: 21px; font-weight: 600; }
+  .host { margin-top: 12px; display: inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.18);
+          font: 600 14px/1.4 "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, SFMono-Regular, Menlo, "Liberation Mono", monospace; word-break: break-all; }
+  .body { padding: 20px; }
+  .score { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: var(--accent-soft); }
+  .score b { font-size: 34px; line-height: 1; color: var(--accent); min-width: 64px; text-align: center; }
+  .score span { display: block; font-size: 14px; color: var(--muted); }
+  .pair { display: grid; gap: 4px; margin: 16px 0; }
+  .pair p { margin: 0; }
+  .body .brand { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); display: grid; gap: 2px; }
+  p:empty { display: none; }
+  h3 { margin: 20px 0 8px; font-size: 14px; font-weight: 600; letter-spacing: .01em; color: var(--muted);
+       display: flex; justify-content: space-between; gap: 8px; }
+  ul.reasons { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  ul.reasons li { border: 1px solid var(--line); border-inline-start: 4px solid var(--accent); border-radius: 12px; padding: 10px 12px;
+                  display: grid; gap: 2px; }
+  ul.reasons .ar { color: var(--muted); }
+  .actions { display: grid; gap: 10px; margin-top: 22px; }
+  .btn { display: block; text-align: center; padding: 14px 16px; border-radius: 999px; font-weight: 700; text-decoration: none;
+         border: 0; font-size: 16px; cursor: pointer; }
+  .btn.primary { background: var(--brand); color: var(--on-brand); }
+  .btn.ok { background: var(--ok); color: var(--on-ok); }
+  .btn small { display: block; font-weight: 500; opacity: .85; }
+  .note { margin-top: 16px; font-size: 14px; color: var(--muted); display: none; align-items: center; gap: 8px; }
+  .note.on { display: flex; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.4s infinite ease-in-out; flex: none; }
+  .cleared { display: none; margin-top: 16px; padding: 16px; border-radius: 14px; background: var(--ok-soft); border: 1px solid var(--ok); }
+  .cleared.on { display: block; }
+  .cleared strong { color: var(--ok); }
+  footer { max-width: 560px; margin: 16px auto 0; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  code { font: 600 13px "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, SFMono-Regular, Menlo, "Liberation Mono", monospace; }
+  @keyframes pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#3f44b4"/><path d="M16 7.5a8.5 8.5 0 1 0 8.5 8.5" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="16" r="3.1" fill="#ffffff"/><circle cx="23" cy="9" r="2.1" fill="#7fe0d2"/></svg>
+  <div><span class="name">Mirsad</span> <span class="name-ar" lang="ar" dir="rtl">مرصاد</span><small>Website shield · <span lang="ar" dir="rtl">درع المواقع</span></small></div>
+  </div>
+</header>
+<main>
+  <div class="card">
+    <div class="hero">
+      <div class="icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 6.3 12.9L7.1 5.7A8 8 0 0 1 12 4zM5.7 7.1l11.2 11.2A8 8 0 0 1 5.7 7.1z"/></svg>
+      </div>
+      <h1>Mirsad blocked this site</h1>
+      <h2 lang="ar" dir="rtl">حظر مرصاد هذا الموقع</h2>
+      <div class="host" dir="ltr"><bdi>{{host}}</bdi></div>
+    </div>
+    <div class="body">
+      <div class="score">
+        <b>{{risk}}</b>
+        <div>
+          <span>Risk score out of 100. Our checks found strong signs of a scam.</span>
+          <span lang="ar" dir="rtl">درجة الخطورة من 100. وجدت فحوصاتنا مؤشرات قوية على الاحتيال.</span>
+        </div>
+      </div>
+      <div class="pair">
+        <p>{{summary_en}}</p>
+        <p lang="ar" dir="rtl">{{summary_ar}}</p>
+      </div>
+      {{brand_html}}
+      <h3><span>Why it was blocked</span><span lang="ar" dir="rtl">سبب الحظر</span></h3>
+      <ul class="reasons">{{reasons_html}}</ul>
+      <div class="pair">
+        <p>Do not enter passwords, card numbers, one-time codes or your Emirates ID on this site.</p>
+        <p lang="ar" dir="rtl">لا تُدخل كلمات المرور أو أرقام البطاقات أو رموز التحقق أو رقم الهوية الإماراتية في هذا الموقع.</p>
+      </div>
+      <div class="note" id="review">
+        <span class="dot" aria-hidden="true"></span>
+        <span>A second, deeper check is in progress. <span lang="ar" dir="rtl">يجري الآن فحص ثانٍ أعمق.</span></span>
+      </div>
+      <div class="cleared" id="cleared" role="status" aria-live="polite">
+        <p><strong>This site has been re-checked and cleared.</strong><br>
+          <strong lang="ar" dir="rtl">تمت إعادة فحص هذا الموقع وتبيّن أنه آمن.</strong></p>
+        <a class="btn ok" id="continue" href="{{url}}">Continue to the site<small lang="ar" dir="rtl">المتابعة إلى الموقع</small></a>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="javascript:history.length > 1 ? history.back() : window.close()">Go back to safety<small lang="ar" dir="rtl">العودة إلى الأمان</small></a>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <span>Reference <code dir="ltr"><bdi>{{reference}}</bdi></code> · <span lang="ar" dir="rtl">الرقم المرجعي</span></span>
+    <span>Protected by your network provider · <span lang="ar" dir="rtl">بحماية مزود الشبكة</span></span>
+  </footer>
+</main>
+<script>
+(function () {
+  var cfg = {{data_json}};
+  var review = document.getElementById("review");
+  var cleared = document.getElementById("cleared");
+  if (cfg.review_pending) review.classList.add("on");
+  var timer = setInterval(function () {
+    fetch(cfg.status_url, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
+      if (s.state === "pending") return;
+      review.classList.toggle("on", s.state === "block" && !!s.review_pending);
+      if (s.state === "allow") { cleared.classList.add("on"); clearInterval(timer); }
+      else if (s.state === "warn") { location.reload(); }
+    }).catch(function () {});
+  }, 3000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{
+ "tag": "qwen3.6-35b-a3b (round 1)",
+ "dataset": "demo_scams",
+ "summary": {
+  "n": 4,
+  "false_positives": {
+   "n": 0,
+   "cleared_to_allow": 0,
+   "downgraded_to_warn": 0,
+   "still_blocked": 0
+  },
+  "true_positives": {
+   "n": 4,
+   "kept_blocked": 4,
+   "wrongly_warned": 0,
+   "wrongly_allowed": 0
+  },
+  "transitions": {
+   "scam (true positive) | block": {
+    "confirmed -> block": 4
+   }
+  },
+  "seconds_p50": 13.1,
+  "seconds_max": 16.1,
+  "arabic_ok_rate": 1.0,
+  "errors": 0,
+  "models": {
+   "openai-compatible:scamshield-review": 4
+  }
+ },
+ "rows": [
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 1.0,
+   "seconds": 9.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 1.0,
+   "seconds": 11.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 1.0,
+   "seconds": 16.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.9,
+   "seconds": 15.2,
+   "arabic_ok": true
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+{
+  "model": "url_ensemble",
+  "dataset": "urls_test_deeplegit_vs_barephish",
+  "n": 243136,
+  "tp": 60793,
+  "fp": 22,
+  "tn": 121706,
+  "fn": 60615,
+  "precision": 0.9996382471429746,
+  "recall": 0.500733065366368,
+  "f1": 0.6672373959379441,
+  "fpr": 0.00018073080967402733,
+  "roc_auc": 0.9951436558359525,
+  "pr_auc": 0.994740197191113,
+  "recall_at_fpr_0.1pct": 0.6466707301001582,
+  "recall_at_fpr_1pct": 0.8382149446494465,
+  "threshold": 0.9846520331750968,
+  "latency_ms_p50": 41.64238099838258,
+  "latency_ms_p95": 119.66040004772368,
+  "no_answer": 0,
+  "note": "w=0.65 * stack + 0.35 * transformer (logit average), threshold at the stack's validation FPR; transformer on GPU"
+}

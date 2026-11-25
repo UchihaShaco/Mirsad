@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 17;
+const SCHEMA_VERSION = 19;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -231,6 +231,32 @@ function migrate(db: DatabaseSync): void {
         CREATE INDEX IF NOT EXISTS citizen_reports_chat ON citizen_reports(chat_id);
       `);
     }
+    // v18 keeps the latest website check of each Places listing's website, imported from a Places website audit
+    // report (scripts/import-website-checks.ts). Places themselves stay in their file; place_id is not a foreign key.
+    if (current < 18) db.exec(`
+      CREATE TABLE IF NOT EXISTS place_website_checks (
+        place_id TEXT NOT NULL, website TEXT NOT NULL, host TEXT,
+        decision TEXT CHECK (decision IN ('allow','warn','block')), risk_score REAL,
+        finding TEXT NOT NULL, finding_en TEXT NOT NULL, finding_ar TEXT NOT NULL,
+        flag TEXT CHECK (flag IN ('harmful','suspicious','parked','unconfirmed')),
+        reasons TEXT NOT NULL,                                               -- JSON [{code, en, ar}], most weight first
+        final_url TEXT, evidence_ref TEXT, checked_at TEXT,
+        report_sha256 TEXT NOT NULL, imported_at TEXT NOT NULL,
+        PRIMARY KEY (place_id, website)
+      );
+      CREATE INDEX IF NOT EXISTS place_website_checks_flagged ON place_website_checks(flag) WHERE flag IS NOT NULL;
+    `);
+    // v19 keeps what the contact-sync server was last sent for each number, and the retries still allowed for it.
+    if (current < 19) db.exec(`
+      CREATE TABLE IF NOT EXISTS contact_sync_numbers (
+        e164 TEXT PRIMARY KEY,
+        active INTEGER NOT NULL CHECK (active IN (0,1)),                    -- the state being delivered, or delivered
+        reference TEXT NOT NULL,                                             -- the watchlist entry ID sent as the note
+        delivered_at TEXT,                                                   -- null until the server accepted that state
+        attempts INTEGER NOT NULL DEFAULT 0, last_error_code TEXT, next_attempt_at TEXT,
+        updated_at TEXT NOT NULL
+      );
+    `);
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
   } catch (error) {

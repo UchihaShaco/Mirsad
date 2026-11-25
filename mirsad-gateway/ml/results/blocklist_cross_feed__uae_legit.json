@@ -1,0 +1,25 @@
+{
+  "model": "blocklist_cross_feed",
+  "dataset": "uae_legit",
+  "n": 15669,
+  "tp": 0,
+  "fp": 0,
+  "tn": 15669,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.0,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.5,
+  "latency_ms_p50": 0.0030920000426704064,
+  "latency_ms_p95": 0.005283300015435088,
+  "no_answer": 0,
+  "note": "same lookup, but ignoring the feed each row was taken from",
+  "row_level_detail": {
+    "false_positives": 0
+  }
+}

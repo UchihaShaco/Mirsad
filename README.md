@@ -26,7 +26,7 @@ flowchart LR
 
 ## 1 · On the phone
 
-An on-device shield with **no internet permission**. Scam SMS are held before they are seen, calls from block-listed
+[Mirsad Android](mirsad-android/README.md) is an on-device shield with **no internet permission**. Scam SMS are held before they are seen, calls from block-listed
 numbers are rejected before they ring, every decision is explained in Arabic or English — and nothing is ever deleted.
 One tap turns an attempt into an evidence report for the police.
 
@@ -48,6 +48,8 @@ One click flags the number, and the signed blocklist flows back to every phone.
 Links are checked **before they open**: a fake Abu Dhabi Police payment page is blocked with a scored, bilingual
 explanation. The same engine sweeps at city scale — cross-checked against ~26,000 real Abu Dhabi business listings,
 because scammers borrow real shops' names and numbers. Every block becomes a ready case file.
+The [website shield](mirsad-gateway/README.md) runs at the internet provider: it investigates a website on its first
+visit, then lets it load or blocks it.
 
 | Blocked before it opens | The whole city, checked | Evidence for the police |
 |---|---|---|

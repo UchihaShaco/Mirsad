@@ -1,0 +1,23 @@
+{
+  "model": "page_served",
+  "dataset": "pages_test_arabic_gulf",
+  "n": 208,
+  "tp": 121,
+  "fp": 0,
+  "tn": 35,
+  "fn": 52,
+  "precision": 1.0,
+  "recall": 0.6994219653179191,
+  "f1": 0.8231292517006803,
+  "fpr": 0.0,
+  "roc_auc": 0.9671345995045418,
+  "pr_auc": 0.993759128176767,
+  "recall_at_fpr_0.1pct": 0.7976878612716763,
+  "recall_at_fpr_1pct": 0.7976878612716763,
+  "threshold": 0.955481749796998,
+  "latency_ms_p50": 90.440326002863,
+  "latency_ms_p95": 152.99460199821624,
+  "latency_note": "score_page inside the engine container, one page at a time, 320 pages, encoder service on the host GPU (bf16) + CPU model",
+  "latency_ms_p50_cpu_fallback": 19.627437999588437,
+  "latency_ms_p95_cpu_fallback": 43.633122000755975
+}

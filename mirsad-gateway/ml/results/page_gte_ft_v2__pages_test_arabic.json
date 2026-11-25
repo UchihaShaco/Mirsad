@@ -1,0 +1,21 @@
+{
+  "model": "page_gte_ft_v2",
+  "dataset": "pages_test_arabic",
+  "n": 45,
+  "tp": 25,
+  "fp": 1,
+  "tn": 18,
+  "fn": 1,
+  "precision": 0.9615384615384616,
+  "recall": 0.9615384615384616,
+  "f1": 0.9615384615384616,
+  "fpr": 0.05263157894736842,
+  "roc_auc": 0.9979757085020243,
+  "pr_auc": 0.9985754985754985,
+  "recall_at_fpr_0.1pct": 0.9615384615384616,
+  "recall_at_fpr_1pct": 0.9615384615384616,
+  "threshold": 0.9623913168907167,
+  "latency_ms_p50": 433.09746049817477,
+  "latency_ms_p95": 541.9227688989849,
+  "latency_note": "encoder alone on the GPU (bf16), batch 1, tokenisation included, 200 pages, GPU shared with training"
+}

@@ -39,9 +39,9 @@ describe('storage/db', () => {
     expect(tables.map((t) => t.name)).toEqual(
       expect.arrayContaining(['workspaces', 'principals', 'chats', 'messages', 'stream_events', 'connector_state', 'telegram_evidence_sources', 'officer_passwords', 'officer_sessions', 'dispatch_briefs']),
     );
-    expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['telegram_dispatch_contacts', 'chat_erasure_fences', 'telegram_message_proofs']));
+    expect(tables.map(t => t.name)).toEqual(expect.arrayContaining(['telegram_dispatch_contacts', 'chat_erasure_fences', 'telegram_message_proofs', 'place_website_checks', 'contact_sync_numbers']));
     expect(tables.map(t => t.name).filter(name => name.startsWith('whatsapp'))).toEqual([]);
-    expect(tables).toHaveLength(33);
+    expect(tables).toHaveLength(35);
     expect(() =>
       db!.transaction((tx) =>
         tx.run(
@@ -65,7 +65,7 @@ describe('storage/db', () => {
       version: tx.get('PRAGMA user_version'),
       references: tx.all<{table:string}>('PRAGMA foreign_key_list(telegram_evidence_sources)').map(row => row.table).sort(),
     }));
-    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 17 }, references: ['case_actions','chats','messages'] });
+    expect(snapshot).toEqual({ workspace: { name: 'Legacy' }, version: { user_version: 19 }, references: ['case_actions','chats','messages'] });
     expect(() => db!.transaction(tx => tx.run("INSERT INTO telegram_evidence_sources VALUES ('c','m','document','opaque','a')"))).toThrow(/FOREIGN KEY/);
   });
 
@@ -83,7 +83,7 @@ describe('storage/db', () => {
     } finally { old.close(); }
     db = openDatabase(file());
     db.transaction(tx => {
-      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 17 });
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 19 });
       expect(tx.get('SELECT token_sha256 FROM principals WHERE id=?', ['officer'])).toEqual({ token_sha256: 'previous-hash' });
       expect(tx.get('SELECT channel_account_id FROM account_grants WHERE principal_id=?', ['officer'])).toEqual({ channel_account_id: 'account' });
       expect(tx.all('SELECT * FROM officer_passwords')).toEqual([]);
@@ -107,7 +107,7 @@ describe('storage/db', () => {
     const remaining = db.transaction(tx => tx.all<{ name: string }>(
       "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'whatsapp%' ORDER BY name").map(row => row.name));
     expect(remaining).toEqual(['whatsapp_demo_opt_outs']);
-    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 17 });
+    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 19 });
   });
 
   it('v16 rebuilds the watchlist observations so an officer flag is accepted, keeping every existing row', () => {
@@ -128,7 +128,7 @@ describe('storage/db', () => {
       expect(() => old.exec(flag)).toThrow(/CHECK/);
     } finally { old.close(); }
     db = openDatabase(file());
-    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 17 });
+    expect(db.transaction(tx => tx.get('PRAGMA user_version'))).toEqual({ user_version: 19 });
     db.close();
     db = null;
     const after = new DatabaseSync(file());
@@ -155,7 +155,7 @@ describe('storage/db', () => {
     } finally { old.close(); }
     db = openDatabase(file());
     db.transaction(tx => {
-      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 17 });
+      expect(tx.get('PRAGMA user_version')).toEqual({ user_version: 19 });
       expect(tx.all('SELECT id, source FROM channel_accounts')).toEqual([{ id: 'acct_tg', source: 'telegram' }]);
       tx.run(`INSERT INTO channel_accounts (id,workspace_id,source,external_account_id,label,is_intake,created_at)
         VALUES ('acct_cr','ws','citizen_report','mirsad-android','Citizen reports',0,'2026-01-02')`);

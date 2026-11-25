@@ -1,6 +1,8 @@
 /** Places directory: file loading and officer search over the Overture JSON. */
 import fs from 'node:fs';
-import { PlaceRecord as PlaceRecordSchema, type PlaceRecord as PlaceRecordShape } from '../contract/schemas.ts';
+import {
+  PlaceRecord as PlaceRecordSchema, type PlaceRecord as PlaceRecordShape, type WebsiteFlag, type WebsiteFlagCounts,
+} from '../contract/schemas.ts';
 
 export const PlaceRecord = PlaceRecordSchema;
 export type PlaceRecord = PlaceRecordShape;
@@ -35,6 +37,10 @@ export interface PlacesQuery {
   limit?: number;
   /** Opaque cursor from a previous page. */
   cursor?: string | null;
+  /** Only listings whose website was flagged: harmful, suspicious or parked (`flagged`), or one kind. */
+  websiteFlag?: WebsiteFlag | 'flagged';
+  /** Each flagged listing's website flag (website-checks.ts, readWebsiteFlags); none when no report was imported. */
+  websiteFlags?: ReadonlyMap<string, WebsiteFlag>;
 }
 
 export interface PlacesPage {
@@ -45,6 +51,10 @@ export interface PlacesPage {
   offset: number;
   /** Distinct categories of the whole match set (not just the page), sorted, for the filter dropdown. */
   categories: string[];
+  /** The website flag of each place on this page that has one. */
+  websiteFlags: Record<string, WebsiteFlag>;
+  /** Flagged listings per kind for the text and category match, before the viewport and the flag filter. */
+  websiteFlagCounts: WebsiteFlagCounts;
 }
 
 /**
@@ -116,6 +126,18 @@ function matchesBbox(place: PlaceRecord, bbox: [number, number, number, number] 
   return place.lng >= bbox[0] && place.lng <= bbox[2] && place.lat >= bbox[1] && place.lat <= bbox[3];
 }
 
+const FLAG_ORDER: Record<WebsiteFlag, number> = { harmful: 4, suspicious: 3, parked: 2, unconfirmed: 1 };
+
+function flagOrder(flag: WebsiteFlag | undefined): number {
+  return flag === undefined ? 0 : FLAG_ORDER[flag];
+}
+
+/** `flagged` is every flag but a low-confidence warning, which an officer asks for by name. */
+function flagMatches(flag: WebsiteFlag | undefined, wanted: WebsiteFlag | 'flagged'): boolean {
+  if (flag === undefined) return false;
+  return wanted === 'flagged' ? flag !== 'unconfirmed' : flag === wanted;
+}
+
 function encodeCursor(offset: number): string {
   return Buffer.from(String(offset), 'utf8').toString('base64url');
 }
@@ -133,13 +155,27 @@ export function searchPlaces(places: readonly PlaceRecord[], query: PlacesQuery)
     bbox[1] <= bbox[3];
   const limit = Math.min(Math.max(Math.floor(query.limit ?? 100), 1), PLACES_PAGE_MAX);
 
-  const matched = places.filter(
-    (place) => (category === '' || place.category === category) && matchesText(place, needle) && matchesBbox(place, bbox, bboxOk),
-  );
+  const flags = query.websiteFlags ?? new Map<string, WebsiteFlag>();
+  const wanted = query.websiteFlag;
+  const websiteFlagCounts: WebsiteFlagCounts = { harmful: 0, suspicious: 0, parked: 0, unconfirmed: 0 };
+  const matched = places.filter((place) => {
+    if ((category !== '' && place.category !== category) || !matchesText(place, needle)) return false;
+    const flag = flags.get(place.id);
+    if (flag !== undefined) websiteFlagCounts[flag] += 1;
+    if (wanted !== undefined && !flagMatches(flag, wanted)) return false;
+    return matchesBbox(place, bbox, bboxOk);
+  });
+  // Flagged listings first, most serious first (the sort is stable), so a capped page never hides them from the map.
+  if (flags.size > 0) matched.sort((a, b) => flagOrder(flags.get(b.id)) - flagOrder(flags.get(a.id)));
   const categories = [...new Set(matched.map((place) => place.category))].sort();
 
   const offset = decodeCursor(query.cursor);
   const items = matched.slice(offset, offset + limit);
   const next = offset + limit < matched.length ? encodeCursor(offset + limit) : null;
-  return { items, nextCursor: next, total: matched.length, offset, categories };
+  const websiteFlags: Record<string, WebsiteFlag> = {};
+  for (const place of items) {
+    const flag = flags.get(place.id);
+    if (flag !== undefined) websiteFlags[place.id] = flag;
+  }
+  return { items, nextCursor: next, total: matched.length, offset, categories, websiteFlags, websiteFlagCounts };
 }

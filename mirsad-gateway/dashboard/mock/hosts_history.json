@@ -1,0 +1,730 @@
+{
+ "toll-topup-example.cfd": {
+  "changes": [
+   {
+    "at": "2026-11-24T16:10:00+00:00",
+    "kind": "ip",
+    "old": "198.51.100.200",
+    "new": "192.0.2.45"
+   },
+   {
+    "at": "2026-11-24T17:00:00+00:00",
+    "kind": "content",
+    "old": "parked page",
+    "new": "login form"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "d4e5f6a7b8c94d0e1f2a3b4c5d6e7f83",
+    "decision": "block",
+    "risk_score": 85.0,
+    "stage": "page",
+    "created_at": "2026-11-24T16:27:00Z",
+    "source": "watcher"
+   }
+  ],
+  "visits_hourly": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   8,
+   8,
+   8,
+   2,
+   8
+  ]
+ },
+ "gold-yield-example.com": {
+  "changes": [],
+  "verdicts": [
+   {
+    "id": "4e5f6a7b8c9d44a51627d8e9fa0b1c5a",
+    "decision": "warn",
+    "risk_score": 62.0,
+    "stage": "deep",
+    "created_at": "2026-11-24T16:33:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   3,
+   3,
+   3,
+   3,
+   4,
+   2,
+   2,
+   2,
+   2,
+   2
+  ]
+ },
+ "example-post-parcel-fee.top": {
+  "changes": [
+   {
+    "at": "2026-11-24T16:10:00+00:00",
+    "kind": "ip",
+    "old": "198.51.100.200",
+    "new": "192.0.2.44"
+   },
+   {
+    "at": "2026-11-24T17:00:00+00:00",
+    "kind": "content",
+    "old": "parked page",
+    "new": "login form"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "c3d4e5f6a7b84c9d0e1f2a3b4c5d6e72",
+    "decision": "block",
+    "risk_score": 88.0,
+    "stage": "page",
+    "created_at": "2026-11-24T16:43:00Z",
+    "source": "watcher"
+   }
+  ],
+  "visits_hourly": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   0,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ "community-iftar-example.org": {
+  "changes": [],
+  "verdicts": [
+   {
+    "id": "2c3d4e5f6a7b42839405b6c7d8e9fa38",
+    "decision": "allow",
+    "risk_score": 24.0,
+    "stage": "deep",
+    "created_at": "2026-11-24T16:51:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   18,
+   18,
+   9,
+   13,
+   11,
+   10,
+   10,
+   16,
+   10,
+   14,
+   18,
+   27,
+   19,
+   27,
+   32,
+   42,
+   44,
+   48,
+   32,
+   32,
+   28,
+   35,
+   32,
+   17
+  ]
+ },
+ "roads-fine-payment-example.icu": {
+  "changes": [
+   {
+    "at": "2026-11-24T16:10:00+00:00",
+    "kind": "ip",
+    "old": "198.51.100.200",
+    "new": "192.0.2.44"
+   },
+   {
+    "at": "2026-11-24T17:00:00+00:00",
+    "kind": "content",
+    "old": "parked page",
+    "new": "login form"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "b2c3d4e5f6a74b8c9d0e1f2a3b4c5d61",
+    "decision": "block",
+    "risk_score": 92.0,
+    "stage": "page",
+    "created_at": "2026-11-24T16:59:00Z",
+    "source": "watcher"
+   }
+  ],
+  "visits_hourly": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ "example-telecom-rewards.xyz": {
+  "changes": [
+   {
+    "at": "2026-11-24T16:10:00+00:00",
+    "kind": "ip",
+    "old": "198.51.100.200",
+    "new": "203.0.113.10"
+   },
+   {
+    "at": "2026-11-24T17:00:00+00:00",
+    "kind": "content",
+    "old": "parked page",
+    "new": "login form"
+   },
+   {
+    "at": "2026-11-24T17:03:00+00:00",
+    "kind": "structure",
+    "old": "3 links",
+    "new": "multi-step claim form"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "1b2c3d4e5f6a41728394a5b6c7d8e927",
+    "decision": "block",
+    "risk_score": 83.0,
+    "stage": "deep",
+    "created_at": "2026-11-24T17:04:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   1,
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ "mega-deals-example.shop": {
+  "changes": [],
+  "verdicts": [
+   {
+    "id": "0a1b2c3d4e5f40617283940a1b2c3d16",
+    "decision": "warn",
+    "risk_score": 54.0,
+    "stage": "page",
+    "created_at": "2026-11-24T17:11:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   3,
+   2,
+   2,
+   3,
+   3,
+   4,
+   3,
+   4,
+   3,
+   2,
+   2,
+   2
+  ]
+ },
+ "examp1e-bank-verify.com": {
+  "changes": [
+   {
+    "at": "2026-11-24T16:10:00+00:00",
+    "kind": "ip",
+    "old": "198.51.100.200",
+    "new": "203.0.113.10"
+   },
+   {
+    "at": "2026-11-24T17:00:00+00:00",
+    "kind": "content",
+    "old": "parked page",
+    "new": "login form"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "3d4e5f6a7b8c43940516c7d8e9fa0b49",
+    "decision": "block",
+    "risk_score": 96.0,
+    "stage": "deep",
+    "created_at": "2026-11-24T17:29:00Z",
+    "source": "user"
+   },
+   {
+    "id": "a1f04c2e9b7d4e1f8a6b3c5d7e9f0a12",
+    "decision": "block",
+    "risk_score": 96.0,
+    "stage": "deep",
+    "created_at": "2026-11-24T17:17:48Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   7,
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ "news.example.org": {
+  "changes": [
+   {
+    "at": "2026-11-18T17:30:00+00:00",
+    "kind": "certificate",
+    "old": "Example OV CA (2025)",
+    "new": "Example OV CA (2026)"
+   }
+  ],
+  "verdicts": [
+   {
+    "id": "f6a7b8c9d0e14f2a3b4c5d6e7f8a9b05",
+    "decision": "allow",
+    "risk_score": 9.0,
+    "stage": "page",
+    "created_at": "2026-11-24T17:25:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   4,
+   4,
+   2,
+   4,
+   4,
+   3,
+   2,
+   2
+  ]
+ },
+ "examplebank.example": {
+  "changes": [],
+  "verdicts": [
+   {
+    "id": "e5f6a7b8c9d04e1f2a3b4c5d6e7f8a94",
+    "decision": "allow",
+    "risk_score": 2.0,
+    "stage": "reputation",
+    "created_at": "2026-11-24T17:28:00Z",
+    "source": "user"
+   }
+  ],
+  "visits_hourly": [
+   1,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   4,
+   3,
+   3,
+   3,
+   3,
+   2,
+   3,
+   2
+  ]
+ },
+ "portal.example.gov": {
+  "changes": [
+   {
+    "at": "2026-10-21T17:30:00+00:00",
+    "kind": "content",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   30,
+   18,
+   20,
+   17,
+   14,
+   24,
+   16,
+   20,
+   23,
+   26,
+   26,
+   34,
+   39,
+   49,
+   35,
+   53,
+   47,
+   51,
+   64,
+   51,
+   48,
+   49,
+   47,
+   32
+  ]
+ },
+ "mail.example.com": {
+  "changes": [
+   {
+    "at": "2026-10-24T17:30:00+00:00",
+    "kind": "certificate",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   175,
+   127,
+   89,
+   106,
+   128,
+   131,
+   131,
+   129,
+   86,
+   122,
+   140,
+   159,
+   170,
+   235,
+   224,
+   212,
+   245,
+   232,
+   324,
+   324,
+   255,
+   196,
+   163,
+   132
+  ]
+ },
+ "video.example.net": {
+  "changes": [
+   {
+    "at": "2026-11-14T17:30:00+00:00",
+    "kind": "ip",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   177,
+   100,
+   100,
+   105,
+   94,
+   85,
+   93,
+   118,
+   74,
+   130,
+   143,
+   120,
+   172,
+   229,
+   236,
+   189,
+   359,
+   351,
+   357,
+   195,
+   201,
+   154,
+   223,
+   146
+  ]
+ },
+ "telecom.example": {
+  "changes": [
+   {
+    "at": "2026-11-19T17:30:00+00:00",
+    "kind": "certificate",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   154,
+   141,
+   79,
+   77,
+   116,
+   100,
+   78,
+   132,
+   113,
+   149,
+   111,
+   206,
+   141,
+   259,
+   228,
+   231,
+   287,
+   376,
+   239,
+   199,
+   238,
+   179,
+   146,
+   135
+  ]
+ },
+ "cdn.example-static.net": {
+  "changes": [
+   {
+    "at": "2026-11-14T17:30:00+00:00",
+    "kind": "ip",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   25,
+   25,
+   16,
+   19,
+   14,
+   17,
+   14,
+   23,
+   21,
+   20,
+   29,
+   42,
+   29,
+   50,
+   45,
+   51,
+   66,
+   56,
+   55,
+   57,
+   60,
+   38,
+   45,
+   38
+  ]
+ },
+ "shop.example-retail.ae": {
+  "changes": [
+   {
+    "at": "2026-11-05T17:30:00+00:00",
+    "kind": "content",
+    "old": null,
+    "new": null
+   }
+  ],
+  "verdicts": [],
+  "visits_hourly": [
+   31,
+   31,
+   20,
+   15,
+   23,
+   19,
+   21,
+   26,
+   22,
+   28,
+   21,
+   27,
+   33,
+   29,
+   43,
+   46,
+   71,
+   53,
+   40,
+   63,
+   39,
+   34,
+   34,
+   25
+  ]
+ },
+ "unrated-newsite.example": {
+  "changes": [],
+  "verdicts": [],
+  "visits_hourly": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   2,
+   0
+  ]
+ }
+}

@@ -1,0 +1,21 @@
+{
+  "model": "page_gte_ft_v2",
+  "dataset": "synthetic_uae",
+  "n": 297,
+  "tp": 150,
+  "fp": 1,
+  "tn": 146,
+  "fn": 0,
+  "precision": 0.9933774834437086,
+  "recall": 1.0,
+  "f1": 0.9966777408637874,
+  "fpr": 0.006802721088435374,
+  "roc_auc": 1.0,
+  "pr_auc": 1.0000000000000002,
+  "recall_at_fpr_0.1pct": 1.0,
+  "recall_at_fpr_1pct": 1.0,
+  "threshold": 0.9623913168907167,
+  "latency_ms_p50": 433.09746049817477,
+  "latency_ms_p95": 541.9227688989849,
+  "latency_note": "encoder alone on the GPU (bf16), batch 1, tokenisation included, 200 pages, GPU shared with training"
+}

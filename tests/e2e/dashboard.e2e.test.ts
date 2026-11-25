@@ -53,7 +53,14 @@ async function launchInstalledBrowser(): Promise<Browser | null> {
       failures.push(`${channel}: ${firstLine(error)}`);
     }
   }
-  skipReason = `Skipped: neither Microsoft Edge nor Google Chrome could be launched by playwright-core (${failures.join('; ')}).`;
+  // Last, a Chromium that Playwright installed under ~/.cache/ms-playwright (for example for Python) at the revision
+  // this playwright-core expects: a Linux machine often has that and neither Edge nor Chrome.
+  try {
+    return await chromium.launch({ headless: true });
+  } catch (error) {
+    failures.push(`playwright chromium: ${firstLine(error)}`);
+  }
+  skipReason = `Skipped: neither Microsoft Edge, Google Chrome nor Playwright's Chromium could be launched by playwright-core (${failures.join('; ')}).`;
   return null;
 }
 

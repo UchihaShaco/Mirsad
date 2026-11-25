@@ -1,0 +1,468 @@
+{
+  "model": "url_lgbm_feats",
+  "threshold": 0.9552042160737814,
+  "triage_threshold": 0.8897672375933247,
+  "meta": {
+    "model": "url_lgbm_feats",
+    "trained_at": "2026-11-24T18:02:06+00:00",
+    "train_rows": 2043477,
+    "train_pos_rate": 0.5032637998861744,
+    "val_rows": 163699,
+    "data_file": "ml/data/processed/urls.parquet",
+    "excluded_sources": [],
+    "target_val_fpr": 0.002,
+    "val_metrics": {
+      "precision": 0.995397381044989,
+      "recall": 0.43339589889781116,
+      "fpr": 0.0015295131408875485,
+      "roc_auc": 0.9348845433794983,
+      "pr_auc": 0.9258119957226962,
+      "recall_at_fpr_0.1pct": 0.40565065834968034,
+      "recall_at_fpr_1pct": 0.5625538040333621
+    },
+    "thresholds_by_val_fpr": {
+      "0.001": 0.9795291709314229,
+      "0.002": 0.9552042160737814,
+      "0.005": 0.9420463629096724,
+      "0.01": 0.8897672375933247,
+      "0.05": 0.5734513274336285
+    },
+    "lgbm_trees": 464,
+    "features": 75
+  },
+  "urls_test_by_source": [
+    {
+      "source": "cert_pl",
+      "label": 1,
+      "n": 48862,
+      "flagged": 19802,
+      "rate": 0.40526380418320984,
+      "metric": "recall"
+    },
+    {
+      "source": "commoncrawl_ranked",
+      "label": 0,
+      "n": 11994,
+      "flagged": 15,
+      "rate": 0.0012506253126563281,
+      "metric": "fpr"
+    },
+    {
+      "source": "commoncrawl_unranked",
+      "label": 0,
+      "n": 14833,
+      "flagged": 7,
+      "rate": 0.00047192071731949034,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_ealvaradob_urls",
+      "label": 0,
+      "n": 33444,
+      "flagged": 37,
+      "rate": 0.0011063269943786629,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_ealvaradob_urls",
+      "label": 1,
+      "n": 28562,
+      "flagged": 10346,
+      "rate": 0.36222953574679645,
+      "metric": "recall"
+    },
+    {
+      "source": "hf_kmack_phishing_urls",
+      "label": 0,
+      "n": 10053,
+      "flagged": 11,
+      "rate": 0.001094200736098677,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_kmack_phishing_urls",
+      "label": 1,
+      "n": 12861,
+      "flagged": 5997,
+      "rate": 0.4662934452997434,
+      "metric": "recall"
+    },
+    {
+      "source": "hf_malicious_phish_kaggle_mirror",
+      "label": 0,
+      "n": 559,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_malicious_phish_kaggle_mirror",
+      "label": 1,
+      "n": 1781,
+      "flagged": 1451,
+      "rate": 0.8147108366086468,
+      "metric": "recall"
+    },
+    {
+      "source": "hf_mitake_phishbenign",
+      "label": 0,
+      "n": 8128,
+      "flagged": 13,
+      "rate": 0.0015994094488188976,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_pirocheto_phishing_url",
+      "label": 0,
+      "n": 358,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_pirocheto_phishing_url",
+      "label": 1,
+      "n": 316,
+      "flagged": 77,
+      "rate": 0.24367088607594936,
+      "metric": "recall"
+    },
+    {
+      "source": "jarelllama_scam",
+      "label": 1,
+      "n": 11968,
+      "flagged": 4624,
+      "rate": 0.38636363636363635,
+      "metric": "recall"
+    },
+    {
+      "source": "kaggle_hassaanmustafavi",
+      "label": 0,
+      "n": 31693,
+      "flagged": 28,
+      "rate": 0.0008834758464014136,
+      "metric": "fpr"
+    },
+    {
+      "source": "kaggle_hassaanmustafavi",
+      "label": 1,
+      "n": 2510,
+      "flagged": 768,
+      "rate": 0.30597609561752986,
+      "metric": "recall"
+    },
+    {
+      "source": "majestic_top100k",
+      "label": 0,
+      "n": 931,
+      "flagged": 5,
+      "rate": 0.0053705692803437165,
+      "metric": "fpr"
+    },
+    {
+      "source": "malware_filter_phishing",
+      "label": 1,
+      "n": 155,
+      "flagged": 56,
+      "rate": 0.36129032258064514,
+      "metric": "recall"
+    },
+    {
+      "source": "mendeley_n96ncsr5g4",
+      "label": 0,
+      "n": 4277,
+      "flagged": 5,
+      "rate": 0.0011690437222352116,
+      "metric": "fpr"
+    },
+    {
+      "source": "mendeley_n96ncsr5g4",
+      "label": 1,
+      "n": 1,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "recall"
+    },
+    {
+      "source": "phishing_army",
+      "label": 1,
+      "n": 1629,
+      "flagged": 420,
+      "rate": 0.2578268876611418,
+      "metric": "recall"
+    },
+    {
+      "source": "phishing_database_domains",
+      "label": 1,
+      "n": 11257,
+      "flagged": 5623,
+      "rate": 0.4995114151194812,
+      "metric": "recall"
+    },
+    {
+      "source": "phishing_database_links",
+      "label": 1,
+      "n": 66203,
+      "flagged": 34477,
+      "rate": 0.52077700406326,
+      "metric": "recall"
+    },
+    {
+      "source": "phishstats",
+      "label": 1,
+      "n": 137,
+      "flagged": 38,
+      "rate": 0.2773722627737226,
+      "metric": "recall"
+    },
+    {
+      "source": "phishtank",
+      "label": 1,
+      "n": 2214,
+      "flagged": 1199,
+      "rate": 0.5415537488708221,
+      "metric": "recall"
+    },
+    {
+      "source": "phiusiil",
+      "label": 0,
+      "n": 13271,
+      "flagged": 5,
+      "rate": 0.00037676135935498455,
+      "metric": "fpr"
+    },
+    {
+      "source": "phiusiil",
+      "label": 1,
+      "n": 7262,
+      "flagged": 2740,
+      "rate": 0.37730652712751306,
+      "metric": "recall"
+    },
+    {
+      "source": "phreshphish",
+      "label": 0,
+      "n": 34725,
+      "flagged": 34,
+      "rate": 0.0009791216702663788,
+      "metric": "fpr"
+    },
+    {
+      "source": "phreshphish",
+      "label": 1,
+      "n": 95,
+      "flagged": 20,
+      "rate": 0.21052631578947367,
+      "metric": "recall"
+    },
+    {
+      "source": "tranco_top300k",
+      "label": 0,
+      "n": 29467,
+      "flagged": 139,
+      "rate": 0.004717141208809855,
+      "metric": "fpr"
+    },
+    {
+      "source": "umbrella_top50k",
+      "label": 0,
+      "n": 3451,
+      "flagged": 22,
+      "rate": 0.006374963778614894,
+      "metric": "fpr"
+    },
+    {
+      "source": "urlhaus_via_malware_filter",
+      "label": 1,
+      "n": 215,
+      "flagged": 153,
+      "rate": 0.7116279069767442,
+      "metric": "recall"
+    }
+  ],
+  "path_bias_slices": {
+    "legit_with_path": {
+      "n": 121728,
+      "flagged_rate": 0.0006900630914826499,
+      "flagged_rate_triage": 0.003392810199789695
+    },
+    "legit_bare": {
+      "n": 75456,
+      "flagged_rate": 0.0031409033078880406,
+      "flagged_rate_triage": 0.015253922815945717
+    },
+    "phish_with_path": {
+      "n": 74620,
+      "flagged_rate": 0.48984186545162156,
+      "flagged_rate_triage": 0.6084695792012865
+    },
+    "phish_bare": {
+      "n": 121408,
+      "flagged_rate": 0.42203973379019505,
+      "flagged_rate_triage": 0.5482175803900896
+    }
+  },
+  "urls_fresh_test_by_source": [
+    {
+      "source": "cert_pl",
+      "label": 1,
+      "n": 1315,
+      "flagged": 857,
+      "rate": 0.6517110266159696,
+      "metric": "recall"
+    },
+    {
+      "source": "commoncrawl_ranked",
+      "label": 0,
+      "n": 768,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "commoncrawl_unranked",
+      "label": 0,
+      "n": 977,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_ealvaradob_urls",
+      "label": 0,
+      "n": 17,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_kmack_phishing_urls",
+      "label": 0,
+      "n": 56,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_mitake_phishbenign",
+      "label": 0,
+      "n": 55,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "hf_pirocheto_phishing_url",
+      "label": 0,
+      "n": 1,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "kaggle_hassaanmustafavi",
+      "label": 0,
+      "n": 18,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "majestic_top100k",
+      "label": 0,
+      "n": 2,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "mendeley_n96ncsr5g4",
+      "label": 0,
+      "n": 15,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "openphish",
+      "label": 1,
+      "n": 298,
+      "flagged": 257,
+      "rate": 0.8624161073825504,
+      "metric": "recall"
+    },
+    {
+      "source": "phishing_database_new_today",
+      "label": 1,
+      "n": 3,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "recall"
+    },
+    {
+      "source": "phishstats",
+      "label": 1,
+      "n": 92,
+      "flagged": 27,
+      "rate": 0.29347826086956524,
+      "metric": "recall"
+    },
+    {
+      "source": "phishtank",
+      "label": 1,
+      "n": 259,
+      "flagged": 149,
+      "rate": 0.5752895752895753,
+      "metric": "recall"
+    },
+    {
+      "source": "phishunt",
+      "label": 1,
+      "n": 727,
+      "flagged": 339,
+      "rate": 0.46629986244841815,
+      "metric": "recall"
+    },
+    {
+      "source": "phiusiil",
+      "label": 0,
+      "n": 49,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "phreshphish",
+      "label": 0,
+      "n": 99,
+      "flagged": 0,
+      "rate": 0.0,
+      "metric": "fpr"
+    },
+    {
+      "source": "tranco_top300k",
+      "label": 0,
+      "n": 626,
+      "flagged": 5,
+      "rate": 0.007987220447284345,
+      "metric": "fpr"
+    },
+    {
+      "source": "umbrella_top50k",
+      "label": 0,
+      "n": 17,
+      "flagged": 4,
+      "rate": 0.23529411764705882,
+      "metric": "fpr"
+    }
+  ],
+  "uae_legit": {
+    "n": 15669,
+    "fp": 0,
+    "fp_triage": 4,
+    "row_level_detail": {
+      "false_positives": 0,
+      "top_scores": 15
+    }
+  }
+}

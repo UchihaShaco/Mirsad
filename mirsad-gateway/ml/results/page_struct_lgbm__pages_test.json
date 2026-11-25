@@ -1,0 +1,21 @@
+{
+  "model": "page_struct_lgbm",
+  "dataset": "pages_test",
+  "n": 15048,
+  "tp": 2880,
+  "fp": 42,
+  "tn": 7319,
+  "fn": 4807,
+  "precision": 0.9856262833675564,
+  "recall": 0.3746585143749187,
+  "f1": 0.5429352436610425,
+  "fpr": 0.0057057465018339895,
+  "roc_auc": 0.944557752864692,
+  "pr_auc": 0.9464620895127451,
+  "recall_at_fpr_0.1pct": 0.23247040457915963,
+  "recall_at_fpr_1pct": 0.46637179653961236,
+  "threshold": 0.9728907760301119,
+  "latency_ms_p50": 6.335344500257634,
+  "latency_ms_p95": 23.26734039961594,
+  "latency_note": "1 CPU thread, batch 1, end to end (HTML parse + features + model), 300 pages, CPU shared with other jobs (alone: page_combo 9.2 ms p50)"
+}

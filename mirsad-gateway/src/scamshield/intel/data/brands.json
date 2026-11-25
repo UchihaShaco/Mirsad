@@ -1,0 +1,3811 @@
+{
+ "_about": "Curated registry of brands commonly impersonated in the UAE. domains = official registrable domains or hosts (subdomains of them are official too). tokens = distinctive strings used for domain look-alike matching; weak_tokens = generic words that only count together with a lure keyword. phones = official customer-care numbers in national form (digits only).",
+ "brands": [
+  {
+   "id": "tamm",
+   "name_en": "TAMM",
+   "name_ar": "تم",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "TAMM",
+    "TAMM Abu Dhabi",
+    "Abu Dhabi Government Services"
+   ],
+   "aliases_ar": [
+    "منصة تم",
+    "تم أبوظبي",
+    "خدمات حكومة أبوظبي"
+   ],
+   "tokens": [
+    "tamm"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "tamm.abudhabi"
+   ],
+   "phones": [
+    "800555"
+   ]
+  },
+  {
+   "id": "uaepass",
+   "name_en": "UAE PASS",
+   "name_ar": "الهوية الرقمية",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "UAE PASS",
+    "UAEPASS",
+    "UAE Pass digital identity"
+   ],
+   "aliases_ar": [
+    "الهوية الرقمية",
+    "يو اي اي باس",
+    "الهويه الرقميه الاماراتيه"
+   ],
+   "tokens": [
+    "uaepass"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "uaepass.ae"
+   ],
+   "phones": [
+    "600561111"
+   ]
+  },
+  {
+   "id": "uae_gov",
+   "name_en": "UAE Government Portal (u.ae)",
+   "name_ar": "البوابة الرسمية لحكومة الإمارات",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "u.ae",
+    "The Official Portal of the UAE Government"
+   ],
+   "aliases_ar": [
+    "البوابة الرسمية لحكومة دولة الإمارات",
+    "البوابة الرسمية لحكومة الإمارات"
+   ],
+   "tokens": [
+    "uaegov",
+    "uaegovernment"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "u.ae",
+    "government.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "icp",
+   "name_en": "ICP - Federal Authority for Identity, Citizenship, Customs & Port Security",
+   "name_ar": "الهيئة الاتحادية للهوية والجنسية والجمارك وأمن المنافذ",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "ICP",
+    "Federal Authority for Identity, Citizenship",
+    "Emirates ID",
+    "ICA UAE"
+   ],
+   "aliases_ar": [
+    "الهيئة الاتحادية للهوية والجنسية",
+    "الهوية والجنسية",
+    "بطاقة الهوية الإماراتية"
+   ],
+   "tokens": [
+    "emiratesid"
+   ],
+   "weak_tokens": [
+    "icp"
+   ],
+   "domains": [
+    "icp.gov.ae"
+   ],
+   "phones": [
+    "600522222"
+   ]
+  },
+  {
+   "id": "moi",
+   "name_en": "Ministry of Interior",
+   "name_ar": "وزارة الداخلية",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Ministry of Interior",
+    "MOI UAE",
+    "UAE MOI"
+   ],
+   "aliases_ar": [
+    "وزارة الداخلية"
+   ],
+   "tokens": [
+    "moiuae",
+    "uaemoi"
+   ],
+   "weak_tokens": [
+    "moi"
+   ],
+   "domains": [
+    "moi.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "adpolice",
+   "name_en": "Abu Dhabi Police",
+   "name_ar": "شرطة أبوظبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Abu Dhabi Police",
+    "AD Police",
+    "ADPolice"
+   ],
+   "aliases_ar": [
+    "شرطة أبوظبي",
+    "شرطة ابو ظبي",
+    "القيادة العامة لشرطة أبوظبي"
+   ],
+   "tokens": [
+    "adpolice",
+    "abudhabipolice"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adpolice.gov.ae"
+   ],
+   "phones": [
+    "999",
+    "8002626"
+   ]
+  },
+  {
+   "id": "dubaipolice",
+   "name_en": "Dubai Police",
+   "name_ar": "شرطة دبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Police",
+    "Dubai Police eCrime"
+   ],
+   "aliases_ar": [
+    "شرطة دبي",
+    "القيادة العامة لشرطة دبي"
+   ],
+   "tokens": [
+    "dubaipolice"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubaipolice.gov.ae",
+    "ecrimehub.gov.ae",
+    "ecrime.ae"
+   ],
+   "phones": [
+    "999",
+    "901",
+    "8004888"
+   ]
+  },
+  {
+   "id": "shjpolice",
+   "name_en": "Sharjah Police",
+   "name_ar": "شرطة الشارقة",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Sharjah Police"
+   ],
+   "aliases_ar": [
+    "شرطة الشارقة",
+    "القيادة العامة لشرطة الشارقة"
+   ],
+   "tokens": [
+    "shjpolice",
+    "sharjahpolice"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "shjpolice.gov.ae"
+   ],
+   "phones": [
+    "999",
+    "901"
+   ]
+  },
+  {
+   "id": "rta",
+   "name_en": "Roads and Transport Authority (RTA)",
+   "name_ar": "هيئة الطرق والمواصلات",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "RTA",
+    "RTA Dubai",
+    "Roads and Transport Authority",
+    "Nol card",
+    "nol Pay"
+   ],
+   "aliases_ar": [
+    "هيئة الطرق والمواصلات",
+    "هيئة الطرق و المواصلات",
+    "بطاقة نول",
+    "نول باي"
+   ],
+   "tokens": [
+    "rtadubai",
+    "dubairta",
+    "nolcard",
+    "nolpay"
+   ],
+   "weak_tokens": [
+    "rta",
+    "nol"
+   ],
+   "domains": [
+    "rta.ae"
+   ],
+   "phones": [
+    "8009090"
+   ]
+  },
+  {
+   "id": "dm",
+   "name_en": "Dubai Municipality",
+   "name_ar": "بلدية دبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Municipality"
+   ],
+   "aliases_ar": [
+    "بلدية دبي"
+   ],
+   "tokens": [
+    "dubaimunicipality"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dm.gov.ae"
+   ],
+   "phones": [
+    "800900"
+   ]
+  },
+  {
+   "id": "dmt",
+   "name_en": "Abu Dhabi Department of Municipalities and Transport",
+   "name_ar": "دائرة البلديات والنقل",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Department of Municipalities and Transport",
+    "DMT Abu Dhabi"
+   ],
+   "aliases_ar": [
+    "دائرة البلديات والنقل"
+   ],
+   "tokens": [
+    "abudhabimunicipality"
+   ],
+   "weak_tokens": [
+    "dmt"
+   ],
+   "domains": [
+    "dmt.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "itc",
+   "name_en": "Integrated Transport Centre (Darb / Mawaqif)",
+   "name_ar": "مركز النقل المتكامل (درب / مواقف)",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Integrated Transport Centre",
+    "Darb",
+    "Mawaqif",
+    "Darb toll gate",
+    "Abu Dhabi Mobility",
+    "AD Mobility"
+   ],
+   "aliases_ar": [
+    "مركز النقل المتكامل",
+    "درب",
+    "مواقف",
+    "بوابات درب",
+    "أبوظبي للتنقل"
+   ],
+   "tokens": [
+    "mawaqif"
+   ],
+   "weak_tokens": [
+    "darb",
+    "itc"
+   ],
+   "domains": [
+    "itc.gov.ae",
+    "admobility.gov.ae"
+   ],
+   "phones": [
+    "80088888"
+   ]
+  },
+  {
+   "id": "shjmun",
+   "name_en": "Sharjah City Municipality",
+   "name_ar": "بلدية مدينة الشارقة",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Sharjah Municipality",
+    "Sharjah City Municipality"
+   ],
+   "aliases_ar": [
+    "بلدية الشارقة",
+    "بلدية مدينة الشارقة"
+   ],
+   "tokens": [
+    "shjmun",
+    "sharjahmunicipality"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "shjmun.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dubaicourts",
+   "name_en": "Dubai Courts",
+   "name_ar": "محاكم دبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Courts"
+   ],
+   "aliases_ar": [
+    "محاكم دبي"
+   ],
+   "tokens": [
+    "dubaicourts"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dc.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "adjd",
+   "name_en": "Abu Dhabi Judicial Department",
+   "name_ar": "دائرة القضاء في أبوظبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Abu Dhabi Judicial Department",
+    "ADJD"
+   ],
+   "aliases_ar": [
+    "دائرة القضاء",
+    "دائرة القضاء أبوظبي"
+   ],
+   "tokens": [
+    "adjd"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adjd.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "moj",
+   "name_en": "Ministry of Justice",
+   "name_ar": "وزارة العدل",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "UAE Ministry of Justice"
+   ],
+   "aliases_ar": [
+    "وزارة العدل"
+   ],
+   "tokens": [
+    "uaemoj"
+   ],
+   "weak_tokens": [
+    "moj"
+   ],
+   "domains": [
+    "moj.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "fta",
+   "name_en": "Federal Tax Authority",
+   "name_ar": "الهيئة الاتحادية للضرائب",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Federal Tax Authority",
+    "FTA UAE",
+    "EmaraTax"
+   ],
+   "aliases_ar": [
+    "الهيئة الاتحادية للضرائب",
+    "إمارات تاكس"
+   ],
+   "tokens": [
+    "emaratax",
+    "uaetax"
+   ],
+   "weak_tokens": [
+    "fta"
+   ],
+   "domains": [
+    "tax.gov.ae"
+   ],
+   "phones": [
+    "600599994"
+   ]
+  },
+  {
+   "id": "mohre",
+   "name_en": "Ministry of Human Resources and Emiratisation",
+   "name_ar": "وزارة الموارد البشرية والتوطين",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "MOHRE",
+    "Ministry of Human Resources and Emiratisation"
+   ],
+   "aliases_ar": [
+    "وزارة الموارد البشرية والتوطين"
+   ],
+   "tokens": [
+    "mohre"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "mohre.gov.ae"
+   ],
+   "phones": [
+    "600590000"
+   ]
+  },
+  {
+   "id": "dha",
+   "name_en": "Dubai Health Authority",
+   "name_ar": "هيئة الصحة بدبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Health Authority",
+    "DHA Dubai"
+   ],
+   "aliases_ar": [
+    "هيئة الصحة بدبي",
+    "هيئة الصحة في دبي"
+   ],
+   "tokens": [
+    "dubaihealth"
+   ],
+   "weak_tokens": [
+    "dha"
+   ],
+   "domains": [
+    "dha.gov.ae"
+   ],
+   "phones": [
+    "800342"
+   ]
+  },
+  {
+   "id": "doh",
+   "name_en": "Department of Health - Abu Dhabi",
+   "name_ar": "دائرة الصحة - أبوظبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Department of Health Abu Dhabi",
+    "DoH Abu Dhabi"
+   ],
+   "aliases_ar": [
+    "دائرة الصحة أبوظبي",
+    "دائرة الصحة - أبوظبي"
+   ],
+   "tokens": [
+    "abudhabihealth"
+   ],
+   "weak_tokens": [
+    "doh"
+   ],
+   "domains": [
+    "doh.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "mohap",
+   "name_en": "Ministry of Health and Prevention",
+   "name_ar": "وزارة الصحة ووقاية المجتمع",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "MOHAP",
+    "Ministry of Health and Prevention"
+   ],
+   "aliases_ar": [
+    "وزارة الصحة ووقاية المجتمع"
+   ],
+   "tokens": [
+    "mohap"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "mohap.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "tdra",
+   "name_en": "Telecommunications and Digital Government Regulatory Authority",
+   "name_ar": "هيئة تنظيم الاتصالات والحكومة الرقمية",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "TDRA",
+    "Telecommunications and Digital Government Regulatory Authority"
+   ],
+   "aliases_ar": [
+    "هيئة تنظيم الاتصالات والحكومة الرقمية",
+    "هيئة تنظيم الاتصالات"
+   ],
+   "tokens": [
+    "tdra"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "tdra.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "cbuae",
+   "name_en": "Central Bank of the UAE",
+   "name_ar": "مصرف الإمارات العربية المتحدة المركزي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Central Bank of the UAE",
+    "CBUAE",
+    "UAE Central Bank"
+   ],
+   "aliases_ar": [
+    "مصرف الإمارات العربية المتحدة المركزي",
+    "المصرف المركزي",
+    "البنك المركزي الإماراتي"
+   ],
+   "tokens": [
+    "cbuae",
+    "uaecentralbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "centralbank.ae"
+   ],
+   "phones": [
+    "80022823"
+   ]
+  },
+  {
+   "id": "gdrfad",
+   "name_en": "GDRFA Dubai",
+   "name_ar": "الإدارة العامة للإقامة وشؤون الأجانب دبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "GDRFA",
+    "GDRFA Dubai",
+    "General Directorate of Residency and Foreigners Affairs"
+   ],
+   "aliases_ar": [
+    "الإدارة العامة للإقامة وشؤون الأجانب",
+    "إقامة دبي"
+   ],
+   "tokens": [
+    "gdrfa",
+    "gdrfad"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "gdrfad.gov.ae"
+   ],
+   "phones": [
+    "8005111"
+   ]
+  },
+  {
+   "id": "dubaicustoms",
+   "name_en": "Dubai Customs",
+   "name_ar": "جمارك دبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Customs"
+   ],
+   "aliases_ar": [
+    "جمارك دبي"
+   ],
+   "tokens": [
+    "dubaicustoms"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubaicustoms.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "mofa",
+   "name_en": "Ministry of Foreign Affairs",
+   "name_ar": "وزارة الخارجية",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "UAE Ministry of Foreign Affairs",
+    "MOFA UAE"
+   ],
+   "aliases_ar": [
+    "وزارة الخارجية"
+   ],
+   "tokens": [
+    "uaemofa"
+   ],
+   "weak_tokens": [
+    "mofa"
+   ],
+   "domains": [
+    "mofa.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dld",
+   "name_en": "Dubai Land Department",
+   "name_ar": "دائرة الأراضي والأملاك",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Land Department",
+    "DLD"
+   ],
+   "aliases_ar": [
+    "دائرة الأراضي والأملاك"
+   ],
+   "tokens": [
+    "dubailand"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubailand.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dewa",
+   "name_en": "Dubai Electricity and Water Authority (DEWA)",
+   "name_ar": "هيئة كهرباء ومياه دبي",
+   "category": "utility",
+   "country": "AE",
+   "aliases_en": [
+    "DEWA",
+    "Dubai Electricity and Water Authority",
+    "Dubai Electricity & Water Authority"
+   ],
+   "aliases_ar": [
+    "هيئة كهرباء ومياه دبي",
+    "ديوا"
+   ],
+   "tokens": [
+    "dewa"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dewa.gov.ae"
+   ],
+   "phones": [
+    "046019999",
+    "991"
+   ]
+  },
+  {
+   "id": "taqa_distribution",
+   "name_en": "TAQA Distribution (ADDC / AADC)",
+   "name_ar": "طاقة للتوزيع",
+   "category": "utility",
+   "country": "AE",
+   "aliases_en": [
+    "ADDC",
+    "Abu Dhabi Distribution Company",
+    "AADC",
+    "Al Ain Distribution Company",
+    "TAQA Distribution"
+   ],
+   "aliases_ar": [
+    "شركة أبوظبي للتوزيع",
+    "شركة العين للتوزيع",
+    "طاقة للتوزيع"
+   ],
+   "tokens": [
+    "addc",
+    "aadc",
+    "taqadistribution"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "taqadistribution.com",
+    "addc.ae",
+    "aadc.ae"
+   ],
+   "phones": [
+    "8002332"
+   ]
+  },
+  {
+   "id": "sewa",
+   "name_en": "Sharjah Electricity, Water and Gas Authority (SEWA)",
+   "name_ar": "هيئة كهرباء ومياه وغاز الشارقة",
+   "category": "utility",
+   "country": "AE",
+   "aliases_en": [
+    "SEWA",
+    "Sharjah Electricity, Water and Gas Authority"
+   ],
+   "aliases_ar": [
+    "هيئة كهرباء ومياه وغاز الشارقة",
+    "هيئة كهرباء ومياه الشارقة"
+   ],
+   "tokens": [
+    "sewa"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "sewa.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "etihadwe",
+   "name_en": "Etihad Water and Electricity",
+   "name_ar": "الاتحاد للماء والكهرباء",
+   "category": "utility",
+   "country": "AE",
+   "aliases_en": [
+    "Etihad Water and Electricity",
+    "Etihad WE",
+    "FEWA"
+   ],
+   "aliases_ar": [
+    "الاتحاد للماء والكهرباء"
+   ],
+   "tokens": [
+    "etihadwe"
+   ],
+   "weak_tokens": [
+    "fewa"
+   ],
+   "domains": [
+    "etihadwe.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "salik",
+   "name_en": "Salik",
+   "name_ar": "سالك",
+   "category": "toll",
+   "country": "AE",
+   "aliases_en": [
+    "Salik",
+    "Salik toll"
+   ],
+   "aliases_ar": [
+    "سالك",
+    "بوابات سالك"
+   ],
+   "tokens": [
+    "salik"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "salik.ae"
+   ],
+   "phones": [
+    "80072545"
+   ]
+  },
+  {
+   "id": "parkin",
+   "name_en": "Parkin",
+   "name_ar": "باركن",
+   "category": "toll",
+   "country": "AE",
+   "aliases_en": [
+    "Parkin",
+    "Parkin Dubai"
+   ],
+   "aliases_ar": [
+    "باركن"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "parkin"
+   ],
+   "domains": [
+    "parkin.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "adnoc",
+   "name_en": "ADNOC",
+   "name_ar": "أدنوك",
+   "category": "energy",
+   "country": "AE",
+   "aliases_en": [
+    "ADNOC",
+    "ADNOC Distribution"
+   ],
+   "aliases_ar": [
+    "أدنوك",
+    "ادنوك للتوزيع"
+   ],
+   "tokens": [
+    "adnoc"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adnoc.ae",
+    "adnocdistribution.ae",
+    "adnoc.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "enoc",
+   "name_en": "ENOC",
+   "name_ar": "إينوك",
+   "category": "energy",
+   "country": "AE",
+   "aliases_en": [
+    "ENOC",
+    "Emirates National Oil Company"
+   ],
+   "aliases_ar": [
+    "إينوك",
+    "مؤسسة الإمارات الوطنية للبترول"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "enoc"
+   ],
+   "domains": [
+    "enoc.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "etisalat",
+   "name_en": "e& (Etisalat)",
+   "name_ar": "اتصالات من إي آند",
+   "category": "telecom",
+   "country": "AE",
+   "aliases_en": [
+    "Etisalat",
+    "e& UAE",
+    "etisalat by e&",
+    "e& life"
+   ],
+   "aliases_ar": [
+    "اتصالات",
+    "إي آند",
+    "اتصالات من اي اند"
+   ],
+   "tokens": [
+    "etisalat",
+    "etisalatuae"
+   ],
+   "weak_tokens": [
+    "eand"
+   ],
+   "domains": [
+    "etisalat.ae",
+    "eand.com",
+    "eand.ae",
+    "etisalat.com"
+   ],
+   "phones": [
+    "800101",
+    "101"
+   ]
+  },
+  {
+   "id": "du",
+   "name_en": "du",
+   "name_ar": "دو",
+   "category": "telecom",
+   "country": "AE",
+   "aliases_en": [
+    "du Telecom",
+    "du mobile",
+    "Emirates Integrated Telecommunications"
+   ],
+   "aliases_ar": [
+    "شركة الإمارات للاتصالات المتكاملة",
+    "دو للاتصالات"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "du",
+    "dutelecom"
+   ],
+   "domains": [
+    "du.ae"
+   ],
+   "phones": [
+    "155",
+    "800155"
+   ]
+  },
+  {
+   "id": "virginmobile",
+   "name_en": "Virgin Mobile UAE",
+   "name_ar": "فيرجن موبايل الإمارات",
+   "category": "telecom",
+   "country": "AE",
+   "aliases_en": [
+    "Virgin Mobile UAE",
+    "Virgin Mobile"
+   ],
+   "aliases_ar": [
+    "فيرجن موبايل"
+   ],
+   "tokens": [
+    "virginmobile"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "virginmobile.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "emiratespost",
+   "name_en": "Emirates Post",
+   "name_ar": "بريد الإمارات",
+   "category": "courier",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates Post",
+    "Emirates Post Group",
+    "EMX"
+   ],
+   "aliases_ar": [
+    "بريد الإمارات",
+    "مجموعة بريد الإمارات"
+   ],
+   "tokens": [
+    "emiratespost",
+    "empost"
+   ],
+   "weak_tokens": [
+    "epost"
+   ],
+   "domains": [
+    "emiratespost.ae",
+    "7x.ae"
+   ],
+   "phones": [
+    "600599999"
+   ]
+  },
+  {
+   "id": "aramex",
+   "name_en": "Aramex",
+   "name_ar": "أرامكس",
+   "category": "courier",
+   "country": "AE",
+   "aliases_en": [
+    "Aramex"
+   ],
+   "aliases_ar": [
+    "أرامكس",
+    "ارامكس"
+   ],
+   "tokens": [
+    "aramex"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "aramex.com"
+   ],
+   "phones": [
+    "600544000"
+   ]
+  },
+  {
+   "id": "fab",
+   "name_en": "First Abu Dhabi Bank",
+   "name_ar": "بنك أبوظبي الأول",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "First Abu Dhabi Bank",
+    "FAB",
+    "FAB bank"
+   ],
+   "aliases_ar": [
+    "بنك أبوظبي الأول",
+    "بنك ابوظبي الاول"
+   ],
+   "tokens": [
+    "bankfab",
+    "fabbank",
+    "firstabudhabibank"
+   ],
+   "weak_tokens": [
+    "fab"
+   ],
+   "domains": [
+    "bankfab.com",
+    "payit.ae"
+   ],
+   "phones": [
+    "600525500"
+   ]
+  },
+  {
+   "id": "emiratesnbd",
+   "name_en": "Emirates NBD",
+   "name_ar": "الإمارات دبي الوطني",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates NBD",
+    "ENBD",
+    "Liv. by Emirates NBD"
+   ],
+   "aliases_ar": [
+    "بنك الإمارات دبي الوطني",
+    "الإمارات دبي الوطني"
+   ],
+   "tokens": [
+    "emiratesnbd",
+    "enbd"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "emiratesnbd.com",
+    "liv.me"
+   ],
+   "phones": [
+    "600540000"
+   ]
+  },
+  {
+   "id": "adcb",
+   "name_en": "Abu Dhabi Commercial Bank (ADCB)",
+   "name_ar": "بنك أبوظبي التجاري",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "ADCB",
+    "Abu Dhabi Commercial Bank"
+   ],
+   "aliases_ar": [
+    "بنك أبوظبي التجاري",
+    "بنك ابوظبي التجاري"
+   ],
+   "tokens": [
+    "adcb"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adcb.com",
+    "adcb.ae"
+   ],
+   "phones": [
+    "600502030",
+    "026210090"
+   ]
+  },
+  {
+   "id": "dib",
+   "name_en": "Dubai Islamic Bank",
+   "name_ar": "بنك دبي الإسلامي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Islamic Bank",
+    "DIB"
+   ],
+   "aliases_ar": [
+    "بنك دبي الإسلامي",
+    "بنك دبي الاسلامي"
+   ],
+   "tokens": [
+    "dubaiislamic",
+    "dubaiislamicbank"
+   ],
+   "weak_tokens": [
+    "dib"
+   ],
+   "domains": [
+    "dib.ae"
+   ],
+   "phones": [
+    "046092222"
+   ]
+  },
+  {
+   "id": "mashreq",
+   "name_en": "Mashreq",
+   "name_ar": "المشرق",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Mashreq",
+    "Mashreq Bank",
+    "Mashreq Neo"
+   ],
+   "aliases_ar": [
+    "بنك المشرق",
+    "المشرق"
+   ],
+   "tokens": [
+    "mashreq",
+    "mashreqbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "mashreq.com",
+    "mashreqbank.com"
+   ],
+   "phones": [
+    "044244444"
+   ]
+  },
+  {
+   "id": "adib",
+   "name_en": "Abu Dhabi Islamic Bank (ADIB)",
+   "name_ar": "مصرف أبوظبي الإسلامي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "ADIB",
+    "Abu Dhabi Islamic Bank"
+   ],
+   "aliases_ar": [
+    "مصرف أبوظبي الإسلامي",
+    "مصرف ابوظبي الاسلامي"
+   ],
+   "tokens": [
+    "adib"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adib.ae"
+   ],
+   "phones": [
+    "600543216"
+   ]
+  },
+  {
+   "id": "cbd",
+   "name_en": "Commercial Bank of Dubai (CBD)",
+   "name_ar": "بنك دبي التجاري",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Commercial Bank of Dubai"
+   ],
+   "aliases_ar": [
+    "بنك دبي التجاري"
+   ],
+   "tokens": [
+    "cbdbank",
+    "commercialbankofdubai"
+   ],
+   "weak_tokens": [
+    "cbd"
+   ],
+   "domains": [
+    "cbd.ae"
+   ],
+   "phones": [
+    "600575556"
+   ]
+  },
+  {
+   "id": "rakbank",
+   "name_en": "RAKBANK",
+   "name_ar": "راك بنك",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "RAKBANK",
+    "RAK Bank",
+    "National Bank of Ras Al Khaimah"
+   ],
+   "aliases_ar": [
+    "راك بنك",
+    "بنك رأس الخيمة الوطني"
+   ],
+   "tokens": [
+    "rakbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "rakbank.ae"
+   ],
+   "phones": [
+    "042130000"
+   ]
+  },
+  {
+   "id": "emiratesislamic",
+   "name_en": "Emirates Islamic",
+   "name_ar": "الإمارات الإسلامي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates Islamic",
+    "Emirates Islamic Bank"
+   ],
+   "aliases_ar": [
+    "الإمارات الإسلامي",
+    "مصرف الإمارات الإسلامي"
+   ],
+   "tokens": [
+    "emiratesislamic"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "emiratesislamic.ae"
+   ],
+   "phones": [
+    "600599995"
+   ]
+  },
+  {
+   "id": "sib",
+   "name_en": "Sharjah Islamic Bank",
+   "name_ar": "مصرف الشارقة الإسلامي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Sharjah Islamic Bank"
+   ],
+   "aliases_ar": [
+    "مصرف الشارقة الإسلامي"
+   ],
+   "tokens": [
+    "sharjahislamic"
+   ],
+   "weak_tokens": [
+    "sib"
+   ],
+   "domains": [
+    "sib.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "ajmanbank",
+   "name_en": "Ajman Bank",
+   "name_ar": "مصرف عجمان",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Ajman Bank"
+   ],
+   "aliases_ar": [
+    "مصرف عجمان"
+   ],
+   "tokens": [
+    "ajmanbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "ajmanbank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "nbf",
+   "name_en": "National Bank of Fujairah",
+   "name_ar": "بنك الفجيرة الوطني",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "National Bank of Fujairah",
+    "NBF"
+   ],
+   "aliases_ar": [
+    "بنك الفجيرة الوطني"
+   ],
+   "tokens": [
+    "bankfujairah"
+   ],
+   "weak_tokens": [
+    "nbf"
+   ],
+   "domains": [
+    "nbf.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "nbq",
+   "name_en": "National Bank of Umm Al Qaiwain",
+   "name_ar": "بنك أم القيوين الوطني",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "National Bank of Umm Al Qaiwain",
+    "NBQ"
+   ],
+   "aliases_ar": [
+    "بنك أم القيوين الوطني"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "nbq"
+   ],
+   "domains": [
+    "nbq.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "bankofsharjah",
+   "name_en": "Bank of Sharjah",
+   "name_ar": "بنك الشارقة",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Bank of Sharjah"
+   ],
+   "aliases_ar": [
+    "بنك الشارقة"
+   ],
+   "tokens": [
+    "bankofsharjah"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "bankofsharjah.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "uab",
+   "name_en": "United Arab Bank",
+   "name_ar": "البنك العربي المتحد",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "United Arab Bank"
+   ],
+   "aliases_ar": [
+    "البنك العربي المتحد"
+   ],
+   "tokens": [
+    "unitedarabbank"
+   ],
+   "weak_tokens": [
+    "uab"
+   ],
+   "domains": [
+    "uab.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "cbi",
+   "name_en": "Commercial Bank International",
+   "name_ar": "بنك التجاري الدولي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Commercial Bank International",
+    "CBI UAE"
+   ],
+   "aliases_ar": [
+    "البنك التجاري الدولي",
+    "بنك التجاري الدولي"
+   ],
+   "tokens": [
+    "cbiuae"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "cbiuae.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "investbank",
+   "name_en": "Invest Bank",
+   "name_ar": "بنك الاستثمار",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "InvestBank",
+    "Invest Bank"
+   ],
+   "aliases_ar": [
+    "بنك الاستثمار"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "investbank"
+   ],
+   "domains": [
+    "investbank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "alhilalbank",
+   "name_en": "Al Hilal Bank",
+   "name_ar": "مصرف الهلال",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Al Hilal Bank"
+   ],
+   "aliases_ar": [
+    "مصرف الهلال"
+   ],
+   "tokens": [
+    "alhilalbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "alhilalbank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "almasraf",
+   "name_en": "Al Masraf (Arab Bank for Investment and Foreign Trade)",
+   "name_ar": "المصرف العربي للاستثمار والتجارة الخارجية",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Al Masraf",
+    "Arab Bank for Investment and Foreign Trade"
+   ],
+   "aliases_ar": [
+    "المصرف",
+    "المصرف العربي للاستثمار والتجارة الخارجية"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "almasraf"
+   ],
+   "domains": [
+    "almasraf.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "wio",
+   "name_en": "Wio Bank",
+   "name_ar": "بنك ويو",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Wio Bank",
+    "Wio"
+   ],
+   "aliases_ar": [
+    "بنك ويو"
+   ],
+   "tokens": [
+    "wiobank"
+   ],
+   "weak_tokens": [
+    "wio"
+   ],
+   "domains": [
+    "wio.io"
+   ],
+   "phones": []
+  },
+  {
+   "id": "zand",
+   "name_en": "Zand Bank",
+   "name_ar": "بنك زاند",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Zand",
+    "Zand Bank"
+   ],
+   "aliases_ar": [
+    "بنك زاند"
+   ],
+   "tokens": [
+    "zandbank"
+   ],
+   "weak_tokens": [
+    "zand"
+   ],
+   "domains": [
+    "zand.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "mbank",
+   "name_en": "Al Maryah Community Bank (Mbank)",
+   "name_ar": "بنك المارية المحلي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Mbank",
+    "Al Maryah Community Bank"
+   ],
+   "aliases_ar": [
+    "بنك المارية المحلي"
+   ],
+   "tokens": [
+    "mbankuae"
+   ],
+   "weak_tokens": [
+    "mbank"
+   ],
+   "domains": [
+    "mbank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "ruya",
+   "name_en": "Ruya Community Islamic Bank",
+   "name_ar": "بنك رؤيا المجتمعي الإسلامي",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Ruya Bank",
+    "Ruya Community Islamic Bank"
+   ],
+   "aliases_ar": [
+    "بنك رؤيا"
+   ],
+   "tokens": [
+    "ruyabank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "ruyabank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "eib",
+   "name_en": "Emirates Investment Bank",
+   "name_ar": "بنك الإمارات للاستثمار",
+   "category": "bank",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates Investment Bank"
+   ],
+   "aliases_ar": [
+    "بنك الإمارات للاستثمار"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "eibank"
+   ],
+   "domains": [
+    "eibank.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "hsbc",
+   "name_en": "HSBC",
+   "name_ar": "إتش إس بي سي",
+   "category": "bank",
+   "country": "global",
+   "aliases_en": [
+    "HSBC",
+    "HSBC UAE"
+   ],
+   "aliases_ar": [
+    "إتش إس بي سي",
+    "بنك اتش اس بي سي"
+   ],
+   "tokens": [
+    "hsbc"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "hsbc.ae",
+    "hsbc.com",
+    "hsbc.co.uk"
+   ],
+   "phones": []
+  },
+  {
+   "id": "standardchartered",
+   "name_en": "Standard Chartered",
+   "name_ar": "ستاندرد تشارترد",
+   "category": "bank",
+   "country": "global",
+   "aliases_en": [
+    "Standard Chartered",
+    "Standard Chartered UAE"
+   ],
+   "aliases_ar": [
+    "ستاندرد تشارترد",
+    "بنك ستاندرد تشارترد"
+   ],
+   "tokens": [
+    "standardchartered"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "sc.com",
+    "standardchartered.ae",
+    "standardchartered.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "citi",
+   "name_en": "Citibank",
+   "name_ar": "سيتي بنك",
+   "category": "bank",
+   "country": "global",
+   "aliases_en": [
+    "Citibank",
+    "Citi"
+   ],
+   "aliases_ar": [
+    "سيتي بنك"
+   ],
+   "tokens": [
+    "citibank"
+   ],
+   "weak_tokens": [
+    "citi"
+   ],
+   "domains": [
+    "citi.com",
+    "citibank.com",
+    "citibank.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "arabbank",
+   "name_en": "Arab Bank",
+   "name_ar": "البنك العربي",
+   "category": "bank",
+   "country": "global",
+   "aliases_en": [
+    "Arab Bank"
+   ],
+   "aliases_ar": [
+    "البنك العربي"
+   ],
+   "tokens": [
+    "arabbank"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "arabbank.ae",
+    "arabbank.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "alansari",
+   "name_en": "Al Ansari Exchange",
+   "name_ar": "الأنصاري للصرافة",
+   "category": "exchange",
+   "country": "AE",
+   "aliases_en": [
+    "Al Ansari Exchange",
+    "Al Ansari"
+   ],
+   "aliases_ar": [
+    "الأنصاري للصرافة",
+    "الانصاري للصرافة"
+   ],
+   "tokens": [
+    "alansari",
+    "alansariexchange"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "alansariexchange.com"
+   ],
+   "phones": [
+    "600546000"
+   ]
+  },
+  {
+   "id": "luluexchange",
+   "name_en": "LuLu Exchange",
+   "name_ar": "لولو للصرافة",
+   "category": "exchange",
+   "country": "AE",
+   "aliases_en": [
+    "LuLu Exchange",
+    "LuLu Money"
+   ],
+   "aliases_ar": [
+    "لولو للصرافة",
+    "لولو للصرافه"
+   ],
+   "tokens": [
+    "luluexchange",
+    "lulumoney"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "luluexchange.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "alfardan",
+   "name_en": "Al Fardan Exchange",
+   "name_ar": "الفردان للصرافة",
+   "category": "exchange",
+   "country": "AE",
+   "aliases_en": [
+    "Al Fardan Exchange"
+   ],
+   "aliases_ar": [
+    "الفردان للصرافة"
+   ],
+   "tokens": [
+    "alfardanexchange"
+   ],
+   "weak_tokens": [
+    "alfardan"
+   ],
+   "domains": [
+    "alfardanexchange.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "alrostamani",
+   "name_en": "Al Rostamani International Exchange",
+   "name_ar": "الرستماني للصرافة",
+   "category": "exchange",
+   "country": "AE",
+   "aliases_en": [
+    "Al Rostamani Exchange",
+    "Al Rostamani International Exchange"
+   ],
+   "aliases_ar": [
+    "الرستماني للصرافة"
+   ],
+   "tokens": [
+    "alrostamani",
+    "alrostamaniexchange"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "alrostamaniexchange.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "eandmoney",
+   "name_en": "e& money",
+   "name_ar": "إي آند موني",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "e& money",
+    "Etisalat Wallet"
+   ],
+   "aliases_ar": [
+    "إي آند موني",
+    "محفظة اتصالات"
+   ],
+   "tokens": [
+    "eandmoney"
+   ],
+   "weak_tokens": [
+    "ewallet"
+   ],
+   "domains": [
+    "eandmoney.com",
+    "ewallet.ae"
+   ],
+   "phones": [
+    "8003925538"
+   ]
+  },
+  {
+   "id": "aani",
+   "name_en": "Aani (Al Etihad Payments)",
+   "name_ar": "آني (الاتحاد للمدفوعات)",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Aani",
+    "Al Etihad Payments"
+   ],
+   "aliases_ar": [
+    "آني",
+    "الاتحاد للمدفوعات"
+   ],
+   "tokens": [
+    "aletihadpayments"
+   ],
+   "weak_tokens": [
+    "aani"
+   ],
+   "domains": [
+    "aletihadpayments.ae",
+    "aep.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "botim",
+   "name_en": "Botim",
+   "name_ar": "بوتيم",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Botim",
+    "BOTIM Money"
+   ],
+   "aliases_ar": [
+    "بوتيم"
+   ],
+   "tokens": [
+    "botim"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "botim.me"
+   ],
+   "phones": []
+  },
+  {
+   "id": "tabby",
+   "name_en": "Tabby",
+   "name_ar": "تابي",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Tabby"
+   ],
+   "aliases_ar": [
+    "تابي"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "tabby"
+   ],
+   "domains": [
+    "tabby.ai"
+   ],
+   "phones": []
+  },
+  {
+   "id": "tamara",
+   "name_en": "Tamara",
+   "name_ar": "تمارا",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Tamara"
+   ],
+   "aliases_ar": [
+    "تمارا"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "tamara"
+   ],
+   "domains": [
+    "tamara.co"
+   ],
+   "phones": []
+  },
+  {
+   "id": "networkintl",
+   "name_en": "Network International",
+   "name_ar": "نتورك إنترناشيونال",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Network International",
+    "N-Genius"
+   ],
+   "aliases_ar": [
+    "نتورك إنترناشيونال"
+   ],
+   "tokens": [
+    "networkinternational"
+   ],
+   "weak_tokens": [
+    "ngenius"
+   ],
+   "domains": [
+    "network.ae",
+    "network.global"
+   ],
+   "phones": []
+  },
+  {
+   "id": "magnati",
+   "name_en": "Magnati",
+   "name_ar": "ماغناتي",
+   "category": "payments",
+   "country": "AE",
+   "aliases_en": [
+    "Magnati"
+   ],
+   "aliases_ar": [
+    "ماغناتي"
+   ],
+   "tokens": [
+    "magnati"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "magnati.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "emirates",
+   "name_en": "Emirates (airline)",
+   "name_ar": "طيران الإمارات",
+   "category": "airline",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates Airline",
+    "Fly Emirates",
+    "Emirates Skywards"
+   ],
+   "aliases_ar": [
+    "طيران الإمارات",
+    "طيران الامارات"
+   ],
+   "tokens": [
+    "flyemirates",
+    "emiratesairline",
+    "emiratesskywards"
+   ],
+   "weak_tokens": [
+    "skywards"
+   ],
+   "domains": [
+    "emirates.com"
+   ],
+   "phones": [
+    "600555555"
+   ]
+  },
+  {
+   "id": "etihad",
+   "name_en": "Etihad Airways",
+   "name_ar": "الاتحاد للطيران",
+   "category": "airline",
+   "country": "AE",
+   "aliases_en": [
+    "Etihad Airways",
+    "Etihad Guest"
+   ],
+   "aliases_ar": [
+    "الاتحاد للطيران"
+   ],
+   "tokens": [
+    "etihadairways"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "etihad.com",
+    "etihadairways.com"
+   ],
+   "phones": [
+    "600555666"
+   ]
+  },
+  {
+   "id": "flydubai",
+   "name_en": "flydubai",
+   "name_ar": "فلاي دبي",
+   "category": "airline",
+   "country": "AE",
+   "aliases_en": [
+    "flydubai"
+   ],
+   "aliases_ar": [
+    "فلاي دبي"
+   ],
+   "tokens": [
+    "flydubai"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "flydubai.com"
+   ],
+   "phones": [
+    "600544445"
+   ]
+  },
+  {
+   "id": "airarabia",
+   "name_en": "Air Arabia",
+   "name_ar": "العربية للطيران",
+   "category": "airline",
+   "country": "AE",
+   "aliases_en": [
+    "Air Arabia"
+   ],
+   "aliases_ar": [
+    "العربية للطيران"
+   ],
+   "tokens": [
+    "airarabia"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "airarabia.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "noon",
+   "name_en": "noon",
+   "name_ar": "نون",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "noon.com",
+    "noon shopping"
+   ],
+   "aliases_ar": [
+    "نون للتسوق",
+    "موقع نون"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "noon"
+   ],
+   "domains": [
+    "noon.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "carrefouruae",
+   "name_en": "Carrefour UAE",
+   "name_ar": "كارفور الإمارات",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Carrefour UAE",
+    "Carrefour",
+    "MAF Carrefour"
+   ],
+   "aliases_ar": [
+    "كارفور"
+   ],
+   "tokens": [
+    "carrefouruae"
+   ],
+   "weak_tokens": [
+    "carrefour"
+   ],
+   "domains": [
+    "carrefouruae.com",
+    "carrefour.com",
+    "majidalfuttaim.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "lulu",
+   "name_en": "LuLu Hypermarket",
+   "name_ar": "لولو هايبر ماركت",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "LuLu Hypermarket",
+    "LuLu Group"
+   ],
+   "aliases_ar": [
+    "لولو هايبر ماركت",
+    "لولو"
+   ],
+   "tokens": [
+    "luluhypermarket"
+   ],
+   "weak_tokens": [
+    "lulu"
+   ],
+   "domains": [
+    "luluhypermarket.com",
+    "lulugroupinternational.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "talabat",
+   "name_en": "talabat",
+   "name_ar": "طلبات",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "talabat"
+   ],
+   "aliases_ar": [
+    "طلبات"
+   ],
+   "tokens": [
+    "talabat"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "talabat.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "careem",
+   "name_en": "Careem",
+   "name_ar": "كريم",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Careem",
+    "Careem Pay"
+   ],
+   "aliases_ar": [
+    "كريم",
+    "كريم باي"
+   ],
+   "tokens": [
+    "careem"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "careem.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dubizzle",
+   "name_en": "dubizzle",
+   "name_ar": "دوبيزل",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "dubizzle"
+   ],
+   "aliases_ar": [
+    "دوبيزل"
+   ],
+   "tokens": [
+    "dubizzle"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubizzle.com",
+    "dubizzle.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "sharafdg",
+   "name_en": "Sharaf DG",
+   "name_ar": "شرف دي جي",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Sharaf DG"
+   ],
+   "aliases_ar": [
+    "شرف دي جي"
+   ],
+   "tokens": [
+    "sharafdg"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "sharafdg.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "namshi",
+   "name_en": "Namshi",
+   "name_ar": "نمشي",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Namshi"
+   ],
+   "aliases_ar": [
+    "نمشي"
+   ],
+   "tokens": [
+    "namshi"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "namshi.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dubaidutyfree",
+   "name_en": "Dubai Duty Free",
+   "name_ar": "سوق دبي الحرة",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Duty Free"
+   ],
+   "aliases_ar": [
+    "سوق دبي الحرة"
+   ],
+   "tokens": [
+    "dubaidutyfree"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubaidutyfree.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "bigticket",
+   "name_en": "Big Ticket Abu Dhabi",
+   "name_ar": "بيج تيكت أبوظبي",
+   "category": "lottery",
+   "country": "AE",
+   "aliases_en": [
+    "Big Ticket",
+    "Big Ticket Abu Dhabi"
+   ],
+   "aliases_ar": [
+    "بيج تيكت",
+    "بيغ تيكت"
+   ],
+   "tokens": [
+    "bigticket"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "bigticket.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "mahzooz",
+   "name_en": "Mahzooz",
+   "name_ar": "مهظوظ",
+   "category": "lottery",
+   "country": "AE",
+   "aliases_en": [
+    "Mahzooz"
+   ],
+   "aliases_ar": [
+    "مهظوظ"
+   ],
+   "tokens": [
+    "mahzooz"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "mahzooz.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "emiratesdraw",
+   "name_en": "Emirates Draw",
+   "name_ar": "سحب الإمارات",
+   "category": "lottery",
+   "country": "AE",
+   "aliases_en": [
+    "Emirates Draw"
+   ],
+   "aliases_ar": [
+    "سحب الإمارات",
+    "اميريتس دراو"
+   ],
+   "tokens": [
+    "emiratesdraw"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "emiratesdraw.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "uaelottery",
+   "name_en": "The UAE Lottery",
+   "name_ar": "يانصيب الإمارات",
+   "category": "lottery",
+   "country": "AE",
+   "aliases_en": [
+    "The UAE Lottery",
+    "UAE Lottery",
+    "Lucky Day"
+   ],
+   "aliases_ar": [
+    "يانصيب الإمارات"
+   ],
+   "tokens": [
+    "uaelottery",
+    "theuaelottery"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "theuaelottery.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "unioncoop",
+   "name_en": "Union Coop",
+   "name_ar": "تعاونية الاتحاد",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Union Coop"
+   ],
+   "aliases_ar": [
+    "تعاونية الاتحاد"
+   ],
+   "tokens": [
+    "unioncoop"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "unioncoop.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "propertyfinder",
+   "name_en": "Property Finder",
+   "name_ar": "بروبرتي فايندر",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Property Finder"
+   ],
+   "aliases_ar": [
+    "بروبرتي فايندر"
+   ],
+   "tokens": [
+    "propertyfinder"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "propertyfinder.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "bayut",
+   "name_en": "Bayut",
+   "name_ar": "بيوت",
+   "category": "retail",
+   "country": "AE",
+   "aliases_en": [
+    "Bayut"
+   ],
+   "aliases_ar": [
+    "بيوت"
+   ],
+   "tokens": [
+    "bayut"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "bayut.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "google",
+   "name_en": "Google",
+   "name_ar": "جوجل",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Google",
+    "Gmail",
+    "Google Account"
+   ],
+   "aliases_ar": [
+    "جوجل",
+    "غوغل",
+    "جيميل"
+   ],
+   "tokens": [
+    "google"
+   ],
+   "weak_tokens": [
+    "gmail"
+   ],
+   "domains": [
+    "google.com",
+    "google.ae",
+    "gmail.com",
+    "youtube.com",
+    "googleapis.com",
+    "gstatic.com",
+    "googleusercontent.com",
+    "googlevideo.com",
+    "android.com",
+    "withgoogle.com",
+    "goo.gl",
+    "g.co",
+    "googlesyndication.com",
+    "googleadservices.com",
+    "googletagmanager.com",
+    "google-analytics.com",
+    "doubleclick.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "microsoft",
+   "name_en": "Microsoft",
+   "name_ar": "مايكروسوفت",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Microsoft",
+    "Microsoft 365",
+    "Office 365",
+    "Outlook",
+    "Hotmail"
+   ],
+   "aliases_ar": [
+    "مايكروسوفت",
+    "أوتلوك"
+   ],
+   "tokens": [
+    "microsoft",
+    "office365",
+    "hotmail",
+    "microsoftonline"
+   ],
+   "weak_tokens": [
+    "msft",
+    "outlook"
+   ],
+   "domains": [
+    "microsoft.com",
+    "live.com",
+    "outlook.com",
+    "office.com",
+    "office365.com",
+    "microsoftonline.com",
+    "hotmail.com",
+    "bing.com",
+    "xbox.com",
+    "azure.com",
+    "windows.com",
+    "windows.net",
+    "msn.com",
+    "skype.com",
+    "microsoft365.com",
+    "sharepoint.com",
+    "onedrive.com",
+    "aka.ms"
+   ],
+   "phones": []
+  },
+  {
+   "id": "apple",
+   "name_en": "Apple",
+   "name_ar": "أبل",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Apple",
+    "Apple ID",
+    "iCloud",
+    "Apple Pay"
+   ],
+   "aliases_ar": [
+    "أبل",
+    "آبل",
+    "آي كلاود"
+   ],
+   "tokens": [
+    "appleid"
+   ],
+   "weak_tokens": [
+    "apple",
+    "icloud"
+   ],
+   "domains": [
+    "apple.com",
+    "icloud.com",
+    "me.com",
+    "mzstatic.com",
+    "apple.news"
+   ],
+   "phones": []
+  },
+  {
+   "id": "amazon",
+   "name_en": "Amazon",
+   "name_ar": "أمازون",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "Amazon",
+    "Amazon.ae",
+    "Amazon Prime",
+    "AWS"
+   ],
+   "aliases_ar": [
+    "أمازون",
+    "امازون"
+   ],
+   "tokens": [
+    "amazon"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "amazon.com",
+    "amazon.ae",
+    "amazon.sa",
+    "amazon.co.uk",
+    "amazon.in",
+    "amazon.de",
+    "primevideo.com",
+    "amazonaws.com",
+    "aws.amazon.com",
+    "media-amazon.com",
+    "ssl-images-amazon.com",
+    "amazon.jobs"
+   ],
+   "phones": []
+  },
+  {
+   "id": "paypal",
+   "name_en": "PayPal",
+   "name_ar": "باي بال",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "PayPal"
+   ],
+   "aliases_ar": [
+    "باي بال",
+    "بايبال"
+   ],
+   "tokens": [
+    "paypal"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "paypal.com",
+    "paypal.me",
+    "paypalobjects.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "netflix",
+   "name_en": "Netflix",
+   "name_ar": "نتفليكس",
+   "category": "entertainment",
+   "country": "global",
+   "aliases_en": [
+    "Netflix"
+   ],
+   "aliases_ar": [
+    "نتفليكس",
+    "نتفلكس"
+   ],
+   "tokens": [
+    "netflix"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "netflix.com",
+    "nflxext.com",
+    "nflximg.net",
+    "nflxvideo.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "meta",
+   "name_en": "Facebook / Meta",
+   "name_ar": "فيسبوك",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "Facebook",
+    "Meta",
+    "Messenger",
+    "Meta Business Suite"
+   ],
+   "aliases_ar": [
+    "فيسبوك",
+    "فيس بوك",
+    "ميتا"
+   ],
+   "tokens": [
+    "facebook",
+    "metabusiness"
+   ],
+   "weak_tokens": [
+    "meta",
+    "fb"
+   ],
+   "domains": [
+    "facebook.com",
+    "fb.com",
+    "meta.com",
+    "messenger.com",
+    "fbcdn.net",
+    "facebook.net",
+    "fb.me"
+   ],
+   "phones": []
+  },
+  {
+   "id": "instagram",
+   "name_en": "Instagram",
+   "name_ar": "إنستغرام",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "Instagram"
+   ],
+   "aliases_ar": [
+    "إنستغرام",
+    "انستقرام",
+    "انستجرام"
+   ],
+   "tokens": [
+    "instagram"
+   ],
+   "weak_tokens": [
+    "insta"
+   ],
+   "domains": [
+    "instagram.com",
+    "cdninstagram.com",
+    "ig.me"
+   ],
+   "phones": []
+  },
+  {
+   "id": "whatsapp",
+   "name_en": "WhatsApp",
+   "name_ar": "واتساب",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "WhatsApp"
+   ],
+   "aliases_ar": [
+    "واتساب",
+    "واتس اب"
+   ],
+   "tokens": [
+    "whatsapp"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "whatsapp.com",
+    "whatsapp.net",
+    "wa.me"
+   ],
+   "phones": []
+  },
+  {
+   "id": "telegram",
+   "name_en": "Telegram",
+   "name_ar": "تيليجرام",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "Telegram"
+   ],
+   "aliases_ar": [
+    "تيليجرام",
+    "تلغرام"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "telegram"
+   ],
+   "domains": [
+    "telegram.org",
+    "t.me",
+    "telegram.me"
+   ],
+   "phones": []
+  },
+  {
+   "id": "tiktok",
+   "name_en": "TikTok",
+   "name_ar": "تيك توك",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "TikTok"
+   ],
+   "aliases_ar": [
+    "تيك توك"
+   ],
+   "tokens": [
+    "tiktok"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "tiktok.com",
+    "tiktokcdn.com",
+    "tiktokv.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "x",
+   "name_en": "X (Twitter)",
+   "name_ar": "إكس (تويتر)",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "Twitter",
+    "X Corp"
+   ],
+   "aliases_ar": [
+    "تويتر"
+   ],
+   "tokens": [
+    "twitter"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "x.com",
+    "twitter.com",
+    "twimg.com",
+    "t.co"
+   ],
+   "phones": []
+  },
+  {
+   "id": "linkedin",
+   "name_en": "LinkedIn",
+   "name_ar": "لينكد إن",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "LinkedIn"
+   ],
+   "aliases_ar": [
+    "لينكد إن",
+    "لينكدان"
+   ],
+   "tokens": [
+    "linkedin"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "linkedin.com",
+    "licdn.com",
+    "lnkd.in"
+   ],
+   "phones": []
+  },
+  {
+   "id": "snapchat",
+   "name_en": "Snapchat",
+   "name_ar": "سناب شات",
+   "category": "social",
+   "country": "global",
+   "aliases_en": [
+    "Snapchat"
+   ],
+   "aliases_ar": [
+    "سناب شات",
+    "سنابشات"
+   ],
+   "tokens": [
+    "snapchat"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "snapchat.com",
+    "snap.com",
+    "sc-cdn.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "binance",
+   "name_en": "Binance",
+   "name_ar": "بينانس",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "Binance"
+   ],
+   "aliases_ar": [
+    "بينانس",
+    "باينانس"
+   ],
+   "tokens": [
+    "binance"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "binance.com",
+    "binance.info",
+    "bnbstatic.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "coinbase",
+   "name_en": "Coinbase",
+   "name_ar": "كوين بيس",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "Coinbase"
+   ],
+   "aliases_ar": [
+    "كوين بيس"
+   ],
+   "tokens": [
+    "coinbase"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "coinbase.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "metamask",
+   "name_en": "MetaMask",
+   "name_ar": "ميتاماسك",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "MetaMask"
+   ],
+   "aliases_ar": [
+    "ميتاماسك",
+    "ميتا ماسك"
+   ],
+   "tokens": [
+    "metamask"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "metamask.io"
+   ],
+   "phones": []
+  },
+  {
+   "id": "trustwallet",
+   "name_en": "Trust Wallet",
+   "name_ar": "تراست واليت",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "Trust Wallet"
+   ],
+   "aliases_ar": [
+    "تراست واليت"
+   ],
+   "tokens": [
+    "trustwallet"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "trustwallet.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "bybit",
+   "name_en": "Bybit",
+   "name_ar": "باي بت",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "Bybit"
+   ],
+   "aliases_ar": [
+    "باي بت",
+    "بايبت"
+   ],
+   "tokens": [
+    "bybit"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "bybit.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "okx",
+   "name_en": "OKX",
+   "name_ar": "أو كي إكس",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "OKX"
+   ],
+   "aliases_ar": [
+    "أو كي إكس"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "okx"
+   ],
+   "domains": [
+    "okx.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "cryptocom",
+   "name_en": "Crypto.com",
+   "name_ar": "كريبتو دوت كوم",
+   "category": "crypto",
+   "country": "global",
+   "aliases_en": [
+    "Crypto.com"
+   ],
+   "aliases_ar": [
+    "كريبتو دوت كوم"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "cryptocom"
+   ],
+   "domains": [
+    "crypto.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "visa",
+   "name_en": "Visa",
+   "name_ar": "فيزا",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "Visa",
+    "Verified by Visa"
+   ],
+   "aliases_ar": [
+    "فيزا"
+   ],
+   "tokens": [],
+   "weak_tokens": [],
+   "domains": [
+    "visa.com",
+    "visamiddleeast.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "mastercard",
+   "name_en": "Mastercard",
+   "name_ar": "ماستركارد",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "Mastercard",
+    "Mastercard SecureCode"
+   ],
+   "aliases_ar": [
+    "ماستركارد",
+    "ماستر كارد"
+   ],
+   "tokens": [
+    "mastercard"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "mastercard.com",
+    "mastercard.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "amex",
+   "name_en": "American Express",
+   "name_ar": "أمريكان إكسبريس",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "American Express",
+    "Amex"
+   ],
+   "aliases_ar": [
+    "أمريكان إكسبريس",
+    "امريكان اكسبريس"
+   ],
+   "tokens": [
+    "americanexpress"
+   ],
+   "weak_tokens": [
+    "amex"
+   ],
+   "domains": [
+    "americanexpress.com",
+    "americanexpress.ae",
+    "aexp-static.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dhl",
+   "name_en": "DHL",
+   "name_ar": "دي إتش إل",
+   "category": "courier",
+   "country": "global",
+   "aliases_en": [
+    "DHL",
+    "DHL Express"
+   ],
+   "aliases_ar": [
+    "دي إتش إل",
+    "دي اتش ال"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "dhl"
+   ],
+   "domains": [
+    "dhl.com",
+    "dhl.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "fedex",
+   "name_en": "FedEx",
+   "name_ar": "فيديكس",
+   "category": "courier",
+   "country": "global",
+   "aliases_en": [
+    "FedEx"
+   ],
+   "aliases_ar": [
+    "فيديكس",
+    "فيدكس"
+   ],
+   "tokens": [
+    "fedex"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "fedex.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "ups",
+   "name_en": "UPS",
+   "name_ar": "يو بي إس",
+   "category": "courier",
+   "country": "global",
+   "aliases_en": [
+    "UPS",
+    "United Parcel Service"
+   ],
+   "aliases_ar": [
+    "يو بي إس"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "ups"
+   ],
+   "domains": [
+    "ups.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "booking",
+   "name_en": "Booking.com",
+   "name_ar": "بوكينج",
+   "category": "travel",
+   "country": "global",
+   "aliases_en": [
+    "Booking.com"
+   ],
+   "aliases_ar": [
+    "بوكينج",
+    "بوكينغ"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "booking"
+   ],
+   "domains": [
+    "booking.com",
+    "bstatic.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "airbnb",
+   "name_en": "Airbnb",
+   "name_ar": "إير بي إن بي",
+   "category": "travel",
+   "country": "global",
+   "aliases_en": [
+    "Airbnb"
+   ],
+   "aliases_ar": [
+    "إير بي إن بي",
+    "اير بي ان بي"
+   ],
+   "tokens": [
+    "airbnb"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "airbnb.com",
+    "airbnb.ae",
+    "muscache.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "adobe",
+   "name_en": "Adobe",
+   "name_ar": "أدوبي",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Adobe",
+    "Adobe Acrobat",
+    "Adobe Document Cloud"
+   ],
+   "aliases_ar": [
+    "أدوبي",
+    "ادوبي"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "adobe"
+   ],
+   "domains": [
+    "adobe.com",
+    "adobelogin.com",
+    "typekit.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dropbox",
+   "name_en": "Dropbox",
+   "name_ar": "دروب بوكس",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Dropbox"
+   ],
+   "aliases_ar": [
+    "دروب بوكس"
+   ],
+   "tokens": [
+    "dropbox"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dropbox.com",
+    "dropboxusercontent.com",
+    "db.tt"
+   ],
+   "phones": []
+  },
+  {
+   "id": "docusign",
+   "name_en": "DocuSign",
+   "name_ar": "دوكيو ساين",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "DocuSign"
+   ],
+   "aliases_ar": [
+    "دوكيو ساين"
+   ],
+   "tokens": [
+    "docusign"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "docusign.com",
+    "docusign.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "yahoo",
+   "name_en": "Yahoo",
+   "name_ar": "ياهو",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Yahoo",
+    "Yahoo Mail"
+   ],
+   "aliases_ar": [
+    "ياهو"
+   ],
+   "tokens": [
+    "yahoo"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "yahoo.com",
+    "yimg.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "steam",
+   "name_en": "Steam",
+   "name_ar": "ستيم",
+   "category": "entertainment",
+   "country": "global",
+   "aliases_en": [
+    "Steam",
+    "Steam Community",
+    "Valve"
+   ],
+   "aliases_ar": [
+    "ستيم"
+   ],
+   "tokens": [
+    "steampowered",
+    "steamcommunity"
+   ],
+   "weak_tokens": [
+    "steam"
+   ],
+   "domains": [
+    "steampowered.com",
+    "steamcommunity.com",
+    "steamstatic.com",
+    "valvesoftware.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "roblox",
+   "name_en": "Roblox",
+   "name_ar": "روبلوكس",
+   "category": "entertainment",
+   "country": "global",
+   "aliases_en": [
+    "Roblox"
+   ],
+   "aliases_ar": [
+    "روبلوكس"
+   ],
+   "tokens": [
+    "roblox"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "roblox.com",
+    "rbxcdn.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "spotify",
+   "name_en": "Spotify",
+   "name_ar": "سبوتيفاي",
+   "category": "entertainment",
+   "country": "global",
+   "aliases_en": [
+    "Spotify"
+   ],
+   "aliases_ar": [
+    "سبوتيفاي"
+   ],
+   "tokens": [
+    "spotify"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "spotify.com",
+    "scdn.co",
+    "spotifycdn.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "ebay",
+   "name_en": "eBay",
+   "name_ar": "إيباي",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "eBay"
+   ],
+   "aliases_ar": [
+    "إيباي",
+    "ايباي"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "ebay"
+   ],
+   "domains": [
+    "ebay.com",
+    "ebayimg.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "aliexpress",
+   "name_en": "AliExpress",
+   "name_ar": "علي إكسبريس",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "AliExpress",
+    "Alibaba"
+   ],
+   "aliases_ar": [
+    "علي إكسبريس",
+    "علي اكسبريس",
+    "علي بابا"
+   ],
+   "tokens": [
+    "aliexpress",
+    "alibaba"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "aliexpress.com",
+    "alibaba.com",
+    "alicdn.com",
+    "aliexpress.us"
+   ],
+   "phones": []
+  },
+  {
+   "id": "shein",
+   "name_en": "SHEIN",
+   "name_ar": "شي إن",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "SHEIN"
+   ],
+   "aliases_ar": [
+    "شي إن",
+    "شي ان"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "shein"
+   ],
+   "domains": [
+    "shein.com",
+    "ltwebstatic.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "temu",
+   "name_en": "Temu",
+   "name_ar": "تيمو",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "Temu"
+   ],
+   "aliases_ar": [
+    "تيمو"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "temu"
+   ],
+   "domains": [
+    "temu.com",
+    "kwcdn.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "uber",
+   "name_en": "Uber",
+   "name_ar": "أوبر",
+   "category": "travel",
+   "country": "global",
+   "aliases_en": [
+    "Uber"
+   ],
+   "aliases_ar": [
+    "أوبر",
+    "اوبر"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "uber"
+   ],
+   "domains": [
+    "uber.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "westernunion",
+   "name_en": "Western Union",
+   "name_ar": "ويسترن يونيون",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "Western Union"
+   ],
+   "aliases_ar": [
+    "ويسترن يونيون"
+   ],
+   "tokens": [
+    "westernunion"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "westernunion.com",
+    "wu.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "moneygram",
+   "name_en": "MoneyGram",
+   "name_ar": "موني جرام",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "MoneyGram"
+   ],
+   "aliases_ar": [
+    "موني جرام",
+    "موني غرام"
+   ],
+   "tokens": [
+    "moneygram"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "moneygram.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "wise",
+   "name_en": "Wise",
+   "name_ar": "وايز",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "Wise",
+    "TransferWise"
+   ],
+   "aliases_ar": [
+    "وايز"
+   ],
+   "tokens": [
+    "transferwise"
+   ],
+   "weak_tokens": [
+    "wise"
+   ],
+   "domains": [
+    "wise.com",
+    "transferwise.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "revolut",
+   "name_en": "Revolut",
+   "name_ar": "ريفولوت",
+   "category": "payments",
+   "country": "global",
+   "aliases_en": [
+    "Revolut"
+   ],
+   "aliases_ar": [
+    "ريفولوت"
+   ],
+   "tokens": [
+    "revolut"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "revolut.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "zoom",
+   "name_en": "Zoom",
+   "name_ar": "زووم",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "Zoom Meetings"
+   ],
+   "aliases_ar": [
+    "زووم"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "zoom"
+   ],
+   "domains": [
+    "zoom.us",
+    "zoom.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "wetransfer",
+   "name_en": "WeTransfer",
+   "name_ar": "وي ترانسفير",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "WeTransfer"
+   ],
+   "aliases_ar": [
+    "وي ترانسفير"
+   ],
+   "tokens": [
+    "wetransfer"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "wetransfer.com",
+    "we.tl"
+   ],
+   "phones": []
+  },
+  {
+   "id": "openai",
+   "name_en": "OpenAI / ChatGPT",
+   "name_ar": "شات جي بي تي",
+   "category": "tech",
+   "country": "global",
+   "aliases_en": [
+    "ChatGPT",
+    "OpenAI"
+   ],
+   "aliases_ar": [
+    "شات جي بي تي"
+   ],
+   "tokens": [
+    "chatgpt",
+    "openai"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "openai.com",
+    "chatgpt.com",
+    "oaistatic.com",
+    "oaiusercontent.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "ikea",
+   "name_en": "IKEA",
+   "name_ar": "ايكيا",
+   "category": "retail",
+   "country": "global",
+   "aliases_en": [
+    "IKEA"
+   ],
+   "aliases_ar": [
+    "ايكيا",
+    "إيكيا"
+   ],
+   "tokens": [],
+   "weak_tokens": [
+    "ikea"
+   ],
+   "domains": [
+    "ikea.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "adcustoms",
+   "name_en": "Abu Dhabi Customs",
+   "name_ar": "جمارك أبوظبي",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Abu Dhabi Customs",
+    "General Administration of Customs Abu Dhabi"
+   ],
+   "aliases_ar": [
+    "جمارك أبوظبي",
+    "الإدارة العامة لجمارك أبوظبي"
+   ],
+   "tokens": [
+    "adcustoms",
+    "abudhabicustoms"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "adcustoms.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "moec",
+   "name_en": "Ministry of Economy (Consumer Protection)",
+   "name_ar": "وزارة الاقتصاد - حماية المستهلك",
+   "category": "government",
+   "country": "AE",
+   "aliases_en": [
+    "Ministry of Economy",
+    "UAE Consumer Protection"
+   ],
+   "aliases_ar": [
+    "وزارة الاقتصاد",
+    "حماية المستهلك"
+   ],
+   "tokens": [
+    "uaeconsumer"
+   ],
+   "weak_tokens": [
+    "moec"
+   ],
+   "domains": [
+    "moec.gov.ae",
+    "economy.gov.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "dubaiopera",
+   "name_en": "Dubai Opera",
+   "name_ar": "دبي أوبرا",
+   "category": "events",
+   "country": "AE",
+   "aliases_en": [
+    "Dubai Opera"
+   ],
+   "aliases_ar": [
+    "دبي أوبرا",
+    "دار الأوبرا في دبي"
+   ],
+   "tokens": [
+    "dubaiopera"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "dubaiopera.com"
+   ],
+   "phones": []
+  },
+  {
+   "id": "platinumlist",
+   "name_en": "Platinumlist",
+   "name_ar": "بلاتينوم ليست",
+   "category": "events",
+   "country": "AE",
+   "aliases_en": [
+    "Platinumlist"
+   ],
+   "aliases_ar": [
+    "بلاتينوم ليست"
+   ],
+   "tokens": [
+    "platinumlist"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "platinumlist.net"
+   ],
+   "phones": []
+  },
+  {
+   "id": "globalvillage",
+   "name_en": "Global Village Dubai",
+   "name_ar": "القرية العالمية",
+   "category": "events",
+   "country": "AE",
+   "aliases_en": [
+    "Global Village",
+    "Global Village Dubai"
+   ],
+   "aliases_ar": [
+    "القرية العالمية"
+   ],
+   "tokens": [
+    "globalvillage"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "globalvillage.ae"
+   ],
+   "phones": []
+  },
+  {
+   "id": "museumofthefuture",
+   "name_en": "Museum of the Future",
+   "name_ar": "متحف المستقبل",
+   "category": "events",
+   "country": "AE",
+   "aliases_en": [
+    "Museum of the Future"
+   ],
+   "aliases_ar": [
+    "متحف المستقبل"
+   ],
+   "tokens": [
+    "museumofthefuture"
+   ],
+   "weak_tokens": [],
+   "domains": [
+    "museumofthefuture.ae"
+   ],
+   "phones": []
+  }
+ ],
+ "_widget_categories_about": "Brand categories whose logos and buttons sit on ordinary websites as contact widgets, sign-in buttons, map and review embeds, app-store badges or accepted-payment badges. For them a logo, banner or copyright mention is not a claim to be the brand; only the page title counts.",
+ "widget_categories": [
+  "social",
+  "tech",
+  "payments"
+ ]
+}

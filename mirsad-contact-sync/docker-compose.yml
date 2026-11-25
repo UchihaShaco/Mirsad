@@ -1,0 +1,22 @@
+# Mirsad contact sync server, built from this folder.
+#   docker compose up -d --build        start
+#   docker compose down                 stop (the data volume is kept)
+# The service, container and volume names are the ones the running instance and the Cloudflare tunnel already use.
+# No tunnel here: the tunnel is run once for the whole of Mirsad and routes to scamshield-sync:8080.
+# restart: "no" on purpose, so nothing comes back by itself after a reboot.
+services:
+  sync:
+    build: ./sync-server
+    container_name: scamshield-sync
+    env_file: .env
+    ports:
+      - "8080:8080"            # http://localhost:8080/dashboard (Android emulator: http://10.0.2.2:8080)
+    volumes:
+      - scamshield-data:/data
+    restart: "no"
+
+volumes:
+  scamshield-data:
+    # Pinned to the name the first install created (project "scamshieldapp"), so a restart from this folder
+    # on the same Docker installation reopens the same list.
+    name: scamshieldapp_scamshield-data

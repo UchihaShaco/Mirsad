@@ -1,0 +1,20 @@
+{
+  "model": "page_gte_ft",
+  "dataset": "pages_test_arabic_gulf",
+  "n": 208,
+  "tp": 138,
+  "fp": 0,
+  "tn": 35,
+  "fn": 35,
+  "precision": 1.0,
+  "recall": 0.7976878612716763,
+  "f1": 0.887459807073955,
+  "fpr": 0.0,
+  "roc_auc": 0.9720891824938067,
+  "pr_auc": 0.9946716838154332,
+  "recall_at_fpr_0.1pct": 0.9017341040462428,
+  "recall_at_fpr_1pct": 0.9017341040462428,
+  "threshold": 0.809878170490265,
+  "latency_ms_p50": null,
+  "latency_ms_p95": null
+}

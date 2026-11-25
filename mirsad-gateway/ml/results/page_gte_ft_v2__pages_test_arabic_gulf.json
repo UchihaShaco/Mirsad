@@ -1,0 +1,21 @@
+{
+  "model": "page_gte_ft_v2",
+  "dataset": "pages_test_arabic_gulf",
+  "n": 208,
+  "tp": 126,
+  "fp": 1,
+  "tn": 34,
+  "fn": 47,
+  "precision": 0.9921259842519685,
+  "recall": 0.7283236994219653,
+  "f1": 0.84,
+  "fpr": 0.02857142857142857,
+  "roc_auc": 0.9629232039636664,
+  "pr_auc": 0.9926584767758919,
+  "recall_at_fpr_0.1pct": 0.7283236994219653,
+  "recall_at_fpr_1pct": 0.7283236994219653,
+  "threshold": 0.9623913168907167,
+  "latency_ms_p50": 433.09746049817477,
+  "latency_ms_p95": 541.9227688989849,
+  "latency_note": "encoder alone on the GPU (bf16), batch 1, tokenisation included, 200 pages, GPU shared with training"
+}

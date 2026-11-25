@@ -1,0 +1,37 @@
+# Decisions
+
+One line per decision, with its reason and where it is written down. The design decisions were taken on 24–25 November
+2026 while this part was built under its working name; the last four were taken when it joined this repository.
+
+1. The ISP is a Docker container and the phone reaches it as a Tailscale exit node: the phone may not share the server's Wi-Fi, so the tunnel has to work across networks (`docs/REQUIREMENTS.md` R1, R2).
+2. Hostname-level by default: the gateway decides on the name from DNS and the TLS server name and never decrypts; full URLs and HTTPS block pages need `SCAMSHIELD_INTERCEPT=1` and the gateway's CA, a deliberate step on the phone (R3, `docs/DEMO.md`).
+3. Hold, then allow or block: an unknown site's connection is held until the first page and its immediate redirects are investigated, so a scam is stopped on its first visit, before anyone reports it (R4, R16–R18).
+4. Fail closed: an unknown site is blocked when the engine has not answered after 8 s (`SCAMSHIELD_HOLD_S`); `SCAMSHIELD_ON_TIMEOUT=allow` fails open, and hosts already decided keep their last decision (`gateway/README.md`).
+5. Feeds and external APIs only pre-fill the reputation table and help decide when a crawl is needed; they are not the detection method (REQUIREMENTS §1).
+6. No browser on the detection path: `curl_cffi` with Chrome's TLS, HTTP/2 and header fingerprints, so a site has no automation flags to hide behind; on 95 live pages our fetch took 1.9 s p50 against 2.4 s for a headless Chromium to reach `load` (R10, R11, `docs/BENCHMARKS.md`, "Speed per page").
+7. JavaScript is read, not run; deliberately scrambled first-party script on a low-reputation site is itself a high-severity finding, so the site is blocked without running it (R13, R14).
+8. A real browser (throwaway headless Chromium) is used only for the evidence screenshot, after the verdict, and it passes the engine's own private-address check (`docs/SECURITY_REVIEW.md` S1).
+9. Layered verdict: reputation, URL, first page while the user waits; deep crawl and review in the background; a late finding revokes an allow (R19, `docs/ARCHITECTURE.md`).
+10. One score from signed points, then three levels: allow below 35, warn 35–69, block at 70 or above, in `config.py`, not in the logic (R24, R32).
+11. Models never block alone: the URL model only escalates to the page check, and a block needs a specific finding, so an empty shell with a scrambled script and two confident models stops at warn (demo site f, risk ~69).
+12. The official-domain registry is checked before any model; a verified official domain never goes above warn; every `*.gov.ae` and `*.mil.ae` host is trusted by a suffix rule because those zones are restricted to government entities.
+13. Re-investigate only on change: 64-bit SimHashes of text and DOM (same page within 6 bits, changed content at 16 or more), IP addresses, network, name servers and certificate, so known unchanged sites are not slowed down (R6–R8).
+14. Every block (risk ≥ 70) gets a second-opinion review that starts from the accusations and re-tests them, without re-crawling everything (R20).
+15. The review is asymmetric: lifting a block needs independent positive evidence from records the site cannot write; page content adds at most 2 points; a claim that could not be tested leaves the block standing; a blocklisted site is at most downgraded (`src/scamshield/review/data/policy.json`).
+16. The review cannot unblock on the model's word and cannot block again a site the facts cleared; prompt injection on 12 scam pages unblocked none (`docs/BENCHMARKS_REVIEW.md`, `docs/SECURITY_REVIEW.md`).
+17. A takeover claim is re-tested on what the site does today, whatever the domain's age: the measured review of the listings blocks showed the earlier reviewer weakening takeover blocks (`docs/BENCHMARKS_REVIEW.md`, rows "round 1").
+18. Language-model parts run on a small local model (Qwen3.5-9B on vLLM, the team's GPU), never on a paid API; without a model the review runs the same tools as a fixed checklist (R23).
+19. The local LLM is a tie-breaker and the review's writer, never the first-line classifier: alone it reached recall 0.487 at 5.3% FPR on 300 balanced pages, against 0.387 at 0% for `page_combo` (`docs/BENCHMARKS_PAGE.md`).
+20. Served URL model `url_ensemble_cpu`, not the slightly better `url_mmbert_ft`: 9.2 ms p50 on CPU against 67.6 ms on a GPU, and 0 flags on 15,669 official UAE URLs (R28, `docs/BENCHMARKS.md`).
+21. The page encoder runs as a separate GPU service behind a 1.2 s timeout and a circuit breaker, and receives extracted text, never raw HTML; without it the engine uses the CPU page model alone (`docs/BENCHMARKS_PAGE.md`).
+22. No hardcoding: no special case for demo sites, test sites or particular hostnames; brands, official domains, platforms, TLDs, lure words and the review policy live in data files (R32).
+23. Benchmarks score every system on the same rows with the input it was designed for; academic methods without released weights are recreated and trained on our rows, public models scored as released, thresholds picked on validation only, splits disjoint by registered domain (R26, R30, R31, `docs/BENCHMARK_PROTOCOL.md`).
+24. The demo sites use fictitious hostnames, checked to be unregistered when chosen, resolved only inside a private Docker network; the engine's private-address guard is opened for that one container address only (`docs/DEMO.md`).
+25. The demo's "legitimate site blocked, then cleared by the review" scenario was dropped: these hosts have no footprint on the internet, so an honest review cannot clear them, and staging it would mean rigging the reviewer (`docs/DEMO.md`).
+26. Android's captive-portal notification is not used: Android sends its connectivity probes outside the VPN, so the exit node cannot answer them (`docs/DEMO.md`; reasoned, not tried on the demo phone).
+27. The Abu Dhabi listings scan is published as aggregates only, because the listing file is private (`ml/results/listings_scan.json`).
+28. Accepted for the demo, and stated in the README: no API authentication, the evidence browser without Chromium's own sandbox, and a page with an explicit "note to the AI reviewer" keeps its block (`docs/SECURITY_REVIEW.md` S2, S9, S18).
+29. No separate product name: this is Mirsad's website shield, part of Mirsad (مرصاد), described by what it does; `mirsad-gateway/` is only the folder name, beside `mirsad-android/`. Documents follow the Mirsad Android README's structure.
+30. Internal identifiers keep the working name `scamshield` (Python package, CLI, `SCAMSHIELD_*` variables, container and tailnet names, `SS-` case references): renaming them would change code, result paths and the running demo on the submission night. The hackathon keeps its own name, the ScamShield AI Hackathon.
+31. The links to the portal are described as files (evidence packs, the Places directory format), because no portal code accepts gateway output yet; what is not connected is listed in README section 8.
+32. No rows from third-party datasets or from our scans in the repository: the Phishpedia-derived global brand list, the datasets, the recorded page snapshots and the per-URL rows of the benchmark results stay on the machine that made them; the repository ships our UAE registry, the trained model files and counts and metrics. The global brand list is optional, so without it only look-alikes of non-UAE brands lose name matching.

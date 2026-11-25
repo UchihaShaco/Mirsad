@@ -1,0 +1,29 @@
+{
+  "_comment": "Settings shared by every recreated URL method. The sampling caps and the threshold rule are the defaults of our own URL training (ml/url/train.py: --cap 100000, PhreshPhish x2.5, val cap/4 and PhreshPhish = cap, --target-fpr 0.002), so ours and the recreations are trained and thresholded identically. Nothing here was chosen by looking at a test set.",
+  "train_cap_per_source_label": 100000,
+  "train_cap_overrides": {"phreshphish": 250000},
+  "val_cap_per_source_label": 25000,
+  "val_cap_overrides": {"phreshphish": 100000},
+  "sample_seed": 0,
+  "target_val_fpr": 0.002,
+  "latency_urls": 300,
+  "latency_urls_bert_cpu": 100,
+  "gpu_max_gb": 10.0,
+  "linear_svc_train_rows": 1000000,
+  "grambeddings_ngram_selection_rows": 300000,
+  "published": {
+    "phreshphish_table4": {
+      "_source": "Dalton et al., PhreshPhish, arXiv 2507.10854 v2, Table 4 (URL + HTML input); keys are phishing base rates in %",
+      "Linear": {"ap": {"0.05": 0.2230, "0.10": 0.3191, "0.50": 0.5825, "1.0": 0.6841, "5.0": 0.8610, "24.0": 0.9551},
+                 "p_at_r90": {"0.05": 0.0149, "0.10": 0.0298, "0.50": 0.1223, "1.0": 0.2191, "5.0": 0.5950, "24.0": 0.8957}},
+      "FFN": {"ap": {"0.05": 0.2511, "0.10": 0.3368, "0.50": 0.5798, "1.0": 0.6813, "5.0": 0.8640, "24.0": 0.9607},
+              "p_at_r90": {"0.05": 0.0163, "0.10": 0.0316, "0.50": 0.1319, "1.0": 0.2339, "5.0": 0.6137, "24.0": 0.9045}},
+      "GTE": {"ap": {"0.05": 0.6050, "0.10": 0.6879, "0.50": 0.8354, "1.0": 0.8762, "5.0": 0.9382, "24.0": 0.9779},
+              "p_at_r90": {"0.05": 0.0891, "0.10": 0.1563, "0.50": 0.3736, "1.0": 0.5426, "5.0": 0.8576, "24.0": 0.9746}}
+    },
+    "grambeddings_accuracy": {
+      "_source": "Bozkir et al., GramBeddings, Computers & Security 2023, abstract: accuracy on the GramBeddings 800k dataset",
+      "GramBeddings": 0.9827
+    }
+  }
+}

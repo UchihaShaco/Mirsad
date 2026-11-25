@@ -52,6 +52,7 @@ import app.mirsad.core.contract.Incident
 import app.mirsad.core.contract.IncidentFilter
 import app.mirsad.core.contract.Level
 import app.mirsad.core.contract.Reason
+import app.mirsad.core.contract.ReasonCodes
 import app.mirsad.shield.AppContainer
 import app.mirsad.shield.BuildConfig
 import app.mirsad.shield.R
@@ -91,7 +92,11 @@ fun IncidentScreen(
     val incident = all?.firstOrNull { it.id == incidentId }
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
-    val restoredMessage = stringResource(R.string.restored_snackbar)
+    // The Known Scammer contact stands for every flagged number, so Not a scam never allows it (DefaultPipeline).
+    val restoredMessage = stringResource(
+        if (incident?.reasons?.any { it.code == ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT } == true) R.string.restored_snackbar_known_scammer
+        else R.string.restored_snackbar,
+    )
     val undoLabel = stringResource(R.string.action_undo)
     var working by remember { mutableStateOf(false) }
 

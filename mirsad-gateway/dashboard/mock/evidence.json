@@ -1,0 +1,56 @@
+[
+ {
+  "case_ref": "SS-A1F04C2E",
+  "verdict_ids": [
+   "a1f04c2e9b7d4e1f8a6b3c5d7e9f0a12"
+  ],
+  "host": "examp1e-bank-verify.com",
+  "url": "https://sho.rt.example/aB12",
+  "decision": "block",
+  "risk_score": 96.0,
+  "brand": "Example Bank",
+  "brand_ar": "بنك المثال",
+  "captured_at": "2026-11-24T17:18:28+00:00",
+  "built_at": "2026-11-24T17:18:28+00:00",
+  "live": true,
+  "engine_view": true,
+  "views_differ": false,
+  "thumbnail": true
+ },
+ {
+  "case_ref": "SS-1B2C3D4E",
+  "verdict_ids": [
+   "1b2c3d4e5f6a41728394a5b6c7d8e927"
+  ],
+  "host": "example-telecom-rewards.xyz",
+  "url": "https://example-telecom-rewards.xyz/",
+  "decision": "block",
+  "risk_score": 83.0,
+  "brand": "Example Telecom",
+  "brand_ar": "شركة اتصالات المثال",
+  "captured_at": "2026-11-24T17:04:40+00:00",
+  "built_at": "2026-11-24T17:04:40+00:00",
+  "live": true,
+  "engine_view": true,
+  "views_differ": true,
+  "thumbnail": true
+ },
+ {
+  "case_ref": "SS-B2C3D4E5",
+  "verdict_ids": [
+   "b2c3d4e5f6a74b8c9d0e1f2a3b4c5d61"
+  ],
+  "host": "roads-fine-payment-example.icu",
+  "url": "https://roads-fine-payment-example.icu/pay",
+  "decision": "block",
+  "risk_score": 92.0,
+  "brand": "Example Roads Authority",
+  "brand_ar": "هيئة الطرق المثال",
+  "captured_at": "2026-11-24T16:59:40+00:00",
+  "built_at": "2026-11-24T16:59:40+00:00",
+  "live": false,
+  "engine_view": true,
+  "views_differ": null,
+  "thumbnail": true
+ }
+]

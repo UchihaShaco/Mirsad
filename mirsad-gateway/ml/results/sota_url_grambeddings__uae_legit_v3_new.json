@@ -1,0 +1,30 @@
+{
+  "model": "sota_url_grambeddings",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 1,
+  "tn": 3673,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.00027218290691344586,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.9950540065765382,
+  "latency_ms_p50": 8.691839000675827,
+  "latency_ms_p95": 18.33889070167061,
+  "no_answer": 0,
+  "latency_note": "one CPU thread, one URL at a time, 300 urls_test URLs",
+  "latency_gpu_ms_p50": 16.608463500233484,
+  "latency_gpu_ms_p95": 58.48181070014107,
+  "precision_at_prevalence_1pct": 0.0,
+  "precision_at_prevalence_0.05pct": 0.0,
+  "note": "GramBeddings (char + 4/5/6-gram CNN-BiLSTM-attention), re-implemented in PyTorch from the official code, retrained on our 2,043,477 training URLs for 2.92 epochs (20 min); threshold at 0.2% val FPR. No released weights.",
+  "row_level_detail": {
+    "false_positives": 1
+  }
+}
