@@ -186,8 +186,11 @@ saying why, so no test data reaches a real police line. The channel details, and
 later version, are in `app/src/main/assets/report_channels.json`, marked *to be confirmed with the police team*.
 
 **Blocklist import.** Settings imports a JSON file of numbers, domains and fingerprints
-(`app/src/main/assets/blocklist_example.json`). This is how a police alert could reach phones without the app going
-online.
+(`app/src/main/assets/blocklist_example.json`). This is how a police alert reaches phones without the app going
+online: the Mirsad portal's **Export blocklist** writes a list signed with the portal's key. A list signed by a key in
+`app/src/main/assets/trusted_blocklist_keys.json` is shown as verified and replaces the previous list from that key,
+so a number the police cleared disappears; a tampered, expired or unknown-key list is refused. An unsigned file is a
+personal list. `scripts/trust_portal_key.sh` adds a portal's key before a build.
 
 Schema details: [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md).
 

@@ -1,4 +1,10 @@
 {
   "note": "Mirsad portal keys this build trusts for signed blocklists. Add one with scripts/trust_portal_key.sh.",
-  "keys": []
+  "keys": [
+    {
+      "keyId": "dc3cdb397c8b8be4",
+      "issuer": "Mirsad portal · Demo workspace",
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2st9NQX0rDhS4/GozHalwGNXsxyHGpTAUXAQiWXmp2R6cLjm9Hi+T2JDq7RyhRpdCImaiNEhaBiKu/riabKCfw=="
+    }
+  ]
 }
