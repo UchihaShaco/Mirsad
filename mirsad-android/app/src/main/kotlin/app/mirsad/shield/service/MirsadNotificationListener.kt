@@ -26,9 +26,16 @@ import kotlinx.coroutines.launch
 class MirsadNotificationListener : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    /** LRU of notification key + text hash so re-posted notifications are analysed once. */
-    private val seen = object : LinkedHashMap<String, Boolean>(64, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Boolean>?): Boolean = size > DEDUPE_SIZE
+    /**
+     * Notification key + text hash -> when it was last analysed and whether it was held. Apps re-post the same
+     * notification within seconds (sound, grouping, read state): a re-post is not analysed again, but if the message
+     * was held the re-posted notification is removed again. The same text arriving later is a new message and is
+     * analysed again, so a scam re-sent from the same number is held every time.
+     */
+    private class Seen(val at: Long, val held: Boolean)
+
+    private val seen = object : LinkedHashMap<String, Seen>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Seen>?): Boolean = size > DEDUPE_SIZE
     }
 
     override fun onListenerConnected() {
@@ -63,8 +70,13 @@ class MirsadNotificationListener : NotificationListenerService() {
         val container = MirsadApp.container(this)
         if (pkg !in container.settings.get().monitoredPackages && !isDefaultSmsApp(pkg)) return
         val dedupeKey = key + "|" + content.text.orEmpty().hashCode()
-        val duplicate = synchronized(seen) { seen.put(dedupeKey, true) != null }
-        if (duplicate) return
+        val now = System.currentTimeMillis()
+        val previous = synchronized(seen) { seen[dedupeKey]?.takeIf { now - it.at < DEDUPE_WINDOW_MS } }
+        if (previous != null) {
+            if (previous.held) runCatching { cancelNotification(key) }
+            return
+        }
+        synchronized(seen) { seen[dedupeKey] = Seen(now, held = false) }
 
         val sender = content.sender?.trim().orEmpty()
         val channel = if (isSmsApp(pkg)) Channel.SMS else Channel.CHAT
@@ -87,6 +99,7 @@ class MirsadNotificationListener : NotificationListenerService() {
         if (incident.level == Level.HOLD && !Notices.canPost(this)) {
             Log.w(TAG, "incident #${incident.id} held but notices are off: original notification kept")
         } else if (incident.level == Level.HOLD) {
+            synchronized(seen) { seen[dedupeKey] = Seen(now, held = true) }
             runCatching { cancelNotification(key) }
                 .onSuccess { Log.i(TAG, "removed notification $key for incident #${incident.id}") }
                 .onFailure { Log.w(TAG, "could not remove notification $key", it) }
@@ -123,6 +136,7 @@ class MirsadNotificationListener : NotificationListenerService() {
     private companion object {
         const val TAG = "MirsadListener"
         const val DEDUPE_SIZE = 200
+        const val DEDUPE_WINDOW_MS = 60_000L
         val SMS_PACKAGES = setOf(DefaultPackages.GOOGLE_MESSAGES, DefaultPackages.AOSP_MESSAGING, DefaultPackages.SAMSUNG_MESSAGES)
     }
 }

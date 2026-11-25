@@ -5,11 +5,13 @@ message is a scam, holds or flags it, explains why in Arabic or English, lets yo
 attempt into a structured evidence packet you can choose to send to the police. It is a hackathon prototype for the
 Abu Dhabi Police hackathon by the Mirsad team, not an official app, and it holds no internet permission.
 
-![Mirsad Android demo: a scam SMS is held, a wrongly held message is restored with one tap, a call from the scam number is rejected, the report preview](demo/mirsad-android-demo.gif)
+![Two phones receive the same scam SMS and the same scam call. Without Mirsad, the scam lands and the call rings; with Mirsad, the SMS is held with its reasons, the call is rejected before it rings, and the attempt becomes a police report](demo/mirsad-android-demo.gif)
 
-30-second video: [demo/mirsad-android-demo.mp4](demo/mirsad-android-demo.mp4). It was recorded on an Android 14 emulator
-from the APK in `dist/`: the SMS and the call are injected through the emulator and go through the real notification
-listener and call screening service.
+17-second live demo: [English captions](demo/mirsad-android-demo.mp4) · [Arabic captions](demo/mirsad-android-demo-ar.mp4)
+· voice-over script in [docs/VOICEOVER.md](docs/VOICEOVER.md). Two phones recorded at the same moment, in real time:
+the left one (Android 14) has no Mirsad, the right one (Android 16) runs the APK in `dist/`. Both receive the same
+scam SMS and then the same call, injected through the emulator; Mirsad's notification listener and call screening
+service do the rest.
 
 15-second explainer: [demo/mirsad-explainer-15s.mp4](demo/mirsad-explainer-15s.mp4). It was recorded on a real
 Android 15 phone, including a real scam call from a block-listed number rejected before it rang (the caller's
@@ -290,7 +292,8 @@ cp app/build/outputs/apk/debug/app-debug.apk dist/mirsad-android-debug.apk
   legitimate-message sets. Every app build runs it first, and the no-internet check before packaging and lint.
 - `./gradlew :core:trainModel` regenerates the synthetic data, evaluates, and writes `app/src/main/assets/model.bin`.
 - `scripts/` holds the emulator, permission, injection, screenshot and video scripts used for the media here
-  (`scripts/full_capture.sh` runs them all).
+  (`scripts/full_capture.sh` runs them all). The live demo: `scripts/record_action_demo.sh` records two emulators,
+  `scripts/make_action_video.py` puts them side by side.
 
 **Classifier evaluation (synthetic data only)**, from `data/evaluation.md`: 1,400 rows (700 scam, 700 legitimate;
 English, Arabic, Arabizi), 280 held out; precision 0.993, recall 1.000 at threshold 0.5. Variants of the same templates
