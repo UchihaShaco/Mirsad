@@ -7,6 +7,11 @@ and event stream that the reference dashboard uses.
 
 Mirsad supports a local fixture walkthrough and an approved live Telegram Business connection.
 
+This repository also holds two other parts of Mirsad, each with its own README:
+[Mirsad Android](mirsad-android/README.md), an on-device scam shield for SMS and calls, and Mirsad's
+[website shield](mirsad-gateway/README.md) at the internet provider, which investigates a website on its first visit and
+lets it load or blocks it. The rest of this document covers the portal.
+
 ## Run Mirsad on Windows
 
 ### Start the existing installation
@@ -152,17 +157,46 @@ matches, open **Evidence**. Under **Add merchant confirmation**, record a verifi
 A conflicting host raises **Suspected fraud**. Try it with `merchant-conflict.json` and the host
 `pay.merchant.example`.
 
+### Flagged websites on the Places map
+
+The **Places map** marks the listings whose website Mirsad's [website shield](mirsad-gateway/README.md) found unsafe.
+A business's domain lapses and someone else buys it, or the site is compromised: the map shows a pharmacy, the link
+opens a casino. A red diamond is a **Harmful website** (it leads to gambling or other harmful content, runs a
+data-theft script, or is on a public phishing feed), an amber square **Redirects elsewhere** (a re-registered name
+sending visitors to an unrelated site), a dashed circle is **Expired or parked** (no longer the business's website,
+and the next to be taken over). A **Low-confidence warning** (model scores, a young domain, a possible brand imitation)
+gets only a dotted ring and stays out of **Flagged websites**, the filter that lists the other three with a count of
+each. Flagged listings come first, so a busy view never hides them. Click a dot: the details say in plain words what
+was found, with the risk score, the reasons in English and Arabic, where the website now leads, when it was checked
+and the evidence reference (the pack is in the website shield's `data/evidence/`). A flagged listing's addresses are
+shown defanged (`hxxps://casino[.]example`), never as links.
+
+The checks come from a report file that the website shield writes from its stored verdicts
+(`mirsad-gateway/scripts/check_places_websites.py`, format `mirsad-places-website-checks/1`). The portal itself never
+visits the websites. Import the report after the portal has started once, so its database exists:
+
+```bash
+npm run places:import-checks -- --dry-run data/places/website-checks.json   # validate and count, write nothing
+npm run places:import-checks -- data/places/website-checks.json
+```
+
+The import checks the format, skips and names place ids that are not in the directory, and prints counts only.
+Importing again replaces each listing's earlier checks; listings the report does not cover keep theirs. A running
+portal shows the new flags on the next map refresh. `fixtures/places/website-checks-sample.json` is a synthetic report
+for the five sample listings.
+
 ## Commands
 
 | Command | What it does |
 |---|---|
 | `npm run demo` (or `npm start`) | Starts the service on loopback. Settings are read from `.env` (copy [.env.example](.env.example)) or the environment. |
 | `npm run officer:create -- <username>` | Creates a local password login for the existing live Telegram account. |
+| `npm run places:import-checks -- [--dry-run] <report.json>` | Imports a website checks report from the website shield, so the Places map flags listings whose website is harmful, redirects elsewhere or is parked. See [Flagged websites on the Places map](#flagged-websites-on-the-places-map). |
 | `npm run demo:credentials` | Prints the dashboard sign-in links for the configured data directory, plus the names of the variables the headless client and the replay script read. |
 | `npm run replay -- fixtures/telegram/<file>.json` | Posts a synthetic fixture to a running instance through `POST /v1/ingest`. It refuses a file that is not marked synthetic, or that holds a domain or phone number outside the reserved ranges. |
 | `npm test` | Unit, integration and contract tests (vitest). |
 | `npm run typecheck` | `tsc --noEmit`. |
-| `npm run test:e2e` | Dashboard end-to-end tests in the installed Microsoft Edge or Google Chrome (playwright-core; no browser download). |
+| `npm run test:e2e` | Dashboard end-to-end tests in the installed Microsoft Edge or Google Chrome, else a Chromium that Playwright already installed under `~/.cache/ms-playwright` (playwright-core; no browser download). |
 | `npm run demo:walkthrough -- --reviewer deterministic` | The clean-start walkthrough (below) with the offline reviewer. `--reviewer lmstudio` uses the local model; without `--reviewer` it uses the configured one (`MIRSAD_REVIEWER`, default `lmstudio`). `--keep` keeps the temporary data directory and prints its sign-in links. |
 | `npm run eval:model -- --set heldout --reviewer lmstudio` | Model evaluation on the held-out synthetic transcripts. Writes `docs/evaluation/heldout-lmstudio-latest.{md,json}`. Use `--set dev` for the tuning set and `--reviewer deterministic` for the rules baseline. |
 | `npm run eval:replies -- --set dev --out reply-report.json` | Replays synthetic conversations through local Qwen and the reply guard. Choose `dev` (41), `heldout` (15), `all` (the original 56), or `offers` (37). The JSON report records model attempts, retries, replies, silence and the criteria for each case. |
@@ -802,7 +836,12 @@ assets/fonts/               Noto fonts for captures (SIL Open Font License 1.1)
 docs/                       telegram/, evaluation/, deployment-notes.md, superpowers/ (brief, design notes, plan)
 tests/                      unit/, integration/, contract/, e2e/, helpers/
 openapi.yaml                the generated HTTP contract
+mirsad-android/             Mirsad Android, the on-device shield for SMS and calls (Kotlin; own README)
+mirsad-gateway/             Mirsad's website shield at the internet provider (Python; own README)
 ```
 
 All data in fixtures, tests, examples and documents is synthetic. Domains end in `.test` or use `example.*`. Phone
 numbers come only from the reserved fictional ranges `+44 7700 900000`–`900999` and `+1 <area> 555 0100`–`0199`.
+The exception is `mirsad-gateway/`: it ships a reference registry of the real official domains and phone numbers of UAE
+organisations (`mirsad-gateway/src/scamshield/intel/data/`) and names real public sites in a few tests as must-not-flag
+cases; its simulated demo sites use fictitious hostnames that resolve only inside the demo network.
