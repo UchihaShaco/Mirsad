@@ -1,0 +1,11 @@
+# The live-demo sequence for the phone simulator (docs/DEMO.md):
+#   docker compose --profile sim run --rm -e SIM_URLS_FILE=/demo/sim_demo.txt phone-sim
+http://oasisroastery.com/
+http://uae-trafficfines-pay.com/
+http://go2ae.link/r/fine
+http://epost-redelivery-ae.com/
+http://appupdate-cdn-ae.net/
+http://sandrosetours.com/
+# the deep crawl reaches the booking page in the background and revokes the allow
+sleep 30
+http://sandrosetours.com/

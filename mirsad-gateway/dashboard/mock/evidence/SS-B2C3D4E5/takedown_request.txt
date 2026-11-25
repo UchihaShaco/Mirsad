@@ -1,0 +1,3 @@
+Subject: Phishing report: roads-fine-payment-example[.]icu [case SS-B2C3D4E5]
+
+Sample takedown request (demo data). See the real engine for a complete text.

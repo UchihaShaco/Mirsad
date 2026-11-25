@@ -1,0 +1,12 @@
+{
+  "w_cpu": 0.34511479523293775,
+  "w_enc": 0.5755924347442087,
+  "w_abstain": 0.9154984423134027,
+  "b": 0.8189609265374802,
+  "encoder": "page_gte_ft_v2",
+  "encoder_checkpoint": "ml/artifacts/page_encoder_v2",
+  "n_val": 18636,
+  "n_val_live_legit": 484,
+  "threshold": 0.955481749796998,
+  "threshold_rule": "<= 0.5% of legitimate validation pages (incl. engine-fetched live pages)"
+}

@@ -1,0 +1,21 @@
+{
+  "model": "page_gte_ft_v2",
+  "dataset": "live_legit_test",
+  "n": 516,
+  "tp": 0,
+  "fp": 1,
+  "tn": 515,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.001937984496124031,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.9623913168907167,
+  "latency_ms_p50": 433.09746049817477,
+  "latency_ms_p95": 541.9227688989849,
+  "latency_note": "encoder alone on the GPU (bf16), batch 1, tokenisation included, 200 pages, GPU shared with training"
+}

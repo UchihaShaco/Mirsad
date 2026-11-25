@@ -1,0 +1,8 @@
+# Sites the phone-sim service opens, in order. Override with SIM_URLS_FILE.
+https://www.adpolice.gov.ae/
+https://www.example.com/
+http://example.org/
+https://en.wikipedia.org/wiki/Phishing
+https://adpolice-fines-payment.com/
+http://uaepass-verify-account.net/login
+https://tamm-abudhabi-refund.info/

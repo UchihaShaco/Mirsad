@@ -1,0 +1,30 @@
+{
+  "name": "page_combo",
+  "version": "page-combo-3",
+  "trained_at": "2026-11-24T19:17:05+00:00",
+  "threshold": 0.9695954669238083,
+  "n_train": 68465,
+  "n_val": 18636,
+  "metrics": {
+    "val": {
+      "text_lr": {
+        "model": "text_lr",
+        "roc_auc": 0.9557079962432117,
+        "pr_auc": 0.9470666476515586,
+        "C": 16.0
+      },
+      "struct_lgbm": {
+        "model": "struct_lgbm",
+        "roc_auc": 0.9509762760520313,
+        "pr_auc": 0.9430335004448678,
+        "rounds": 84
+      },
+      "combo": {
+        "model": "combo",
+        "roc_auc": 0.9774291605100753,
+        "pr_auc": 0.9745665282977675,
+        "rounds": 120
+      }
+    }
+  }
+}

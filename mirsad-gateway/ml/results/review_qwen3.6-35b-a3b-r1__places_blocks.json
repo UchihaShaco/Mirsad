@@ -1,0 +1,423 @@
+{
+ "tag": "qwen3.6-35b-a3b (round 1)",
+ "dataset": "places_blocks",
+ "summary": {
+  "n": 43,
+  "false_positives": {
+   "n": 43,
+   "cleared_to_allow": 21,
+   "downgraded_to_warn": 13,
+   "still_blocked": 9
+  },
+  "true_positives": {
+   "n": 0,
+   "kept_blocked": 0,
+   "wrongly_warned": 0,
+   "wrongly_allowed": 0
+  },
+  "transitions": {
+   "legitimate (false positive) | block": {
+    "overturned -> allow": 21,
+    "confirmed -> block": 3,
+    "downgraded -> warn": 13,
+    "inconclusive -> block": 6
+   }
+  },
+  "seconds_p50": 11.2,
+  "seconds_max": 19.6,
+  "arabic_ok_rate": 1.0,
+  "errors": 0,
+  "models": {
+   "openai-compatible:scamshield-review": 43
+  }
+ },
+ "rows": [
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 14.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 19.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 10.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 10.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 13.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 10.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 11.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 15.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 8.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.95,
+   "seconds": 6.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.85,
+   "seconds": 14.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 4.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.85,
+   "seconds": 9.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.85,
+   "seconds": 13.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 14.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 6.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 6.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 16.8,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 13.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.8,
+   "seconds": 12.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 12.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.75,
+   "seconds": 17.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 11.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.95,
+   "seconds": 11.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.9,
+   "seconds": 11.9,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 9.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 9.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 6.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 10.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 4.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 8.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 14.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 14.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.85,
+   "seconds": 7.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.9,
+   "seconds": 10.1,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 15.2,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 12.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 13.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 11.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 9.5,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "downgraded",
+   "after": "warn",
+   "confidence": 0.9,
+   "seconds": 10.7,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 9.4,
+   "arabic_ok": true
+  },
+  {
+   "label": 0,
+   "before": "block",
+   "outcome": "overturned",
+   "after": "allow",
+   "confidence": 0.95,
+   "seconds": 11.9,
+   "arabic_ok": true
+  }
+ ]
+}

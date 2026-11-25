@@ -1,0 +1,143 @@
+# Mirsad (مرصاد) website shield: simulated ISP. `docker compose up -d --build` starts engine, watcher and gateway;
+# `docker compose restart engine watcher` runs the current src/ (mounted); rebuild only when dependencies change;
+# `docker compose --profile sim run --rm phone-sim` replays a browsing session without a phone.
+# Project, service, image and volume names keep "scamshield": the running stack restarts with its existing state.
+name: scamshield
+
+x-engine-env: &engine-env
+  SCAMSHIELD_ENGINE_URL: http://engine:8000
+  # A model server on the host is reached as host.docker.internal, e.g. http://host.docker.internal:8001/v1
+  SCAMSHIELD_LLM_BASE_URL: ${SCAMSHIELD_LLM_BASE_URL:-}
+  SCAMSHIELD_LLM_MODEL: ${SCAMSHIELD_LLM_MODEL:-}
+  # Fine-tuned page encoder on the host GPU (ml/serve/page_encoder_server.py); empty = CPU page model only.
+  SCAMSHIELD_PAGE_ENCODER_URL: ${SCAMSHIELD_PAGE_ENCODER_URL:-}
+  SCAMSHIELD_REVIEW_PROVIDER: ${SCAMSHIELD_REVIEW_PROVIDER:-auto}
+  # The engine refuses private addresses; this opens exactly one: the demo-sites container below.
+  SCAMSHIELD_ALLOW_NETWORKS: 172.30.77.10/32
+  # .env is shared with the gateway; the tunnel key must not reach the containers that parse hostile pages.
+  TS_AUTHKEY: ""
+
+x-engine-image: &engine-image
+  build: .
+  image: scamshield-engine:local
+  env_file:
+    - path: .env
+      required: false
+  environment: *engine-env
+  networks: [default, demo]
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  # Hostile pages are parsed here and rendered by headless Chromium (without its own sandbox when run as
+  # root): nothing in the container may gain privileges through setuid binaries.
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - ./data:/app/data
+    # Live source: other components change daily, `docker compose restart engine watcher` picks it up.
+    - ./src:/app/src:ro
+    - ./dashboard:/app/dashboard:ro
+    - ./ml/artifacts:/app/ml/artifacts:ro
+    - ./ml/results:/app/ml/results:ro
+    - ./docs:/app/docs:ro
+  restart: unless-stopped
+
+services:
+  engine:
+    <<: *engine-image
+    ports:
+      - "${SCAMSHIELD_API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  watcher:
+    <<: *engine-image
+    command: ["python", "-m", "scamshield.watch", "run"]
+    depends_on:
+      - engine
+
+  gateway:
+    build: ./gateway
+    image: scamshield-gateway:local
+    hostname: scamshield-isp
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      GATEWAY_MODE: ${GATEWAY_MODE:-tailscale}
+      SCAMSHIELD_ENGINE_URL: http://engine:8000
+      SCAMSHIELD_INTERCEPT: ${SCAMSHIELD_INTERCEPT:-0}
+      SCAMSHIELD_HOLD_S: ${SCAMSHIELD_HOLD_S:-8}
+      SCAMSHIELD_ON_TIMEOUT: ${SCAMSHIELD_ON_TIMEOUT:-block}
+      SCAMSHIELD_PASSTHROUGH: demo.test,${SCAMSHIELD_PASSTHROUGH:-}
+    networks: [default, demo]
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv4.conf.all.src_valid_mark: "1"
+      net.ipv6.conf.all.forwarding: "1"
+    volumes:
+      - ./gateway/state:/var/lib/scamshield
+    ports:
+      - "127.0.0.1:${SCAMSHIELD_PROXY_PORT:-8081}:8081"
+      - "${SCAMSHIELD_WG_PORT:-51820}:51820/udp"
+    depends_on:
+      - engine
+    restart: unless-stopped
+
+  phone-sim:
+    image: scamshield-gateway:local
+    profiles: ["sim"]
+    entrypoint: ["python", "/app/phone_sim.py"]
+    environment:
+      SIM_PROXY: http://gateway:8081
+      SIM_CA: /var/lib/scamshield/mitmproxy/mitmproxy-ca-cert.pem
+    volumes:
+      - ./gateway/state:/var/lib/scamshield:ro
+      - ./demo:/demo:ro
+    depends_on:
+      - gateway
+
+  # Simulated scam and clean sites for the live demo (docs/DEMO.md). No published ports: reachable only
+  # on the private demo network, by the names below, from the gateway (and so the phone) and the engine.
+  demo-sites:
+    image: scamshield-engine:local
+    profiles: ["demo"]
+    command: ["python", "/app/demo/sites.py", "--ca", "/ca/lab-ca.pem"]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      SCAMSHIELD_INTERCEPT: ${SCAMSHIELD_INTERCEPT:-0}
+    volumes:
+      - ./demo:/app/demo:ro
+      - ./tests/fixtures:/app/tests/fixtures:ro
+      - ./gateway/state/lab-ca:/ca:ro
+    networks:
+      demo:
+        ipv4_address: 172.30.77.10
+        aliases:
+          - demo.test
+          - oasisroastery.com
+          - uae-trafficfines-pay.com
+          - go2ae.link
+          - sandrosetours.com
+          - epost-redelivery-ae.com
+          - appupdate-cdn-ae.net
+          - secure-collect-pay.net
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+networks:
+  demo:
+    ipam:
+      config:
+        - subnet: 172.30.77.0/24
+          ip_range: 172.30.77.128/25

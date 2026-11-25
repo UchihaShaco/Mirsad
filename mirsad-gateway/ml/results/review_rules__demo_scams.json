@@ -1,0 +1,70 @@
+{
+ "tag": "rules",
+ "dataset": "demo_scams",
+ "summary": {
+  "n": 4,
+  "false_positives": {
+   "n": 0,
+   "cleared_to_allow": 0,
+   "downgraded_to_warn": 0,
+   "still_blocked": 0
+  },
+  "true_positives": {
+   "n": 4,
+   "kept_blocked": 4,
+   "wrongly_warned": 0,
+   "wrongly_allowed": 0
+  },
+  "transitions": {
+   "scam (true positive) | block": {
+    "confirmed -> block": 3,
+    "inconclusive -> block": 1
+   }
+  },
+  "seconds_p50": 7.3,
+  "seconds_max": 8.3,
+  "arabic_ok_rate": 1.0,
+  "errors": 0,
+  "models": {
+   "rules": 4
+  }
+ },
+ "rows": [
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.82,
+   "seconds": 6.0,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.82,
+   "seconds": 8.3,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "confirmed",
+   "after": "block",
+   "confidence": 0.82,
+   "seconds": 6.6,
+   "arabic_ok": true
+  },
+  {
+   "label": 1,
+   "before": "block",
+   "outcome": "inconclusive",
+   "after": "block",
+   "confidence": 0.5,
+   "seconds": 8.1,
+   "arabic_ok": true
+  }
+ ]
+}

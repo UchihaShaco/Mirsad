@@ -1,0 +1,101 @@
+{
+ "case_ref": "SS-B2C3D4E5",
+ "verdict_id": "b2c3d4e5f6a74b8c9d0e1f2a3b4c5d61",
+ "url": "https://roads-fine-payment-example.icu/pay",
+ "final_url": "https://roads-fine-payment-example.icu/pay",
+ "host": "roads-fine-payment-example.icu",
+ "registered_domain": "roads-fine-payment-example.icu",
+ "decision": "block",
+ "risk_score": 92.0,
+ "brand": "Example Roads Authority",
+ "brand_ar": "هيئة الطرق المثال",
+ "official_domains": [
+  "exampleroadsauthority.example"
+ ],
+ "detected_at": {
+  "utc": "2026-11-24T16:59:00+00:00",
+  "gst": "2026-11-24T20:59:00+04:00"
+ },
+ "captured_at": {
+  "utc": "2026-11-24T16:59:40+00:00",
+  "gst": "2026-11-24T20:59:40+04:00"
+ },
+ "built_at": {
+  "utc": "2026-11-24T16:59:46+00:00",
+  "gst": "2026-11-24T20:59:46+04:00"
+ },
+ "screenshots": {
+  "live": {
+   "file": null,
+   "error": "net::ERR_NAME_NOT_RESOLVED (site already taken down)",
+   "final_url": "https://roads-fine-payment-example.icu/pay",
+   "title": null,
+   "user_agent": null
+  },
+  "engine": {
+   "file": "screenshot_engine.png",
+   "error": null
+  }
+ },
+ "views": {
+  "compared": false,
+  "differs": null,
+  "similarity": null,
+  "notes": []
+ },
+ "registration": {
+  "registrar": "Example Budget Registrar",
+  "registrar_iana_id": "9999",
+  "created": "2026-11-23T17:30:00Z",
+  "age_days": 1,
+  "registrant": null,
+  "registrant_country": "CN",
+  "nameservers": [
+   "ns1.example-parking.net",
+   "ns2.example-parking.net"
+  ],
+  "source": "rdap"
+ },
+ "hosting": {
+  "ips": [
+   "192.0.2.44"
+  ],
+  "asn": 64511,
+  "network": "Example Cloud Pte Ltd",
+  "country": "SG"
+ },
+ "tls": {
+  "issuer": "Example Free CA R3",
+  "not_before": null,
+  "not_after": null,
+  "sha256": null
+ },
+ "abuse_contacts": {
+  "registrar": [
+   "abuse@registrar.example"
+  ],
+  "hosting": [
+   "abuse@hosting.example"
+  ]
+ },
+ "files": [
+  {
+   "name": "screenshot_engine.png",
+   "sha256": "df397fccd88176b78c57f2558c303e4f41e17c71f5ac0edc6965ae7c6de41776",
+   "bytes": 61762
+  },
+  {
+   "name": "capture.html",
+   "sha256": "88ce47dbb735d4f60653bb8599680b5b9d65762dec9ffc767aaff4c8aa268fea",
+   "bytes": 1038
+  },
+  {
+   "name": "takedown_request.txt",
+   "sha256": "eccd56dd0a1e50092d483314e72314f0ab2067789231e2a27d2ebda0cc2a31e6",
+   "bytes": 157
+  }
+ ],
+ "unavailable": {
+  "screenshot.png": "net::ERR_NAME_NOT_RESOLVED (site already taken down)"
+ }
+}

@@ -1,0 +1,22 @@
+{
+  "model": "majority_class",
+  "dataset": "urls_test_noshort",
+  "n": 393190,
+  "tp": 196014,
+  "fp": 197176,
+  "tn": 0,
+  "fn": 0,
+  "precision": 0.49852234288766245,
+  "recall": 1.0,
+  "f1": 0.6653518984935608,
+  "fpr": 1.0,
+  "roc_auc": 0.5,
+  "pr_auc": 0.49852234288766245,
+  "recall_at_fpr_0.1pct": 0.0,
+  "recall_at_fpr_1pct": 0.0,
+  "threshold": 0.5,
+  "latency_ms_p50": 6.299887900240719e-05,
+  "latency_ms_p95": 0.00011999873095192015,
+  "no_answer": 0,
+  "note": "always predicts the training-set majority class (scam)"
+}

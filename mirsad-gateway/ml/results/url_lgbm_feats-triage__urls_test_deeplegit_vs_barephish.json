@@ -1,0 +1,22 @@
+{
+  "model": "url_lgbm_feats@triage",
+  "dataset": "urls_test_deeplegit_vs_barephish",
+  "n": 243136,
+  "tp": 66558,
+  "fp": 413,
+  "tn": 121315,
+  "fn": 54850,
+  "precision": 0.99383315166266,
+  "recall": 0.5482175803900896,
+  "f1": 0.7066392750784323,
+  "fpr": 0.003392810199789695,
+  "roc_auc": 0.9742059209000283,
+  "pr_auc": 0.9715130180272531,
+  "recall_at_fpr_0.1pct": 0.42203973379019505,
+  "recall_at_fpr_1pct": 0.6636136004217185,
+  "threshold": 0.8897672375933247,
+  "latency_ms_p50": 0.372338499801117,
+  "latency_ms_p95": 0.8935535504861035,
+  "no_answer": 0,
+  "note": "triage operating point: threshold set for 1% FPR on validation; URLs above it are escalated to the page check, not blocked"
+}

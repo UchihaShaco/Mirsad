@@ -1,0 +1,22 @@
+{
+  "model": "majority_class",
+  "dataset": "urls_test_deeplegit_vs_barephish",
+  "n": 243136,
+  "tp": 121408,
+  "fp": 121728,
+  "tn": 0,
+  "fn": 0,
+  "precision": 0.4993419320873914,
+  "recall": 1.0,
+  "f1": 0.6660814606741573,
+  "fpr": 1.0,
+  "roc_auc": 0.5,
+  "pr_auc": 0.4993419320873914,
+  "recall_at_fpr_0.1pct": 0.0,
+  "recall_at_fpr_1pct": 0.0,
+  "threshold": 0.5,
+  "latency_ms_p50": 6.299887900240719e-05,
+  "latency_ms_p95": 8.300048648379743e-05,
+  "no_answer": 0,
+  "note": "always predicts the training-set majority class (scam)"
+}

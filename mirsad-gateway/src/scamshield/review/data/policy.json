@@ -1,0 +1,42 @@
+{
+  "_about": "Decision thresholds and evidence weights of the second-opinion review (src/scamshield/review/policy.py). Override the whole file with SCAMSHIELD_REVIEW_POLICY=<path>.",
+
+  "_history_about": "Days of independently recorded history: registration record, first certificate in certificate transparency, first capture in the Internet Archive. The longest record counts.",
+  "history": {
+    "young_days": 90,
+    "steps": [[1825, 3], [730, 2], [365, 1]]
+  },
+
+  "_points_about": "Positive evidence of legitimacy. External points come from records the site cannot write itself; page points come from the site's own pages and are capped, so a copied site cannot clear itself.",
+  "points": {
+    "ownership": 4,
+    "top_sites": 1,
+    "identity_matches_domain": 1,
+    "coherent_site": 1,
+    "local_contact": 0.5,
+    "site_platform": 0.5
+  },
+  "page_points_cap": 2,
+  "top_sites_max_rank": 1000000,
+
+  "_outcomes_about": "Overturn (allow) and downgrade (warn) need both a total and a minimum of external points. Overturn needs proven ownership, five years of history, or two years plus a top-sites rank: an aged domain alone can be bought. Without a standing accusation and with no sensitive data collected, a site whose identity matches its domain may be downgraded on page evidence alone.",
+  "overturn": {"min_points": 4, "min_external_points": 3},
+  "downgrade": {"min_points": 2.5, "min_external_points": 1},
+  "benign_downgrade": {"requires_identity_match": true, "min_points": 1},
+
+  "_blocklist_about": "A blocklist hit is only softened, never cleared: a long-established genuine business listed on a feed is most likely a past compromise.",
+  "blocklisted": {"downgrade_min_points": 5, "downgrade_min_external_points": 3},
+
+  "_providers_about": "A form posting to another host is the site's own business when the host is a known form / payment / booking service (intel services.business_form_hosts), a popular domain in the top-sites list, or an account named after the site on a ranked provider.",
+  "provider_max_rank": 100000,
+  "provider_account_max_rank": 1000000,
+
+  "_soft_about": "Engine reasons that are weak on their own (model scores, address features, certificates, pressure words, scrambled or protective scripts). Any other reason without a dedicated test leaves the block in place unless refuted.",
+  "soft_reason_prefixes": ["model.", "url.", "tls.", "domain.known", "domain.popular", "page.urgency", "page.obfuscated_scripts",
+                           "page.browser_lock", "page.visitor_profiling", "page.empty_shell", "page.cross_domain_redirect",
+                           "page.client_side_redirect", "page.long_redirect_chain", "page.payment_lure", "page.sign_in_title"],
+
+  "_judge_about": "An LLM judge may only move the rule outcome towards caution, and never from a cleared site back to a block on its own word (policy.bound).",
+  "_ownership_about": "Wikidata and the DuckDuckGo panel can be edited by anyone. They prove ownership only together with a second source of another kind (the other panel, the top-sites list), or when the Wikidata item has at least this many Wikipedia articles. The brand registry and the allowlist are curated and count alone.",
+  "ownership_min_sitelinks": 2
+}

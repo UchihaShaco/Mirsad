@@ -1,0 +1,28 @@
+{
+  "model": "hf_ealvaradob_bert_large",
+  "dataset": "uae_legit_v3_new",
+  "n": 3674,
+  "tp": 0,
+  "fp": 274,
+  "tn": 3400,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.07457811649428416,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.5,
+  "latency_ms_p50": 379.7884415016597,
+  "latency_ms_p95": 862.8814119996606,
+  "no_answer": 0,
+  "note": "ealvaradob/bert-finetuned-phishing, BERT-large 335M, trained on ealvaradob/phishing-dataset; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)",
+  "latency_gpu_ms_p50": 7.978470501257107,
+  "latency_gpu_ms_p95": 10.68792395126366,
+  "latency_source": "cpu",
+  "row_level_detail": {
+    "false_positives": 200
+  }
+}

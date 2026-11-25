@@ -1,0 +1,24 @@
+{
+  "_about": "Official domains that are not in brands.json. Each was checked on 24 Nov 2026 (live site plus nameservers shared with the owner's other domains, or .ae WHOIS registrant). Subdomains inherit the entry. Every *.gov.ae and *.mil.ae host is allowlisted by suffix rule because those zones are restricted to UAE government entities.",
+  "suffix_rules": {
+    "gov.ae": "UAE Government (.gov.ae)",
+    "mil.ae": "UAE Armed Forces (.mil.ae)"
+  },
+  "domains": {
+    "dubai.ae": "Government of Dubai",
+    "digitaldubai.ae": "Digital Dubai",
+    "smartdubai.ae": "Digital Dubai",
+    "abudhabi.ae": "Abu Dhabi Government",
+    "sharjah.ae": "Government of Sharjah",
+    "ajman.ae": "Government of Ajman",
+    "rak.ae": "Government of Ras Al Khaimah",
+    "ded.ae": "Dubai Department of Economy and Tourism",
+    "visitdubai.com": "Dubai Department of Economy and Tourism",
+    "visitabudhabi.ae": "Abu Dhabi Department of Culture and Tourism",
+    "adgm.com": "Abu Dhabi Global Market",
+    "difc.ae": "Dubai International Financial Centre",
+    "expocitydubai.com": "Expo City Dubai",
+    "dubaichamber.com": "Dubai Chambers",
+    "emaar.com": "Emaar Properties"
+  }
+}

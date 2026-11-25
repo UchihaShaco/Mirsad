@@ -1,0 +1,25 @@
+{
+  "model": "hf_pirocheto_tfidf_svm",
+  "dataset": "uae_legit",
+  "n": 15669,
+  "tp": 0,
+  "fp": 3058,
+  "tn": 12611,
+  "fn": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "fpr": 0.19516242261790798,
+  "roc_auc": null,
+  "pr_auc": null,
+  "recall_at_fpr_0.1pct": null,
+  "recall_at_fpr_1pct": null,
+  "threshold": 0.5,
+  "latency_ms_p50": 2.166977501474321,
+  "latency_ms_p95": 3.3980701520704324,
+  "no_answer": 0,
+  "note": "pirocheto/phishing-url-detection ONNX (TF-IDF + linear SVM), trained on pirocheto/phishing-url",
+  "row_level_detail": {
+    "false_positives": 200
+  }
+}

@@ -1,0 +1,810 @@
+{
+  "generated_at": "2026-11-25 02:50 +0400",
+  "hardware": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700K",
+    "logical_cores": 24,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+    "os": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "note": "load average during the run: about 2 (no other jobs)"
+  },
+  "concurrency": 1,
+  "pages": 95,
+  "timeout_s": 20.0,
+  "categories": [
+    "arabic",
+    "bank",
+    "government",
+    "js_app",
+    "news"
+  ],
+  "published": [
+    [
+      "Phishpedia (USENIX Sec '21)",
+      "screenshot + URL",
+      "0.19 s + 1.88 s screenshot",
+      "GPU; logo detector + Siamese matcher",
+      "Lin et al. 2021, Table 2"
+    ],
+    [
+      "EMD / PhishZoo (as compared in Phishpedia)",
+      "screenshot",
+      "15-27 s",
+      "",
+      "Lin et al. 2021"
+    ],
+    [
+      "KnowPhish Detector + KnowPhish KB (USENIX Sec '24)",
+      "screenshot + HTML text + LLM",
+      "2.02 s (1.6-2 s)",
+      "GPT-3.5 brand extraction",
+      "Li et al. 2024, arXiv 2403.02253"
+    ],
+    [
+      "Phishpedia with KnowPhish KB",
+      "screenshot + URL",
+      "0.22 s",
+      "",
+      "arXiv 2403.02253"
+    ],
+    [
+      "DynaPhish (USENIX Sec '23)",
+      "screenshot + web search",
+      "10.9 s (5.8 s in PhishLLM's setup)",
+      "",
+      "arXiv 2403.02253; PhishLLM paper"
+    ],
+    [
+      "PhishLLM / PhishVLM (USENIX Sec '24)",
+      "screenshot + OCR + LLM + search",
+      "3.2 s",
+      "GPT-3.5; $6.14 per 1k sites",
+      "Liu et al. 2024"
+    ],
+    [
+      "GEPAgent",
+      "agentic GPT-4V",
+      "~20 s",
+      "",
+      "arXiv 2408.01667"
+    ],
+    [
+      "SLM judge: mistral-nemo 12B",
+      "HTML (5%) + URL",
+      "1.79 s",
+      "A100, Ollama",
+      "arXiv 2511.15434"
+    ],
+    [
+      "SLM judge: gemma3 4B / 12B / 27B",
+      "HTML (5%) + URL",
+      "1.97 / 3.55 / 7.08 s",
+      "A100, Ollama",
+      "arXiv 2511.15434"
+    ],
+    [
+      "SLM judge: llama3.3 70B",
+      "HTML (5%) + URL",
+      "7.73 s",
+      "A100, Ollama",
+      "arXiv 2511.15434"
+    ],
+    [
+      "SLM judge: deepseek-r1 70B",
+      "HTML (5%) + URL",
+      "23.3 s",
+      "A100, Ollama",
+      "arXiv 2511.15434"
+    ],
+    [
+      "CrawlPhish cloaking detection (S&P '21)",
+      "forced JS execution",
+      "~46 screenshots per site",
+      "",
+      "Zhang et al. 2021"
+    ]
+  ],
+  "engine": {
+    "row_level_detail": {
+      "pass1": 95,
+      "pass2": 95
+    }
+  },
+  "llm": {
+    "model": "scamshield-llm",
+    "endpoint": "http://localhost:8001/v1",
+    "errors": 0,
+    "n": 30,
+    "p50_ms": 359.0431700031331,
+    "p95_ms": 426.9506262986397
+  },
+  "models": [
+    {
+      "model": "hf_ealvaradob_bert_large",
+      "dataset": "urls_test",
+      "p50_ms": 379.7884415016597,
+      "p95_ms": 862.8814119996606,
+      "note": "ealvaradob/bert-finetuned-phishing, BERT-large 335M, trained on ealvaradob/phishing-dataset; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)"
+    },
+    {
+      "model": "hf_horizon_mmbert_scam",
+      "dataset": "pages_test",
+      "p50_ms": 1947.3261134990025,
+      "p95_ms": 2602.731147498525,
+      "note": ""
+    },
+    {
+      "model": "hf_horizon_scam_text",
+      "dataset": "urls_test",
+      "p50_ms": 88.57627950055758,
+      "p95_ms": 174.67275785293177,
+      "note": "Horizon-Labs/phishing-scam-detector-base, mmBERT 307M message-text model (fraud/spam/legit) applied to the URL string; P(scam)=P(fraud). Off-domain reference; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)"
+    },
+    {
+      "model": "hf_huynq3_mbert_webpage",
+      "dataset": "pages_test",
+      "p50_ms": 875.0564040001336,
+      "p95_ms": 1171.2938630487768,
+      "note": ""
+    },
+    {
+      "model": "hf_kmack_distilbert",
+      "dataset": "urls_test",
+      "p50_ms": 38.99090699815133,
+      "p95_ms": 71.81717649891654,
+      "note": "kmack/malicious-url-detection, DistilBERT 66M, trained on kmack/Phishing_urls; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)"
+    },
+    {
+      "model": "hf_pirocheto_tfidf_svm",
+      "dataset": "urls_test",
+      "p50_ms": 1.889336499516503,
+      "p95_ms": 3.547464151779425,
+      "note": "pirocheto/phishing-url-detection ONNX (TF-IDF + linear SVM), trained on pirocheto/phishing-url; random sample of 50000 rows"
+    },
+    {
+      "model": "hf_urlbert_tiny_v4",
+      "dataset": "urls_test",
+      "p50_ms": 4.536532498605084,
+      "p95_ms": 7.590201198217982,
+      "note": "CrabInHoney/urlbert-tiny-v4-phishing-classifier, 3.7M params, trained on ealvaradob/phishing-dataset; scored on all rows on cuda; latency columns = CPU single URL, one thread (GPU single-URL latency in latency_gpu_ms_*)"
+    },
+    {
+      "model": "keyword_baseline",
+      "dataset": "pages_test",
+      "p50_ms": 6.241885501367506,
+      "p95_ms": 20.420127248689823,
+      "note": ""
+    },
+    {
+      "model": "llm_judge_qwen3.5-9b",
+      "dataset": "llm_sample_arabic",
+      "p50_ms": 5736.908697999752,
+      "p95_ms": 8004.68833700288,
+      "note": ""
+    },
+    {
+      "model": "llm_judge_qwen3.5-9b_signals",
+      "dataset": "llm_sample_arabic",
+      "p50_ms": 4398.776802001521,
+      "p95_ms": 7719.319078999977,
+      "note": ""
+    },
+    {
+      "model": "page_combo",
+      "dataset": "pages_test",
+      "p50_ms": 19.627437999588437,
+      "p95_ms": 43.633122000755975,
+      "note": ""
+    },
+    {
+      "model": "page_combo_no_abstain",
+      "dataset": "pages_test",
+      "p50_ms": 15.30081000055361,
+      "p95_ms": 38.64606299939627,
+      "note": ""
+    },
+    {
+      "model": "page_gte_ft_v2",
+      "dataset": "pages_test",
+      "p50_ms": 433.09746049817477,
+      "p95_ms": 541.9227688989849,
+      "note": ""
+    },
+    {
+      "model": "page_served",
+      "dataset": "pages_test",
+      "p50_ms": 90.440326002863,
+      "p95_ms": 152.99460199821624,
+      "note": ""
+    },
+    {
+      "model": "page_struct_lgbm",
+      "dataset": "pages_test",
+      "p50_ms": 6.335344500257634,
+      "p95_ms": 23.26734039961594,
+      "note": ""
+    },
+    {
+      "model": "page_text_lr",
+      "dataset": "pages_test",
+      "p50_ms": 13.246114500361728,
+      "p95_ms": 36.74185605050301,
+      "note": ""
+    },
+    {
+      "model": "rules_baseline",
+      "dataset": "pages_test",
+      "p50_ms": 6.032279999999446,
+      "p95_ms": 21.98386084819504,
+      "note": ""
+    },
+    {
+      "model": "sota_page_chatphishdetector_text",
+      "dataset": "llm_arabic",
+      "p50_ms": 8710.178971999994,
+      "p95_ms": 27258.123454997985,
+      "note": ""
+    },
+    {
+      "model": "sota_page_knowphish_kpd_imgtext",
+      "dataset": "llm_trop",
+      "p50_ms": 1495.4011419995368,
+      "p95_ms": 2937.636273096904,
+      "note": ""
+    },
+    {
+      "model": "sota_page_knowphish_kpd_text",
+      "dataset": "llm_arabic",
+      "p50_ms": 1306.5398769977037,
+      "p95_ms": 2256.5315179999743,
+      "note": ""
+    },
+    {
+      "model": "sota_page_ours_page_combo",
+      "dataset": "llm_arabic",
+      "p50_ms": 14.219985998352058,
+      "p95_ms": 30.545543999323854,
+      "note": ""
+    },
+    {
+      "model": "sota_page_ours_page_gte_ft",
+      "dataset": "llm_arabic",
+      "p50_ms": 151.77737699923455,
+      "p95_ms": 188.4380602008605,
+      "note": ""
+    },
+    {
+      "model": "sota_page_phishintention",
+      "dataset": "trop",
+      "p50_ms": 499.2603575010435,
+      "p95_ms": 2196.7281663004537,
+      "note": ""
+    },
+    {
+      "model": "sota_page_phishllm_text",
+      "dataset": "llm_arabic",
+      "p50_ms": 1432.7033890003804,
+      "p95_ms": 2190.5630150031357,
+      "note": ""
+    },
+    {
+      "model": "sota_page_phishpedia",
+      "dataset": "trop",
+      "p50_ms": 335.53304099950765,
+      "p95_ms": 645.2478781997343,
+      "note": ""
+    },
+    {
+      "model": "sota_page_phreshphish_llm",
+      "dataset": "llm_arabic",
+      "p50_ms": 3737.026820999745,
+      "p95_ms": 4807.24931900113,
+      "note": ""
+    },
+    {
+      "model": "sota_url_grambeddings",
+      "dataset": "urls_test",
+      "p50_ms": 8.691839000675827,
+      "p95_ms": 18.33889070167061,
+      "note": "GramBeddings (char + 4/5/6-gram CNN-BiLSTM-attention), re-implemented in PyTorch from the official code, retrained on our 2,043,477 training URLs for 2.92 epochs (20 min); threshold at 0.2% val FPR. No released weights."
+    },
+    {
+      "model": "sota_url_phreshphish_linear",
+      "dataset": "urls_test",
+      "p50_ms": 0.24101050075842068,
+      "p95_ms": 0.3823801980615827,
+      "note": "PhreshPhish Linear baseline (URL-only: char 2-4-grams + hand-crafted URL features, LinearSVC), re-implemented from the paper, trained on a 1M-row subsample of our training rows; threshold at 0.2% val FPR. Paper has no released weights."
+    },
+    {
+      "model": "sota_url_urlbert_ft",
+      "dataset": "urls_test",
+      "p50_ms": 51.68298549870087,
+      "p95_ms": 103.82019954868156,
+      "note": "URLBERT: authors' released URL-pre-trained BERT-base, fine-tuned with their phishing recipe on our 2,043,477 training URLs for 0.35 epochs (20 min, bf16); threshold at 0.2% val FPR. CPU latency on 100 URLs (fp32)."
+    },
+    {
+      "model": "sota_url_urlnet",
+      "dataset": "urls_test",
+      "p50_ms": 4.774708999320865,
+      "p95_ms": 13.43894944966451,
+      "note": "URLNet (char + char-level word CNN, emb_mode 5), re-implemented in PyTorch from the official code, retrained on our 2,043,477 training URLs for 2.00 epochs (22 min, batch 256); threshold at 0.2% val FPR. No released weights."
+    },
+    {
+      "model": "url_ensemble",
+      "dataset": "urls_test",
+      "p50_ms": 96.38834199904522,
+      "p95_ms": 123.80531524795515,
+      "note": "w=0.65 * stack + 0.35 * transformer (logit average), threshold at the stack's validation FPR; transformer on GPU"
+    },
+    {
+      "model": "url_ensemble_cpu",
+      "dataset": "urls_test",
+      "p50_ms": 9.16835899988655,
+      "p95_ms": 20.339185648845145,
+      "note": "random sample of 10000 rows (10k-row sample of urls_test)"
+    },
+    {
+      "model": "url_lgbm_feats",
+      "dataset": "urls_test",
+      "p50_ms": 0.3757129979931051,
+      "p95_ms": 0.9388814500198346,
+      "note": ""
+    },
+    {
+      "model": "url_mmbert_ft",
+      "dataset": "urls_test",
+      "p50_ms": 67.60847050099983,
+      "p95_ms": 112.21081874991793,
+      "note": "jhu-clsp/mmBERT-small fine-tuned on URLs, GPU (bf16); latency is single-URL on GPU"
+    },
+    {
+      "model": "url_stack",
+      "dataset": "urls_test",
+      "p50_ms": 0.7200939999165712,
+      "p95_ms": 2.6138496981729986,
+      "note": ""
+    },
+    {
+      "model": "url_tfidf_lr",
+      "dataset": "urls_test",
+      "p50_ms": 0.2072870011033956,
+      "p95_ms": 0.4308365527322166,
+      "note": ""
+    }
+  ],
+  "summary": {
+    "engine_pass1": {
+      "errors": 0,
+      "client_wall": {
+        "n": 95,
+        "p50_ms": 4.538638000667561,
+        "p95_ms": 2310.418091602332
+      },
+      "phases": {
+        "layer 0 reputation": {
+          "n": 95,
+          "p50_ms": 0.34,
+          "p95_ms": 2.0789999999999993
+        },
+        "URL model": {
+          "n": 34,
+          "p50_ms": 8.625,
+          "p95_ms": 23.489999999999984
+        },
+        "layer 1 URL (model + domain intel + look-alike)": {
+          "n": 34,
+          "p50_ms": 14.665,
+          "p95_ms": 353.5475
+        },
+        "fetch page (+ redirects, static JS scan)": {
+          "n": 17,
+          "p50_ms": 1924.94,
+          "p95_ms": 2291.798
+        },
+        "page model": {
+          "n": 16,
+          "p50_ms": 47.295,
+          "p95_ms": 113.58500000000001
+        },
+        "brand match on page": {
+          "n": 17,
+          "p50_ms": 0.54,
+          "p95_ms": 38.32599999999998
+        },
+        "first verdict (layer 2 done)": {
+          "n": 17,
+          "p50_ms": 2054.69,
+          "p95_ms": 2472.0979999999995
+        },
+        "total in engine": {
+          "n": 95,
+          "p50_ms": 1.23,
+          "p95_ms": 2297.352
+        }
+      },
+      "cache_hit": {
+        "n": 3,
+        "p50_ms": 0.83,
+        "p95_ms": 1.19
+      },
+      "all_keys": {
+        "fetch_page": {
+          "n": 17,
+          "p50_ms": 1924.94,
+          "p95_ms": 2291.798
+        },
+        "intel.assess_domain": {
+          "n": 17,
+          "p50_ms": 0.71,
+          "p95_ms": 590.9819999999991
+        },
+        "intel.assess_domain_fast": {
+          "n": 34,
+          "p50_ms": 1.565,
+          "p95_ms": 319.94499999999994
+        },
+        "intel.assess_domain_final": {
+          "n": 1,
+          "p50_ms": 0.39,
+          "p95_ms": 0.39
+        },
+        "intel.match_brand_page": {
+          "n": 17,
+          "p50_ms": 0.54,
+          "p95_ms": 38.32599999999998
+        },
+        "intel.match_brand_url": {
+          "n": 34,
+          "p50_ms": 0.42,
+          "p95_ms": 7.1144999999999605
+        },
+        "intel.reputation": {
+          "n": 95,
+          "p50_ms": 0.26,
+          "p95_ms": 0.8859999999999988
+        },
+        "layer0_cache_hit": {
+          "n": 3,
+          "p50_ms": 0.83,
+          "p95_ms": 1.19
+        },
+        "layer0_reputation": {
+          "n": 95,
+          "p50_ms": 0.34,
+          "p95_ms": 2.0789999999999993
+        },
+        "layer1_url": {
+          "n": 34,
+          "p50_ms": 14.665,
+          "p95_ms": 353.5475
+        },
+        "layer2_page": {
+          "n": 17,
+          "p50_ms": 2054.69,
+          "p95_ms": 2472.0979999999995
+        },
+        "models.score_page": {
+          "n": 16,
+          "p50_ms": 47.295,
+          "p95_ms": 113.58500000000001
+        },
+        "models.score_url": {
+          "n": 34,
+          "p50_ms": 8.625,
+          "p95_ms": 23.489999999999984
+        },
+        "models.score_url_final": {
+          "n": 1,
+          "p50_ms": 11.97,
+          "p95_ms": 11.97
+        },
+        "total": {
+          "n": 95,
+          "p50_ms": 1.23,
+          "p95_ms": 2297.352
+        }
+      },
+      "stage_counts": {
+        "page": 17,
+        "reputation": 61,
+        "url": 17
+      },
+      "decision_counts": {
+        "allow": 95
+      },
+      "by_stage": {
+        "page": {
+          "n": 17,
+          "p50_ms": 2143.4610779979266,
+          "p95_ms": 2564.101383203524
+        },
+        "reputation": {
+          "n": 61,
+          "p50_ms": 3.420764005568344,
+          "p95_ms": 11.028308996174019
+        },
+        "url": {
+          "n": 17,
+          "p50_ms": 275.71565399557585,
+          "p95_ms": 461.77127900009503
+        }
+      },
+      "by_category": {
+        "arabic": {
+          "n": 15,
+          "p50_ms": 2003.8570619944949,
+          "p95_ms": 2575.013563498942
+        },
+        "bank": {
+          "n": 15,
+          "p50_ms": 3.386650001630187,
+          "p95_ms": 3.906400201958604
+        },
+        "government": {
+          "n": 20,
+          "p50_ms": 3.4842479981307406,
+          "p95_ms": 6.789548602682775
+        },
+        "js_app": {
+          "n": 30,
+          "p50_ms": 3.88849850060069,
+          "p95_ms": 346.2374862014256
+        },
+        "news": {
+          "n": 15,
+          "p50_ms": 276.7417189970729,
+          "p95_ms": 2439.8346161040536
+        }
+      }
+    },
+    "engine_pass2": {
+      "errors": 0,
+      "client_wall": {
+        "n": 95,
+        "p50_ms": 3.044664998014923,
+        "p95_ms": 74.40616919993765
+      },
+      "phases": {
+        "layer 0 reputation": {
+          "n": 95,
+          "p50_ms": 0.32,
+          "p95_ms": 2.6209999999999964
+        },
+        "URL model": {
+          "n": 34,
+          "p50_ms": 8.625,
+          "p95_ms": 23.489999999999984
+        },
+        "layer 1 URL (model + domain intel + look-alike)": {
+          "n": 34,
+          "p50_ms": 14.665,
+          "p95_ms": 353.5475
+        },
+        "fetch page (+ redirects, static JS scan)": {
+          "n": 17,
+          "p50_ms": 1924.94,
+          "p95_ms": 2291.798
+        },
+        "page model": {
+          "n": 16,
+          "p50_ms": 47.295,
+          "p95_ms": 113.58500000000001
+        },
+        "brand match on page": {
+          "n": 17,
+          "p50_ms": 0.54,
+          "p95_ms": 38.32599999999998
+        },
+        "first verdict (layer 2 done)": {
+          "n": 17,
+          "p50_ms": 2054.69,
+          "p95_ms": 2472.0979999999995
+        },
+        "total in engine": {
+          "n": 95,
+          "p50_ms": 1.12,
+          "p95_ms": 2297.352
+        }
+      },
+      "cache_hit": {
+        "n": 34,
+        "p50_ms": 1.5350000000000001,
+        "p95_ms": 81.92249999999999
+      },
+      "all_keys": {
+        "fetch_page": {
+          "n": 17,
+          "p50_ms": 1924.94,
+          "p95_ms": 2291.798
+        },
+        "intel.assess_domain": {
+          "n": 17,
+          "p50_ms": 0.71,
+          "p95_ms": 590.9819999999991
+        },
+        "intel.assess_domain_fast": {
+          "n": 34,
+          "p50_ms": 1.565,
+          "p95_ms": 319.94499999999994
+        },
+        "intel.assess_domain_final": {
+          "n": 1,
+          "p50_ms": 0.39,
+          "p95_ms": 0.39
+        },
+        "intel.match_brand_deep": {
+          "n": 9,
+          "p50_ms": 0.9,
+          "p95_ms": 40.41999999999998
+        },
+        "intel.match_brand_page": {
+          "n": 17,
+          "p50_ms": 0.54,
+          "p95_ms": 38.32599999999998
+        },
+        "intel.match_brand_url": {
+          "n": 34,
+          "p50_ms": 0.42,
+          "p95_ms": 7.1144999999999605
+        },
+        "intel.reputation": {
+          "n": 95,
+          "p50_ms": 0.25,
+          "p95_ms": 1.222999999999999
+        },
+        "layer0_cache_hit": {
+          "n": 34,
+          "p50_ms": 1.5350000000000001,
+          "p95_ms": 81.92249999999999
+        },
+        "layer0_reputation": {
+          "n": 95,
+          "p50_ms": 0.32,
+          "p95_ms": 2.6209999999999964
+        },
+        "layer1_url": {
+          "n": 34,
+          "p50_ms": 14.665,
+          "p95_ms": 353.5475
+        },
+        "layer2_page": {
+          "n": 17,
+          "p50_ms": 2054.69,
+          "p95_ms": 2472.0979999999995
+        },
+        "layer3_deep": {
+          "n": 10,
+          "p50_ms": 18243.345,
+          "p95_ms": 22629.0485
+        },
+        "models.score_page": {
+          "n": 16,
+          "p50_ms": 47.295,
+          "p95_ms": 113.58500000000001
+        },
+        "models.score_url": {
+          "n": 34,
+          "p50_ms": 8.625,
+          "p95_ms": 23.489999999999984
+        },
+        "models.score_url_final": {
+          "n": 1,
+          "p50_ms": 11.97,
+          "p95_ms": 11.97
+        },
+        "total": {
+          "n": 95,
+          "p50_ms": 1.12,
+          "p95_ms": 2297.352
+        }
+      },
+      "stage_counts": {
+        "deep": 10,
+        "page": 7,
+        "reputation": 61,
+        "url": 17
+      },
+      "decision_counts": {
+        "allow": 95
+      },
+      "by_stage": {
+        "deep": {
+          "n": 10,
+          "p50_ms": 3.7725040019722655,
+          "p95_ms": 8.07776005203777
+        },
+        "page": {
+          "n": 7,
+          "p50_ms": 4.45030700211646,
+          "p95_ms": 10.054705297807226
+        },
+        "reputation": {
+          "n": 61,
+          "p50_ms": 3.0001760023878887,
+          "p95_ms": 23.039984997012652
+        },
+        "url": {
+          "n": 17,
+          "p50_ms": 2.8300140038481914,
+          "p95_ms": 173.2274189955205
+        }
+      },
+      "by_category": {
+        "arabic": {
+          "n": 15,
+          "p50_ms": 3.72783300554147,
+          "p95_ms": 6.923553696833542
+        },
+        "bank": {
+          "n": 15,
+          "p50_ms": 2.7505319958436303,
+          "p95_ms": 3.6260778993892013
+        },
+        "government": {
+          "n": 20,
+          "p50_ms": 2.9484674996638205,
+          "p95_ms": 10.35486810360454
+        },
+        "js_app": {
+          "n": 30,
+          "p50_ms": 3.4431215026415884,
+          "p95_ms": 80.65699524995568
+        },
+        "news": {
+          "n": 15,
+          "p50_ms": 4.3580419951467775,
+          "p95_ms": 181.47155849583206
+        }
+      }
+    },
+    "browser": {
+      "errors": 7,
+      "load": {
+        "n": 88,
+        "p50_ms": 2421.6257615007635,
+        "p95_ms": 6777.772800800085
+      },
+      "networkidle": {
+        "n": 88,
+        "p50_ms": 5753.751739499421,
+        "p95_ms": 20000.0
+      },
+      "networkidle_timeouts": 24,
+      "timeout_s": 20.0,
+      "parse_html": {
+        "n": 88,
+        "p50_ms": 5.602868495770963,
+        "p95_ms": 24.396800304384662
+      },
+      "by_category": {
+        "arabic": {
+          "n": 14,
+          "p50_ms": 13384.263004001696,
+          "p95_ms": 20000.0
+        },
+        "bank": {
+          "n": 15,
+          "p50_ms": 6171.935773003497,
+          "p95_ms": 20000.0
+        },
+        "government": {
+          "n": 20,
+          "p50_ms": 4400.429668497964,
+          "p95_ms": 8917.752111652235
+        },
+        "js_app": {
+          "n": 25,
+          "p50_ms": 6238.482437998755,
+          "p95_ms": 20000.0
+        },
+        "news": {
+          "n": 14,
+          "p50_ms": 5461.011442002928,
+          "p95_ms": 20476.32071270091
+        }
+      }
+    }
+  },
+  "row_level_detail": {
+    "browser": 95
+  }
+}

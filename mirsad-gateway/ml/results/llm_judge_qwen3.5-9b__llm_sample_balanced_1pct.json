@@ -1,0 +1,22 @@
+{
+  "model": "llm_judge_qwen3.5-9b",
+  "dataset": "llm_sample_balanced_1pct",
+  "n": 152,
+  "tp": 0.75,
+  "fp": 8.0,
+  "tn": 142.0,
+  "fn": 1.25,
+  "precision": 0.08111111111111112,
+  "recall": 0.375,
+  "f1": 0.1333333333333333,
+  "fpr": 0.05333333333333333,
+  "roc_auc": 0.7456666666666669,
+  "pr_auc": 0.0865916731483882,
+  "recall_at_fpr_0.1pct": 0.0,
+  "recall_at_fpr_1pct": 0.0,
+  "threshold": 0.5,
+  "latency_ms_p50": 5736.908697999752,
+  "latency_ms_p95": 8004.688337002879,
+  "base_rate": 0.01,
+  "draws": 20
+}

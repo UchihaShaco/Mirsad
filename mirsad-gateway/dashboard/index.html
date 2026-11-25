@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Mirsad</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="icon.svg" alt="" width="32" height="32">
+    <div>
+      <div class="brand-line"><span class="brand-name">Mirsad</span><span class="brand-arabic" lang="ar" dir="rtl">مرصاد</span></div>
+      <div class="brand-sub" data-i18n="console"></div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="live" aria-selected="true" data-i18n="tab_live"></button>
+    <button role="tab" data-tab="hosts" data-i18n="tab_hosts"></button>
+    <button role="tab" data-tab="evidence" data-i18n="tab_evidence"></button>
+    <button role="tab" data-tab="campaigns" data-i18n="tab_campaigns"></button>
+    <button role="tab" data-tab="bench" data-i18n="tab_bench" hidden></button>
+  </nav>
+  <div class="tools">
+    <span id="conn" class="conn" data-state="connecting"><span class="dot"></span><span class="label"></span></span>
+    <button id="lang" class="tool" type="button" aria-label="Language"></button>
+    <button id="theme" class="tool" type="button" aria-label="Theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+    </button>
+  </div>
+</header>
+
+<section class="stats" id="stats" aria-label="Statistics"></section>
+
+<main>
+  <section class="view" id="view-live">
+    <div class="col-left">
+      <form id="check" class="panel check" autocomplete="off">
+        <label for="check-url" class="panel-title" data-i18n="check_title"></label>
+        <div class="check-row">
+          <input id="check-url" type="text" inputmode="url" spellcheck="false" dir="auto" data-i18n-placeholder="check_placeholder">
+          <button type="submit" class="primary" data-i18n="check_button"></button>
+        </div>
+        <div id="check-msg" class="hint" role="status"></div>
+        <ol id="recent-checks" class="recent-checks"></ol>
+      </form>
+      <div class="panel early">
+        <div class="panel-title"><span data-i18n="early_title"></span><span class="tag" id="early-mode"></span></div>
+        <ol id="early" class="early-list"></ol>
+        <div id="early-foot" class="early-foot"></div>
+      </div>
+      <div class="panel feed-panel">
+        <div class="panel-title"><span data-i18n="feed_title"></span><span class="pulse" aria-hidden="true"></span></div>
+        <ol id="feed" class="feed" aria-live="polite"></ol>
+      </div>
+    </div>
+    <div class="col-right">
+      <article id="detail" class="panel detail" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <section class="view" id="view-hosts" hidden>
+    <div class="hosts-layout">
+      <div class="panel hosts-panel">
+        <div class="hosts-tools">
+          <div class="panel-title" data-i18n="hosts_title"></div>
+          <input id="hosts-q" type="search" dir="auto" spellcheck="false" data-i18n-placeholder="hosts_search">
+          <span id="hosts-count" class="tag"></span>
+        </div>
+        <div id="hosts-filters" class="fchips" role="group"></div>
+        <div class="table-wrap"><table id="hosts-table" class="hosts"></table></div>
+      </div>
+      <aside id="host-panel" class="panel host-panel" aria-live="polite" hidden></aside>
+    </div>
+  </section>
+
+  <section class="view" id="view-evidence" hidden>
+    <div class="panel">
+      <div class="hosts-tools">
+        <div class="panel-title" data-i18n="ev_tab_title"></div>
+        <input id="ev-q" type="search" dir="auto" spellcheck="false" data-i18n-placeholder="ev_search">
+        <span id="ev-count" class="tag"></span>
+      </div>
+      <div id="ev-grid" class="ev-grid"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-campaigns" hidden>
+    <div class="campaigns">
+      <div class="panel camp-list-panel">
+        <div class="panel-title" data-i18n="campaigns_title"></div>
+        <div id="camp-toggle" class="camp-toggle"></div>
+        <ol id="camp-list" class="camp-list"></ol>
+      </div>
+      <div class="panel graph-panel">
+        <div class="panel-title"><span id="graph-title" data-i18n="graph_title"></span></div>
+        <div class="graph-wrap">
+          <div id="graph" class="graph"></div>
+          <div id="camp-side" class="camp-side"></div>
+        </div>
+        <div class="legend">
+          <span><i class="sw block"></i><span data-i18n="d_block"></span></span>
+          <span><i class="sw warn"></i><span data-i18n="d_warn"></span></span>
+          <span><i class="sw allow"></i><span data-i18n="d_allow"></span></span>
+          <span class="muted" data-i18n="graph_hint"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-bench" hidden>
+    <div class="panel"><div id="bench" class="bench"></div></div>
+  </section>
+</main>
+
+<script src="i18n.js"></script>
+<script src="mock.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -26,6 +26,7 @@
     "telegram:readiness": "tsx scripts/telegram-readiness.ts",
     "telegram:provision": "tsx scripts/telegram-provision.ts",
     "officer:create": "tsx scripts/officer-create.ts",
+    "places:import-checks": "tsx scripts/import-website-checks.ts",
     "demo:walkthrough": "tsx scripts/demo-walkthrough.ts",
     "demo:credentials": "tsx scripts/demo-credentials.ts"
   },

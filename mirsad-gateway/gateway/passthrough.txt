@@ -1,0 +1,52 @@
+# Hosts the gateway never holds, investigates or intercepts. A pattern matches the host itself and
+# every subdomain. Add more with SCAMSHIELD_PASSTHROUGH=a.com,b.com (the engine's own host is added
+# automatically).
+
+# Tailscale control plane, relays and logging: the tunnel itself must never wait on us.
+tailscale.com
+tailscale.io
+ts.net
+
+# OS connectivity and captive-portal checks
+connectivitycheck.gstatic.com
+connectivitycheck.android.com
+clients3.google.com
+clients4.google.com
+captive.apple.com
+www.msftconnecttest.com
+detectportal.firefox.com
+nmcheck.gnome.org
+
+# Push notifications, OS updates, app stores and time
+mtalk.google.com
+android.googleapis.com
+play.googleapis.com
+fcm.googleapis.com
+firebaseinstallations.googleapis.com
+gstatic.com
+gvt1.com
+gvt2.com
+push.apple.com
+apple.com
+icloud.com
+mzstatic.com
+time.android.com
+ntp.org
+
+# Apps that pin certificates or are high-volume, well-known platforms
+whatsapp.com
+whatsapp.net
+facebook.com
+fbcdn.net
+instagram.com
+cdninstagram.com
+messenger.com
+telegram.org
+signal.org
+snapchat.com
+tiktokcdn.com
+googlevideo.com
+youtube.com
+ytimg.com
+microsoft.com
+windowsupdate.com

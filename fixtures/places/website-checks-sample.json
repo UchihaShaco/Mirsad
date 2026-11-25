@@ -1,0 +1,497 @@
+{
+  "format": "mirsad-places-website-checks/1",
+  "generator": "mirsad-gateway/scripts/check_places_websites.py",
+  "generated_at": "2026-11-24T09:05:00Z",
+  "source": {
+    "places_file": "fixtures/places/abu-dhabi-sample.json",
+    "places_sha256": "synthetic",
+    "mode": "synthetic",
+    "engine": null,
+    "verdict_db": null,
+    "limit": null
+  },
+  "engine_version": "synthetic",
+  "counts": {
+    "harmful_redirect": 1,
+    "data_theft": 0,
+    "feed_listed": 0,
+    "brand_mismatch": 0,
+    "unrelated_redirect": 1,
+    "parked": 2,
+    "other_warning": 1,
+    "none": 1,
+    "not_checked": 0
+  },
+  "summary": {
+    "listings": 6,
+    "synthetic": true
+  },
+  "categories": {
+    "harmful_redirect": {
+      "en": "Leads to gambling, adult or pill content: the business's domain was taken over or compromised",
+      "ar": "يقود إلى محتوى قمار أو محتوى إباحي أو أدوية مشبوهة: نطاق النشاط التجاري مُستولى عليه أو مخترق"
+    },
+    "data_theft": {
+      "en": "Data-theft or wallet-draining script on the website",
+      "ar": "سكربت لسرقة البيانات أو المحافظ الرقمية على الموقع"
+    },
+    "feed_listed": {
+      "en": "Listed on a public phishing feed",
+      "ar": "مدرج في قائمة عامة لمواقع التصيّد الاحتيالي"
+    },
+    "brand_mismatch": {
+      "en": "Imitates a registered brand",
+      "ar": "ينتحل صفة علامة تجارية مسجّلة"
+    },
+    "unrelated_redirect": {
+      "en": "Re-registered name redirecting to an unrelated site",
+      "ar": "اسم نطاق أُعيد تسجيله ويحوّل إلى موقع لا علاقة له بالنشاط"
+    },
+    "parked": {
+      "en": "Domain expired or parked for sale: not the business's website any more",
+      "ar": "النطاق منتهي الصلاحية أو معروض للبيع: لم يعد موقع النشاط التجاري"
+    },
+    "other_warning": {
+      "en": "Other warning: model scores, a risky domain ending, a site builder or a young domain",
+      "ar": "تحذير آخر: تقييم النماذج أو امتداد نطاق عالي الخطورة أو منصة إنشاء مواقع أو نطاق حديث"
+    },
+    "none": {
+      "en": "No finding",
+      "ar": "لا توجد ملاحظات"
+    },
+    "not_checked": {
+      "en": "Not checked",
+      "ar": "لم يُفحص"
+    }
+  },
+  "records": [
+    {
+      "place_id": "2ca3aec0-e67f-4199-99f4-a98ef0cefb79",
+      "name": "Synthetic listing one",
+      "name_ar": null,
+      "place_category": "beauty_supply_store",
+      "lat": 24.488819,
+      "lng": 54.608689,
+      "website": "https://lapsed-shop.example/",
+      "host": "lapsed-shop.example",
+      "decision": "block",
+      "risk_score": 94.0,
+      "category": "harmful_redirect",
+      "finding_en": "Leads to gambling, adult or pill content: the business's domain was taken over or compromised",
+      "finding_ar": "يقود إلى محتوى قمار أو محتوى إباحي أو أدوية مشبوهة: نطاق النشاط التجاري مُستولى عليه أو مخترق",
+      "reasons_en": [
+        "Redirects to an online gambling site",
+        "The page offers online betting",
+        "A business domain now serves unrelated content"
+      ],
+      "reasons_ar": [
+        "يحوّل إلى موقع قمار على الإنترنت",
+        "الصفحة تعرض المراهنات على الإنترنت",
+        "نطاق تجاري يعرض الآن محتوى لا علاقة له به"
+      ],
+      "reasons": [
+        {
+          "code": "page.harmful_redirect",
+          "en": "Redirects to an online gambling site",
+          "ar": "يحوّل إلى موقع قمار على الإنترنت"
+        },
+        {
+          "code": "page.gambling",
+          "en": "The page offers online betting",
+          "ar": "الصفحة تعرض المراهنات على الإنترنت"
+        },
+        {
+          "code": "rule.takeover_block",
+          "en": "A business domain now serves unrelated content",
+          "ar": "نطاق تجاري يعرض الآن محتوى لا علاقة له به"
+        }
+      ],
+      "summary_en": "Blocked: this site now leads to online gambling.",
+      "summary_ar": "محظور: هذا الموقع يقود الآن إلى القمار.",
+      "final_url": "https://win-big-casino.test/landing?ref=lapsed",
+      "evidence_ref": "SS-0A1B2C3D",
+      "verdict_id": "0a1b2c3d-0000-4000-8000-000000000001",
+      "checked_at": "2026-11-24T09:01:12.120000Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/lapsed-shop.example",
+      "websites": [
+        {
+          "website": "https://lapsed-shop.example/",
+          "host": "lapsed-shop.example",
+          "decision": "block",
+          "risk_score": 94.0,
+          "category": "harmful_redirect",
+          "finding_en": "Leads to gambling, adult or pill content: the business's domain was taken over or compromised",
+          "finding_ar": "يقود إلى محتوى قمار أو محتوى إباحي أو أدوية مشبوهة: نطاق النشاط التجاري مُستولى عليه أو مخترق",
+          "reasons_en": [
+            "Redirects to an online gambling site",
+            "The page offers online betting",
+            "A business domain now serves unrelated content"
+          ],
+          "reasons_ar": [
+            "يحوّل إلى موقع قمار على الإنترنت",
+            "الصفحة تعرض المراهنات على الإنترنت",
+            "نطاق تجاري يعرض الآن محتوى لا علاقة له به"
+          ],
+          "reasons": [
+            {
+              "code": "page.harmful_redirect",
+              "en": "Redirects to an online gambling site",
+              "ar": "يحوّل إلى موقع قمار على الإنترنت"
+            },
+            {
+              "code": "page.gambling",
+              "en": "The page offers online betting",
+              "ar": "الصفحة تعرض المراهنات على الإنترنت"
+            },
+            {
+              "code": "rule.takeover_block",
+              "en": "A business domain now serves unrelated content",
+              "ar": "نطاق تجاري يعرض الآن محتوى لا علاقة له به"
+            }
+          ],
+          "summary_en": "Blocked: this site now leads to online gambling.",
+          "summary_ar": "محظور: هذا الموقع يقود الآن إلى القمار.",
+          "final_url": "https://win-big-casino.test/landing?ref=lapsed",
+          "evidence_ref": "SS-0A1B2C3D",
+          "verdict_id": "0a1b2c3d-0000-4000-8000-000000000001",
+          "checked_at": "2026-11-24T09:01:12.120000Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    },
+    {
+      "place_id": "c2e77fb3-9236-46d0-9d0a-d14cacee4001",
+      "name": "Synthetic listing two",
+      "name_ar": null,
+      "place_category": "pest_control_service",
+      "lat": 24.451425,
+      "lng": 54.642122,
+      "website": "https://closed-service.example/",
+      "host": "closed-service.example",
+      "decision": "warn",
+      "risk_score": 58.0,
+      "category": "parked",
+      "finding_en": "Domain expired or parked for sale: not the business's website any more",
+      "finding_ar": "النطاق منتهي الصلاحية أو معروض للبيع: لم يعد موقع النشاط التجاري",
+      "reasons_en": [
+        "The domain is parked and offered for sale"
+      ],
+      "reasons_ar": [
+        "النطاق متوقف ومعروض للبيع"
+      ],
+      "reasons": [
+        {
+          "code": "page.parked",
+          "en": "The domain is parked and offered for sale",
+          "ar": "النطاق متوقف ومعروض للبيع"
+        }
+      ],
+      "summary_en": "",
+      "summary_ar": "",
+      "final_url": "https://domain-market.test/buy/closed-service.example",
+      "evidence_ref": "SS-1B2C3D4E",
+      "verdict_id": "1b2c3d4e-0000-4000-8000-000000000002",
+      "checked_at": "2026-11-24T09:02:30Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/closed-service.example",
+      "websites": [
+        {
+          "website": "https://closed-service.example/",
+          "host": "closed-service.example",
+          "decision": "warn",
+          "risk_score": 58.0,
+          "category": "parked",
+          "finding_en": "Domain expired or parked for sale: not the business's website any more",
+          "finding_ar": "النطاق منتهي الصلاحية أو معروض للبيع: لم يعد موقع النشاط التجاري",
+          "reasons_en": [
+            "The domain is parked and offered for sale"
+          ],
+          "reasons_ar": [
+            "النطاق متوقف ومعروض للبيع"
+          ],
+          "reasons": [
+            {
+              "code": "page.parked",
+              "en": "The domain is parked and offered for sale",
+              "ar": "النطاق متوقف ومعروض للبيع"
+            }
+          ],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": "https://domain-market.test/buy/closed-service.example",
+          "evidence_ref": "SS-1B2C3D4E",
+          "verdict_id": "1b2c3d4e-0000-4000-8000-000000000002",
+          "checked_at": "2026-11-24T09:02:30Z",
+          "engine_version": "synthetic",
+          "error": null
+        },
+        {
+          "website": "https://closed-service.example/about",
+          "host": "closed-service.example",
+          "decision": "allow",
+          "risk_score": 12.0,
+          "category": "none",
+          "finding_en": "No finding",
+          "finding_ar": "لا توجد ملاحظات",
+          "reasons_en": [],
+          "reasons_ar": [],
+          "reasons": [],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": "https://closed-service.example/about",
+          "evidence_ref": null,
+          "verdict_id": "1b2c3d4e-0000-4000-8000-000000000003",
+          "checked_at": "2026-11-24T09:02:31Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    },
+    {
+      "place_id": "051caae6-ac27-4026-9575-80745afd0c18",
+      "name": "Synthetic listing three",
+      "name_ar": null,
+      "place_category": "clothing_store",
+      "lat": 24.5012497,
+      "lng": 54.38852051,
+      "website": "https://new-owner.example/",
+      "host": "new-owner.example",
+      "decision": "warn",
+      "risk_score": 62.0,
+      "category": "unrelated_redirect",
+      "finding_en": "Re-registered name redirecting to an unrelated site",
+      "finding_ar": "اسم نطاق أُعيد تسجيله ويحوّل إلى موقع لا علاقة له بالنشاط",
+      "reasons_en": [
+        "Redirects to a site unrelated to the business"
+      ],
+      "reasons_ar": [
+        "يحوّل إلى موقع لا علاقة له بالنشاط"
+      ],
+      "reasons": [
+        {
+          "code": "page.unrelated_redirect",
+          "en": "Redirects to a site unrelated to the business",
+          "ar": "يحوّل إلى موقع لا علاقة له بالنشاط"
+        }
+      ],
+      "summary_en": "",
+      "summary_ar": "",
+      "final_url": "https://unrelated-store.test/",
+      "evidence_ref": "SS-2C3D4E5F",
+      "verdict_id": "2c3d4e5f-0000-4000-8000-000000000004",
+      "checked_at": "2026-11-24T09:03:05Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/new-owner.example",
+      "websites": [
+        {
+          "website": "https://new-owner.example/",
+          "host": "new-owner.example",
+          "decision": "warn",
+          "risk_score": 62.0,
+          "category": "unrelated_redirect",
+          "finding_en": "Re-registered name redirecting to an unrelated site",
+          "finding_ar": "اسم نطاق أُعيد تسجيله ويحوّل إلى موقع لا علاقة له بالنشاط",
+          "reasons_en": [
+            "Redirects to a site unrelated to the business"
+          ],
+          "reasons_ar": [
+            "يحوّل إلى موقع لا علاقة له بالنشاط"
+          ],
+          "reasons": [
+            {
+              "code": "page.unrelated_redirect",
+              "en": "Redirects to a site unrelated to the business",
+              "ar": "يحوّل إلى موقع لا علاقة له بالنشاط"
+            }
+          ],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": "https://unrelated-store.test/",
+          "evidence_ref": "SS-2C3D4E5F",
+          "verdict_id": "2c3d4e5f-0000-4000-8000-000000000004",
+          "checked_at": "2026-11-24T09:03:05Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    },
+    {
+      "place_id": "7656c392-09ae-4f4d-ba3f-263c227eb638",
+      "name": "Synthetic listing four",
+      "name_ar": null,
+      "place_category": "clothing_store",
+      "lat": 24.48845232,
+      "lng": 54.60871884,
+      "website": "https://young-site.example/",
+      "host": "young-site.example",
+      "decision": "warn",
+      "risk_score": 41.0,
+      "category": "other_warning",
+      "finding_en": "Other warning: model scores, a risky domain ending, a site builder or a young domain",
+      "finding_ar": "تحذير آخر: تقييم النماذج أو امتداد نطاق عالي الخطورة أو منصة إنشاء مواقع أو نطاق حديث",
+      "reasons_en": [
+        "The domain was registered 12 days ago"
+      ],
+      "reasons_ar": [
+        "سُجّل النطاق قبل 12 يومًا"
+      ],
+      "reasons": [
+        {
+          "code": "domain.young",
+          "en": "The domain was registered 12 days ago",
+          "ar": "سُجّل النطاق قبل 12 يومًا"
+        }
+      ],
+      "summary_en": "",
+      "summary_ar": "",
+      "final_url": "https://young-site.example/",
+      "evidence_ref": "SS-3D4E5F60",
+      "verdict_id": "3d4e5f60-0000-4000-8000-000000000005",
+      "checked_at": "2026-11-24T09:04:00Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/young-site.example",
+      "websites": [
+        {
+          "website": "https://young-site.example/",
+          "host": "young-site.example",
+          "decision": "warn",
+          "risk_score": 41.0,
+          "category": "other_warning",
+          "finding_en": "Other warning: model scores, a risky domain ending, a site builder or a young domain",
+          "finding_ar": "تحذير آخر: تقييم النماذج أو امتداد نطاق عالي الخطورة أو منصة إنشاء مواقع أو نطاق حديث",
+          "reasons_en": [
+            "The domain was registered 12 days ago"
+          ],
+          "reasons_ar": [
+            "سُجّل النطاق قبل 12 يومًا"
+          ],
+          "reasons": [
+            {
+              "code": "domain.young",
+              "en": "The domain was registered 12 days ago",
+              "ar": "سُجّل النطاق قبل 12 يومًا"
+            }
+          ],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": "https://young-site.example/",
+          "evidence_ref": "SS-3D4E5F60",
+          "verdict_id": "3d4e5f60-0000-4000-8000-000000000005",
+          "checked_at": "2026-11-24T09:04:00Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    },
+    {
+      "place_id": "b04e2226-2589-474d-9dba-91e6d4358a63",
+      "name": "Synthetic listing five",
+      "name_ar": null,
+      "place_category": "clothing_store",
+      "lat": 24.33308135,
+      "lng": 54.52373198,
+      "website": "https://fine-shop.example/",
+      "host": "fine-shop.example",
+      "decision": "allow",
+      "risk_score": 8.0,
+      "category": "none",
+      "finding_en": "No finding",
+      "finding_ar": "لا توجد ملاحظات",
+      "reasons_en": [],
+      "reasons_ar": [],
+      "reasons": [],
+      "summary_en": "",
+      "summary_ar": "",
+      "final_url": "https://fine-shop.example/",
+      "evidence_ref": null,
+      "verdict_id": "4e5f6071-0000-4000-8000-000000000006",
+      "checked_at": "2026-11-24T09:04:20Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/fine-shop.example",
+      "websites": [
+        {
+          "website": "https://fine-shop.example/",
+          "host": "fine-shop.example",
+          "decision": "allow",
+          "risk_score": 8.0,
+          "category": "none",
+          "finding_en": "No finding",
+          "finding_ar": "لا توجد ملاحظات",
+          "reasons_en": [],
+          "reasons_ar": [],
+          "reasons": [],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": "https://fine-shop.example/",
+          "evidence_ref": null,
+          "verdict_id": "4e5f6071-0000-4000-8000-000000000006",
+          "checked_at": "2026-11-24T09:04:20Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    },
+    {
+      "place_id": "00000000-0000-4000-8000-00000000dead",
+      "name": "Synthetic listing not in the directory",
+      "name_ar": null,
+      "place_category": "cafe",
+      "lat": 24.4,
+      "lng": 54.4,
+      "website": "https://gone.example/",
+      "host": "gone.example",
+      "decision": "warn",
+      "risk_score": 55.0,
+      "category": "parked",
+      "finding_en": "Domain expired or parked for sale: not the business's website any more",
+      "finding_ar": "النطاق منتهي الصلاحية أو معروض للبيع: لم يعد موقع النشاط التجاري",
+      "reasons_en": [],
+      "reasons_ar": [],
+      "reasons": [],
+      "summary_en": "",
+      "summary_ar": "",
+      "final_url": null,
+      "evidence_ref": "SS-4E5F6071",
+      "verdict_id": "4e5f6071-0000-4000-8000-000000000007",
+      "checked_at": "2026-11-24T09:04:30Z",
+      "engine_version": "synthetic",
+      "error": null,
+      "portal_path": "#/places/search/gone.example",
+      "websites": [
+        {
+          "website": "https://gone.example/",
+          "host": "gone.example",
+          "decision": "warn",
+          "risk_score": 55.0,
+          "category": "parked",
+          "finding_en": "Domain expired or parked for sale: not the business's website any more",
+          "finding_ar": "النطاق منتهي الصلاحية أو معروض للبيع: لم يعد موقع النشاط التجاري",
+          "reasons_en": [],
+          "reasons_ar": [],
+          "reasons": [],
+          "summary_en": "",
+          "summary_ar": "",
+          "final_url": null,
+          "evidence_ref": "SS-4E5F6071",
+          "verdict_id": "4e5f6071-0000-4000-8000-000000000007",
+          "checked_at": "2026-11-24T09:04:30Z",
+          "engine_version": "synthetic",
+          "error": null
+        }
+      ],
+      "helpline": null
+    }
+  ]
+}

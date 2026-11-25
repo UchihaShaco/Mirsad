@@ -1,0 +1,346 @@
+{
+  "cap_per_source": 15000,
+  "rows": [
+    {
+      "held_out": "phreshphish",
+      "sources": [
+        "phreshphish"
+      ],
+      "held_out_model": {
+        "n": 34820,
+        "n_scam": 95,
+        "n_legit": 34725,
+        "threshold": 0.963402889245586,
+        "recall": 0.05263157894736842,
+        "fpr": 0.0017566594672426205,
+        "roc_auc": 0.7798557083854344,
+        "recall_at_fpr_1pct": 0.2736842105263158
+      },
+      "in_distribution_model": {
+        "n": 34820,
+        "n_scam": 95,
+        "n_legit": 34725,
+        "threshold": 0.9411551035234291,
+        "recall": 0.1368421052631579,
+        "fpr": 0.0014686825053995681,
+        "roc_auc": 0.8817578720018189,
+        "recall_at_fpr_1pct": 0.45263157894736844
+      }
+    },
+    {
+      "held_out": "phishing_database",
+      "sources": [
+        "phishing_database"
+      ],
+      "held_out_model": {
+        "n": 50000,
+        "n_scam": 50000,
+        "n_legit": 0,
+        "threshold": 0.9507908611599298,
+        "recall": 0.47028,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 50000,
+        "n_scam": 50000,
+        "n_legit": 0,
+        "threshold": 0.9411551035234291,
+        "recall": 0.57816,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "hf_ealvaradob",
+      "sources": [
+        "hf_ealvaradob"
+      ],
+      "held_out_model": {
+        "n": 50000,
+        "n_scam": 22953,
+        "n_legit": 27047,
+        "threshold": 0.9362677670793216,
+        "recall": 0.3902322136539886,
+        "fpr": 0.000665508189447998,
+        "roc_auc": 0.9724605382391592,
+        "recall_at_fpr_1pct": 0.6577789395721693
+      },
+      "in_distribution_model": {
+        "n": 50000,
+        "n_scam": 22953,
+        "n_legit": 27047,
+        "threshold": 0.9411551035234291,
+        "recall": 0.4275693809088137,
+        "fpr": 0.0004436721262986653,
+        "roc_auc": 0.9777503702418251,
+        "recall_at_fpr_1pct": 0.7047444778460332
+      }
+    },
+    {
+      "held_out": "hf_kmack",
+      "sources": [
+        "hf_kmack"
+      ],
+      "held_out_model": {
+        "n": 22914,
+        "n_scam": 12861,
+        "n_legit": 10053,
+        "threshold": 0.9451647757968666,
+        "recall": 0.4140424539304875,
+        "fpr": 0.0007957823535263105,
+        "roc_auc": 0.9571659675765717,
+        "recall_at_fpr_1pct": 0.7200839748075577
+      },
+      "in_distribution_model": {
+        "n": 22914,
+        "n_scam": 12861,
+        "n_legit": 10053,
+        "threshold": 0.9411551035234291,
+        "recall": 0.5110800093305342,
+        "fpr": 0.0006963095593355217,
+        "roc_auc": 0.964028867204423,
+        "recall_at_fpr_1pct": 0.7545291967965166
+      }
+    },
+    {
+      "held_out": "phiusiil",
+      "sources": [
+        "phiusiil"
+      ],
+      "held_out_model": {
+        "n": 20533,
+        "n_scam": 7262,
+        "n_legit": 13271,
+        "threshold": 0.9237583043340716,
+        "recall": 0.3934177912420821,
+        "fpr": 0.00045211363122598145,
+        "roc_auc": 0.8658000940959161,
+        "recall_at_fpr_1pct": 0.5221702010465437
+      },
+      "in_distribution_model": {
+        "n": 20533,
+        "n_scam": 7262,
+        "n_legit": 13271,
+        "threshold": 0.9411551035234291,
+        "recall": 0.3980996970531534,
+        "fpr": 7.535227187099691e-05,
+        "roc_auc": 0.8843456765445935,
+        "recall_at_fpr_1pct": 0.5513632608096943
+      }
+    },
+    {
+      "held_out": "cert_pl",
+      "sources": [
+        "cert_pl"
+      ],
+      "held_out_model": {
+        "n": 48862,
+        "n_scam": 48862,
+        "n_legit": 0,
+        "threshold": 0.94188250157928,
+        "recall": 0.34595391101469447,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 48862,
+        "n_scam": 48862,
+        "n_legit": 0,
+        "threshold": 0.9411551035234291,
+        "recall": 0.44562236502803815,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "jarelllama_scam",
+      "sources": [
+        "jarelllama"
+      ],
+      "held_out_model": {
+        "n": 11968,
+        "n_scam": 11968,
+        "n_legit": 0,
+        "threshold": 0.9294839039345939,
+        "recall": 0.20713569518716576,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 11968,
+        "n_scam": 11968,
+        "n_legit": 0,
+        "threshold": 0.9411551035234291,
+        "recall": 0.34759358288770054,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "top_lists (tranco/umbrella/majestic)",
+      "sources": [
+        "tranco",
+        "umbrella",
+        "majestic"
+      ],
+      "held_out_model": {
+        "n": 33849,
+        "n_scam": 0,
+        "n_legit": 33849,
+        "threshold": 0.9788235294117649,
+        "recall": null,
+        "fpr": 0.053975006647168304,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 33849,
+        "n_scam": 0,
+        "n_legit": 33849,
+        "threshold": 0.9411551035234291,
+        "recall": null,
+        "fpr": 0.004431445537534343,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "urlhaus / malware_filter",
+      "sources": [
+        "urlhaus",
+        "malware_filter"
+      ],
+      "held_out_model": {
+        "n": 370,
+        "n_scam": 370,
+        "n_legit": 0,
+        "threshold": 0.9600000000000001,
+        "recall": 0.5405405405405406,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 370,
+        "n_scam": 370,
+        "n_legit": 0,
+        "threshold": 0.9411551035234291,
+        "recall": 0.5540540540540541,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "phishtank",
+      "sources": [
+        "phishtank"
+      ],
+      "held_out_model": {
+        "n": 2214,
+        "n_scam": 2214,
+        "n_legit": 0,
+        "threshold": 0.924896733007886,
+        "recall": 0.6056910569105691,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 2214,
+        "n_scam": 2214,
+        "n_legit": 0,
+        "threshold": 0.9411551035234291,
+        "recall": 0.5763324299909666,
+        "fpr": null,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "commoncrawl deep legit",
+      "sources": [
+        "commoncrawl"
+      ],
+      "held_out_model": {
+        "n": 26827,
+        "n_scam": 0,
+        "n_legit": 26827,
+        "threshold": 0.9306930693069309,
+        "recall": null,
+        "fpr": 0.0049576918775860145,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      },
+      "in_distribution_model": {
+        "n": 26827,
+        "n_scam": 0,
+        "n_legit": 26827,
+        "threshold": 0.9411551035234291,
+        "recall": null,
+        "fpr": 0.0006336899392403176,
+        "roc_auc": null,
+        "recall_at_fpr_1pct": null
+      }
+    },
+    {
+      "held_out": "kaggle_hassaanmustafavi",
+      "sources": [
+        "kaggle_hassaan"
+      ],
+      "held_out_model": {
+        "n": 34203,
+        "n_scam": 2510,
+        "n_legit": 31693,
+        "threshold": 0.9524539877300615,
+        "recall": 0.34741035856573704,
+        "fpr": 0.0002208689616003534,
+        "roc_auc": 0.9718773220625213,
+        "recall_at_fpr_1pct": 0.697609561752988
+      },
+      "in_distribution_model": {
+        "n": 34203,
+        "n_scam": 2510,
+        "n_legit": 31693,
+        "threshold": 0.9411551035234291,
+        "recall": 0.46334661354581674,
+        "fpr": 0.0003470797968005553,
+        "roc_auc": 0.9791261546437228,
+        "recall_at_fpr_1pct": 0.7972111553784861
+      }
+    },
+    {
+      "held_out": "mendeley_n96ncsr5g4",
+      "sources": [
+        "mendeley"
+      ],
+      "held_out_model": {
+        "n": 4278,
+        "n_scam": 1,
+        "n_legit": 4277,
+        "threshold": 0.9398655818889283,
+        "recall": 0.0,
+        "fpr": 0.0018704699555763386,
+        "roc_auc": 0.8971241524433013,
+        "recall_at_fpr_1pct": 0.0
+      },
+      "in_distribution_model": {
+        "n": 4278,
+        "n_scam": 1,
+        "n_legit": 4277,
+        "threshold": 0.9411551035234291,
+        "recall": 0.0,
+        "fpr": 0.0009352349777881693,
+        "roc_auc": 0.9021510404489127,
+        "recall_at_fpr_1pct": 0.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+ "_about": "Test registry in the intel schema (subset of the real one).",
+ "brands": [
+  {"id": "tamm", "name_en": "TAMM", "name_ar": "تم", "category": "government", "country": "AE",
+   "aliases_en": ["TAMM", "TAMM Abu Dhabi"], "aliases_ar": ["منصة تم"], "domains": ["tamm.abudhabi"],
+   "phones": ["800555"], "tokens": ["tamm"], "weak_tokens": []},
+  {"id": "uaepass", "name_en": "UAE PASS", "name_ar": "الهوية الرقمية", "category": "government", "country": "AE",
+   "aliases_en": ["UAE PASS"], "aliases_ar": [], "domains": ["uaepass.ae"], "phones": [], "tokens": ["uaepass"], "weak_tokens": []},
+  {"id": "dubaipolice", "name_en": "Dubai Police", "name_ar": "شرطة دبي", "category": "government", "country": "AE",
+   "aliases_en": ["Dubai Police"], "aliases_ar": ["شرطة دبي"], "domains": ["dubaipolice.gov.ae"], "phones": ["901"],
+   "tokens": ["dubaipolice"], "weak_tokens": []},
+  {"id": "dewa", "name_en": "DEWA", "name_ar": "هيئة كهرباء ومياه دبي", "category": "utility", "country": "AE",
+   "aliases_en": ["DEWA", "Dubai Electricity and Water Authority"], "aliases_ar": ["ديوا"], "domains": ["dewa.gov.ae"],
+   "phones": ["046019999"], "tokens": ["dewa"], "weak_tokens": []},
+  {"id": "salik", "name_en": "Salik", "name_ar": "سالك", "category": "government", "country": "AE",
+   "aliases_en": ["Salik"], "aliases_ar": ["سالك"], "domains": ["salik.ae"], "phones": ["80072545"], "tokens": ["salik"], "weak_tokens": []},
+  {"id": "parkin", "name_en": "Parkin", "name_ar": "باركن", "category": "government", "country": "AE",
+   "aliases_en": ["Parkin"], "aliases_ar": [], "domains": ["parkin.ae"], "phones": [], "tokens": [], "weak_tokens": ["parkin"]},
+  {"id": "enbd", "name_en": "Emirates NBD", "name_ar": "بنك الإمارات دبي الوطني", "category": "bank", "country": "AE",
+   "aliases_en": ["Emirates NBD"], "aliases_ar": ["بنك الإمارات دبي الوطني"], "domains": ["emiratesnbd.com"],
+   "phones": ["600540000"], "tokens": ["emiratesnbd", "enbd"], "weak_tokens": []},
+  {"id": "emiratespost", "name_en": "Emirates Post", "name_ar": "بريد الإمارات", "category": "courier", "country": "AE",
+   "aliases_en": ["Emirates Post"], "aliases_ar": ["بريد الإمارات"], "domains": ["emiratespost.ae"],
+   "phones": ["600599999"], "tokens": ["emiratespost"], "weak_tokens": []},
+  {"id": "microsoft", "name_en": "Microsoft", "name_ar": "مايكروسوفت", "category": "tech", "country": "global",
+   "aliases_en": ["Microsoft"], "aliases_ar": [], "domains": ["microsoft.com"], "phones": [], "tokens": ["microsoft"], "weak_tokens": []}
+ ]
+}
