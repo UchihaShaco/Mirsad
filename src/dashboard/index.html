@@ -186,6 +186,14 @@
 
     <section id="watchlist-view" class="watchlist-view" aria-labelledby="watchlist-heading" hidden>
       <h1 id="watchlist-heading">Phone watchlist</h1>
+      <section class="blocklist-export" aria-labelledby="blocklist-heading">
+        <div>
+          <h2 id="blocklist-heading">Blocklist for Mirsad Android</h2>
+          <p class="hint">Approved numbers, and the fingerprints of reported scams from them, as a signed file for phones. A phone that imports it holds those messages and rejects those calls; each new import replaces the previous list.</p>
+        </div>
+        <button type="button" id="export-blocklist">Export blocklist</button>
+        <p id="blocklist-status" role="status"></p>
+      </section>
       <div id="watchlist"></div>
     </section>
 

@@ -172,6 +172,7 @@
     <string name="settings_import">استيراد قائمة حظر (JSON)</string>
     <string name="import_result">تم استيراد %1$d أرقام و%2$d نطاقات و%3$d بصمات</string>
     <string name="import_failed">فشل الاستيراد: %1$s</string>
+    <string name="import_result_verified">قائمة موثّقة من %1$s: %2$d أرقام و%3$d بصمات رسائل. حلّت محل القائمة السابقة من هذه الجهة.</string>
     <string name="settings_delete_all">حذف جميع البيانات</string>
     <string name="delete_confirm_title">حذف جميع البيانات؟</string>
     <string name="delete_confirm_body">ستُزال الحوادث والقوائم والملاحظات المخزنة على هذا الهاتف. لا يمكن التراجع عن ذلك.</string>

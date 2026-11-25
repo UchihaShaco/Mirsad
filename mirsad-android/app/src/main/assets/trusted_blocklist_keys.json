@@ -1,0 +1,4 @@
+{
+  "note": "Mirsad portal keys this build trusts for signed blocklists. Add one with scripts/trust_portal_key.sh.",
+  "keys": []
+}

@@ -83,6 +83,11 @@ class MemListStore : ListStore {
     override suspend fun add(entry: ListEntry): Long { val id = nextId++; state.value = state.value + entry.copy(id = id); return id }
     override suspend fun remove(id: Long) { state.value = state.value.filter { it.id != id } }
     override suspend fun removeValue(kind: ListKind, value: String) { state.value = state.value.filter { !(it.kind == kind && it.value == value) } }
+    override suspend fun removeOrigin(origin: String): Int {
+        val before = state.value.size
+        state.value = state.value.filter { it.origin != origin }
+        return before - state.value.size
+    }
     override suspend fun contains(kind: ListKind, value: String) = state.value.any { it.kind == kind && it.value == value }
     override fun observe(kind: ListKind): Flow<List<ListEntry>> = state.map { l -> l.filter { it.kind == kind } }
     override suspend fun values(kind: ListKind): Set<String> = state.value.filter { it.kind == kind }.map { it.value }.toSet()

@@ -556,6 +556,26 @@ export const WatchlistReviewRequest = z.object({
 export type WatchlistReviewRequest = z.infer<typeof WatchlistReviewRequest>;
 export const WatchlistReviewResponse = z.object({ entry: WatchlistEntry });
 
+const e164List = z.array(z.string().regex(/^\+[1-9]\d{6,14}$/));
+/** The signed phone blocklist (Mirsad Android blocklist import file, version 1, with keyId, expiresAt and signature). */
+export const BlocklistFile = z.object({
+  version: z.literal(1),
+  keyId: z.string().regex(/^[0-9a-f]{16}$/),
+  issuer: z.string(),
+  issuedAt: timestamp,
+  expiresAt: timestamp,
+  note: z.string(),
+  numbers: e164List,
+  domains: z.array(z.string()),
+  fingerprints: z.array(z.string().regex(/^[0-9a-f]{16}$/)),
+  signature: z.string().describe('ECDSA P-256 with SHA-256, DER, base64, over the signed text described in contracts/README.md.'),
+});
+export const BlocklistResponse = z.object({ file: BlocklistFile });
+export const BlocklistKeyResponse = z.object({
+  keyId: z.string(), issuer: z.string(),
+  publicKey: z.string().describe('SubjectPublicKeyInfo, DER, base64.'),
+});
+
 export const ScammerFlagRequest = z.object({
   phone: z.string().trim().min(1).max(40)
     .describe('The contact’s number in international format, starting with + or 00.'),
@@ -683,7 +703,7 @@ export const CONTRACT_SCHEMAS = {
   InvestigationOpenerRequest, InvestigationOpenerResponse,
   OfficerDecisionRequest, OfficerDecisionResponse, Capture, ReviewState, Message, MessageEvent, CaseAction,
   Finding, CaseReference, CaseReferenceRequest, CaseReferenceResponse, Timeline, CaptureRetryResponse,
-  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, CitizenReportImportRequest, CitizenReportImportResponse, MeResponse,
+  WatchlistEntry, ListWatchlistResponse, WatchlistReviewRequest, WatchlistReviewResponse, ScammerFlagRequest, ScammerFlagResponse, CitizenReportImportRequest, CitizenReportImportResponse, BlocklistResponse, BlocklistKeyResponse, MeResponse,
   PlaceRecord, PlacesSearchResponse, PlacesDetailResponse,
   OfficerLoginRequest, OfficerLoginResponse, OfficerLogoutResponse, HealthResponse, Status, ErrorEnvelope,
   DmRepliesRequest, DmRepliesResponse, ConsentPromptRequest, ConsentPromptResponse, ReplyPromptReloadResponse,

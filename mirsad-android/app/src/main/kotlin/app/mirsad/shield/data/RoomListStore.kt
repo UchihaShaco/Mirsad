@@ -16,6 +16,7 @@ class RoomListStore(private val dao: ListEntryDao) : ListStore {
     override suspend fun remove(id: Long) = dao.delete(id)
 
     override suspend fun removeValue(kind: ListKind, value: String) = dao.deleteValue(kind.name, value)
+    override suspend fun removeOrigin(origin: String): Int = dao.deleteOrigin(origin)
 
     override suspend fun contains(kind: ListKind, value: String): Boolean = dao.count(kind.name, value) > 0
 

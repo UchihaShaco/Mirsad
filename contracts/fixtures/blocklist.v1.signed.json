@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "keyId": "ca08f6294668098f",
+  "issuer": "Mirsad portal · Test workspace (fixture key, not a police key)",
+  "issuedAt": "2026-11-25T00:00:00.000Z",
+  "expiresAt": "2099-12-31T00:00:00.000Z",
+  "note": "Signed list from the Mirsad portal. Importing it replaces the previous list from this issuer.",
+  "numbers": [
+    "+971500000401",
+    "+971500000403"
+  ],
+  "domains": [],
+  "fingerprints": [
+    "1111111111111111"
+  ],
+  "signature": "MEUCIGDuKMlMdvhLSHIsYT7dnVgpRxZxHTzOc0yOeiQLWQEVAiEAxVW2YNkFi8Xj/B8DgUgDQv9BCcZeGDOIUYBjVfioQFU="
+}

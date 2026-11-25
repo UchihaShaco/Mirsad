@@ -21,6 +21,7 @@ import { bindWorkspace, DOCKED_EVIDENCE, resetCaseTools } from './views/workspac
 import { bindPhoneDispatch } from './views/phone-dispatch.js';
 import { bindScammerFlag } from './views/scammer-flag.js';
 import { bindCitizenReportImport } from './views/citizen-report-import.js';
+import { bindBlocklistExport } from './views/blocklist-export.js';
 import { bindErase } from './views/erase.js';
 
 /** Events that cannot change a chat summary, so they do not reload the inbox. */
@@ -173,6 +174,7 @@ function bindPage(ctx) {
   bindPhoneDispatch(ctx, openOpener);
   bindScammerFlag(ctx);
   bindCitizenReportImport(ctx);
+  bindBlocklistExport(ctx);
   refs.openerDialog.addEventListener('close', () => {
     if (refs.openerDialog.open) return;
     refs.openerForm.reset();

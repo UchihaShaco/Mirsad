@@ -12,6 +12,7 @@ import app.mirsad.core.contract.ListEntry
 import app.mirsad.core.contract.ListKind
 import app.mirsad.core.contract.ListStore
 import app.mirsad.core.report.BlocklistParser
+import app.mirsad.core.report.BlocklistSignature
 import app.mirsad.shield.MirsadApp
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -130,9 +131,31 @@ object ReportActions {
 
 enum class AmanDisabledReason { SYNTHETIC }
 
-/** Settings > Import blocklist. Reads a JSON file (see assets/blocklist_example.json) into the block lists. */
+/**
+ * Settings > Import blocklist. Reads a JSON file (see assets/blocklist_example.json) into the block lists.
+ *
+ * A list the Mirsad portal signed with a key in assets/trusted_blocklist_keys.json is a police list: it replaces the
+ * previous list from that key, so a number the police cleared disappears from the phone. A signed list that does not
+ * verify, or has expired, is refused. A list without a signature is a personal list and is added as before.
+ */
 object BlocklistImporter {
     private const val MAX_BYTES = 2L * 1024 * 1024
+    private const val TRUSTED_KEYS_ASSET = "trusted_blocklist_keys.json"
+    private val keysJson = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+
+    @kotlinx.serialization.Serializable
+    private data class TrustedKeys(val keys: List<Key> = emptyList()) {
+        @kotlinx.serialization.Serializable
+        data class Key(val keyId: String, val issuer: String, val publicKey: String)
+    }
+
+    /** The portal keys this build trusts. An unreadable asset trusts nothing, so a signed list is refused, never trusted. */
+    fun trustedKeys(context: Context): List<BlocklistSignature.TrustedKey> = runCatching {
+        context.assets.open(TRUSTED_KEYS_ASSET).use { input ->
+            keysJson.decodeFromString(TrustedKeys.serializer(), input.readBytes().toString(Charsets.UTF_8))
+                .keys.map { BlocklistSignature.TrustedKey(it.keyId, it.issuer, it.publicKey) }
+        }
+    }.getOrDefault(emptyList())
 
     /**
      * Counts of entries added per list. [skipped] were already on the lists, [invalid] could not be normalised
@@ -149,6 +172,12 @@ object BlocklistImporter {
         val added: Int get() = numbers + domains + fingerprints
     }
 
+    /** Set when the list was a verified police list: who issued it, its size, and how many old entries it replaced. */
+    data class Police(val issuer: String, val numbers: Int, val fingerprints: Int, val replaced: Int)
+
+    @Volatile var lastPolice: Police? = null
+        private set
+
     suspend fun import(context: Context, uri: Uri): Result = withContext(Dispatchers.IO) {
         val app = context.applicationContext
         val displayName = displayName(app, uri)
@@ -159,15 +188,22 @@ object BlocklistImporter {
         } catch (e: SecurityException) {
             return@withContext Result(0, 0, 0, "No permission to read the file")
         }
-        val normalised = try {
-            BlocklistParser.parseAndNormalise(text)
+        val parsed = try {
+            BlocklistParser.parse(text)
         } catch (e: IllegalArgumentException) {
             return@withContext Result(0, 0, 0, e.message ?: "Not a blocklist file")
         }
-        val lists = MirsadApp.container(app).lists
         val now = System.currentTimeMillis()
-        val origin = "import:$displayName"
-        val note = normalised.file.issuer?.take(120)
+        // The signature covers the values as written, so it is checked before normalisation.
+        val check = BlocklistSignature.check(parsed, trustedKeys(app), now)
+        if (check is BlocklistSignature.Check.Rejected) return@withContext Result(0, 0, 0, check.reason)
+        val normalised = BlocklistParser.normalise(parsed)
+        val lists = MirsadApp.container(app).lists
+        val verified = check as? BlocklistSignature.Check.Verified
+        val origin = if (verified != null) "police:${verified.key.keyId}" else "import:$displayName"
+        val replaced = if (verified != null) lists.removeOrigin(origin) else 0
+        lastPolice = verified?.let { Police(it.key.issuer, normalised.file.numbers.size, normalised.file.fingerprints.size, replaced) }
+        val note = (verified?.key?.issuer ?: normalised.file.issuer)?.take(120)
         val n = addAll(lists, ListKind.BLOCK_SENDER, normalised.file.numbers, note, origin, now)
         val d = addAll(lists, ListKind.BLOCK_DOMAIN, normalised.file.domains, note, origin, now)
         val f = addAll(lists, ListKind.BLOCK_FINGERPRINT, normalised.file.fingerprints, note, origin, now)

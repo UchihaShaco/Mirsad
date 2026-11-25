@@ -523,6 +523,13 @@ main, .inbox-lists, .timeline, .side-panel, .chat-header, .review-items { scroll
 .report-artifacts bdi { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
 .report-provenance { margin: 0; overflow-wrap: anywhere; }
 .report-strip .control-mark { background: var(--sunken); color: var(--ink-2); }
+/* The signed phone blocklist: one plain action above the entries. */
+.blocklist-export { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 18px; margin: 14px 0 18px; padding: 14px 16px; border-radius: var(--radius-card); background: var(--raised); box-shadow: var(--shadow-soft); }
+.blocklist-export h2 { margin: 0 0 3px; font-size: 15px; }
+.blocklist-export .hint { margin: 0; }
+#blocklist-status { grid-column: 1 / -1; margin: 0; font-size: 13px; }
+#blocklist-status:empty { display: none; }
+@media (max-width: 620px) { .blocklist-export { grid-template-columns: minmax(0, 1fr); } }
 .empty { list-style: none; padding: 8px 14px 10px; color: var(--ink-3); font-size: 13px; }
 
 /* Conversation */

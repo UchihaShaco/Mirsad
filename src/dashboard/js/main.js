@@ -53,6 +53,7 @@ const ELEMENT_IDS = {
   phoneNumber: 'phone-dispatch-number', phoneBrief: 'phone-dispatch-brief', phoneSubmit: 'phone-dispatch-submit',
   openReportImport: 'open-report-import', reportDialog: 'report-dialog', reportForm: 'report-form', reportFile: 'report-file',
   reportDemo: 'report-demo', reportStatus: 'report-status', reportOpen: 'report-open', reportSubmit: 'report-submit',
+  exportBlocklist: 'export-blocklist', blocklistStatus: 'blocklist-status',
   openFlagScammer: 'open-flag-scammer', flagDialog: 'flag-dialog', flagForm: 'flag-form', flagTarget: 'flag-target',
   flagNumber: 'flag-number', flagReason: 'flag-reason', flagStatus: 'flag-status', flagSubmit: 'flag-submit',
   phoneStatus: 'phone-dispatch-status', phoneChat: 'phone-dispatch-chat', phoneDraft: 'phone-dispatch-draft',

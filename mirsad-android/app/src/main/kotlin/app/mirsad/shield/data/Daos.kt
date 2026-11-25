@@ -81,6 +81,9 @@ interface ListEntryDao {
     @Query("DELETE FROM list_entries WHERE kind = :kind AND `value` = :value")
     suspend fun deleteValue(kind: String, value: String)
 
+    @Query("DELETE FROM list_entries WHERE origin = :origin")
+    suspend fun deleteOrigin(origin: String): Int
+
     @Query("SELECT COUNT(*) FROM list_entries WHERE kind = :kind AND `value` = :value")
     suspend fun count(kind: String, value: String): Int
 

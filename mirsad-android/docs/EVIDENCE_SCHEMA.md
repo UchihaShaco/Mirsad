@@ -138,6 +138,18 @@ to the local block lists. Example (`app/src/main/assets/blocklist_example.json`,
 | `domains` | string[] | no | Domains to block. Normalised to registrable domains. |
 | `fingerprints` | string[] | no | Message fingerprints to block (section 5). |
 
+**Signed police lists.** The Mirsad portal exports its approved watchlist numbers (and the fingerprints of citizen
+reports from them) as this format plus `keyId`, `expiresAt` and `signature` (ECDSA P-256 / SHA-256; the signed text is
+defined in `contracts/README.md`). `BlocklistSignature` checks it before normalisation:
+
+| The file | Import |
+|---|---|
+| Signed by a key in `assets/trusted_blocklist_keys.json`, untampered, not expired | A police list: entries get `origin = "police:<keyId>"`, and the previous list from that key is removed first, so a number the police cleared disappears from the phone |
+| Signed, but by an unknown key, changed after signing, or expired | Refused with the reason; nothing changes |
+| No `signature` | A personal list, imported as before |
+
+`scripts/trust_portal_key.sh` adds a portal's public key to the trusted keys before a build.
+
 Parsing (`BlocklistParser`) is lenient: unknown keys are ignored, missing or `null` lists are empty. Each value is
 normalised; values that cannot be normalised are dropped and counted (`invalid`). Entries already on a list are
 skipped (`skipped`), never duplicated. Imported entries get `origin = "import:<file name>"` and the list kinds

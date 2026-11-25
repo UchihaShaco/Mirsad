@@ -279,6 +279,8 @@ interface IncidentStore {
 
 interface ListStore {
     suspend fun add(entry: ListEntry): Long
+    /** Removes every entry imported from one source (ListEntry.origin); returns how many were removed. */
+    suspend fun removeOrigin(origin: String): Int
     suspend fun remove(id: Long)
     suspend fun removeValue(kind: ListKind, value: String)
     suspend fun contains(kind: ListKind, value: String): Boolean
@@ -437,6 +439,10 @@ data class BlocklistFile(
     val numbers: List<String> = emptyList(),
     val domains: List<String> = emptyList(),
     val fingerprints: List<String> = emptyList(),
+    /** Set on a list signed by the Mirsad portal (see BlocklistSignature): the signing key, its expiry and signature. */
+    val keyId: String? = null,
+    val expiresAt: String? = null,
+    val signature: String? = null,
 )
 
 /**

@@ -167,7 +167,7 @@ describe('foundation', () => {
   });
 
   it('every route of the contract is registered with its access rule', async () => {
-    expect(ROUTES).toHaveLength(40);
+    expect(ROUTES).toHaveLength(42);
     for (const route of ROUTES.filter((r) => r.auth !== 'none')) {
       const path = route.path.replace(/\{[^}]+\}/g, 'x_1');
       const res = route.method === 'GET' ? await h.http(null).get(path) : await h.http(null).post(path, {});

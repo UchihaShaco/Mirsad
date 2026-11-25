@@ -138,7 +138,10 @@ moves to **Suspects** while the number stays approved; clearing the number on th
 are not changed. **Import report** takes the report file a citizen shared from Mirsad Android (`mirsad-android/`):
 it is filed under **Citizen reports**, one chat per reported sender, with the phone's verdict, reasons and evidence, and
 the numbers it names go to the Phone watchlist for review. A citizen report is never dispatched, answered or sent to a
-model. **Needs review** filters the queue to conversations waiting for an officer’s decision.
+model. On the **Phone watchlist**, **Export blocklist** downloads every approved number as a signed file for Mirsad
+Android: a phone that imports it holds those messages and rejects those calls, and each new import replaces the previous
+list, so a cleared number disappears from phones. **Needs review** filters the queue to conversations waiting for an
+officer’s decision.
 Open a conversation and choose **Dispatch this chat**, or check several inbox rows and choose **Dispatch**.
 For a live Telegram contact, choose **Dispatch a number** in the inbox and enter the country code and number.
 Use **Pause AI**, **Take over** and **Resume AI** on a chat. During takeover, use the composer to reply or choose

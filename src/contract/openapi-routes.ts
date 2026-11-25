@@ -200,6 +200,17 @@ export const ROUTE_DOCS: Record<RouteKey, RouteDoc> = {
       { status: 200, description: 'The same report was imported before.', schema: 'CitizenReportImportResponse' }],
     errors: ['validation_failed', 'report_not_accepted'],
   },
+  'GET /v1/watchlist/blocklist': {
+    summary: 'Export the signed phone blocklist for Mirsad Android',
+    description: 'Every approved number on the phone watchlist the caller can see, and the message fingerprints of citizen reports whose sender is approved, signed with the deployment key. Valid for 30 days. On the phone, importing it replaces the previous list from the same key.',
+    success: [{ status: 200, description: 'The signed file.', schema: 'BlocklistResponse' }],
+    errors: [],
+  },
+  'GET /v1/watchlist/blocklist-key': {
+    summary: 'The public key that signs phone blocklists',
+    success: [{ status: 200, description: 'Key id, issuer and public key.', schema: 'BlocklistKeyResponse' }],
+    errors: [],
+  },
   'POST /v1/chats/{chatId}/case-references': {
     summary: 'Record a case reference',
     request: 'CaseReferenceRequest',

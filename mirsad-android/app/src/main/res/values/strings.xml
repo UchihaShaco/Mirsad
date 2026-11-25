@@ -182,6 +182,7 @@
     <string name="settings_import">Import blocklist (JSON)</string>
     <string name="import_result">Imported %1$d numbers, %2$d domains, %3$d fingerprints</string>
     <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_result_verified">Verified list from %1$s: %2$d numbers, %3$d message fingerprints. It replaced the previous list from this issuer.</string>
     <string name="settings_delete_all">Delete all data</string>
     <string name="delete_confirm_title">Delete all data?</string>
     <string name="delete_confirm_body">Incidents, lists and feedback stored on this phone will be removed. This cannot be undone.</string>

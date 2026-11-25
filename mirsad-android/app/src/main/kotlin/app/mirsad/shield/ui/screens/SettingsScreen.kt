@@ -78,8 +78,12 @@ fun SettingsScreen(
         if (uri != null) {
             scope.launch {
                 val r = BlocklistImporter.import(context, uri)
-                val msg = if (r.error != null) resources.getString(R.string.import_failed, r.error)
-                else resources.getString(R.string.import_result, r.numbers, r.domains, r.fingerprints)
+                val police = BlocklistImporter.lastPolice
+                val msg = when {
+                    r.error != null -> resources.getString(R.string.import_failed, r.error)
+                    police != null -> resources.getString(R.string.import_result_verified, police.issuer, police.numbers, police.fingerprints)
+                    else -> resources.getString(R.string.import_result, r.numbers, r.domains, r.fingerprints)
+                }
                 Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             }
         }

@@ -1,4 +1,6 @@
+import { createPublicKey, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { signedText } from '../../src/services/blocklist-export.ts';
 /**
  * The reference dashboard end to end (brief build step 3; design sections 6 and 12). A real Mirsad instance from the
  * test harness, chats seeded over HTTP by the fixture connector, and the installed Microsoft Edge or Google Chrome driven
@@ -1165,6 +1167,22 @@ describe('reference dashboard', () => {
     await flag.waitFor({ state: 'hidden' });
     await page.locator('#inbox-filter-all').click();
     await inboxItem(page, 'Suspects', sender).waitFor();
+    expect(problems).toEqual([]);
+  });
+
+  it('exports the signed phone blocklist from the watchlist as a file a phone can verify', async () => {
+    const { page, problems } = await openDashboard(h.tokens.officerA);
+    await page.getByRole('link', { name: 'Phone watchlist' }).click();
+    await page.getByRole('heading', { name: 'Blocklist for Mirsad Android' }).waitFor();
+    const [download] = await Promise.all([page.waitForEvent('download'), button(page, 'Export blocklist').click()]);
+    expect(download.suggestedFilename()).toMatch(/^mirsad-blocklist-\d{4}-\d{2}-\d{2}\.json$/);
+    const file = JSON.parse(readFileSync(await download.path(), 'utf8'));
+    const key = (await h.http(h.tokens.officerA).get('/v1/watchlist/blocklist-key')).body.data;
+    expect(file).toMatchObject({ version: 1, keyId: key.keyId, domains: [] });
+    expect(verify('sha256', Buffer.from(signedText(file), 'utf8'),
+      { key: createPublicKey({ key: Buffer.from(key.publicKey, 'base64'), format: 'der', type: 'spki' }), dsaEncoding: 'der' },
+      Buffer.from(file.signature, 'base64'))).toBe(true);
+    await page.locator('#blocklist-status').getByText(new RegExp(`signed with key ${key.keyId}|Exported an empty list \\(key ${key.keyId}\\)`)).waitFor();
     expect(problems).toEqual([]);
   });
 
