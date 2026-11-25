@@ -108,6 +108,7 @@
     <string name="not_a_scam">ليس احتيالاً</string>
     <string name="report">إبلاغ</string>
     <string name="restored_snackbar">تمت الاستعادة — المرسل مسموح، والنموذج محفوظ</string>
+    <string name="restored_snackbar_known_scammer">تمت الاستعادة — النموذج محفوظ، وتبقى جهة الاتصال «محتال معروف» مُبلَّغاً عنها</string>
     <string name="already_restored">حدّدت هذه الرسالة على أنها ليست احتيالاً. المرسل في قائمة السماح.</string>
     <string name="confirmed_scam_tag">احتيال مؤكد</string>
 
@@ -185,6 +186,7 @@
     <string name="about_no_internet">بدون إذن إنترنت</string>
 
     <string name="reason_SENDER_BLOCKLISTED">المرسل في قائمة الحظر لديك.</string>
+    <string name="reason_SENDER_KNOWN_SCAMMER_CONTACT">المرسل ضمن جهة الاتصال «محتال معروف» التي أُبلغ عنها عبر مرصاد.</string>
     <string name="reason_SENDER_ALLOWLISTED">المرسل في قائمة السماح لديك.</string>
     <string name="reason_SENDER_LOOKS_LIKE_CONTACT">المرسل يبدو جهة اتصال محفوظة.</string>
     <string name="reason_SENDER_PLAIN_NUMBER_CLAIMS_ENTITY">رقم هاتف عادي يدّعي أنه بنك أو جهة رسمية. الجهات الحقيقية تستخدم أسماء مرسل مسجّلة.</string>

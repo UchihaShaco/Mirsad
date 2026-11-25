@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "note": "Stage 1 rules for MirsadEngine. All regex patterns run on the normalised text (lowercase, tashkeel stripped, alef/ya/ta-marbuta unified, Arabic-Indic digits mapped to ASCII). Weights are in [-1, 1]; 'hard' reasons gate HOLD. Reasons with the same code are merged (max weight, hard if any is hard).",
   "scoring": {
     "k": 1.5,
@@ -22,6 +22,10 @@
   },
   "weights": {
     "SENDER_BLOCKLISTED": {
+      "weight": 0.9,
+      "hard": true
+    },
+    "SENDER_KNOWN_SCAMMER_CONTACT": {
       "weight": 0.9,
       "hard": true
     },
@@ -506,6 +510,13 @@
       "+1671",
       "+1684",
       "+1340"
+    ]
+  },
+  "senders": {
+    "comment": "Display names of the contact Mirsad contact sync writes for numbers the police flagged (its numbered continuations, e.g. '<name> 2', match too). A message from that name is a block-list hit, not a saved contact.",
+    "knownScammerContactNames": [
+      "⚠️ Known Scammer",
+      "⚠️ محتال معروف"
     ]
   },
   "arabizi": {

@@ -46,6 +46,20 @@ Fixed during the test:
 Worth deciding: a scam from a saved contact (for example a hacked friend's account) is only ever warned about, and a
 warned scam does not count against the sender's calls; only a held message or a block-list entry blocks calls.
 
+## Emulator run (2026-11-25, Android 13 x86_64, Windows adb through WSL)
+
+The committed APK has no INTERNET permission. A scam SMS was held and a benign one allowed. A call from the held
+number was rejected. Not a scam and Undo worked, and the UI works in Arabic. A report from the phone was pushed to the
+portal (201): it is listed under Citizen reports and its number is on the watchlist. The committed APK refused the
+signed blocklist from this machine's portal (the key is not trusted). A build that trusts that key verified it, then
+rejected a call and held an SMS from a blocklisted number.
+
+With Mirsad contact sync also installed, a number on its "⚠️ Known Scammer" contact got past Mirsad: Android does not
+screen calls from contacts, and the SMS notification shows the name, not the number. Fixed for messages: the
+contact-sync names are a block signal (`SENDER_KNOWN_SCAMMER_CONTACT`, rules 1.3.0), so such an SMS is now held.
+Not a scam remembers only the template, never the name. Calls from that contact still ring until the contact-sync app
+sends its contact to voicemail. `test assembleDebug lintDebug` is green with 120 core tests.
+
 ## Next (if anyone continues)
 1. Lower the WARN rate on legitimate messages (retrain with legitimate messages that contain links).
 2. Arabic review items and dialect OTP-request phrasings.

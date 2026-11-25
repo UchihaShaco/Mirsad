@@ -115,6 +115,7 @@
     <string name="not_a_scam">Not a scam</string>
     <string name="report">Report</string>
     <string name="restored_snackbar">Restored — sender allowed, template remembered</string>
+    <string name="restored_snackbar_known_scammer">Restored — template remembered; the Known Scammer contact stays flagged</string>
     <string name="already_restored">You marked this as not a scam. The sender is on your allow list.</string>
     <string name="confirmed_scam_tag">Confirmed scam</string>
 
@@ -196,6 +197,7 @@
 
     <!-- Reason codes, plain language (one per ReasonCodes constant) -->
     <string name="reason_SENDER_BLOCKLISTED">The sender is on your block list.</string>
+    <string name="reason_SENDER_KNOWN_SCAMMER_CONTACT">The sender is on your Known Scammer contact, flagged through Mirsad.</string>
     <string name="reason_SENDER_ALLOWLISTED">The sender is on your allow list.</string>
     <string name="reason_SENDER_LOOKS_LIKE_CONTACT">The sender looks like a saved contact.</string>
     <string name="reason_SENDER_PLAIN_NUMBER_CLAIMS_ENTITY">A plain phone number claims to be a bank or authority. Real ones use registered sender names.</string>

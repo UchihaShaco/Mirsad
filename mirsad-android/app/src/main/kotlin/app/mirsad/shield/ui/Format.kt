@@ -19,6 +19,7 @@ import app.mirsad.shield.R
 @StringRes
 fun reasonStringRes(code: String): Int? = when (code) {
     ReasonCodes.SENDER_BLOCKLISTED -> R.string.reason_SENDER_BLOCKLISTED
+    ReasonCodes.SENDER_KNOWN_SCAMMER_CONTACT -> R.string.reason_SENDER_KNOWN_SCAMMER_CONTACT
     ReasonCodes.SENDER_ALLOWLISTED -> R.string.reason_SENDER_ALLOWLISTED
     ReasonCodes.SENDER_LOOKS_LIKE_CONTACT -> R.string.reason_SENDER_LOOKS_LIKE_CONTACT
     ReasonCodes.SENDER_PLAIN_NUMBER_CLAIMS_ENTITY -> R.string.reason_SENDER_PLAIN_NUMBER_CLAIMS_ENTITY

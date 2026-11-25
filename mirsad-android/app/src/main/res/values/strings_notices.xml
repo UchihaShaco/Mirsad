@@ -28,6 +28,7 @@
     <!-- Reason codes in plain words -->
     <string name="reason_generic">Suspicious pattern</string>
     <string name="reason_sender_blocklisted">Sender is on your block list</string>
+    <string name="reason_sender_known_scammer_contact">Sender is on your Known Scammer contact, flagged through Mirsad</string>
     <string name="reason_sender_allowlisted">Sender is on your allow list</string>
     <string name="reason_sender_looks_like_contact">Sender looks like a saved contact</string>
     <string name="reason_sender_plain_number_claims_entity">A plain phone number claims to be a bank or authority</string>
