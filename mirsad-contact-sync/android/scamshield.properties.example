@@ -1,0 +1,4 @@
+# Copy to scamshield.properties (ignored by git) to build an APK with the server pre-filled.
+# The device token ends up inside the APK: treat that APK as a secret.
+serverUrl=
+deviceToken=

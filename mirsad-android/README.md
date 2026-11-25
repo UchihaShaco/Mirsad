@@ -261,6 +261,11 @@ scripts/push_report_to_mirsad.sh [adb-serial]                                  #
 
 The field-by-field handling is in [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md), section 7.
 
+- **Known scammer contacts: a separate app.** [Mirsad contact sync](../mirsad-contact-sync/README.md) puts every
+  number the police flag onto one "⚠️ Known Scammer" contact, so the dialer, SMS, WhatsApp and Telegram show that name.
+  It needs the internet to receive the list from its server and permission to write contacts, so it is a separate app
+  with its own Gradle project, and Mirsad Android keeps its no-internet guarantee. A citizen can install either or both.
+
 ## 9. Build from source, tests, evaluation
 
 Requirements: JDK 17 and the Android SDK with platform 37. The wrapper fetches Gradle 9.4.1; the build uses AGP 9.2.1,
