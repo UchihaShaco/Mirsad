@@ -55,7 +55,8 @@ adbs_t() { local t="$1"; shift; timeout "$t" "$ADB" -s "$SERIAL" "$@"; }
 
 # True when the media emulator is attached and in "device" state.
 device_online() {
-  timeout 20 "$ADB" devices 2>/dev/null | awk -v s="$SERIAL" '$1==s && $2=="device" {found=1} END {exit found?0:1}'
+  # tr: adb.exe (Windows, e.g. through WSL interop) ends lines with CRLF, so $2 would be "device\r".
+  timeout 20 "$ADB" devices 2>/dev/null | tr -d '\r' | awk -v s="$SERIAL" '$1==s && $2=="device" {found=1} END {exit found?0:1}'
 }
 
 require_device() {

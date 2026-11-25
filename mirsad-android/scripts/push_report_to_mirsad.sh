@@ -14,6 +14,7 @@
 # Environment:
 #   MIRSAD_BASE_URL       default http://127.0.0.1:8787
 #   MIRSAD_OFFICER_TOKEN  an officer's bearer token, required unless --dry-run; read only here, never printed
+#   ADB                   adb binary, default adb on PATH (as in scripts/_lib.sh)
 #
 # The report is sent exactly as the phone wrote it (docs/EVIDENCE_SCHEMA.md, section 1). Re-runnable: the portal
 # answers 200 for a report it already has. Answers: 201 imported, 200 already imported, 400 not a report,
@@ -23,6 +24,7 @@ set -euo pipefail
 PACKAGE="app.mirsad.shield"
 EXTERNAL_DIR="/sdcard/Android/data/$PACKAGE/files/reports"
 BASE_URL="${MIRSAD_BASE_URL:-http://127.0.0.1:8787}"
+ADB="${ADB:-adb}"
 DRY_RUN=0
 DEMO=0
 SERIAL=""
@@ -50,7 +52,7 @@ BODY="$WORK/body.json"
 RESP="$WORK/response.json"
 
 adb_cmd() {
-  if [ -n "$SERIAL" ]; then adb -s "$SERIAL" "$@"; else adb "$@"; fi
+  if [ -n "$SERIAL" ]; then "$ADB" -s "$SERIAL" "$@"; else "$ADB" "$@"; fi
 }
 
 # --- 1. Get the report -------------------------------------------------------------------------
@@ -59,7 +61,7 @@ if [ -n "$FILE" ]; then
   cp "$FILE" "$REPORT"
   echo "report: $FILE"
 else
-  command -v adb >/dev/null 2>&1 || die "adb not found on PATH"
+  command -v "$ADB" >/dev/null 2>&1 || die "adb not found (set ADB or put adb on PATH)"
   # The app saves under getExternalFilesDir("reports") and falls back to filesDir/reports. Try the private
   # files dir through run-as first (debug builds only), then the external app-specific directory.
   latest="$(adb_cmd exec-out run-as "$PACKAGE" ls -t files/reports 2>/dev/null | tr -d '\r' | grep '\.json$' | head -n 1 || true)"
