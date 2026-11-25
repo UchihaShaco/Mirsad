@@ -62,6 +62,10 @@ function entryCard(entry, state, handlers, drafts) {
       h('strong', { className: 'badge', text: entry.statusLabel }),
       entry.newEvidenceSinceReview ? h('span', { className: 'flag', text: ' New evidence since the last review' }) : null,
       entry.number.exactMatchEligible ? null : h('span', { className: 'hint', text: ' Not normalized: never matched automatically' }),
+      // Contact sync (null while it is off): whether the number reached the "Known Scammer" contact on phones.
+      entry.contactSync
+        ? h('span', { className: entry.contactSync.state === 'not_sent' ? 'flag' : 'hint', dataset: { contactSync: entry.contactSync.state }, text: ` ${entry.contactSync.label}` })
+        : null,
     ]),
     h('p', { className: 'hint' }, [h('span', { text: 'First seen ' }), timeEl(entry.firstSeenAt), h('span', { text: ', last seen ' }), timeEl(entry.lastSeenAt)]),
     h('h3', { text: 'Evidence' }),

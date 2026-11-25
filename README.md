@@ -387,7 +387,7 @@ text, names or numbers. Event IDs are workspace-wide, so gaps between your event
 | `finding.created` | `messageId`, `findingId`, `kind` |
 | `case_action.recorded` | `caseActionId`, `actionType` |
 | `case_reference.recorded` | `caseReferenceId` |
-| `watchlist.entry_updated` | `watchlistEntryId`, `status`, `reason` (`created`, `observation_added` or `reviewed`); `chatId` is null |
+| `watchlist.entry_updated` | `watchlistEntryId`, `status`, `reason` (`created`, `observation_added`, `reviewed` or `contact_sync`); `chatId` is null |
 | `watchlist.match` | `watchlistEntryId` |
 | `stream.reset` | `reason: "cursor_out_of_range"`, `resumeFrom`, `reload: ["inbox", "timeline"]` |
 
@@ -468,6 +468,31 @@ for (;;) {
   and reassigned. A Telegram user ID, a username or a partial number is never used to match.
 - An officer sees an entry when they can open at least one chat holding its evidence or a match. Evidence links are
   filtered per caller. Reviewing an entry, and reading the last decision's reason, needs accessible supporting evidence.
+
+### Known Scammer contact on phones
+
+Mirsad can also send flagged numbers to the contact-sync server in
+[mirsad-contact-sync/](mirsad-contact-sync/README.md), which puts them on a contact named **⚠️ Known Scammer** on every
+phone running its app, within about a second.
+
+- **What counts as flagged** is the signed blocklist's rule (`isFlaggedNumber` in `src/services/watchlist.ts`): an
+  approved entry with an E.164 number, in any workspace. An officer's **Flag as scammer** approves the number, and so
+  does approving an entry on the watchlist. Ali never flags on its own. An approved number the portal cannot normalize
+  to E.164 is not sent, and the startup log counts it as `skipped`.
+- **When.** A number that becomes flagged is sent as active (`POST /api/v1/scammers`, an upsert keyed by the number). A
+  number that stops being flagged (cleared, reopened, or erased with its last evidence) is deactivated with `PATCH
+  /api/v1/scammers/{phone}` and `{"active": false}`, so the server keeps its history. Each start sends the flagged set
+  once more, so both sides agree after a restart.
+- **What is sent:** the number, the configured label and source (`Flagged on the Mirsad portal`, `mirsad-portal`), and
+  the note `Mirsad watchlist entry <entryId>`. **Never sent:** the number as written, display names, usernames, the
+  officer's reason or any message text. Logs carry the entry ID and an error code, never the number or the token.
+- **Delivery.** One request at a time with a 5-second timeout. A server that is down or answers 5xx is tried again after
+  2, 8, 32 and 128 seconds, five attempts per change in all; a refusal (401, 403 or another 4xx) is not retried. The
+  watchlist entry shows **On phones**, **Queued** or **Not sent:** and the reason.
+- **Turn it on** in `.env` and restart: `MIRSAD_CONTACT_SYNC_URL=http://127.0.0.1:8080` (the sync server on this
+  machine; like the model endpoint it must be a loopback URL) and `MIRSAD_CONTACT_SYNC_TOKEN` when the server has an
+  admin token. `MIRSAD_CONTACT_SYNC_LABEL` and `MIRSAD_CONTACT_SYNC_SOURCE` change the label and source. Phones reach
+  the sync server through its own tunnel, never through Mirsad.
 
 ## Telegram
 
@@ -816,17 +841,19 @@ From design section 18:
 src/
   main.ts, app.ts, config.ts   process entry, composition root, configuration (loopback only)
   contract/      zod schemas, enums, exact labels, error codes, stream event types, OpenAPI builder
-  ports/         small interfaces: clock, evidence store, capture renderer, reviewer, identity, channel adapter, logger
+  ports/         small interfaces: clock, evidence store, capture renderer, reviewer, identity, channel adapter, logger,
+                 contact sync
   domain/        pure rules: control machine, initiation, text safety, phones, links, cues, finding validation, review policy
   storage/       SQLite (node:sqlite) schema and repositories, local evidence store
   services/      use cases: intake, chats, dispatch, control, officer actions, timeline, artifacts, watchlist, status, stream
-  workers/       job loop, capture worker, review worker, AI reply worker (opt-in)
+  workers/       job loop, capture worker, review worker, AI reply worker (opt-in), contact-sync worker (opt-in)
   replies/       disclosed local-model assistant prompt and reply guard
   capture/       Mirsad-rendered capture renderer (@napi-rs/canvas) and PNG provenance metadata
   review/        deterministic and LM Studio reviewers, prompt, publishing rules, evaluation metrics
   identity/      demo identity (bearer tokens), provisioning, demo seed
   http/          server, middleware, one route file per group
-  adapters/      fixture replay; Telegram types, fixture schema, normalizer, read-only Bot API client, reply sender, live connector
+  adapters/      fixture replay; Telegram types, fixture schema, normalizer, read-only Bot API client, reply sender, live connector;
+                 contact-sync server client
   dashboard/     reference dashboard: static HTML, CSS and ES modules, a client of the API and the event stream
 scripts/         replay, demo walkthrough and credentials, OpenAPI generation, model evaluation, Telegram verify/readiness/provision
 examples/headless-client/   HTTP-only integration example
@@ -838,6 +865,7 @@ tests/                      unit/, integration/, contract/, e2e/, helpers/
 openapi.yaml                the generated HTTP contract
 mirsad-android/             Mirsad Android, the on-device shield for SMS and calls (Kotlin; own README)
 mirsad-gateway/             Mirsad's website shield at the internet provider (Python; own README)
+mirsad-contact-sync/        contact-sync server and phone app for the Known Scammer contact (Python, Kotlin; own README)
 ```
 
 All data in fixtures, tests, examples and documents is synthetic. Domains end in `.test` or use `example.*`. Phone

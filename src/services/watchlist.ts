@@ -298,6 +298,7 @@ function toWatchlistEntry(entry: repo.WatchlistEntryRow, view: EntryView, lastRe
     matches: view.matches.map((match) => ({ chatId: match.chat_id, matchedAt: match.matched_at })),
     lastDecision: toLastDecision(lastReview, view.canReview),
     canReview: view.canReview,
+    contactSync: null,
   };
 }
 
@@ -392,6 +393,14 @@ export function reviewEntry(tx: Tx, officer: Principal, entryId: string, request
   const [updated] = entriesAsSeenBy(tx, officer, [decided]);
   if (!updated) throw new Error('watchlist_entry_missing');
   return updated;
+}
+
+/**
+ * A number counts as flagged while its entry is approved and has an E.164 form. The signed phone blocklist exports
+ * these numbers and the contact-sync server receives them (services/contact-sync.ts); both use this rule.
+ */
+export function isFlaggedNumber(entry: { status: WatchlistStatus; e164: string | null }): boolean {
+  return entry.status === 'approved' && entry.e164 !== null;
 }
 
 export interface ScammerFlagResult {

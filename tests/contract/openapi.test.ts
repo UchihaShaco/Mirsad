@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import { CONTACT_SYNC_LABELS } from '../../src/contract/labels.ts';
 import { buildOpenApiDocument } from '../../src/contract/openapi.ts';
 import { ROUTES } from '../../src/http/routes/index.ts';
 import { runExample } from '../../examples/headless-client/run.ts';
@@ -135,6 +136,14 @@ describe('openapi.yaml', () => {
         .map(([method]) => `${method.toUpperCase()} ${path}`),
     );
     expect(documentedOn).toEqual(['POST /v1/watchlist/{entryId}/review']);
+  });
+
+  it('a watchlist entry documents its contact-sync state with the exact labels', () => {
+    const doc = asJson(buildOpenApiDocument()) as { components: { schemas: Record<string, any> } };
+    const contactSync = doc.components.schemas.WatchlistEntry.properties.contactSync;
+    expect(doc.components.schemas.WatchlistEntry.required).toContain('contactSync');
+    expect(contactSync.anyOf.map((s: { type: string }) => s.type)).toEqual(['object', 'null']);
+    expect(contactSync.anyOf[0].properties.label.enum).toEqual(Object.values(CONTACT_SYNC_LABELS));
   });
 
   it('no documented route lists not_implemented, because every route is implemented', () => {

@@ -33,7 +33,7 @@ export interface StreamEventDataMap {
   'watchlist.entry_updated': {
     watchlistEntryId: string;
     status: WatchlistStatus;
-    reason: 'created' | 'observation_added' | 'reviewed';
+    reason: 'created' | 'observation_added' | 'reviewed' | 'contact_sync';
   };
   'watchlist.match': { watchlistEntryId: string };
   'stream.reset': { reason: 'cursor_out_of_range'; resumeFrom: string; reload: ('inbox' | 'timeline')[] };

@@ -1,7 +1,7 @@
 /** zod schemas and inferred types for every shape of design section 6. */
 import { z } from 'zod';
 import * as E from './enums.ts';
-import { CHANNEL_LABELS, FINDING_LABELS, LABELS, ORIGIN_LABELS } from './labels.ts';
+import { CHANNEL_LABELS, CONTACT_SYNC_LABELS, FINDING_LABELS, LABELS, ORIGIN_LABELS } from './labels.ts';
 
 export const LIMITS = {
   messageTextMax: 65_536,
@@ -544,6 +544,11 @@ export const WatchlistEntry = z.object({
     .object({ decision: z.enum(E.WATCHLIST_DECISIONS), reason: z.string().nullable(), officer: PrincipalRef, decidedAt: timestamp })
     .nullable(),
   canReview: z.boolean(),
+  /** Null unless contact sync is on and the entry is approved. */
+  contactSync: z.object({
+    state: z.enum(['on_phones', 'queued', 'not_sent']),
+    label: z.enum(CONTACT_SYNC_LABELS),
+  }).nullable(),
 });
 export type WatchlistEntry = z.infer<typeof WatchlistEntry>;
 export const ListWatchlistResponse = z.object({ entries: z.array(WatchlistEntry), cursor: z.string() });

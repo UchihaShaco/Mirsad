@@ -39,6 +39,8 @@ const erase: RouteHandler = async (c, deps) => {
   const filesPending = await flushErasedEvidence(deps.db, deps.evidenceStore, new Set(result.ids));
   deps.db.checkpointAfterErasure?.();
   deps.workers.review.wake();
+  // An erased chat can take its number's last evidence, and with it the number's flag.
+  deps.workers.contactSync.wake();
   if (result.replayed) c.header(IDEMPOTENCY_REPLAYED_HEADER, 'true');
   c.header('Cache-Control', 'no-store');
   return c.json(ok({ chatCount: result.ids.length, filesPending }));

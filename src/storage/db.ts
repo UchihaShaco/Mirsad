@@ -9,7 +9,7 @@ import { systemClock, type Clock } from '../ports/clock.ts';
 import type { Logger } from '../ports/logger.ts';
 
 export const DATABASE_FILE = 'mirsad.sqlite';
-const SCHEMA_VERSION = 18;
+const SCHEMA_VERSION = 19;
 const BUSY_TIMEOUT_MS = 5000;
 const DEFAULT_STREAM_RETENTION = 5000;
 
@@ -245,6 +245,17 @@ function migrate(db: DatabaseSync): void {
         PRIMARY KEY (place_id, website)
       );
       CREATE INDEX IF NOT EXISTS place_website_checks_flagged ON place_website_checks(flag) WHERE flag IS NOT NULL;
+    `);
+    // v19 keeps what the contact-sync server was last sent for each number, and the retries still allowed for it.
+    if (current < 19) db.exec(`
+      CREATE TABLE IF NOT EXISTS contact_sync_numbers (
+        e164 TEXT PRIMARY KEY,
+        active INTEGER NOT NULL CHECK (active IN (0,1)),                    -- the state being delivered, or delivered
+        reference TEXT NOT NULL,                                             -- the watchlist entry ID sent as the note
+        delivered_at TEXT,                                                   -- null until the server accepted that state
+        attempts INTEGER NOT NULL DEFAULT 0, last_error_code TEXT, next_attempt_at TEXT,
+        updated_at TEXT NOT NULL
+      );
     `);
     if (current < SCHEMA_VERSION) db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
     db.exec('COMMIT');
