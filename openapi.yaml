@@ -5386,6 +5386,32 @@ components:
             - type: "null"
         canReview:
           type: boolean
+        contactSync:
+          anyOf:
+            - type: object
+              properties:
+                state:
+                  type: string
+                  enum:
+                    - on_phones
+                    - queued
+                    - not_sent
+                label:
+                  type: string
+                  enum:
+                    - On phones
+                    - Queued
+                    - "Not sent: no international number"
+                    - "Not sent: server unreachable"
+                    - "Not sent: server timed out"
+                    - "Not sent: server error"
+                    - "Not sent: token refused"
+                    - "Not sent: number refused"
+              required:
+                - state
+                - label
+              additionalProperties: false
+            - type: "null"
       required:
         - id
         - number
@@ -5400,6 +5426,7 @@ components:
         - matches
         - lastDecision
         - canReview
+        - contactSync
       additionalProperties: false
     ListWatchlistResponse:
       type: object

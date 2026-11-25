@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cleartext is allowed so the app can talk to http://10.0.2.2 (emulator) or a LAN IP during demos.
+     Over the Cloudflare tunnel everything is HTTPS anyway. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

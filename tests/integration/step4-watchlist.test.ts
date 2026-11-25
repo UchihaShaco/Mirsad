@@ -228,6 +228,7 @@ describe('step 4: from a source-backed phone candidate to an inbox match', () =>
         matches: [],
         lastDecision: null,
         canReview: true,
+        contactSync: null,
       }]);
     });
   });

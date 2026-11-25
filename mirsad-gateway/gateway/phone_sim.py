@@ -42,7 +42,7 @@ def visit(client: httpx.Client, url: str, poll_s: float) -> tuple[str, str]:
                 break
             time.sleep(0.8)
         r = client.get(url, headers=BROWSER)
-    if r.status_code == 403 and "This site was blocked" in r.text:
+    if r.status_code == 403 and "blocked this site" in r.text:
         return "BLOCKED", "block page shown"
     if "Be careful with this site" in r.text:
         return "WARNED", "warning interstitial shown"

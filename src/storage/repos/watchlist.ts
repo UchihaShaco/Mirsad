@@ -85,6 +85,16 @@ export function listWorkspaceEntries(tx: Tx, workspaceId: string): WatchlistEntr
   );
 }
 
+/** Entries of every workspace in one status, oldest first. */
+export function listEntriesWithStatus(tx: Tx, status: WatchlistStatus): WatchlistEntryRow[] {
+  return tx.all<WatchlistEntryRow>('SELECT * FROM watchlist_entries WHERE status = :status ORDER BY created_at, rowid', { status });
+}
+
+/** Entries of every workspace with this E.164 number. */
+export function listEntriesWithE164(tx: Tx, e164: string): WatchlistEntryRow[] {
+  return tx.all<WatchlistEntryRow>('SELECT * FROM watchlist_entries WHERE e164 = :e164', { e164 });
+}
+
 export function listEntriesByIds(tx: Tx, entryIds: readonly string[]): WatchlistEntryRow[] {
   return tx.all<WatchlistEntryRow>(`SELECT * FROM watchlist_entries WHERE id IN (${IN_IDS})`, idsParam(entryIds));
 }

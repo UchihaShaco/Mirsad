@@ -1,6 +1,7 @@
 /** Composition root: wires storage, ports, workers and HTTP into one App. */
 import fs from 'node:fs';
 import path from 'node:path';
+import { createContactSyncClient } from './adapters/contact-sync.ts';
 import { createBotSender, createTelegramEraser, isWellFormedBotToken, type BotApi, type BotSender, type TelegramEraser } from './adapters/telegram/bot-api.ts';
 import { createLiveConnector, LiveConnectorGateError, type LiveConnector } from './adapters/telegram/live-connector.ts';
 import { createDefaultRenderer } from './capture/index.ts';
@@ -25,6 +26,7 @@ import { createLocalEvidenceStore } from './storage/local-evidence-store.ts';
 import { flushErasedEvidence } from './services/erased-evidence.ts';
 import { AiRepliesGateError, clearReplyEnrollments, createAiReplyWorker, type AiReplyWorker } from './workers/ai-reply-worker.ts';
 import { createCaptureWorker } from './workers/capture-worker.ts';
+import { createContactSyncWorker, type ContactSyncWorker } from './workers/contact-sync-worker.ts';
 import type { JobLoop } from './workers/job-loop.ts';
 import { createReviewWorker } from './workers/review-worker.ts';
 
@@ -70,7 +72,8 @@ export interface AppDeps {
   evidenceStore: EvidenceStore;
   renderer: CaptureRenderer;
   reviewer: Reviewer;
-  workers: { capture: { wake(): void }; review: { wake(): void } };
+  /** contactSync wakes the contact-sync worker after a watchlist decision; a no-op while contact sync is off. */
+  workers: { capture: { wake(): void }; review: { wake(): void }; contactSync: { wake(): void } };
   streamKeepAliveMs: number;
   startedAt: string;
   /** Abu Dhabi places directory; empty when the data file has not been fetched yet. */
@@ -85,7 +88,7 @@ export interface App {
   readonly config: Config;
   fetch(request: Request): Promise<Response>;
   listen(): Promise<{ url: string; port: number }>;
-  /** Resolves when both workers are idle and no woken work remains. */
+  /** Resolves when every worker is idle and no woken work remains. */
   drain(): Promise<void>;
   close(): Promise<void>;
 }
@@ -97,6 +100,8 @@ interface Runtime {
   liveConnector: LiveConnector | null;
   /** Created only when TELEGRAM_AI_REPLIES_ENABLED=true; it refuses to start unless its gates and the live gates are set. */
   aiReplies: AiReplyWorker | null;
+  /** Created only when MIRSAD_CONTACT_SYNC_URL is set. */
+  contactSync: ContactSyncWorker | null;
 }
 
 function senderFor(config: Config): BotSender | null {
@@ -156,6 +161,7 @@ function buildRuntime(options: AppOptions): Runtime {
   let loops: Runtime['workers'] | null = null;
   let live: LiveConnector | null = null;
   let aiReplies: AiReplyWorker | null = null;
+  let contactSync: ContactSyncWorker | null = null;
   const deps: AppDeps = {
     config, db, clock, logger, bus,
     ...(options.telegramEraser ? { telegramEraser: options.telegramEraser } :
@@ -175,6 +181,7 @@ function buildRuntime(options: AppOptions): Runtime {
           aiReplies?.wake();
         },
       },
+      contactSync: { wake: () => contactSync?.wake() },
     },
     streamKeepAliveMs: options.streamKeepAliveMs ?? DEFAULT_STREAM_KEEP_ALIVE_MS,
     startedAt: clock.now().toISOString(),
@@ -199,7 +206,8 @@ function buildRuntime(options: AppOptions): Runtime {
       })
     : null;
   aiReplies = aiReplyWorkerFor(options, deps);
-  return { deps, workers: loops, liveConnector: live, aiReplies };
+  contactSync = config.contactSync ? createContactSyncWorker(deps, createContactSyncClient({ config: config.contactSync })) : null;
+  return { deps, workers: loops, liveConnector: live, aiReplies, contactSync };
 }
 
 /** Like the connector: a refusal leaves the service running with replies off; the log names the gates, never values. */
@@ -228,7 +236,7 @@ function startLiveConnector(connector: LiveConnector | null, logger: Logger): vo
 }
 
 export async function createApp(options: AppOptions): Promise<App> {
-  const { deps, workers, liveConnector, aiReplies } = buildRuntime(options);
+  const { deps, workers, liveConnector, aiReplies, contactSync } = buildRuntime(options);
   const { config, logger } = deps;
   const filesPending = await flushErasedEvidence(deps.db, deps.evidenceStore);
   if (filesPending) logger.warn('erased_evidence_cleanup_pending', { count: filesPending });
@@ -239,7 +247,9 @@ export async function createApp(options: AppOptions): Promise<App> {
   workers.review.wake();
   startLiveConnector(liveConnector, logger);
   startAiReplies(aiReplies, logger, deps.db);
-  const allIdle = (): boolean => workers.capture.isIdle() && workers.review.isIdle() && (aiReplies?.isIdle() ?? true);
+  contactSync?.start();
+  const allIdle = (): boolean => workers.capture.isIdle() && workers.review.isIdle() && (aiReplies?.isIdle() ?? true)
+    && (contactSync?.isIdle() ?? true);
 
   return {
     config,
@@ -252,12 +262,13 @@ export async function createApp(options: AppOptions): Promise<App> {
     },
     async drain() {
       while (!allIdle()) {
-        await Promise.all([workers.capture.idle(), workers.review.idle(), aiReplies?.idle()]);
+        await Promise.all([workers.capture.idle(), workers.review.idle(), aiReplies?.idle(), contactSync?.idle()]);
       }
     },
     async close() {
       await liveConnector?.stop();
       await aiReplies?.stop();
+      await contactSync?.stop();
       if (server) await server.close();
       server = null;
       await Promise.all([workers.capture.stop(), workers.review.stop()]);

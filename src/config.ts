@@ -1,4 +1,7 @@
-/** The service and LM Studio bind to loopback. Telegram replies can opt in to a fixed OpenRouter endpoint. */
+/**
+ * The service and LM Studio bind to loopback. Telegram replies can opt in to a fixed OpenRouter endpoint, and flagged
+ * numbers to the contact-sync server on this machine (mirsad-contact-sync/).
+ */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -18,6 +21,8 @@ export const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '::1'] as const;
 export const TELEGRAM_CHAT_SCOPES = ['approved', 'all_private'] as const;
 export type TelegramChatScope = (typeof TELEGRAM_CHAT_SCOPES)[number];
 const LOOPBACK_URL_HOSTNAMES = ['127.0.0.1', 'localhost', '[::1]'];
+/** A label or source the contact-sync server stores beside each number: short, printable text. */
+const SYNC_TEXT = /^[\p{L}\p{N} ._:()-]{1,64}$/u;
 const MAX_PORT = 65_535;
 /** Relative MIRSAD_CONTROLLED_TEST_RECORD paths resolve against the project root, not the working directory. */
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -37,6 +42,11 @@ export interface Config {
   reviewAllowedCaptureMethods: ConnectorCaptureMethod[];
   streamRetention: number;
   rateLimitPerMinute: number;
+  /**
+   * Off (null) unless MIRSAD_CONTACT_SYNC_URL is set: flagged numbers then go to the contact-sync server, which adds them
+   * to the "Known Scammer" contact on connected phones. The token is a secret and is never logged.
+   */
+  contactSync: { url: string; token: string | null; label: string; source: string } | null;
   /** Absolute path of the Telegram controlled-test record that marks the live connector as verified. */
   controlledTestRecordPath: string;
   telegram: {
@@ -120,6 +130,22 @@ function loopbackUrl(env: Env, name: string, fallback: string): string {
   return raw.replace(/\/+$/, '');
 }
 
+function syncText(env: Env, name: string, fallback: string): string {
+  const raw = value(env, name) ?? fallback;
+  if (!SYNC_TEXT.test(raw)) throw new ConfigError(name, 'must be 1 to 64 letters, digits, spaces or . _ : ( ) -');
+  return raw;
+}
+
+function contactSync(env: Env): Config['contactSync'] {
+  if (value(env, 'MIRSAD_CONTACT_SYNC_URL') === undefined) return null;
+  return {
+    url: loopbackUrl(env, 'MIRSAD_CONTACT_SYNC_URL', ''),
+    token: value(env, 'MIRSAD_CONTACT_SYNC_TOKEN') ?? null,
+    label: syncText(env, 'MIRSAD_CONTACT_SYNC_LABEL', 'Flagged on the Mirsad portal'),
+    source: syncText(env, 'MIRSAD_CONTACT_SYNC_SOURCE', 'mirsad-portal'),
+  };
+}
+
 function reviewMethods(env: Env): ConnectorCaptureMethod[] {
   const name = 'MIRSAD_REVIEW_ALLOWED_CAPTURE_METHODS';
   const raw = value(env, name) === undefined ? ['fixture_replay'] : list(env, name);
@@ -176,6 +202,7 @@ export function loadConfig(env: Env): Config {
     reviewAllowedCaptureMethods: reviewMethods(env),
     streamRetention: int(env, 'MIRSAD_STREAM_RETENTION', 5000, 1),
     rateLimitPerMinute: int(env, 'MIRSAD_RATE_LIMIT_PER_MINUTE', 600, 1),
+    contactSync: contactSync(env),
     controlledTestRecordPath: recordPath,
     telegram: {
       liveEnabled: bool(env, 'TELEGRAM_LIVE_ENABLED', false),

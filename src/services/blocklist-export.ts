@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Principal } from '../ports/identity.ts';
 import type { Tx } from '../storage/db.ts';
-import { listEntries } from './watchlist.ts';
+import { isFlaggedNumber, listEntries } from './watchlist.ts';
 
 export const BLOCKLIST_KEY_FILE = 'blocklist-signing-key.pem';
 export const BLOCKLIST_VALIDITY_DAYS = 30;
@@ -87,7 +87,7 @@ export function signBlocklist(payload: Omit<BlocklistFile, 'signature'>, signing
 
 /** The signed list as the officer may export it now. */
 export function buildBlocklist(tx: Tx, officer: Principal, signingKey: KeyObject): BlocklistFile {
-  const approved = listEntries(tx, officer).filter(entry => entry.status === 'approved' && entry.number.e164 !== null);
+  const approved = listEntries(tx, officer).filter(entry => isFlaggedNumber({ status: entry.status, e164: entry.number.e164 }));
   const numbers = [...new Set(approved.map(entry => entry.number.e164!))].sort();
   const approvedNumbers = new Set(numbers);
   const fingerprints = new Set<string>();

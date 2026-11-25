@@ -48,6 +48,7 @@ describe('loadConfig', () => {
       reviewAllowedCaptureMethods: ['fixture_replay'],
       streamRetention: 5000,
       rateLimitPerMinute: 600,
+      contactSync: null,
       controlledTestRecordPath: fileURLToPath(
         new URL('../../docs/telegram/controlled-test-record.json', import.meta.url),
       ),
